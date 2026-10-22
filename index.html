@@ -50,7 +50,7 @@
           <input 
             v-model="matSearchQuery" 
             type="text" 
-            placeholder="搜尋代號 (如 FR, PM) 或 品名關鍵字..."
+            placeholder="搜尋代號 (如 MO, FR) 或 品名關鍵字..."
             class="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-slate-50"
           >
           <span class="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
@@ -181,13 +181,16 @@
             v-for="item in selectedDateItems" :key="item.id"
             class="p-2.5 bg-red-50 border border-red-200 rounded-xl text-xs flex justify-between items-center">
             <div>
-              <div class="font-bold text-red-950">{{ item.itemName }}</div>
-              <div class="text-[11px] text-red-700">撤架時機：{{ item.timing }}｜原廠效期：{{ item.factoryExpiry }}</div>
+              <div class="font-bold text-red-950 flex items-center gap-1.5">
+                <span v-if="item.isMaterial" class="px-1.5 py-0.2 bg-emerald-800 text-white rounded text-[10px]">物料</span>
+                <span>{{ item.itemName }}</span>
+              </div>
+              <div class="text-[11px] text-red-700 mt-0.5">撤架時機：{{ item.timing }}</div>
             </div>
             <button @click="deleteIntake(item.id)" class="text-slate-400 active:text-red-600 text-xs px-2 py-1">✕</button>
           </div>
         </div>
-        <p v-else class="text-xs text-slate-400 py-3 text-center">當天無排定下架商品。</p>
+        <p v-else class="text-xs text-slate-400 py-3 text-center">當天無排定下架品項。</p>
       </div>
 
       <!-- 本月待撤架時序總覽清單 -->
@@ -213,11 +216,10 @@
         <div>
           <h2 class="text-sm font-bold text-slate-900">📥 檔期標準匯入中心</h2>
           <p class="text-[11px] text-slate-500 mt-1">
-            上傳更新後將**全店即時同步**。支援拍攝手冊照片（JPG/PNG）、官方 PDF 或 Excel。
+            上傳更新後全店即時同步。支援拍攝手冊照片（JPG/PNG）、官方 PDF 或 Excel。
           </p>
         </div>
 
-        <!-- 檔案上傳按鈕 -->
         <label class="block border-2 border-dashed border-emerald-600 bg-emerald-50/40 rounded-2xl p-6 text-center cursor-pointer active:bg-emerald-100/50 transition">
           <input type="file" accept=".jpg, .jpeg, .png, .pdf, .xlsx, .xls" @change="handleFileSelect" class="hidden">
           <div class="space-y-1">
@@ -331,19 +333,31 @@
     </div>
   </footer>
 
-  <!-- 打點試算 Modal -->
+  <!-- 打點試算 Modal（含閉店自動防呆與行事曆連動按鈕） -->
   <div v-if="calcModal.show" class="fixed inset-0 bg-black/40 z-50 flex items-end justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
       <div class="flex justify-between items-center">
         <h3 class="font-bold text-sm text-slate-900">{{ calcModal.item.name }} ({{ calcModal.item.code }})</h3>
         <button @click="calcModal.show = false" class="text-slate-400 text-sm">✕</button>
       </div>
-      <div class="p-3 bg-emerald-50 rounded-xl text-center border border-emerald-200">
-        <span class="text-[11px] text-emerald-800 font-semibold block mb-0.5">次級效期標籤應填至</span>
+
+      <div class="p-3 bg-emerald-50 rounded-xl text-center border border-emerald-200 space-y-1">
+        <span class="text-[11px] text-emerald-800 font-semibold block">標籤應打點至（次級效期）</span>
         <div class="text-base font-black text-emerald-950">{{ calcModal.targetTimeStr }}</div>
+        <p v-if="calcModal.isAdjustedForClose" class="text-[10px] text-amber-700 font-medium">
+          ⚠️ 實際到期落於打烊至開店間，依規範提前至 21:30 閉店前報廢
+        </p>
       </div>
-      <button @click="calcModal.show = false" class="w-full py-2 bg-slate-900 text-white rounded-xl text-xs font-bold">
-        確認
+
+      <!-- 同步寫入行事曆按鈕 -->
+      <button 
+        @click="addMaterialToSchedule" 
+        class="w-full py-2.5 bg-emerald-800 active:bg-emerald-900 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center justify-center gap-1.5">
+        <span>📌</span> 同步登記至下架行事曆
+      </button>
+
+      <button @click="calcModal.show = false" class="w-full py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-medium">
+        關閉
       </button>
     </div>
   </div>
@@ -351,7 +365,7 @@
 </div>
 
 <script>
-// ==================== 1. 你的專屬 Firebase 設定（已填妥） ====================
+// ==================== Firebase 設定 ====================
 const firebaseConfig = {
   apiKey: "AIzaSyDYvu6xnFpIzLhbq62WQ-VotNA-kuHLsCE",
   authDomain: "sbux011218.firebaseapp.com",
@@ -363,7 +377,6 @@ const firebaseConfig = {
   measurementId: "G-6KTK40ZQKN"
 };
 
-// 初始化 Firebase
 let db = null;
 try {
   firebase.initializeApp(firebaseConfig);
@@ -383,12 +396,10 @@ createApp({
     const currentTab = ref('materials');
     const isCloudConnected = ref(false);
 
-    // 全域雲端資料
     const materials = ref([]);
     const rules = ref([]);
     const inventory = ref([]);
 
-    // 監聽 Firebase 雲端資料庫（秒級雙向同步）
     if (db) {
       db.ref('.info/connected').on('value', snap => {
         isCloudConnected.value = snap.val() === true;
@@ -408,7 +419,6 @@ createApp({
       });
     }
 
-    // 寫入雲端輔助函式
     const syncMaterialsToCloud = (list) => {
       if (db) db.ref('sbux/materials').set(list);
     };
@@ -416,7 +426,7 @@ createApp({
       if (db) db.ref('sbux/rules').set(list);
     };
 
-    // 搜尋與打點
+    // 搜尋
     const matSearchQuery = ref('');
     const filteredMaterials = computed(() => {
       const q = matSearchQuery.value.trim().toLowerCase();
@@ -428,37 +438,101 @@ createApp({
       );
     });
 
-    const calcModal = ref({ show: false, item: {}, targetTimeStr: '' });
+    // 營業時間防呆與打點計算
+    const calcModal = ref({
+      show: false,
+      item: {},
+      targetTimeStr: '',
+      pullDate: '',
+      timing: '',
+      isAdjustedForClose: false
+    });
+
     const calculateOpenTime = (mat) => {
       const now = new Date();
       let target = new Date(now.getTime());
-      const hours = parseInt(mat.hours) || 0;
+      const hours = parseInt(mat.hours) || (mat.notes && mat.notes.includes('24') ? 24 : 0);
       const days = parseInt(mat.days) || 0;
+      let isAdjusted = false;
+      let finalPullDate = '';
+      let finalTiming = '';
 
       if (hours > 0) {
-        target.setHours(target.getHours() + hours);
-        calcModal.value.targetTimeStr = `${target.getFullYear()}/${(target.getMonth()+1).toString().padStart(2,'0')}/${target.getDate().toString().padStart(2,'0')} ${target.getHours().toString().padStart(2,'0')}:${target.getMinutes().toString().padStart(2,'0')}`;
+        target.setTime(target.getTime() + hours * 3600 * 1000);
+        
+        // 判斷是否落入 21:30 閉店後 至 隔天 07:00 開店前
+        const h = target.getHours();
+        const m = target.getMinutes();
+        const minutesOfDay = h * 60 + m;
+
+        // 21:30 = 1290 分鐘；07:00 = 420 分鐘
+        if (minutesOfDay >= 1290 || minutesOfDay < 420) {
+          isAdjusted = true;
+          // 若是在午夜 00:00~07:00 之間，閉店日屬於前一天
+          if (minutesOfDay < 420) {
+            target.setDate(target.getDate() - 1);
+          }
+          target.setHours(21, 30, 0, 0);
+          finalPullDate = `${target.getFullYear()}-${(target.getMonth()+1).toString().padStart(2,'0')}-${target.getDate().toString().padStart(2,'0')}`;
+          finalTiming = '21:30 閉店前報廢';
+          calcModal.value.targetTimeStr = `${target.getFullYear()}/${(target.getMonth()+1).toString().padStart(2,'0')}/${target.getDate().toString().padStart(2,'0')} 21:30 閉店報廢`;
+        } else {
+          finalPullDate = `${target.getFullYear()}-${(target.getMonth()+1).toString().padStart(2,'0')}-${target.getDate().toString().padStart(2,'0')}`;
+          finalTiming = `${target.getHours().toString().padStart(2,'0')}:${target.getMinutes().toString().padStart(2,'0')}`;
+          calcModal.value.targetTimeStr = `${target.getFullYear()}/${(target.getMonth()+1).toString().padStart(2,'0')}/${target.getDate().toString().padStart(2,'0')} ${finalTiming}`;
+        }
       } else if (days > 0) {
         target.setDate(target.getDate() + days);
-        calcModal.value.targetTimeStr = `${target.getFullYear()}/${(target.getMonth()+1).toString().padStart(2,'0')}/${target.getDate().toString().padStart(2,'0')} 閉店前 (D+${days})`;
+        finalPullDate = `${target.getFullYear()}-${(target.getMonth()+1).toString().padStart(2,'0')}-${target.getDate().toString().padStart(2,'0')}`;
+        finalTiming = '閉店前 (D+' + days + ')';
+        calcModal.value.targetTimeStr = `${target.getFullYear()}/${(target.getMonth()+1).toString().padStart(2,'0')}/${target.getDate().toString().padStart(2,'0')} 21:30 閉店前`;
       } else {
         calcModal.value.targetTimeStr = mat.notes || "依原廠效期規範";
+        finalPullDate = todayStr.value;
+        finalTiming = '原廠標示';
       }
+
       calcModal.value.item = mat;
+      calcModal.value.pullDate = finalPullDate;
+      calcModal.value.timing = finalTiming;
+      calcModal.value.isAdjustedForClose = isAdjusted;
       calcModal.value.show = true;
     };
 
-    // 進貨登記（直接推送到 Firebase）
+    // 同步物料至下架行事曆
+    const addMaterialToSchedule = () => {
+      const modal = calcModal.value;
+      if (!modal.pullDate) return;
+
+      const newItem = {
+        id: Date.now(),
+        itemName: `${modal.item.name} (${modal.item.code})`,
+        factoryExpiry: '物料開封打點',
+        pullDate: modal.pullDate,
+        timing: modal.timing,
+        isMaterial: true
+      };
+
+      if (db) {
+        db.ref('sbux/inventory/' + newItem.id).set(newItem);
+      }
+
+      selectedDate.value = modal.pullDate;
+      modal.show = false;
+      alert(`✅ 已將【${modal.item.name}】同步登記至 ${modal.pullDate} (${modal.timing}) 行事曆！`);
+    };
+
+    // 進貨登記
     const intakeForm = ref({ itemName: '', factoryExpiry: '' });
     const submitIntake = () => {
       if (!intakeForm.value.itemName || !intakeForm.value.factoryExpiry) return;
 
       let advanceDays = 7;
-      let timing = "閉店前";
+      let timing = "21:30 閉店前";
       const matched = rules.value.find(r => intakeForm.value.itemName.includes(r.keyword));
       if (matched) {
         advanceDays = parseInt(matched.advance_days) || 7;
-        timing = matched.timing || "閉店前";
+        timing = matched.timing || "21:30 閉店前";
       }
 
       const d = new Date(intakeForm.value.factoryExpiry);
@@ -470,7 +544,8 @@ createApp({
         itemName: intakeForm.value.itemName,
         factoryExpiry: intakeForm.value.factoryExpiry,
         pullDate,
-        timing
+        timing,
+        isMaterial: false
       };
 
       if (db) {
@@ -694,7 +769,7 @@ createApp({
 
     return {
       currentTab, isCloudConnected, materials, matSearchQuery, filteredMaterials,
-      calcModal, calculateOpenTime,
+      calcModal, calculateOpenTime, addMaterialToSchedule,
       intakeForm, submitIntake, deleteIntake,
       calYear, calMonth, changeMonth, resetToCurrentMonth, calendarDays, todayStr, selectedDate, selectedDateItems, currentMonthItems,
       handleFileSelect, isProcessing, processProgress, parsedPreview, applyParsedData,
