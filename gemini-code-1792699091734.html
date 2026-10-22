@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>永和永安效期管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    [v-cloak] { display: none; }
+    body {
+      -webkit-tap-highlight-color: transparent;
+      padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased">
+
+<div id="app" v-cloak class="max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col shadow-lg border-x border-slate-200">
+
+  <!-- 頂部 Header -->
+  <header class="bg-emerald-900 text-white px-5 py-4 sticky top-0 z-30 shadow-md">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <span class="text-xl">☕</span>
+        <h1 class="text-base font-bold tracking-wider">永和永安效期管理</h1>
+      </div>
+      <span class="text-xs px-2.5 py-0.5 bg-emerald-800 text-emerald-200 rounded-full font-medium">門市端</span>
+    </div>
+  </header>
+
+  <!-- 主要內容區 -->
+  <main class="flex-1 p-4 space-y-4">
+
+    <!-- ==================== 頁籤 1：物料效期查詢 ==================== -->
+    <section v-if="currentTab === 'materials'" class="space-y-4">
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+        <div class="relative">
+          <input 
+            v-model="matSearchQuery" 
+            type="text" 
+            placeholder="搜尋代號 (如 WM) 或 品名關鍵字..."
+            class="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-slate-50"
+          >
+          <span class="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
+        </div>
+      </div>
+
+      <!-- 物料卡片清單 -->
+      <div class="space-y-3">
+        <div 
+          v-for="mat in filteredMaterials" :key="mat.code"
+          class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="px-2 py-0.5 text-xs font-bold rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
+                {{ mat.code }}
+              </span>
+              <h3 class="text-base font-bold text-slate-900 mt-1">{{ mat.name }}</h3>
+              <p class="text-xs text-slate-400 italic">{{ mat.en_name }}</p>
+            </div>
+            <span 
+              :class="mat.temp === '冷藏' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'"
+              class="px-2 py-0.5 text-xs font-bold rounded-full">
+              {{ mat.temp || '常溫' }}
+            </span>
+          </div>
+
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs flex justify-between">
+            <span class="text-slate-500">次級效期規範：</span>
+            <span class="font-bold text-emerald-800">{{ mat.notes }}</span>
+          </div>
+
+          <button 
+            @click="calculateOpenTime(mat)"
+            class="w-full py-2 bg-slate-100 active:bg-emerald-100 text-slate-700 active:text-emerald-800 text-xs font-bold rounded-xl border border-slate-200 transition">
+            ⏱️ 試算此時開封到期打點
+          </button>
+        </div>
+
+        <div v-if="filteredMaterials.length === 0" class="text-center py-12 text-slate-400 text-xs space-y-2">
+          <p v-if="materials.length === 0">目前尚未匯入任何物料標準。</p>
+          <p v-else>查無符合「{{ matSearchQuery }}」的物料資料。</p>
+          <button 
+            v-if="materials.length === 0"
+            @click="currentTab = 'settings'" 
+            class="px-3 py-1.5 bg-emerald-700 text-white font-medium rounded-lg text-xs shadow-sm">
+            前往匯入標準手冊
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 頁籤 2：下架行事曆 ==================== -->
+    <section v-if="currentTab === 'intake'" class="space-y-4">
+      
+      <!-- 快速進貨登記 -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+        <h2 class="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+          <span>📦</span> 快速進貨登記（依匯入標準自動算撤架日）
+        </h2>
+        <form @submit.prevent="submitIntake" class="space-y-2">
+          <input 
+            v-model="intakeForm.itemName" 
+            type="text" 
+            required
+            placeholder="食品品名 (例：摩卡杏仁肉鬆捲 2盒)"
+            class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-slate-50"
+          >
+          <div class="flex gap-2">
+            <input 
+              v-model="intakeForm.factoryExpiry" 
+              type="date" 
+              required
+              class="flex-1 px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-slate-50"
+            >
+            <button 
+              type="submit" 
+              class="px-4 py-2 bg-emerald-800 text-white text-xs font-bold rounded-xl shadow active:scale-95 transition">
+              + 登記
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- 月曆主體（無搜尋） -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-bold text-slate-900">
+            🗓️ {{ calYear }} 年 {{ calMonth + 1 }} 月 下架排程
+          </h3>
+          <div class="flex space-x-1">
+            <button @click="changeMonth(-1)" class="px-2.5 py-1 text-xs bg-slate-100 rounded-lg active:bg-slate-200">‹</button>
+            <button @click="resetToCurrentMonth" class="px-2 py-1 text-xs bg-slate-100 rounded-lg active:bg-slate-200">本月</button>
+            <button @click="changeMonth(1)" class="px-2.5 py-1 text-xs bg-slate-100 rounded-lg active:bg-slate-200">›</button>
+          </div>
+        </div>
+
+        <!-- 星期 -->
+        <div class="grid grid-cols-7 gap-1 text-center font-bold text-[11px] text-slate-400 mb-1">
+          <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+        </div>
+
+        <!-- 格子 -->
+        <div class="grid grid-cols-7 gap-1">
+          <div 
+            v-for="(day, idx) in calendarDays" :key="idx"
+            @click="day.dateStr && (selectedDate = day.dateStr)"
+            :class="[
+              'h-12 p-1 rounded-lg border flex flex-col justify-between text-[11px] transition',
+              day.isCurrentMonth ? 'bg-white border-slate-200' : 'bg-slate-50 border-transparent text-slate-300',
+              day.dateStr === todayStr ? 'border-emerald-600 bg-emerald-50/40 font-bold' : '',
+              selectedDate === day.dateStr ? 'ring-2 ring-emerald-700 bg-emerald-100/30' : ''
+            ]">
+            <span :class="day.dateStr === todayStr ? 'text-emerald-800' : ''">{{ day.dayNum }}</span>
+            <div class="flex justify-end">
+              <span v-if="day.items.length > 0" class="w-2 h-2 rounded-full bg-red-600"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 選定日期清單 -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+        <h4 class="font-bold text-xs text-slate-900 mb-2 flex justify-between">
+          <span>📌 {{ selectedDate || '請點選上方日期' }} 應下架清單</span>
+          <span class="text-slate-400">{{ selectedDateItems.length }} 筆</span>
+        </h4>
+        
+        <div v-if="selectedDateItems.length > 0" class="space-y-2">
+          <div 
+            v-for="item in selectedDateItems" :key="item.id"
+            class="p-2.5 bg-red-50 border border-red-200 rounded-xl text-xs flex justify-between items-center">
+            <div>
+              <div class="font-bold text-red-950">{{ item.itemName }}</div>
+              <div class="text-[11px] text-red-700">撤架時機：{{ item.timing }}｜原廠效期：{{ item.factoryExpiry }}</div>
+            </div>
+            <button @click="deleteIntake(item.id)" class="text-slate-400 active:text-red-600 text-xs px-2 py-1">✕</button>
+          </div>
+        </div>
+        <p v-else class="text-xs text-slate-400 py-3 text-center">當天無排定下架商品。</p>
+      </div>
+
+      <!-- 本月待撤架時序總覽清單（無搜尋直接展示） -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+        <h4 class="font-bold text-xs text-slate-900 mb-2">📋 本月待撤架時序一覽</h4>
+        <div v-if="currentMonthItems.length > 0" class="divide-y divide-slate-100 text-xs">
+          <div v-for="item in currentMonthItems" :key="item.id" class="py-2 flex justify-between items-center">
+            <div>
+              <span class="font-bold text-emerald-900">{{ item.pullDate.slice(5) }}</span>
+              <span class="ml-2 font-medium text-slate-800">{{ item.itemName }}</span>
+            </div>
+            <span class="text-[11px] text-slate-500">{{ item.timing }}</span>
+          </div>
+        </div>
+        <p v-else class="text-xs text-slate-400 py-3 text-center">本月尚無任何排程紀錄。</p>
+      </div>
+
+    </section>
+
+    <!-- ==================== 頁籤 3：檔期標準與匯入中心 ==================== -->
+    <section v-if="currentTab === 'settings'" class="space-y-4">
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div>
+          <h2 class="text-sm font-bold text-slate-900">📥 檔期標準匯入中心</h2>
+          <p class="text-[11px] text-slate-500 mt-1">
+            當官方發布新檔期手冊時，可直接上傳 Excel 或 JSON，全系統標準自動覆蓋更新。
+          </p>
+        </div>
+
+        <!-- Excel 匯入按鈕 -->
+        <label class="block border-2 border-dashed border-emerald-600 bg-emerald-50/40 rounded-2xl p-6 text-center cursor-pointer active:bg-emerald-100/50 transition">
+          <input type="file" accept=".xlsx, .xls" @change="handleExcelImport" class="hidden">
+          <div class="space-y-1">
+            <span class="text-2xl">📊</span>
+            <p class="text-xs font-bold text-emerald-900">匯入 Excel 檔期標準手冊</p>
+            <p class="text-[10px] text-slate-500">點擊從手機/電腦選取 (.xlsx, .xls)</p>
+          </div>
+        </label>
+
+        <!-- 輔助操作 -->
+        <div class="pt-2 flex flex-col gap-2">
+          <button 
+            @click="downloadBlankTemplate" 
+            class="w-full py-2.5 bg-slate-100 active:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl border border-slate-200">
+            📄 下載空白 Excel 格式範本
+          </button>
+          
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button 
+              @click="exportJsonBackup" 
+              class="py-2 bg-slate-100 active:bg-slate-200 text-slate-700 text-xs font-medium rounded-xl border border-slate-200">
+              📤 匯出資料備份
+            </button>
+            <label class="py-2 bg-slate-100 active:bg-slate-200 text-slate-700 text-xs font-medium rounded-xl border border-slate-200 text-center cursor-pointer">
+              📥 匯入 JSON 備份
+              <input type="file" accept=".json" @change="handleJsonImport" class="hidden">
+            </label>
+          </div>
+
+          <button 
+            @click="clearAllData" 
+            class="w-full py-2 text-xs text-red-600 active:text-red-800 font-medium mt-1">
+            🗑️ 清空所有資料（保持純空白狀態）
+          </button>
+        </div>
+      </div>
+
+      <!-- 目前已匯入規則數統計 -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 text-xs space-y-1.5">
+        <h3 class="font-bold text-slate-800">📊 當前系統規則庫狀態</h3>
+        <div class="flex justify-between text-slate-600">
+          <span>已匯入物料品項：</span>
+          <span class="font-bold text-emerald-800">{{ materials.length }} 項</span>
+        </div>
+        <div class="flex justify-between text-slate-600">
+          <span>已匯入下架標準規則：</span>
+          <span class="font-bold text-emerald-800">{{ rules.length }} 條</span>
+        </div>
+        <div class="flex justify-between text-slate-600">
+          <span>已排入在架進貨紀錄：</span>
+          <span class="font-bold text-emerald-800">{{ inventory.length }} 筆</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 底部導航選單 -->
+  <footer class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200">
+    <div class="max-w-md mx-auto grid grid-cols-3 py-2 px-3">
+      <button 
+        @click="currentTab = 'materials'" 
+        :class="currentTab === 'materials' ? 'text-emerald-800 font-bold' : 'text-slate-400'"
+        class="flex flex-col items-center justify-center py-1">
+        <span class="text-lg">☕</span>
+        <span class="text-[11px] mt-0.5">物料查詢</span>
+      </button>
+      <button 
+        @click="currentTab = 'intake'" 
+        :class="currentTab === 'intake' ? 'text-emerald-800 font-bold' : 'text-slate-400'"
+        class="flex flex-col items-center justify-center py-1">
+        <span class="text-lg">📅</span>
+        <span class="text-[11px] mt-0.5">下架行事曆</span>
+      </button>
+      <button 
+        @click="currentTab = 'settings'" 
+        :class="currentTab === 'settings' ? 'text-emerald-800 font-bold' : 'text-slate-400'"
+        class="flex flex-col items-center justify-center py-1">
+        <span class="text-lg">⚙️</span>
+        <span class="text-[11px] mt-0.5">檔期標準</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- 打點試算 Modal -->
+  <div v-if="calcModal.show" class="fixed inset-0 bg-black/40 z-50 flex items-end justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-sm text-slate-900">{{ calcModal.item.name }} ({{ calcModal.item.code }})</h3>
+        <button @click="calcModal.show = false" class="text-slate-400 text-sm">✕</button>
+      </div>
+      <div class="p-3 bg-emerald-50 rounded-xl text-center border border-emerald-200">
+        <span class="text-[11px] text-emerald-800 font-semibold block mb-0.5">次級效期標籤應填至</span>
+        <div class="text-base font-black text-emerald-950">{{ calcModal.targetTimeStr }}</div>
+      </div>
+      <button @click="calcModal.show = false" class="w-full py-2 bg-slate-900 text-white rounded-xl text-xs font-bold">
+        確認
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const { createApp, ref, computed, watch } = Vue;
+
+createApp({
+  setup() {
+    const currentTab = ref('materials');
+
+    // 完全空白、無預設品項
+    const materials = ref(JSON.parse(localStorage.getItem('sbux_materials')) || []);
+    const rules = ref(JSON.parse(localStorage.getItem('sbux_rules')) || []);
+    const inventory = ref(JSON.parse(localStorage.getItem('sbux_inventory')) || []);
+
+    watch(materials, v => localStorage.setItem('sbux_materials', JSON.stringify(v)), { deep: true });
+    watch(rules, v => localStorage.setItem('sbux_rules', JSON.stringify(v)), { deep: true });
+    watch(inventory, v => localStorage.setItem('sbux_inventory', JSON.stringify(v)), { deep: true });
+
+    // 物料搜尋與打點
+    const matSearchQuery = ref('');
+    const filteredMaterials = computed(() => {
+      const q = matSearchQuery.value.trim().toLowerCase();
+      if (!q) return materials.value;
+      return materials.value.filter(m => 
+        (m.code && String(m.code).toLowerCase().includes(q)) ||
+        (m.name && String(m.name).toLowerCase().includes(q)) ||
+        (m.en_name && String(m.en_name).toLowerCase().includes(q))
+      );
+    });
+
+    const calcModal = ref({ show: false, item: {}, targetTimeStr: '' });
+    const calculateOpenTime = (mat) => {
+      const now = new Date();
+      let target = new Date(now.getTime());
+      const hours = parseInt(mat.hours) || 0;
+      const days = parseInt(mat.days) || 0;
+
+      if (hours > 0) {
+        target.setHours(target.getHours() + hours);
+        calcModal.value.targetTimeStr = `${target.getFullYear()}/${(target.getMonth()+1).toString().padStart(2,'0')}/${target.getDate().toString().padStart(2,'0')} ${target.getHours().toString().padStart(2,'0')}:${target.getMinutes().toString().padStart(2,'0')}`;
+      } else if (days > 0) {
+        target.setDate(target.getDate() + days);
+        calcModal.value.targetTimeStr = `${target.getFullYear()}/${(target.getMonth()+1).toString().padStart(2,'0')}/${target.getDate().toString().padStart(2,'0')} 閉店前`;
+      } else {
+        calcModal.value.targetTimeStr = mat.notes || "依原廠效期規範";
+      }
+      calcModal.value.item = mat;
+      calcModal.value.show = true;
+    };
+
+    // 進貨與下架登記
+    const intakeForm = ref({ itemName: '', factoryExpiry: '' });
+    const submitIntake = () => {
+      if (!intakeForm.value.itemName || !intakeForm.value.factoryExpiry) return;
+
+      let advanceDays = 7;
+      let timing = "閉店前";
+      const matched = rules.value.find(r => intakeForm.value.itemName.includes(r.keyword));
+      if (matched) {
+        advanceDays = parseInt(matched.advance_days) || 7;
+        timing = matched.timing || "閉店前";
+      }
+
+      const d = new Date(intakeForm.value.factoryExpiry);
+      d.setDate(d.getDate() - advanceDays);
+      const pullDate = d.toISOString().split('T')[0];
+
+      inventory.value.push({
+        id: Date.now(),
+        itemName: intakeForm.value.itemName,
+        factoryExpiry: intakeForm.value.factoryExpiry,
+        pullDate,
+        timing
+      });
+
+      selectedDate.value = pullDate;
+      intakeForm.value.itemName = '';
+      intakeForm.value.factoryExpiry = '';
+      alert(`✅ 已登記進貨！系統依規則提早 ${advanceDays} 天，將於 ${pullDate} (${timing}) 撤架。`);
+    };
+
+    const deleteIntake = (id) => {
+      if (confirm('確定要移除此筆下架排程紀錄？')) {
+        inventory.value = inventory.value.filter(i => i.id !== id);
+      }
+    };
+
+    // 月曆檢視（無搜尋框）
+    const currentCalDate = ref(new Date());
+    const calYear = computed(() => currentCalDate.value.getFullYear());
+    const calMonth = computed(() => currentCalDate.value.getMonth());
+
+    const changeMonth = (d) => currentCalDate.value = new Date(calYear.value, calMonth.value + d, 1);
+    const resetToCurrentMonth = () => currentCalDate.value = new Date();
+
+    const todayStr = computed(() => new Date().toISOString().split('T')[0]);
+    const selectedDate = ref(todayStr.value);
+
+    const calendarDays = computed(() => {
+      const year = calYear.value;
+      const month = calMonth.value;
+      const firstDay = new Date(year, month, 1).getDay();
+      const totalDays = new Date(year, month + 1, 0).getDate();
+      const days = [];
+
+      for (let i = 0; i < firstDay; i++) {
+        days.push({ dayNum: '', isCurrentMonth: false, dateStr: '', items: [] });
+      }
+      for (let d = 1; d <= totalDays; d++) {
+        const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+        const items = inventory.value.filter(it => it.pullDate === dateStr);
+        days.push({ dayNum: d, isCurrentMonth: true, dateStr, items });
+      }
+      return days;
+    });
+
+    const selectedDateItems = computed(() => {
+      if (!selectedDate.value) return [];
+      return inventory.value.filter(it => it.pullDate === selectedDate.value);
+    });
+
+    const currentMonthItems = computed(() => {
+      const mStr = `${calYear.value}-${(calMonth.value + 1).toString().padStart(2, '0')}`;
+      return inventory.value
+        .filter(it => it.pullDate.startsWith(mStr))
+        .sort((a,b) => new Date(a.pullDate) - new Date(b.pullDate));
+    });
+
+    // 匯入與範本管理
+    const handleExcelImport = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const wb = XLSX.read(evt.target.result, { type: 'binary' });
+          let successLog = [];
+          
+          if (wb.SheetNames.includes("物料效期")) {
+            const data = XLSX.utils.sheet_to_json(wb.Sheets["物料效期"]);
+            materials.value = data;
+            successLog.push(`物料效期（${data.length} 項）`);
+          }
+          if (wb.SheetNames.includes("下架標準")) {
+            const data = XLSX.utils.sheet_to_json(wb.Sheets["下架標準"]);
+            rules.value = data;
+            successLog.push(`下架標準（${data.length} 條）`);
+          }
+
+          if (successLog.length > 0) {
+            alert(`🎉 匯入成功！已更新：\n${successLog.join('\n')}`);
+          } else {
+            alert('⚠️ 未偵測到「物料效期」或「下架標準」工作表，請下載範本確認格式。');
+          }
+        } catch (err) {
+          alert('解析 Excel 失敗：' + err.message);
+        }
+      };
+      reader.readAsBinaryString(file);
+    };
+
+    const downloadBlankTemplate = () => {
+      const wb = XLSX.utils.book_new();
+      
+      // 空白欄位範本（僅含表頭）
+      const wsMat = XLSX.utils.json_to_sheet([], {
+        header: ["code", "name", "en_name", "temp", "hours", "days", "notes"]
+      });
+      const wsRules = XLSX.utils.json_to_sheet([], {
+        header: ["keyword", "advance_days", "timing"]
+      });
+
+      XLSX.utils.book_append_sheet(wb, wsMat, "物料效期");
+      XLSX.utils.book_append_sheet(wb, wsRules, "下架標準");
+      XLSX.writeFile(wb, "永和永安_檔期標準空白範本.xlsx");
+    };
+
+    const exportJsonBackup = () => {
+      const exportData = {
+        materials: materials.value,
+        rules: rules.value,
+        inventory: inventory.value,
+        exportedAt: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `永和永安效期管理備份_${todayStr.value}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    const handleJsonImport = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (parsed.materials) materials.value = parsed.materials;
+          if (parsed.rules) rules.value = parsed.rules;
+          if (parsed.inventory) inventory.value = parsed.inventory;
+          alert('✅ JSON 備份還原匯入成功！');
+        } catch (err) {
+          alert('還原失敗：' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    };
+
+    const clearAllData = () => {
+      if (confirm('確定要清空所有規則、物料庫與進貨紀錄嗎？此動作無法復原。')) {
+        materials.value = [];
+        rules.value = [];
+        inventory.value = [];
+        localStorage.removeItem('sbux_materials');
+        localStorage.removeItem('sbux_rules');
+        localStorage.removeItem('sbux_inventory');
+        alert('已清空所有資料，系統回歸純空白狀態。');
+      }
+    };
+
+    return {
+      currentTab, materials, matSearchQuery, filteredMaterials,
+      calcModal, calculateOpenTime,
+      intakeForm, submitIntake, deleteIntake,
+      calYear, calMonth, changeMonth, resetToCurrentMonth, calendarDays, todayStr, selectedDate, selectedDateItems, currentMonthItems,
+      handleExcelImport, downloadBlankTemplate, exportJsonBackup, handleJsonImport, clearAllData, rules, inventory
+    };
+  }
+}).mount('#app');
+</script>
+
+</body>
+</html>
