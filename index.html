@@ -9,6 +9,11 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
   <style>
     [v-cloak] { display: none; }
     body {
@@ -28,7 +33,10 @@
         <span class="text-xl">☕</span>
         <h1 class="text-base font-bold tracking-wider">永和永安效期管理</h1>
       </div>
-      <span class="text-xs px-2.5 py-0.5 bg-emerald-800 text-emerald-200 rounded-full font-medium">門市端</span>
+      <div class="flex items-center space-x-1.5">
+        <span class="inline-block w-2 h-2 rounded-full" :class="isCloudConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'"></span>
+        <span class="text-[11px] text-emerald-200">{{ isCloudConnected ? '雲端同步中' : '連線中...' }}</span>
+      </div>
     </div>
   </header>
 
@@ -49,7 +57,7 @@
         </div>
       </div>
 
-      <!-- 物料卡片清單 -->
+      <!-- 物料清單 -->
       <div class="space-y-3">
         <div 
           v-for="mat in filteredMaterials" :key="mat.code + mat.name"
@@ -82,13 +90,13 @@
         </div>
 
         <div v-if="filteredMaterials.length === 0" class="text-center py-12 text-slate-400 text-xs space-y-2">
-          <p v-if="materials.length === 0">目前尚未匯入任何物料標準。</p>
-          <p v-else>查無符合「{{ matSearchQuery }}」的物料資料。</p>
+          <p v-if="materials.length === 0">門市雲端庫尚未有任何物料標準。</p>
+          <p v-else>查無符合「{{ matSearchQuery }}」的物料。</p>
           <button 
             v-if="materials.length === 0"
             @click="currentTab = 'settings'" 
             class="px-3 py-1.5 bg-emerald-700 text-white font-medium rounded-lg text-xs shadow-sm">
-            前往上傳手冊 (支援 JPG 手冊辨識)
+            前往上傳手冊 (全店同步)
           </button>
         </div>
       </div>
@@ -100,7 +108,7 @@
       <!-- 快速進貨登記 -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
         <h2 class="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
-          <span>📦</span> 快速進貨登記（依匯入標準自動算撤架日）
+          <span>📦</span> 快速登記進貨（即時同步全門市行事曆）
         </h2>
         <form @submit.prevent="submitIntake" class="space-y-2">
           <input 
@@ -205,7 +213,7 @@
         <div>
           <h2 class="text-sm font-bold text-slate-900">📥 檔期標準匯入中心</h2>
           <p class="text-[11px] text-slate-500 mt-1">
-            支援拍攝手冊照片（JPG/PNG）、官方 PDF 或 Excel，系統自動辨識並支援星巴克 D+N 規範。
+            上傳更新後將**全店即時同步**。支援拍攝手冊照片（JPG/PNG）、官方 PDF 或 Excel。
           </p>
         </div>
 
@@ -219,7 +227,7 @@
           </div>
         </label>
 
-        <!-- 辨識中進度 -->
+        <!-- 辨識進度 -->
         <div v-if="isProcessing" class="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
           <div class="flex items-center space-x-2 text-xs font-bold text-amber-800">
             <span class="animate-spin">🔄</span>
@@ -228,7 +236,7 @@
           <p class="text-[10px] text-amber-600">正在自動比對物料名稱、代號與 D+N 效期規則，請稍候。</p>
         </div>
 
-        <!-- 辨識預覽與編輯確認 -->
+        <!-- 辨識結果預覽卡片 -->
         <div v-if="parsedPreview.show" class="p-4 bg-emerald-50/80 border border-emerald-300 rounded-2xl space-y-3">
           <div class="flex justify-between items-center">
             <h3 class="text-xs font-bold text-emerald-950">📋 辨識結果預覽（已擷取 {{ parsedPreview.items.length }} 筆）</h3>
@@ -252,7 +260,7 @@
             <button 
               @click="applyParsedData" 
               class="flex-1 py-2 bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 transition">
-              確認寫入主檔庫
+              確認同步至雲端主檔
             </button>
             <button 
               @click="parsedPreview.show = false" 
@@ -272,23 +280,23 @@
           <button 
             @click="clearAllData" 
             class="w-full py-2 text-xs text-red-600 active:text-red-800 font-medium">
-            🗑️ 清空所有資料（保持純空白狀態）
+            🗑️ 清空全門市雲端資料（回歸純空白）
           </button>
         </div>
       </div>
 
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 text-xs space-y-1.5">
-        <h3 class="font-bold text-slate-800">📊 當前系統標準庫狀態</h3>
+        <h3 class="font-bold text-slate-800">📊 全門市雲端庫狀態</h3>
         <div class="flex justify-between text-slate-600">
-          <span>已匯入物料品項：</span>
+          <span>已同步物料品項：</span>
           <span class="font-bold text-emerald-800">{{ materials.length }} 項</span>
         </div>
         <div class="flex justify-between text-slate-600">
-          <span>已匯入下架標準規則：</span>
+          <span>已同步下架規則：</span>
           <span class="font-bold text-emerald-800">{{ rules.length }} 條</span>
         </div>
         <div class="flex justify-between text-slate-600">
-          <span>已排入在架進貨紀錄：</span>
+          <span>全店在架進貨紀錄：</span>
           <span class="font-bold text-emerald-800">{{ inventory.length }} 筆</span>
         </div>
       </div>
@@ -343,7 +351,28 @@
 </div>
 
 <script>
-const { createApp, ref, computed, watch } = Vue;
+// ==================== 1. 你的專屬 Firebase 設定（已填妥） ====================
+const firebaseConfig = {
+  apiKey: "AIzaSyDYvu6xnFpIzLhbq62WQ-VotNA-kuHLsCE",
+  authDomain: "sbux011218.firebaseapp.com",
+  databaseURL: "https://sbux011218-default-rtdb.firebaseio.com",
+  projectId: "sbux011218",
+  storageBucket: "sbux011218.firebasestorage.app",
+  messagingSenderId: "37634319471",
+  appId: "1:37634319471:web:ad7bcafe21dd3ce729999a",
+  measurementId: "G-6KTK40ZQKN"
+};
+
+// 初始化 Firebase
+let db = null;
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+} catch (e) {
+  console.error("Firebase 初始化失敗：", e);
+}
+
+const { createApp, ref, computed } = Vue;
 
 if (window.pdfjsLib) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -352,15 +381,40 @@ if (window.pdfjsLib) {
 createApp({
   setup() {
     const currentTab = ref('materials');
+    const isCloudConnected = ref(false);
 
-    // 純空白零預設
-    const materials = ref(JSON.parse(localStorage.getItem('sbux_materials')) || []);
-    const rules = ref(JSON.parse(localStorage.getItem('sbux_rules')) || []);
-    const inventory = ref(JSON.parse(localStorage.getItem('sbux_inventory')) || []);
+    // 全域雲端資料
+    const materials = ref([]);
+    const rules = ref([]);
+    const inventory = ref([]);
 
-    watch(materials, v => localStorage.setItem('sbux_materials', JSON.stringify(v)), { deep: true });
-    watch(rules, v => localStorage.setItem('sbux_rules', JSON.stringify(v)), { deep: true });
-    watch(inventory, v => localStorage.setItem('sbux_inventory', JSON.stringify(v)), { deep: true });
+    // 監聽 Firebase 雲端資料庫（秒級雙向同步）
+    if (db) {
+      db.ref('.info/connected').on('value', snap => {
+        isCloudConnected.value = snap.val() === true;
+      });
+
+      db.ref('sbux/materials').on('value', snap => {
+        materials.value = snap.val() || [];
+      });
+
+      db.ref('sbux/rules').on('value', snap => {
+        rules.value = snap.val() || [];
+      });
+
+      db.ref('sbux/inventory').on('value', snap => {
+        const data = snap.val();
+        inventory.value = data ? Object.values(data) : [];
+      });
+    }
+
+    // 寫入雲端輔助函式
+    const syncMaterialsToCloud = (list) => {
+      if (db) db.ref('sbux/materials').set(list);
+    };
+    const syncRulesToCloud = (list) => {
+      if (db) db.ref('sbux/rules').set(list);
+    };
 
     // 搜尋與打點
     const matSearchQuery = ref('');
@@ -394,7 +448,7 @@ createApp({
       calcModal.value.show = true;
     };
 
-    // 進貨登記
+    // 進貨登記（直接推送到 Firebase）
     const intakeForm = ref({ itemName: '', factoryExpiry: '' });
     const submitIntake = () => {
       if (!intakeForm.value.itemName || !intakeForm.value.factoryExpiry) return;
@@ -411,23 +465,27 @@ createApp({
       d.setDate(d.getDate() - advanceDays);
       const pullDate = d.toISOString().split('T')[0];
 
-      inventory.value.push({
+      const newItem = {
         id: Date.now(),
         itemName: intakeForm.value.itemName,
         factoryExpiry: intakeForm.value.factoryExpiry,
         pullDate,
         timing
-      });
+      };
+
+      if (db) {
+        db.ref('sbux/inventory/' + newItem.id).set(newItem);
+      }
 
       selectedDate.value = pullDate;
       intakeForm.value.itemName = '';
       intakeForm.value.factoryExpiry = '';
-      alert(`✅ 已登記進貨！依標準提早 ${advanceDays} 天，將於 ${pullDate} (${timing}) 撤架。`);
+      alert(`✅ 已登記進貨！系統依規則提早 ${advanceDays} 天，將於 ${pullDate} (${timing}) 撤架。全店手機已同步！`);
     };
 
     const deleteIntake = (id) => {
-      if (confirm('確定移除此筆下架排程紀錄？')) {
-        inventory.value = inventory.value.filter(i => i.id !== id);
+      if (confirm('確定移除此筆下架排程紀錄？（全店同步刪除）')) {
+        if (db) db.ref('sbux/inventory/' + id).remove();
       }
     };
 
@@ -472,7 +530,7 @@ createApp({
         .sort((a,b) => new Date(a.pullDate) - new Date(b.pullDate));
     });
 
-    // ==================== 強化版 OCR / D+N 手冊辨識解析 ====================
+    // 辨識邏輯
     const isProcessing = ref(false);
     const processProgress = ref(0);
     const parsedPreview = ref({ show: false, items: [] });
@@ -493,16 +551,16 @@ createApp({
             let found = [];
             if (wb.SheetNames.includes("物料效期")) {
               const data = XLSX.utils.sheet_to_json(wb.Sheets["物料效期"]);
-              materials.value = data;
+              syncMaterialsToCloud(data);
               found.push(`物料效期 (${data.length} 項)`);
             }
             if (wb.SheetNames.includes("下架標準")) {
               const data = XLSX.utils.sheet_to_json(wb.Sheets["下架標準"]);
-              rules.value = data;
+              syncRulesToCloud(data);
               found.push(`下架標準 (${data.length} 條)`);
             }
             isProcessing.value = false;
-            alert('🎉 Excel 匯入完成：\n' + found.join('\n'));
+            alert('🎉 Excel 匯入完成並已同步至雲端：\n' + found.join('\n'));
           };
           reader.readAsBinaryString(file);
 
@@ -524,7 +582,6 @@ createApp({
           parseSbuxHandbookText(fullText);
 
         } else if (fileName.match(/\.(jpg|jpeg|png)$/)) {
-          // 照片辨識
           processProgress.value = 25;
           const result = await Tesseract.recognize(file, 'chi_tra+eng', {
             logger: m => {
@@ -541,7 +598,6 @@ createApp({
       }
     };
 
-    // 專為星巴克手冊優化的行文字解析邏輯
     const parseSbuxHandbookText = (text) => {
       isProcessing.value = false;
       const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
@@ -549,10 +605,7 @@ createApp({
 
       lines.forEach(rawLine => {
         let line = rawLine;
-
-        // 1. 抓取星巴克專屬 D+N 規範 (如 D+6, D+29, D+2)
         const dPlusMatch = line.match(/D\s*\+\s*(\d+)/i);
-        // 2. 抓取小時規範 (如 24 小時, 48小時, 8小時)
         const hourMatch = line.match(/(\d+)\s*(小時|hr|h)/i);
 
         let days = 0;
@@ -569,14 +622,12 @@ createApp({
           notes = '依原廠包裝標示';
         }
 
-        // 3. 抓取物料簡寫代號（長度 2~5 的純大寫英文）
         let code = '';
         const codeMatch = line.match(/\b([A-Z]{2,4})\b/);
         if (codeMatch && !['D', 'COD', 'NEW'].includes(codeMatch[1])) {
           code = codeMatch[1];
         }
 
-        // 4. 清理品名
         let name = line
           .replace(/D\s*\+\s*\d+/ig, '')
           .replace(/\d+\s*(小時|hr|h)/ig, '')
@@ -585,9 +636,7 @@ createApp({
           .replace(/\s+/g, ' ')
           .trim();
 
-        // 截取核心中文品名長度 (排除標題列雜訊)
         if (name.length >= 2 && (code || hours > 0 || days > 0)) {
-          // 溫層推斷
           let temp = '常溫';
           if (line.includes('冷藏') || ['濃縮咖啡鮮奶油', '鮮奶油', '牛奶', '冷萃'].some(k => name.includes(k))) {
             temp = '冷藏';
@@ -606,10 +655,7 @@ createApp({
       });
 
       if (extracted.length > 0) {
-        parsedPreview.value = {
-          show: true,
-          items: extracted
-        };
+        parsedPreview.value = { show: true, items: extracted };
       } else {
         alert('⚠️ 已辨識完成，但未偵測到明顯的物料行。請確認照片清晰度與平整度，或改由 Excel 範本上傳！');
       }
@@ -617,9 +663,9 @@ createApp({
 
     const applyParsedData = () => {
       if (parsedPreview.value.items.length > 0) {
-        materials.value = parsedPreview.value.items;
+        syncMaterialsToCloud(parsedPreview.value.items);
         parsedPreview.value.show = false;
-        alert(`🎉 成功寫入！已匯入 ${parsedPreview.value.items.length} 項物料至門市庫！`);
+        alert(`🎉 成功同步！已將 ${parsedPreview.value.items.length} 項物料寫入全門市雲端庫！`);
       }
     };
 
@@ -637,17 +683,17 @@ createApp({
     };
 
     const clearAllData = () => {
-      if (confirm('確定清空所有資料庫？此動作無法復原。')) {
-        materials.value = [];
-        rules.value = [];
-        inventory.value = [];
-        localStorage.clear();
-        alert('資料庫已清空。');
+      if (confirm('確定清空全門市的雲端資料庫？所有夥伴的手機資料都將同步重設為純空白。')) {
+        if (db) {
+          db.ref('sbux').remove().then(() => {
+            alert('全門市資料庫已清空。');
+          });
+        }
       }
     };
 
     return {
-      currentTab, materials, matSearchQuery, filteredMaterials,
+      currentTab, isCloudConnected, materials, matSearchQuery, filteredMaterials,
       calcModal, calculateOpenTime,
       intakeForm, submitIntake, deleteIntake,
       calYear, calMonth, changeMonth, resetToCurrentMonth, calendarDays, todayStr, selectedDate, selectedDateItems, currentMonthItems,
