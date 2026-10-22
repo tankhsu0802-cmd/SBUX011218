@@ -7,6 +7,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- PDF.js 用於直接解析 PDF 文字 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Tesseract.js 前端開源 OCR（支援圖片與掃描檔純本地辨識） -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     [v-cloak] { display: none; }
     body {
@@ -86,7 +90,7 @@
             v-if="materials.length === 0"
             @click="currentTab = 'settings'" 
             class="px-3 py-1.5 bg-emerald-700 text-white font-medium rounded-lg text-xs shadow-sm">
-            前往匯入標準手冊
+            前往匯入標準手冊 (JPG / PDF / Excel)
           </button>
         </div>
       </div>
@@ -98,7 +102,7 @@
       <!-- 快速進貨登記 -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
         <h2 class="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
-          <span>📦</span> 快速進貨登記（依匯入標準自動算撤架日）
+          <span>📦</span> 快速進貨登記（依匯入標準自動推算撤架日）
         </h2>
         <form @submit.prevent="submitIntake" class="space-y-2">
           <input 
@@ -124,7 +128,7 @@
         </form>
       </div>
 
-      <!-- 月曆主體（無搜尋） -->
+      <!-- 月曆主體 -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-sm font-bold text-slate-900">
@@ -137,12 +141,10 @@
           </div>
         </div>
 
-        <!-- 星期 -->
         <div class="grid grid-cols-7 gap-1 text-center font-bold text-[11px] text-slate-400 mb-1">
           <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
         </div>
 
-        <!-- 格子 -->
         <div class="grid grid-cols-7 gap-1">
           <div 
             v-for="(day, idx) in calendarDays" :key="idx"
@@ -182,7 +184,7 @@
         <p v-else class="text-xs text-slate-400 py-3 text-center">當天無排定下架商品。</p>
       </div>
 
-      <!-- 本月待撤架時序總覽清單（無搜尋直接展示） -->
+      <!-- 本月待撤架時序總覽清單 -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
         <h4 class="font-bold text-xs text-slate-900 mb-2">📋 本月待撤架時序一覽</h4>
         <div v-if="currentMonthItems.length > 0" class="divide-y divide-slate-100 text-xs">
@@ -199,49 +201,77 @@
 
     </section>
 
-    <!-- ==================== 頁籤 3：檔期標準與匯入中心 ==================== -->
+    <!-- ==================== 頁籤 3：檔期標準與智慧辨識匯入中心 ==================== -->
     <section v-if="currentTab === 'settings'" class="space-y-4">
       <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div>
           <h2 class="text-sm font-bold text-slate-900">📥 檔期標準匯入中心</h2>
           <p class="text-[11px] text-slate-500 mt-1">
-            當官方發布新檔期手冊時，可直接上傳 Excel 或 JSON，全系統標準自動覆蓋更新。
+            支援官方 **JPG 圖片拍照手冊、PDF 檔案** 或 Excel 表格，系統自動解析辨識更新。
           </p>
         </div>
 
-        <!-- Excel 匯入按鈕 -->
+        <!-- 檔案上傳區塊（支援 JPG, PNG, PDF, XLSX） -->
         <label class="block border-2 border-dashed border-emerald-600 bg-emerald-50/40 rounded-2xl p-6 text-center cursor-pointer active:bg-emerald-100/50 transition">
-          <input type="file" accept=".xlsx, .xls" @change="handleExcelImport" class="hidden">
+          <input type="file" accept=".jpg, .jpeg, .png, .pdf, .xlsx, .xls" @change="handleFileSelect" class="hidden">
           <div class="space-y-1">
-            <span class="text-2xl">📊</span>
-            <p class="text-xs font-bold text-emerald-900">匯入 Excel 檔期標準手冊</p>
-            <p class="text-[10px] text-slate-500">點擊從手機/電腦選取 (.xlsx, .xls)</p>
+            <span class="text-2xl">📸 / 📄</span>
+            <p class="text-xs font-bold text-emerald-900">點擊上傳 JPG 照片、PDF 或 Excel</p>
+            <p class="text-[10px] text-slate-500">系統將自動觸發文字辨識與結構化分析</p>
           </div>
         </label>
+
+        <!-- 辨識進度提示 -->
+        <div v-if="isProcessing" class="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
+          <div class="flex items-center space-x-2 text-xs font-bold text-amber-800">
+            <span class="animate-spin">🔄</span>
+            <span>正在分析檔案內容中... {{ processProgress }}%</span>
+          </div>
+          <p class="text-[10px] text-amber-600">正在萃取物料品名、次級時數與下架天數，請稍候。</p>
+        </div>
+
+        <!-- 辨識結果預覽確認視窗 (防呆機制) -->
+        <div v-if="parsedPreview.show" class="p-4 bg-emerald-50/60 border border-emerald-300 rounded-2xl space-y-3">
+          <div class="flex justify-between items-center">
+            <h3 class="text-xs font-bold text-emerald-950">📋 辨識成功預覽（共 {{ parsedPreview.items.length }} 筆）</h3>
+            <span class="text-[10px] text-emerald-700">寫入前請快速核對</span>
+          </div>
+
+          <div class="max-h-48 overflow-y-auto space-y-1.5 text-[11px] bg-white p-2.5 rounded-xl border border-emerald-200">
+            <div v-for="(item, idx) in parsedPreview.items" :key="idx" class="border-b border-slate-100 pb-1 flex justify-between">
+              <div>
+                <span class="font-bold text-slate-900">{{ item.name || item.keyword }}</span>
+                <span v-if="item.code" class="text-slate-400 ml-1">({{ item.code }})</span>
+              </div>
+              <span class="text-emerald-800 font-semibold">{{ item.notes || (item.advance_days + '天撤架') }}</span>
+            </div>
+          </div>
+
+          <div class="flex gap-2">
+            <button 
+              @click="applyParsedData" 
+              class="flex-1 py-2 bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 transition">
+              確認寫入資料庫
+            </button>
+            <button 
+              @click="parsedPreview.show = false" 
+              class="px-3 py-2 bg-slate-200 text-slate-700 rounded-xl text-xs font-medium">
+              取消
+            </button>
+          </div>
+        </div>
 
         <!-- 輔助操作 -->
         <div class="pt-2 flex flex-col gap-2">
           <button 
             @click="downloadBlankTemplate" 
             class="w-full py-2.5 bg-slate-100 active:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl border border-slate-200">
-            📄 下載空白 Excel 格式範本
+            📄 下載標準空白 Excel 格式備用範本
           </button>
           
-          <div class="grid grid-cols-2 gap-2 pt-1">
-            <button 
-              @click="exportJsonBackup" 
-              class="py-2 bg-slate-100 active:bg-slate-200 text-slate-700 text-xs font-medium rounded-xl border border-slate-200">
-              📤 匯出資料備份
-            </button>
-            <label class="py-2 bg-slate-100 active:bg-slate-200 text-slate-700 text-xs font-medium rounded-xl border border-slate-200 text-center cursor-pointer">
-              📥 匯入 JSON 備份
-              <input type="file" accept=".json" @change="handleJsonImport" class="hidden">
-            </label>
-          </div>
-
           <button 
             @click="clearAllData" 
-            class="w-full py-2 text-xs text-red-600 active:text-red-800 font-medium mt-1">
+            class="w-full py-2 text-xs text-red-600 active:text-red-800 font-medium">
             🗑️ 清空所有資料（保持純空白狀態）
           </button>
         </div>
@@ -249,7 +279,7 @@
 
       <!-- 目前已匯入規則數統計 -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 text-xs space-y-1.5">
-        <h3 class="font-bold text-slate-800">📊 當前系統規則庫狀態</h3>
+        <h3 class="font-bold text-slate-800">📊 當前系統標準庫狀態</h3>
         <div class="flex justify-between text-slate-600">
           <span>已匯入物料品項：</span>
           <span class="font-bold text-emerald-800">{{ materials.length }} 項</span>
@@ -316,11 +346,16 @@
 <script>
 const { createApp, ref, computed, watch } = Vue;
 
+// 設定 PDF.js worker
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
 createApp({
   setup() {
     const currentTab = ref('materials');
 
-    // 完全空白、無預設品項
+    // 資料完全清空（零預設）
     const materials = ref(JSON.parse(localStorage.getItem('sbux_materials')) || []);
     const rules = ref(JSON.parse(localStorage.getItem('sbux_rules')) || []);
     const inventory = ref(JSON.parse(localStorage.getItem('sbux_inventory')) || []);
@@ -329,7 +364,7 @@ createApp({
     watch(rules, v => localStorage.setItem('sbux_rules', JSON.stringify(v)), { deep: true });
     watch(inventory, v => localStorage.setItem('sbux_inventory', JSON.stringify(v)), { deep: true });
 
-    // 物料搜尋與打點
+    // 搜尋與打點
     const matSearchQuery = ref('');
     const filteredMaterials = computed(() => {
       const q = matSearchQuery.value.trim().toLowerCase();
@@ -361,7 +396,7 @@ createApp({
       calcModal.value.show = true;
     };
 
-    // 進貨與下架登記
+    // 進貨登記
     const intakeForm = ref({ itemName: '', factoryExpiry: '' });
     const submitIntake = () => {
       if (!intakeForm.value.itemName || !intakeForm.value.factoryExpiry) return;
@@ -389,16 +424,16 @@ createApp({
       selectedDate.value = pullDate;
       intakeForm.value.itemName = '';
       intakeForm.value.factoryExpiry = '';
-      alert(`✅ 已登記進貨！系統依規則提早 ${advanceDays} 天，將於 ${pullDate} (${timing}) 撤架。`);
+      alert(`✅ 已登記進貨！依標準提早 ${advanceDays} 天，將於 ${pullDate} (${timing}) 撤架。`);
     };
 
     const deleteIntake = (id) => {
-      if (confirm('確定要移除此筆下架排程紀錄？')) {
+      if (confirm('確定移除此筆下架排程紀錄？')) {
         inventory.value = inventory.value.filter(i => i.id !== id);
       }
     };
 
-    // 月曆檢視（無搜尋框）
+    // 月曆檢視
     const currentCalDate = ref(new Date());
     const calYear = computed(() => currentCalDate.value.getFullYear());
     const calMonth = computed(() => currentCalDate.value.getMonth());
@@ -439,98 +474,170 @@ createApp({
         .sort((a,b) => new Date(a.pullDate) - new Date(b.pullDate));
     });
 
-    // 匯入與範本管理
-    const handleExcelImport = (e) => {
+    // ==================== 檔案與 OCR / PDF 辨識邏輯 ====================
+    const isProcessing = ref(false);
+    const processProgress = ref(0);
+    const parsedPreview = ref({ show: false, items: [], type: 'material' });
+
+    const handleFileSelect = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        try {
-          const wb = XLSX.read(evt.target.result, { type: 'binary' });
-          let successLog = [];
-          
-          if (wb.SheetNames.includes("物料效期")) {
-            const data = XLSX.utils.sheet_to_json(wb.Sheets["物料效期"]);
-            materials.value = data;
-            successLog.push(`物料效期（${data.length} 項）`);
-          }
-          if (wb.SheetNames.includes("下架標準")) {
-            const data = XLSX.utils.sheet_to_json(wb.Sheets["下架標準"]);
-            rules.value = data;
-            successLog.push(`下架標準（${data.length} 條）`);
+
+      const fileName = file.name.toLowerCase();
+      isProcessing.value = true;
+      processProgress.value = 10;
+
+      try {
+        if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+          // Excel 直接解析
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            const wb = XLSX.read(evt.target.result, { type: 'binary' });
+            let found = [];
+            if (wb.SheetNames.includes("物料效期")) {
+              const data = XLSX.utils.sheet_to_json(wb.Sheets["物料效期"]);
+              materials.value = data;
+              found.push(`物料效期 (${data.length} 項)`);
+            }
+            if (wb.SheetNames.includes("下架標準")) {
+              const data = XLSX.utils.sheet_to_json(wb.Sheets["下架標準"]);
+              rules.value = data;
+              found.push(`下架標準 (${data.length} 條)`);
+            }
+            isProcessing.value = false;
+            alert('🎉 Excel 匯入完成：\n' + found.join('\n'));
+          };
+          reader.readAsBinaryString(file);
+
+        } else if (fileName.endsWith('.pdf')) {
+          // PDF 文字與掃描辨識
+          processProgress.value = 30;
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          let fullText = "";
+
+          for (let p = 1; p <= pdf.numPages; p++) {
+            const page = await pdf.getPage(p);
+            const content = await page.getTextContent();
+            const pageStrings = content.items.map(it => it.str).join(" ");
+            fullText += pageStrings + "\n";
+            processProgress.value = Math.min(80, 30 + Math.round((p / pdf.numPages) * 50));
           }
 
-          if (successLog.length > 0) {
-            alert(`🎉 匯入成功！已更新：\n${successLog.join('\n')}`);
-          } else {
-            alert('⚠️ 未偵測到「物料效期」或「下架標準」工作表，請下載範本確認格式。');
-          }
-        } catch (err) {
-          alert('解析 Excel 失敗：' + err.message);
+          processProgress.value = 90;
+          parseExtractedText(fullText);
+
+        } else if (fileName.match(/\.(jpg|jpeg|png)$/)) {
+          // JPG/PNG 圖片 OCR 辨識
+          processProgress.value = 25;
+          const result = await Tesseract.recognize(file, 'chi_tra+eng', {
+            logger: m => {
+              if (m.status === 'recognizing text') {
+                processProgress.value = Math.round(m.progress * 80) + 15;
+              }
+            }
+          });
+          parseExtractedText(result.data.text);
         }
-      };
-      reader.readAsBinaryString(file);
+      } catch (err) {
+        alert('解析發生錯誤：' + err.message);
+        isProcessing.value = false;
+      }
+    };
+
+    // 文字行規則解析引擎（將純文字或 OCR 表格萃取為規格物件）
+    const parseExtractedText = (text) => {
+      isProcessing.value = false;
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      const parsedMaterials = [];
+
+      lines.forEach(line => {
+        // 萃取常見模式：[代號] [中文品名] [效期文字]
+        // 範例："WM 白巧克力摩卡醬 24小時 常溫" 或 "V 香草糖漿 30天"
+        const tokens = line.split(/[\s,，|\t]+/);
+        if (tokens.length >= 2) {
+          let code = '';
+          let name = '';
+          let hours = 0;
+          let days = 0;
+          let temp = line.includes('冷藏') ? '冷藏' : '常溫';
+          let notes = '';
+
+          // 判斷代號（通常為前 1~4 個純英文單字）
+          if (/^[A-Za-z0-9\-]{1,6}$/.test(tokens[0])) {
+            code = tokens[0].toUpperCase();
+            name = tokens[1];
+          } else {
+            name = tokens[0];
+          }
+
+          // 判斷小時或天數
+          const hourMatch = line.match(/(\d+)\s*(小時|hr|h)/i);
+          const dayMatch = line.match(/(\d+)\s*(天|day|d)/i);
+
+          if (hourMatch) {
+            hours = parseInt(hourMatch[1]);
+            notes = `開封後 ${hours} 小時`;
+          } else if (dayMatch) {
+            days = parseInt(dayMatch[1]);
+            notes = `開封後 ${days} 天`;
+          } else {
+            notes = "依原廠標示";
+          }
+
+          if (name && (code || hours > 0 || days > 0)) {
+            parsedMaterials.push({
+              code: code || name.slice(0, 3).toUpperCase(),
+              name: name,
+              en_name: '',
+              temp: temp,
+              hours: hours,
+              days: days,
+              notes: notes
+            });
+          }
+        }
+      });
+
+      if (parsedMaterials.length > 0) {
+        parsedPreview.value = {
+          show: true,
+          items: parsedMaterials,
+          type: 'material'
+        };
+      } else {
+        alert('⚠️ 已完成讀取，但未自動擷取到符合格式的品項。建議確認圖片清單清晰度，或以標準 Excel 格式直接上傳！');
+      }
+    };
+
+    const applyParsedData = () => {
+      if (parsedPreview.value.items.length > 0) {
+        materials.value = parsedPreview.value.items;
+        parsedPreview.value.show = false;
+        alert(`🎉 成功更新！已將 ${parsedPreview.value.items.length} 筆物料寫入主檔！`);
+      }
     };
 
     const downloadBlankTemplate = () => {
       const wb = XLSX.utils.book_new();
-      
-      // 空白欄位範本（僅含表頭）
       const wsMat = XLSX.utils.json_to_sheet([], {
         header: ["code", "name", "en_name", "temp", "hours", "days", "notes"]
       });
       const wsRules = XLSX.utils.json_to_sheet([], {
         header: ["keyword", "advance_days", "timing"]
       });
-
       XLSX.utils.book_append_sheet(wb, wsMat, "物料效期");
       XLSX.utils.book_append_sheet(wb, wsRules, "下架標準");
       XLSX.writeFile(wb, "永和永安_檔期標準空白範本.xlsx");
     };
 
-    const exportJsonBackup = () => {
-      const exportData = {
-        materials: materials.value,
-        rules: rules.value,
-        inventory: inventory.value,
-        exportedAt: new Date().toISOString()
-      };
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `永和永安效期管理備份_${todayStr.value}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    };
-
-    const handleJsonImport = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        try {
-          const parsed = JSON.parse(evt.target.result);
-          if (parsed.materials) materials.value = parsed.materials;
-          if (parsed.rules) rules.value = parsed.rules;
-          if (parsed.inventory) inventory.value = parsed.inventory;
-          alert('✅ JSON 備份還原匯入成功！');
-        } catch (err) {
-          alert('還原失敗：' + err.message);
-        }
-      };
-      reader.readAsText(file);
-    };
-
     const clearAllData = () => {
-      if (confirm('確定要清空所有規則、物料庫與進貨紀錄嗎？此動作無法復原。')) {
+      if (confirm('確定清空所有資料庫？此動作無法復原。')) {
         materials.value = [];
         rules.value = [];
         inventory.value = [];
-        localStorage.removeItem('sbux_materials');
-        localStorage.removeItem('sbux_rules');
-        localStorage.removeItem('sbux_inventory');
-        alert('已清空所有資料，系統回歸純空白狀態。');
+        localStorage.clear();
+        alert('資料庫已清空。');
       }
     };
 
@@ -539,7 +646,8 @@ createApp({
       calcModal, calculateOpenTime,
       intakeForm, submitIntake, deleteIntake,
       calYear, calMonth, changeMonth, resetToCurrentMonth, calendarDays, todayStr, selectedDate, selectedDateItems, currentMonthItems,
-      handleExcelImport, downloadBlankTemplate, exportJsonBackup, handleJsonImport, clearAllData, rules, inventory
+      handleFileSelect, isProcessing, processProgress, parsedPreview, applyParsedData,
+      downloadBlankTemplate, clearAllData, rules, inventory
     };
   }
 }).mount('#app');
