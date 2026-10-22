@@ -7,9 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <!-- PDF.js 用於直接解析 PDF 文字 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <!-- Tesseract.js 前端開源 OCR（支援圖片與掃描檔純本地辨識） -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     [v-cloak] { display: none; }
@@ -44,7 +42,7 @@
           <input 
             v-model="matSearchQuery" 
             type="text" 
-            placeholder="搜尋代號 (如 WM) 或 品名關鍵字..."
+            placeholder="搜尋代號 (如 FR, PM) 或 品名關鍵字..."
             class="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-slate-50"
           >
           <span class="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
@@ -54,7 +52,7 @@
       <!-- 物料卡片清單 -->
       <div class="space-y-3">
         <div 
-          v-for="mat in filteredMaterials" :key="mat.code"
+          v-for="mat in filteredMaterials" :key="mat.code + mat.name"
           class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2">
           <div class="flex justify-between items-start">
             <div>
@@ -62,7 +60,7 @@
                 {{ mat.code }}
               </span>
               <h3 class="text-base font-bold text-slate-900 mt-1">{{ mat.name }}</h3>
-              <p class="text-xs text-slate-400 italic">{{ mat.en_name }}</p>
+              <p v-if="mat.en_name" class="text-xs text-slate-400 italic">{{ mat.en_name }}</p>
             </div>
             <span 
               :class="mat.temp === '冷藏' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'"
@@ -72,7 +70,7 @@
           </div>
 
           <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs flex justify-between">
-            <span class="text-slate-500">次級效期規範：</span>
+            <span class="text-slate-500">開封次級規範：</span>
             <span class="font-bold text-emerald-800">{{ mat.notes }}</span>
           </div>
 
@@ -90,7 +88,7 @@
             v-if="materials.length === 0"
             @click="currentTab = 'settings'" 
             class="px-3 py-1.5 bg-emerald-700 text-white font-medium rounded-lg text-xs shadow-sm">
-            前往匯入標準手冊 (JPG / PDF / Excel)
+            前往上傳手冊 (支援 JPG 手冊辨識)
           </button>
         </div>
       </div>
@@ -102,7 +100,7 @@
       <!-- 快速進貨登記 -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
         <h2 class="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
-          <span>📦</span> 快速進貨登記（依匯入標準自動推算撤架日）
+          <span>📦</span> 快速進貨登記（依匯入標準自動算撤架日）
         </h2>
         <form @submit.prevent="submitIntake" class="space-y-2">
           <input 
@@ -201,49 +199,52 @@
 
     </section>
 
-    <!-- ==================== 頁籤 3：檔期標準與智慧辨識匯入中心 ==================== -->
+    <!-- ==================== 頁籤 3：檔期標準與辨識匯入中心 ==================== -->
     <section v-if="currentTab === 'settings'" class="space-y-4">
       <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div>
           <h2 class="text-sm font-bold text-slate-900">📥 檔期標準匯入中心</h2>
           <p class="text-[11px] text-slate-500 mt-1">
-            支援官方 **JPG 圖片拍照手冊、PDF 檔案** 或 Excel 表格，系統自動解析辨識更新。
+            支援拍攝手冊照片（JPG/PNG）、官方 PDF 或 Excel，系統自動辨識並支援星巴克 D+N 規範。
           </p>
         </div>
 
-        <!-- 檔案上傳區塊（支援 JPG, PNG, PDF, XLSX） -->
+        <!-- 檔案上傳按鈕 -->
         <label class="block border-2 border-dashed border-emerald-600 bg-emerald-50/40 rounded-2xl p-6 text-center cursor-pointer active:bg-emerald-100/50 transition">
           <input type="file" accept=".jpg, .jpeg, .png, .pdf, .xlsx, .xls" @change="handleFileSelect" class="hidden">
           <div class="space-y-1">
             <span class="text-2xl">📸 / 📄</span>
-            <p class="text-xs font-bold text-emerald-900">點擊上傳 JPG 照片、PDF 或 Excel</p>
-            <p class="text-[10px] text-slate-500">系統將自動觸發文字辨識與結構化分析</p>
+            <p class="text-xs font-bold text-emerald-900">點擊上傳手冊照片 (JPG) 或 PDF / Excel</p>
+            <p class="text-[10px] text-slate-500">手機可直接呼叫相機拍照上傳</p>
           </div>
         </label>
 
-        <!-- 辨識進度提示 -->
+        <!-- 辨識中進度 -->
         <div v-if="isProcessing" class="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
           <div class="flex items-center space-x-2 text-xs font-bold text-amber-800">
             <span class="animate-spin">🔄</span>
-            <span>正在分析檔案內容中... {{ processProgress }}%</span>
+            <span>正在分析表格文字... {{ processProgress }}%</span>
           </div>
-          <p class="text-[10px] text-amber-600">正在萃取物料品名、次級時數與下架天數，請稍候。</p>
+          <p class="text-[10px] text-amber-600">正在自動比對物料名稱、代號與 D+N 效期規則，請稍候。</p>
         </div>
 
-        <!-- 辨識結果預覽確認視窗 (防呆機制) -->
-        <div v-if="parsedPreview.show" class="p-4 bg-emerald-50/60 border border-emerald-300 rounded-2xl space-y-3">
+        <!-- 辨識預覽與編輯確認 -->
+        <div v-if="parsedPreview.show" class="p-4 bg-emerald-50/80 border border-emerald-300 rounded-2xl space-y-3">
           <div class="flex justify-between items-center">
-            <h3 class="text-xs font-bold text-emerald-950">📋 辨識成功預覽（共 {{ parsedPreview.items.length }} 筆）</h3>
-            <span class="text-[10px] text-emerald-700">寫入前請快速核對</span>
+            <h3 class="text-xs font-bold text-emerald-950">📋 辨識結果預覽（已擷取 {{ parsedPreview.items.length }} 筆）</h3>
+            <span class="text-[10px] text-emerald-700">可核對修改</span>
           </div>
 
-          <div class="max-h-48 overflow-y-auto space-y-1.5 text-[11px] bg-white p-2.5 rounded-xl border border-emerald-200">
-            <div v-for="(item, idx) in parsedPreview.items" :key="idx" class="border-b border-slate-100 pb-1 flex justify-between">
-              <div>
-                <span class="font-bold text-slate-900">{{ item.name || item.keyword }}</span>
-                <span v-if="item.code" class="text-slate-400 ml-1">({{ item.code }})</span>
+          <div class="max-h-56 overflow-y-auto space-y-2 text-[11px] bg-white p-2.5 rounded-xl border border-emerald-200">
+            <div v-for="(item, idx) in parsedPreview.items" :key="idx" class="border-b border-slate-100 pb-1.5 space-y-1">
+              <div class="flex items-center justify-between">
+                <input v-model="item.name" class="font-bold text-slate-900 border-b border-slate-200 text-xs px-1 py-0.5 w-3/5" placeholder="品名">
+                <input v-model="item.code" class="text-slate-600 font-mono text-center border-b border-slate-200 text-xs px-1 py-0.5 w-1/4" placeholder="代號">
               </div>
-              <span class="text-emerald-800 font-semibold">{{ item.notes || (item.advance_days + '天撤架') }}</span>
+              <div class="flex items-center justify-between text-[10px] text-slate-500">
+                <span>{{ item.notes }} ({{ item.temp }})</span>
+                <button @click="parsedPreview.items.splice(idx, 1)" class="text-red-500">刪除</button>
+              </div>
             </div>
           </div>
 
@@ -251,7 +252,7 @@
             <button 
               @click="applyParsedData" 
               class="flex-1 py-2 bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 transition">
-              確認寫入資料庫
+              確認寫入主檔庫
             </button>
             <button 
               @click="parsedPreview.show = false" 
@@ -261,7 +262,6 @@
           </div>
         </div>
 
-        <!-- 輔助操作 -->
         <div class="pt-2 flex flex-col gap-2">
           <button 
             @click="downloadBlankTemplate" 
@@ -277,7 +277,6 @@
         </div>
       </div>
 
-      <!-- 目前已匯入規則數統計 -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 text-xs space-y-1.5">
         <h3 class="font-bold text-slate-800">📊 當前系統標準庫狀態</h3>
         <div class="flex justify-between text-slate-600">
@@ -346,7 +345,6 @@
 <script>
 const { createApp, ref, computed, watch } = Vue;
 
-// 設定 PDF.js worker
 if (window.pdfjsLib) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 }
@@ -355,7 +353,7 @@ createApp({
   setup() {
     const currentTab = ref('materials');
 
-    // 資料完全清空（零預設）
+    // 純空白零預設
     const materials = ref(JSON.parse(localStorage.getItem('sbux_materials')) || []);
     const rules = ref(JSON.parse(localStorage.getItem('sbux_rules')) || []);
     const inventory = ref(JSON.parse(localStorage.getItem('sbux_inventory')) || []);
@@ -388,7 +386,7 @@ createApp({
         calcModal.value.targetTimeStr = `${target.getFullYear()}/${(target.getMonth()+1).toString().padStart(2,'0')}/${target.getDate().toString().padStart(2,'0')} ${target.getHours().toString().padStart(2,'0')}:${target.getMinutes().toString().padStart(2,'0')}`;
       } else if (days > 0) {
         target.setDate(target.getDate() + days);
-        calcModal.value.targetTimeStr = `${target.getFullYear()}/${(target.getMonth()+1).toString().padStart(2,'0')}/${target.getDate().toString().padStart(2,'0')} 閉店前`;
+        calcModal.value.targetTimeStr = `${target.getFullYear()}/${(target.getMonth()+1).toString().padStart(2,'0')}/${target.getDate().toString().padStart(2,'0')} 閉店前 (D+${days})`;
       } else {
         calcModal.value.targetTimeStr = mat.notes || "依原廠效期規範";
       }
@@ -474,10 +472,10 @@ createApp({
         .sort((a,b) => new Date(a.pullDate) - new Date(b.pullDate));
     });
 
-    // ==================== 檔案與 OCR / PDF 辨識邏輯 ====================
+    // ==================== 強化版 OCR / D+N 手冊辨識解析 ====================
     const isProcessing = ref(false);
     const processProgress = ref(0);
-    const parsedPreview = ref({ show: false, items: [], type: 'material' });
+    const parsedPreview = ref({ show: false, items: [] });
 
     const handleFileSelect = async (e) => {
       const file = e.target.files[0];
@@ -485,11 +483,10 @@ createApp({
 
       const fileName = file.name.toLowerCase();
       isProcessing.value = true;
-      processProgress.value = 10;
+      processProgress.value = 15;
 
       try {
         if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
-          // Excel 直接解析
           const reader = new FileReader();
           reader.onload = (evt) => {
             const wb = XLSX.read(evt.target.result, { type: 'binary' });
@@ -510,8 +507,7 @@ createApp({
           reader.readAsBinaryString(file);
 
         } else if (fileName.endsWith('.pdf')) {
-          // PDF 文字與掃描辨識
-          processProgress.value = 30;
+          processProgress.value = 35;
           const arrayBuffer = await file.arrayBuffer();
           const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
           let fullText = "";
@@ -521,23 +517,23 @@ createApp({
             const content = await page.getTextContent();
             const pageStrings = content.items.map(it => it.str).join(" ");
             fullText += pageStrings + "\n";
-            processProgress.value = Math.min(80, 30 + Math.round((p / pdf.numPages) * 50));
+            processProgress.value = Math.min(80, 35 + Math.round((p / pdf.numPages) * 45));
           }
 
           processProgress.value = 90;
-          parseExtractedText(fullText);
+          parseSbuxHandbookText(fullText);
 
         } else if (fileName.match(/\.(jpg|jpeg|png)$/)) {
-          // JPG/PNG 圖片 OCR 辨識
+          // 照片辨識
           processProgress.value = 25;
           const result = await Tesseract.recognize(file, 'chi_tra+eng', {
             logger: m => {
               if (m.status === 'recognizing text') {
-                processProgress.value = Math.round(m.progress * 80) + 15;
+                processProgress.value = Math.round(m.progress * 70) + 25;
               }
             }
           });
-          parseExtractedText(result.data.text);
+          parseSbuxHandbookText(result.data.text);
         }
       } catch (err) {
         alert('解析發生錯誤：' + err.message);
@@ -545,68 +541,77 @@ createApp({
       }
     };
 
-    // 文字行規則解析引擎（將純文字或 OCR 表格萃取為規格物件）
-    const parseExtractedText = (text) => {
+    // 專為星巴克手冊優化的行文字解析邏輯
+    const parseSbuxHandbookText = (text) => {
       isProcessing.value = false;
       const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-      const parsedMaterials = [];
+      const extracted = [];
 
-      lines.forEach(line => {
-        // 萃取常見模式：[代號] [中文品名] [效期文字]
-        // 範例："WM 白巧克力摩卡醬 24小時 常溫" 或 "V 香草糖漿 30天"
-        const tokens = line.split(/[\s,，|\t]+/);
-        if (tokens.length >= 2) {
-          let code = '';
-          let name = '';
-          let hours = 0;
-          let days = 0;
-          let temp = line.includes('冷藏') ? '冷藏' : '常溫';
-          let notes = '';
+      lines.forEach(rawLine => {
+        let line = rawLine;
 
-          // 判斷代號（通常為前 1~4 個純英文單字）
-          if (/^[A-Za-z0-9\-]{1,6}$/.test(tokens[0])) {
-            code = tokens[0].toUpperCase();
-            name = tokens[1];
-          } else {
-            name = tokens[0];
+        // 1. 抓取星巴克專屬 D+N 規範 (如 D+6, D+29, D+2)
+        const dPlusMatch = line.match(/D\s*\+\s*(\d+)/i);
+        // 2. 抓取小時規範 (如 24 小時, 48小時, 8小時)
+        const hourMatch = line.match(/(\d+)\s*(小時|hr|h)/i);
+
+        let days = 0;
+        let hours = 0;
+        let notes = '';
+
+        if (dPlusMatch) {
+          days = parseInt(dPlusMatch[1]);
+          notes = `開封 D+${days} (天)`;
+        } else if (hourMatch) {
+          hours = parseInt(hourMatch[1]);
+          notes = `開封後 ${hours} 小時`;
+        } else if (line.includes('依包裝')) {
+          notes = '依原廠包裝標示';
+        }
+
+        // 3. 抓取物料簡寫代號（長度 2~5 的純大寫英文）
+        let code = '';
+        const codeMatch = line.match(/\b([A-Z]{2,4})\b/);
+        if (codeMatch && !['D', 'COD', 'NEW'].includes(codeMatch[1])) {
+          code = codeMatch[1];
+        }
+
+        // 4. 清理品名
+        let name = line
+          .replace(/D\s*\+\s*\d+/ig, '')
+          .replace(/\d+\s*(小時|hr|h)/ig, '')
+          .replace(/\b[A-Z]{2,4}\b/g, '')
+          .replace(/[()（）素奶葷冷藏常溫項目物料名稱簡寫開封後效期備註]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        // 截取核心中文品名長度 (排除標題列雜訊)
+        if (name.length >= 2 && (code || hours > 0 || days > 0)) {
+          // 溫層推斷
+          let temp = '常溫';
+          if (line.includes('冷藏') || ['濃縮咖啡鮮奶油', '鮮奶油', '牛奶', '冷萃'].some(k => name.includes(k))) {
+            temp = '冷藏';
           }
 
-          // 判斷小時或天數
-          const hourMatch = line.match(/(\d+)\s*(小時|hr|h)/i);
-          const dayMatch = line.match(/(\d+)\s*(天|day|d)/i);
-
-          if (hourMatch) {
-            hours = parseInt(hourMatch[1]);
-            notes = `開封後 ${hours} 小時`;
-          } else if (dayMatch) {
-            days = parseInt(dayMatch[1]);
-            notes = `開封後 ${days} 天`;
-          } else {
-            notes = "依原廠標示";
-          }
-
-          if (name && (code || hours > 0 || days > 0)) {
-            parsedMaterials.push({
-              code: code || name.slice(0, 3).toUpperCase(),
-              name: name,
-              en_name: '',
-              temp: temp,
-              hours: hours,
-              days: days,
-              notes: notes
-            });
-          }
+          extracted.push({
+            code: code || name.slice(0, 3).toUpperCase(),
+            name: name,
+            en_name: '',
+            temp: temp,
+            hours: hours,
+            days: days,
+            notes: notes || '依標示'
+          });
         }
       });
 
-      if (parsedMaterials.length > 0) {
+      if (extracted.length > 0) {
         parsedPreview.value = {
           show: true,
-          items: parsedMaterials,
-          type: 'material'
+          items: extracted
         };
       } else {
-        alert('⚠️ 已完成讀取，但未自動擷取到符合格式的品項。建議確認圖片清單清晰度，或以標準 Excel 格式直接上傳！');
+        alert('⚠️ 已辨識完成，但未偵測到明顯的物料行。請確認照片清晰度與平整度，或改由 Excel 範本上傳！');
       }
     };
 
@@ -614,7 +619,7 @@ createApp({
       if (parsedPreview.value.items.length > 0) {
         materials.value = parsedPreview.value.items;
         parsedPreview.value.show = false;
-        alert(`🎉 成功更新！已將 ${parsedPreview.value.items.length} 筆物料寫入主檔！`);
+        alert(`🎉 成功寫入！已匯入 ${parsedPreview.value.items.length} 項物料至門市庫！`);
       }
     };
 
