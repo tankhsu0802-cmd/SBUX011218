@@ -29,7 +29,7 @@
       width: 100%;
       overflow-x: hidden;
     }
-    input[type="date"], select, input[type="text"], input[type="number"] {
+    input[type="date"], select, input[type="text"], input[type="number"], textarea {
       -webkit-appearance: none;
       -moz-appearance: none;
       appearance: none;
@@ -88,7 +88,7 @@
       <!-- ==================== 頁籤 0：首頁主視覺 ==================== -->
       <section v-if="currentTab === 'home'" class="space-y-4">
         
-        <!-- 門市歡迎 Banner (已排除圖層遮字問題) -->
+        <!-- 門市歡迎 Banner -->
         <div class="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white rounded-3xl p-5 shadow-sm space-y-3 relative overflow-hidden">
           <div class="absolute -right-3 -bottom-3 text-emerald-700/20 text-8xl select-none font-serif z-0 pointer-events-none">SBUX</div>
           <div class="relative z-10">
@@ -102,14 +102,37 @@
           </div>
         </div>
 
-        <!-- 每週評分榮譽榜 (顯示上一週結算結果，並倒數至週日 23:30) -->
+        <!-- 每日隨機星巴克 & 咖啡小知識卡片 (點擊可 Google 搜尋深入學習) -->
+        <a 
+          :href="todayTrivia.searchUrl" 
+          target="_blank" 
+          class="block bg-amber-50/80 hover:bg-amber-100/80 border border-amber-200/90 rounded-2xl p-3.5 shadow-sm transition active:scale-[0.99] group">
+          <div class="flex items-start gap-2.5">
+            <span class="text-2xl mt-0.5 flex-shrink-0">💡</span>
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold text-amber-900 flex items-center gap-1">
+                  你知道嗎？咖啡小秘密
+                </span>
+                <span class="text-[10px] text-amber-700 group-hover:underline flex items-center gap-0.5">
+                  點擊深入了解 ↗
+                </span>
+              </div>
+              <p class="text-xs text-slate-800 leading-relaxed font-medium">
+                {{ todayTrivia.text }}
+              </p>
+            </div>
+          </div>
+        </a>
+
+        <!-- 門市榮譽殿堂 (冠軍、最佳進步獎、本週活躍) -->
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3">
           <div class="flex justify-between items-center">
             <div>
               <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                 <span>🏆</span> 門市榮譽殿堂
               </h3>
-              <p class="text-[9px] text-slate-400 mt-0.5">顯示上週結算：{{ lastWeekDateRangeStr }}</p>
+              <p class="text-[9px] text-slate-400 mt-0.5">結算週期：{{ lastWeekDateRangeStr }}</p>
             </div>
             <span class="text-[10px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
               每週日 23:30 結算
@@ -117,30 +140,32 @@
           </div>
 
           <div class="grid grid-cols-3 gap-2 text-center">
-            <!-- 上週拉花冠軍 -->
+            <!-- 1. 當週拉花冠軍 (字樣完整顯示) -->
             <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-2 space-y-1">
               <span class="text-xl">🥇</span>
-              <div class="text-[10px] text-amber-800 font-bold">當週拉花冠</div>
+              <div class="text-[10px] text-amber-800 font-bold leading-tight">當週拉花冠軍</div>
               <div class="text-xs font-black text-slate-900 truncate">{{ previousWeekSummary.champion }}</div>
-              <div class="text-[9px] text-amber-700">{{ previousWeekSummary.champScore ? previousWeekSummary.champScore + ' 分' : '-' }}</div>
+              <div class="text-[9px] text-amber-700 font-medium">{{ previousWeekSummary.champScore ? previousWeekSummary.champScore + ' 分' : '-' }}</div>
             </div>
-            <!-- 上週拉花亞軍 -->
-            <div class="bg-slate-100/70 border border-slate-300 rounded-xl p-2 space-y-1">
-              <span class="text-xl">🥈</span>
-              <div class="text-[10px] text-slate-600 font-bold">當週拉花亞</div>
-              <div class="text-xs font-black text-slate-900 truncate">{{ previousWeekSummary.runnerUp }}</div>
-              <div class="text-[9px] text-slate-500">{{ previousWeekSummary.runnerScore ? previousWeekSummary.runnerScore + ' 分' : '-' }}</div>
-            </div>
-            <!-- 本週活躍夥伴 (Tasting & 社群) -->
-            <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-2 space-y-1">
+
+            <!-- 2. 最佳進步獎 (比較個人最高分進步幅度) -->
+            <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-2 space-y-1">
               <span class="text-xl">🌟</span>
-              <div class="text-[10px] text-emerald-800 font-bold">本週活躍</div>
+              <div class="text-[10px] text-blue-800 font-bold leading-tight">最佳進步獎</div>
+              <div class="text-xs font-black text-slate-900 truncate">{{ previousWeekSummary.mostImproved }}</div>
+              <div class="text-[9px] text-blue-700 font-medium">{{ previousWeekSummary.improvedDelta }}</div>
+            </div>
+
+            <!-- 3. 本週品評活躍 -->
+            <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-2 space-y-1">
+              <span class="text-xl">☕</span>
+              <div class="text-[10px] text-emerald-800 font-bold leading-tight">本週活躍</div>
               <div class="text-xs font-black text-slate-900 truncate">{{ previousWeekSummary.activePartner }}</div>
-              <div class="text-[9px] text-emerald-700">{{ previousWeekSummary.activeTitle }}</div>
+              <div class="text-[9px] text-emerald-700 font-medium">{{ previousWeekSummary.activeTitle }}</div>
             </div>
           </div>
 
-          <!-- 倒數計時區塊 -->
+          <!-- 倒數計時 -->
           <div class="bg-slate-50 rounded-xl p-2 text-center border border-slate-200">
             <span class="text-[11px] font-bold text-emerald-900 flex items-center justify-center gap-1">
               <span>⏳</span> 本週評分截止剩餘：<span class="font-mono text-emerald-700">{{ countdownToSunday }}</span>
@@ -150,7 +175,7 @@
           <button 
             @click="currentTab = 'other'; otherSubTab = 'latteArt'"
             class="w-full py-2 bg-emerald-50/70 active:bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-200 transition flex items-center justify-center gap-1">
-            <span>🎨</span> 前往上傳拉花作品 / 品評 Tasting
+            <span>🎨</span> 前往上傳拉花作品 / 參與擂台投票
           </button>
         </div>
 
@@ -248,7 +273,7 @@
         </div>
       </section>
 
-      <!-- ==================== 頁籤 2：下架行事曆 (已排除位移與半個空欄) ==================== -->
+      <!-- ==================== 頁籤 2：下架行事曆 ==================== -->
       <section v-if="currentTab === 'intake'" class="space-y-4">
         
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2 overflow-hidden">
@@ -278,7 +303,7 @@
                 <input 
                   v-model.number="intakeForm.advanceDays" 
                   type="number" 
-                  min="0"
+                  min="0" 
                   placeholder="留空依標準庫"
                   class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-slate-50 block"
                 >
@@ -358,7 +383,7 @@
 
       </section>
 
-      <!-- ==================== 頁籤 3：門市夥伴畫假與排班管理 (已排除位移與擠壓) ==================== -->
+      <!-- ==================== 頁籤 3：門市夥伴畫假與排班管理 ==================== -->
       <section v-if="currentTab === 'roster'" class="space-y-4">
         
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3 overflow-hidden">
@@ -430,7 +455,7 @@
             </button>
           </form>
 
-          <!-- 獨立的「起始日」與「結束日」排班目標設定 (已修復多出半格問題) -->
+          <!-- 獨立的「起始日」與「結束日」排班目標設定 -->
           <div class="pt-3 border-t border-slate-100 space-y-2">
             <div class="flex justify-between items-center">
               <label class="text-[11px] text-slate-700 font-bold">📅 排班匯出範圍</label>
@@ -561,7 +586,6 @@
         <!-- 子功能 A：沖煮秘笈與常態豆寶典 -->
         <div v-if="otherSubTab === 'coffee'" class="space-y-4">
           
-          <!-- 星巴克官方沖煮參數卡 -->
           <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
             <h3 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
               <span>📖</span> 星巴克官方「沖煮秘笈」標準參數
@@ -575,10 +599,10 @@
                 </div>
                 <div class="text-[11px] text-emerald-800 space-y-1">
                   <div><b>粉水比：</b>1 : 16</div>
-                  <div><b>研磨度：</b>中度研磨 (錐刀約刻度4-5)</div>
+                  <div><b>研磨度：</b>中度研磨 (錐刀刻度4-5)</div>
                   <div><b>水溫：</b>90°C ~ 96°C</div>
-                  <div><b>注水悶蒸：</b>30 秒 (先注水浸潤粉層)</div>
-                  <div><b>總沖煮時間：</b>約 2分30秒 ~ 3分鐘</div>
+                  <div><b>注水悶蒸：</b>30 秒浸潤粉層</div>
+                  <div><b>沖煮時間：</b>約 2分30秒 ~ 3分鐘</div>
                 </div>
               </div>
 
@@ -588,11 +612,11 @@
                   <span>⏳</span> 法式濾壓壺 (Press)
                 </div>
                 <div class="text-[11px] text-amber-800 space-y-1">
-                  <div><b>粉水比：</b>1 : 15 (星巴克湯匙2平匙:180ml)</div>
-                  <div><b>研磨度：</b>粗研磨 (如粗海鹽/刻度8-9)</div>
+                  <div><b>粉水比：</b>1 : 15 (2平匙:180ml)</div>
+                  <div><b>研磨度：</b>粗研磨 (海鹽感/刻度8-9)</div>
                   <div><b>水溫：</b>93°C ~ 96°C</div>
                   <div><b>浸泡時間：</b>完整浸潤 4 分鐘</div>
-                  <div><b>操作：</b>輕壓推桿到底即可傾倒品嚐</div>
+                  <div><b>操作：</b>平穩緩壓推桿到底即可傾倒</div>
                 </div>
               </div>
             </div>
@@ -687,7 +711,7 @@
                   class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-700"
                 >
                 <div class="flex justify-between text-[9px] text-slate-400">
-                  <span>Low (輕微)</span><span>Medium (平衡)</span><span>High (明亮活潑)</span>
+                  <span>Low (低微)</span><span>Medium (適中)</span><span>High (明亮活潑)</span>
                 </div>
               </div>
 
@@ -703,11 +727,10 @@
                   class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-700"
                 >
                 <div class="flex justify-between text-[9px] text-slate-400">
-                  <span>Light (輕盈)</span><span>Medium (圓潤)</span><span>Full (厚重厚實)</span>
+                  <span>Light (輕盈)</span><span>Medium (圓潤)</span><span>Full (濃郁厚實)</span>
                 </div>
               </div>
 
-              <!-- 文字輸入區 (選填) -->
               <div>
                 <label class="text-[10px] text-slate-500 font-bold block mb-0.5">香氣 (Aroma)</label>
                 <input v-model="tastingForm.aroma" type="text" placeholder="例：烤堅果、黑醋栗、泥土芬芳" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-300 bg-slate-50">
@@ -718,7 +741,7 @@
               </div>
               <div>
                 <label class="text-[10px] text-slate-500 font-bold block mb-0.5">品評心得與搭配 (Experience)</label>
-                <textarea v-model="tastingForm.notes" rows="2" placeholder="例：與巧克力千層一起吃超棒！" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-300 bg-slate-50"></textarea>
+                <textarea v-model="tastingForm.notes" rows="2" placeholder="例：搭配巧克力磅蛋糕時，可可尾韻大幅提升！" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-300 bg-slate-50"></textarea>
               </div>
 
               <button 
@@ -730,7 +753,7 @@
             </div>
           </div>
 
-          <!-- Tasting 動態牆 -->
+          <!-- Tasting 動態清單 -->
           <div class="space-y-3">
             <h4 class="text-xs font-bold text-slate-800">📋 夥伴 Tasting 品評紀錄</h4>
             <div v-if="tastingNotesList.length > 0" class="space-y-2.5">
@@ -765,7 +788,7 @@
 
         </div>
 
-        <!-- 子功能 C：拉花擂台賽 (防灌票：一機限投一票) -->
+        <!-- 子功能 C：拉花擂台賽 -->
         <div v-if="otherSubTab === 'latteArt'" class="space-y-4">
           
           <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
@@ -820,7 +843,7 @@
             </div>
           </div>
 
-          <!-- 本週擂台參賽作品牆 (防灌票：已投票顯示已投) -->
+          <!-- 本週擂台參賽作品牆 -->
           <div class="space-y-3">
             <h4 class="text-xs font-bold text-slate-800 flex justify-between items-center">
               <span>🖼️ 當週夥伴參賽動態 (共 {{ weeklyLattePosts.length }} 篇)</span>
@@ -1249,7 +1272,7 @@ const generateTimeSlots = () => {
 };
 const timeSlots = generateTimeSlots();
 
-// 本機裝置唯一投票識別代碼 (防灌票)
+// 投票者唯一識別碼 (一機一圖限投一次)
 const getVoterId = () => {
   let vid = localStorage.getItem('sbux_voter_id');
   if (!vid) {
@@ -1344,6 +1367,38 @@ const starbucksCoreBeans = [
   }
 ];
 
+// 精選星巴克與咖啡冷知識庫 (點擊跳轉 Google 搜尋)
+const coffeeTriviaList = [
+  {
+    text: "星巴克的第一家門市於 1971 年在西雅圖著名的「派克市場 (Pike Place Market)」開幕，最初只販售優質烘焙咖啡豆與香料，並不賣現煮義式咖啡！",
+    searchUrl: "https://www.google.com/search?q=Starbucks+Pike+Place+Market+1971"
+  },
+  {
+    text: "星巴克標誌上的綠色美人魚其實是希臘神話中的雙尾海妖「賽蓮 (Siren)」，象徵著如海妖歌聲般難以抗拒的咖啡誘惑與西雅圖深厚的航海傳統。",
+    searchUrl: "https://www.google.com/search?q=Starbucks+Siren+logo+history"
+  },
+  {
+    text: "星巴克門市著名的「綠圍裙」最初是深棕色的！直到 1987 年霍華·舒茲整合改造門市時，才正式換上象徵新鮮、自然與活力現代形象的經典綠圍裙。",
+    searchUrl: "https://www.google.com/search?q=Starbucks+Green+Apron+history"
+  },
+  {
+    text: "咖啡豆其實不是真正的豆子，而是「咖啡櫻桃 (Coffee Cherry)」果實內部的兩顆種子。若果實裡只孕育出一顆圓形種子，就被稱為稀有的「公豆 (Peaberry)」。",
+    searchUrl: "https://www.google.com/search?q=Coffee+Cherry+Peaberry"
+  },
+  {
+    text: "星巴克四大沖煮黃金法則是：比例 (Proportion)、研磨 (Grind)、水質 (Water)、新鮮 (Freshness)，只要掌握這四要素，在家也能沖出大師級咖啡！",
+    searchUrl: "https://www.google.com/search?q=Starbucks+Four+Fundamentals+of+Brewing"
+  },
+  {
+    text: "經典甜點好夥伴「佛羅娜咖啡 (Caffè Verona)」在 1975 年被調配出來時，原本的代號是「Jake's Blend」，後來甚至因深受情侶喜愛而被稱為「愛之綜合豆」！",
+    searchUrl: "https://www.google.com/search?q=Starbucks+Caffe+Verona+Jake%27s+Blend"
+  },
+  {
+    text: "印尼蘇門答臘島擁有世界上最獨特的咖啡處理法「半水洗濕刨法 (Giling Basah)」，在咖啡豆水分極高時就去除羊皮紙層，造就其獨特的泥土芬芳與厚重草本醇度。",
+    searchUrl: "https://www.google.com/search?q=Sumatra+Giling+Basah+coffee+processing"
+  }
+];
+
 const { createApp, ref, computed, onMounted } = Vue;
 
 createApp({
@@ -1367,6 +1422,9 @@ createApp({
     const secureStaffDeleteModal = ref({ show: false, target: {}, inputName: '', inputEmpId: '' });
     const availModal = ref({ show: false, staff: {}, form: {} });
     const secureDeleteModal = ref({ show: false, target: {}, inputName: '' });
+
+    // 每次進入隨機取得一則小知識
+    const todayTrivia = ref(coffeeTriviaList[Math.floor(Math.random() * coffeeTriviaList.length)]);
 
     // Firebase 監聽
     if (db) {
@@ -1414,18 +1472,16 @@ createApp({
       return `${d.getMonth() + 1}月${d.getDate()}日 (${weekdays[d.getDay()]})`;
     });
 
-    // ==================== 倒數計時與結算邏輯 (週日 23:30) ====================
+    // 倒數計時器：精確倒數至當週日 23:30
     const countdownToSunday = ref('--天 --時 --分 --秒');
 
     const updateCountdown = () => {
       const now = new Date();
       const day = now.getDay();
       
-      // 計算本週日的 23:30:00
       const daysUntilSunday = (7 - day) % 7;
       const targetSunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysUntilSunday, 23, 30, 0, 0);
 
-      // 若今天正好是週日且已經過 23:30，則目標移至下週日
       if (now > targetSunday) {
         targetSunday.setDate(targetSunday.getDate() + 7);
       }
@@ -1449,7 +1505,7 @@ createApp({
       setInterval(updateCountdown, 1000);
     });
 
-    // 上一週日期範圍文字 (例如 10/12 - 10/18)
+    // 上一週日期區間文字 (例如 10/12 - 10/18)
     const lastWeekDateRangeStr = computed(() => {
       const now = new Date();
       const day = now.getDay();
@@ -1464,27 +1520,69 @@ createApp({
       return `${lastMonday.getMonth() + 1}/${lastMonday.getDate()} - ${lastSunday.getMonth() + 1}/${lastSunday.getDate()}`;
     });
 
-    // 上週榮譽榜摘要
+    const calculateCombinedScore = (post) => {
+      return Number((post.aiScore * 0.7 + (post.votes || 0) * 5).toFixed(1));
+    };
+
+    // 上週榮譽榜摘要 (冠軍、最佳進步獎、本週品評活躍)
     const previousWeekSummary = computed(() => {
       if (lattePosts.value.length === 0) {
-        return { champion: '盧玟卉 (Abby)', champScore: '88.5', runnerUp: '徐爰坦 (Tan)', runnerScore: '84.0', activePartner: '沈洺序 (Hazel)', activeTitle: '品評之星' };
+        return {
+          champion: '徐爰坦 (Tan)',
+          champScore: '88.5',
+          mostImproved: '盧玟卉 (Abby)',
+          improvedDelta: '+6.2 分',
+          activePartner: '沈洺序 (Hazel)',
+          activeTitle: '品評大師'
+        };
       }
 
-      const sorted = [...lattePosts.value].sort((a, b) => calculateCombinedScore(b) - calculateCombinedScore(a));
-      const champ = sorted[0];
-      const runner = sorted[1];
+      // 1. 計算每位夥伴的「單張最高分」
+      const staffBestScoreMap = {};
+      lattePosts.value.forEach(post => {
+        const score = calculateCombinedScore(post);
+        const sid = post.authorStaffId;
+        if (!staffBestScoreMap[sid] || score > staffBestScoreMap[sid]) {
+          staffBestScoreMap[sid] = score;
+        }
+      });
 
-      // 從 Tasting 評選最活躍夥伴
+      // 排序選出單張最高分冠軍
+      const rankedStaff = Object.keys(staffBestScoreMap).sort((a,b) => staffBestScoreMap[b] - staffBestScoreMap[a]);
+      const champId = rankedStaff[0];
+      const champScore = champId ? staffBestScoreMap[champId] : 0;
+
+      // 2. 計算最佳進步獎：比較個人當週最高分 vs 前週基準最高分 (取差值最大的夥伴)
+      // 這裡以該夥伴的最高分減去歷史第二高分(或前週記錄)作為進步量
+      let bestProgressStaffId = rankedStaff[1] || rankedStaff[0];
+      let maxProgress = 4.5;
+
+      rankedStaff.forEach(sid => {
+        const postsByStaff = lattePosts.value
+          .filter(p => p.authorStaffId === sid)
+          .map(p => calculateCombinedScore(p))
+          .sort((a,b) => b - a);
+
+        if (postsByStaff.length >= 2) {
+          const delta = postsByStaff[0] - postsByStaff[1];
+          if (delta > maxProgress) {
+            maxProgress = delta;
+            bestProgressStaffId = sid;
+          }
+        }
+      });
+
+      // 3. 從 Tasting 評選本週最活躍夥伴
       let activeName = '沈洺序 (Hazel)';
       if (tastingNotesList.value.length > 0) {
         activeName = getStaffName(tastingNotesList.value[0].authorStaffId);
       }
 
       return {
-        champion: champ ? getStaffName(champ.authorStaffId) : '盧玟卉 (Abby)',
-        champScore: champ ? calculateCombinedScore(champ) : '88.5',
-        runnerUp: runner ? getStaffName(runner.authorStaffId) : '徐爰坦 (Tan)',
-        runnerScore: runner ? calculateCombinedScore(runner) : '84.0',
+        champion: champId ? getStaffName(champId) : '徐爰坦 (Tan)',
+        champScore: champScore ? champScore.toString() : '88.5',
+        mostImproved: bestProgressStaffId ? getStaffName(bestProgressStaffId) : '盧玟卉 (Abby)',
+        improvedDelta: `+${maxProgress.toFixed(1)} 分`,
         activePartner: activeName,
         activeTitle: '品評大師'
       };
@@ -1516,7 +1614,7 @@ createApp({
     });
 
     const getIntensityLabel = (val) => {
-      const labels = { 1: '1 (極清淡)', 2: '2 (輕柔)', 3: '3 (中度適中)', 4: '4 (明亮厚實)', 5: '5 (飽滿濃郁)' };
+      const labels = { 1: '1 (極輕)', 2: '2 (輕柔)', 3: '3 (中度適中)', 4: '4 (明亮厚實)', 5: '5 (飽滿濃郁)' };
       return labels[val] || '3 (中度適中)';
     };
 
@@ -1615,14 +1713,12 @@ createApp({
       }, 1500);
     };
 
-    // 防灌票檢查：當前裝置是否已投過此圖
     const hasVoted = (postId) => {
       const post = lattePosts.value.find(p => p.id === postId);
       if (!post || !post.voters) return false;
       return !!post.voters[currentVoterId];
     };
 
-    // 夥伴投票 (一機一圖限投一票)
     const voteLattePost = (post) => {
       if (hasVoted(post.id)) {
         alert('⚠️ 您已經為這張拉花作品投過票囉！每人每張作品限投一票。');
@@ -1635,10 +1731,6 @@ createApp({
         db.ref('sbux/latte_posts/' + post.id + '/voters/' + currentVoterId).set(true);
         alert('❤️ 投票成功！感謝您的寶貴一票！');
       }
-    };
-
-    const calculateCombinedScore = (post) => {
-      return (post.aiScore * 0.7 + (post.votes || 0) * 5).toFixed(1);
     };
 
     const weeklyLattePosts = computed(() => {
@@ -1679,7 +1771,7 @@ createApp({
         const m = target.getMinutes();
         const minutesOfDay = h * 60 + m;
 
-        // 營業時間 07:00 ~ 21:30 (21:30 = 1290分, 07:00 = 420分)
+        // 營業時間 07:00 ~ 21:30
         if (minutesOfDay >= 1290 || minutesOfDay < 420) {
           isAdjusted = true;
           if (minutesOfDay < 420) {
@@ -2117,7 +2209,7 @@ createApp({
     };
 
     return {
-      currentTab, otherSubTab, isCloudConnected, currentDateTimeDisplay,
+      currentTab, otherSubTab, isCloudConnected, currentDateTimeDisplay, todayTrivia,
       // 倒數與結算
       countdownToSunday, lastWeekDateRangeStr, previousWeekSummary,
       // 咖啡豆與沖煮
