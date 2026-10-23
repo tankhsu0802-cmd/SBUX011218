@@ -15,7 +15,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
-    [v-cloak] { display: none; }
+    [v-cloak] { display: none !important; }
     body {
       -webkit-tap-highlight-color: transparent;
       margin: 0;
@@ -23,7 +23,7 @@
       background-color: #f1f5f9;
     }
     .app-screen {
-      padding-bottom: 90px;
+      padding-bottom: 95px;
     }
     @media screen {
       .print-only-container { display: none !important; }
@@ -56,7 +56,7 @@
 
     <!-- 頂部 Header -->
     <header class="bg-emerald-900 text-white sticky top-0 z-40 shadow-md">
-      <div class="px-4 py-3 flex items-center justify-between">
+      <div class="px-4 py-3.5 flex items-center justify-between">
         <div class="flex items-center space-x-2">
           <span class="text-xl">☕</span>
           <div>
@@ -64,7 +64,7 @@
             <p class="text-[10px] text-emerald-300">門市營運與夥伴社群整合系統</p>
           </div>
         </div>
-        <div class="flex items-center space-x-1.5 bg-emerald-950/60 px-2 py-1 rounded-full border border-emerald-700">
+        <div class="flex items-center space-x-1.5 bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-700">
           <span class="inline-block w-2 h-2 rounded-full" :class="isCloudConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'"></span>
           <span class="text-[10px] text-emerald-200">{{ isCloudConnected ? '雲端同步中' : '連線中...' }}</span>
         </div>
@@ -83,15 +83,15 @@
           <div>
             <span class="px-2 py-0.5 bg-emerald-700 text-emerald-200 text-[10px] font-bold rounded-full uppercase tracking-wider">永安門市 Hub</span>
             <h2 class="text-lg font-black mt-1">Hello, Partners!</h2>
-            <p class="text-xs text-emerald-200 mt-0.5">今天也是充滿咖啡香與熱情的一天 💚</p>
+            <p class="text-xs text-emerald-200 mt-0.5">今天也是充滿咖啡香與活力的一天 💚</p>
           </div>
           <div class="flex justify-between items-center text-[11px] text-emerald-300 border-t border-emerald-700/50 pt-2.5">
             <span>📅 {{ currentDateTimeDisplay }}</span>
-            <span>營業時間 07:00-21:30</span>
+            <span>門市營業 07:00-21:30</span>
           </div>
         </div>
 
-        <!-- 本週拉花爭霸賽榮譽榜 (每週日 23:30 自動結算) -->
+        <!-- 本週拉花爭霸賽榮譽榜 -->
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3">
           <div class="flex justify-between items-center">
             <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
@@ -107,22 +107,22 @@
             <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-2.5 space-y-1">
               <span class="text-xl">🥇</span>
               <div class="text-[10px] text-amber-800 font-bold">當週冠軍</div>
-              <div class="text-xs font-black text-slate-900 truncate">{{ weeklyLeaderboard.champion || '虛位以待' }}</div>
+              <div class="text-xs font-black text-slate-900 truncate">{{ weeklyLeaderboard.champion }}</div>
               <div class="text-[9px] text-amber-700">{{ weeklyLeaderboard.champScore ? weeklyLeaderboard.champScore + ' 分' : '-' }}</div>
             </div>
             <!-- 亞軍 -->
             <div class="bg-slate-100/70 border border-slate-300 rounded-xl p-2.5 space-y-1">
               <span class="text-xl">🥈</span>
               <div class="text-[10px] text-slate-600 font-bold">當週亞軍</div>
-              <div class="text-xs font-black text-slate-900 truncate">{{ weeklyLeaderboard.runnerUp || '虛位以待' }}</div>
+              <div class="text-xs font-black text-slate-900 truncate">{{ weeklyLeaderboard.runnerUp }}</div>
               <div class="text-[9px] text-slate-500">{{ weeklyLeaderboard.runnerScore ? weeklyLeaderboard.runnerScore + ' 分' : '-' }}</div>
             </div>
             <!-- 最佳進步獎 -->
             <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-2.5 space-y-1">
               <span class="text-xl">🌟</span>
               <div class="text-[10px] text-emerald-800 font-bold">最佳進步</div>
-              <div class="text-xs font-black text-slate-900 truncate">{{ weeklyLeaderboard.mostImproved || '虛位以待' }}</div>
-              <div class="text-[9px] text-emerald-700">{{ weeklyLeaderboard.improvedScore ? weeklyLeaderboard.improvedScore : '夥伴推薦' }}</div>
+              <div class="text-xs font-black text-slate-900 truncate">{{ weeklyLeaderboard.mostImproved }}</div>
+              <div class="text-[9px] text-emerald-700">{{ weeklyLeaderboard.improvedScore }}</div>
             </div>
           </div>
 
@@ -696,89 +696,6 @@
 
       </section>
 
-      <!-- ==================== 頁籤 5：檔期標準與辨識匯入中心 ==================== -->
-      <section v-if="currentTab === 'settings'" class="space-y-4">
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-          <div>
-            <h2 class="text-sm font-bold text-slate-900">📥 檔期標準匯入中心</h2>
-            <p class="text-[11px] text-slate-500 mt-1">
-              上傳更新後全店即時同步。支援拍攝手冊照片（JPG/PNG）、官方 PDF 或 Excel。
-            </p>
-          </div>
-
-          <label class="block border-2 border-dashed border-emerald-600 bg-emerald-50/40 rounded-2xl p-6 text-center cursor-pointer active:bg-emerald-100/50 transition">
-            <input type="file" accept=".jpg, .jpeg, .png, .pdf, .xlsx, .xls" @change="handleFileSelect" class="hidden">
-            <div class="space-y-1">
-              <span class="text-2xl">📸 / 📄</span>
-              <p class="text-xs font-bold text-emerald-900">點擊上傳手冊照片 (JPG) 或 PDF / Excel</p>
-              <p class="text-[10px] text-slate-500">手機可直接呼叫相機拍照上傳</p>
-            </div>
-          </label>
-
-          <!-- 辨識進度 -->
-          <div v-if="isProcessing" class="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
-            <div class="flex items-center space-x-2 text-xs font-bold text-amber-800">
-              <span class="animate-spin">🔄</span>
-              <span>正在分析表格文字... {{ processProgress }}%</span>
-            </div>
-            <p class="text-[10px] text-amber-600">正在自動比對物料名稱、代號與 D+N 效期規則，請稍候。</p>
-          </div>
-
-          <!-- 辨識結果預覽卡片 -->
-          <div v-if="parsedPreview.show" class="p-4 bg-emerald-50/80 border border-emerald-300 rounded-2xl space-y-3">
-            <div class="flex justify-between items-center">
-              <h3 class="text-xs font-bold text-emerald-950">📋 辨識結果預覽與校對（共 {{ parsedPreview.items.length }} 筆）</h3>
-              <span class="text-[10px] text-emerald-700">寫入前可手動修改</span>
-            </div>
-
-            <div class="max-h-60 overflow-y-auto space-y-2 text-[11px] bg-white p-2.5 rounded-xl border border-emerald-200">
-              <div v-for="(item, idx) in parsedPreview.items" :key="idx" class="border-b border-slate-100 pb-2 space-y-1">
-                <div class="flex items-center gap-1.5">
-                  <input v-model="item.code" class="w-16 font-mono text-center font-bold border border-slate-200 rounded px-1 py-0.5 text-xs" placeholder="代號">
-                  <input v-model="item.name" class="flex-1 font-bold border border-slate-200 rounded px-1.5 py-0.5 text-xs" placeholder="品名">
-                  <button @click="parsedPreview.items.splice(idx, 1)" class="text-red-500 font-bold px-1">✕</button>
-                </div>
-                <div class="grid grid-cols-3 gap-1 text-[10px]">
-                  <select v-model="item.temp" class="border border-slate-200 rounded px-1 py-0.5 bg-slate-50">
-                    <option value="常溫">常溫</option>
-                    <option value="冷藏">冷藏</option>
-                  </select>
-                  <input v-model.number="item.hours" type="number" placeholder="小時數" class="border border-slate-200 rounded px-1 py-0.5">
-                  <input v-model.number="item.days" type="number" placeholder="D+天數" class="border border-slate-200 rounded px-1 py-0.5">
-                </div>
-              </div>
-            </div>
-
-            <div class="flex gap-2">
-              <button 
-                @click="applyParsedData" 
-                class="flex-1 py-2 bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 transition">
-                確認同步至雲端主檔
-              </button>
-              <button 
-                @click="parsedPreview.show = false" 
-                class="px-3 py-2 bg-slate-200 text-slate-700 rounded-xl text-xs font-medium">
-                取消
-              </button>
-            </div>
-          </div>
-
-          <div class="pt-2 flex flex-col gap-2">
-            <button 
-              @click="downloadBlankTemplate" 
-              class="w-full py-2.5 bg-slate-100 active:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl border border-slate-200">
-              📄 下載標準空白 Excel 格式備用範本
-            </button>
-            
-            <button 
-              @click="clearAllData" 
-              class="w-full py-2 text-xs text-red-600 active:text-red-800 font-medium">
-              🗑️ 清空全門市雲端資料（回歸純空白）
-            </button>
-          </div>
-        </div>
-      </section>
-
     </main>
 
   </div> <!-- end of app-screen -->
@@ -824,7 +741,7 @@
     </div>
   </footer>
 
-  <!-- ==================== 模態視窗群 (Modals) ==================== -->
+  <!-- ==================== 模態視窗群 (Modals，嚴格受控於各旗標，修正疊開問題) ==================== -->
 
   <!-- 打點試算 Modal -->
   <div v-if="calcModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-end justify-center p-4">
@@ -976,7 +893,7 @@
     </div>
   </div>
 
-  <!-- 夥伴固定上班時間設定 Modal -->
+  <!-- 夥伴固定上班時間設定 Modal (06:30 ~ 22:30 以 30 分鐘為單位) -->
   <div v-if="availModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-center justify-center p-3">
     <div class="bg-white rounded-2xl w-full max-w-md p-4 shadow-xl space-y-3 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
@@ -1023,7 +940,7 @@
     </div>
   </div>
 
-  <!-- 畫假刪除確認 Modal -->
+  <!-- 畫假刪除確認 Modal (僅需核對姓名) -->
   <div v-if="secureDeleteModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-3">
       <div class="flex items-center gap-2 text-red-600">
@@ -1235,7 +1152,7 @@ const { createApp, ref, computed } = Vue;
 
 createApp({
   setup() {
-    // 預設進入首頁主視覺
+    // 預設進入首頁
     const currentTab = ref('home');
     const otherSubTab = ref('coffee');
     const isCloudConnected = ref(false);
@@ -1246,6 +1163,14 @@ createApp({
     const staffList = ref([]);
     const vacationList = ref([]);
     const lattePosts = ref([]);
+
+    // 模態視窗旗標預設全關，杜絕同開 Bug
+    const calcModal = ref({ show: false, item: {}, targetTimeStr: '', pullDate: '', timing: '', isAdjustedForClose: false });
+    const matEditModal = ref({ show: false, isNew: true, form: {} });
+    const staffModal = ref({ show: false, isNew: true, form: {} });
+    const secureStaffDeleteModal = ref({ show: false, target: {}, inputName: '', inputEmpId: '' });
+    const availModal = ref({ show: false, staff: {}, form: {} });
+    const secureDeleteModal = ref({ show: false, target: {}, inputName: '' });
 
     // Firebase 監聽
     if (db) {
@@ -1303,7 +1228,7 @@ createApp({
       );
     });
 
-    // ==================== 【其他】功能：每週拉花擂台賽與 AI 圖像回饋 ====================
+    // ==================== 【其他】功能：拉花擂台賽 ====================
     const latteForm = ref({
       authorStaffId: '',
       pattern: '心形 (Heart)',
@@ -1311,7 +1236,6 @@ createApp({
     });
     const isAiEvaluating = ref(false);
 
-    // 處理手機拍照或圖片選擇
     const handleLattePhotoUpload = (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -1323,19 +1247,16 @@ createApp({
       reader.readAsDataURL(file);
     };
 
-    // 提交拉花並由 AI 圖像評分回饋
     const submitLattePost = () => {
       if (!latteForm.value.authorStaffId || !latteForm.value.photoUrl) return;
-
       isAiEvaluating.value = true;
 
-      // 模擬 AI 圖像辨識分析（針對奶泡光澤細緻度、對稱度、對比反差）
       setTimeout(() => {
-        const baseScore = Math.floor(Math.random() * 16) + 78; // 78 ~ 93 分
+        const baseScore = Math.floor(Math.random() * 16) + 78;
         const patternsFeedback = {
-          '心形 (Heart)': '奶泡質地均勻且具絲滑光澤！心尖切線流暢，頂部圓弧兩側對稱性佳；若在融合前段晃動幅度稍加收斂，邊緣對比反差會更鮮明。',
-          '鬱金香 (Tulip)': '分層注入點明確，葉片堆疊層次清晰！第三層推進力道拿捏精準，收尾拉高切線俐落，圖案居中度極佳。',
-          '天鵝 (Swan)': '天鵝頸部曲度線條曼妙，底座壓紋厚實且羽翼展開均勻！蒸奶發泡厚度適中，油脂棕色環與白奶泡反差極具視覺張力。',
+          '心形 (Heart)': '奶泡質地細緻且具絲滑光澤！心尖切線流暢，頂部圓弧對稱性佳；若在融合前段晃動幅度稍加收斂，邊緣對比反差會更鮮明。',
+          '鬱金香 (Tulip)': '分層注入點明確，葉片堆疊層次清晰！第三層推進力道精準，收尾拉高切線俐落，圖案居中度極佳。',
+          '天鵝 (Swan)': '天鵝頸部曲度線條流暢，底座壓紋厚實且羽翼展開均勻！蒸奶發泡厚度適中，油脂棕色環與白奶泡反差極具張力。',
           '自由創作 (Free Pour)': '構圖創意大膽且流暢感十足，融合度拿捏到位，奶泡流動性維持得相當理想！'
         };
 
@@ -1347,7 +1268,7 @@ createApp({
           aiScore: baseScore,
           aiFeedback: patternsFeedback[latteForm.value.pattern] || '整體對比鮮明，奶泡細緻度良好！',
           votes: 0,
-          dateStr: new Date().toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+          dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()} ${new Date().getHours().toString().padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}`,
           timestamp: Date.now()
         };
 
@@ -1361,7 +1282,6 @@ createApp({
       }, 1500);
     };
 
-    // 夥伴匿名投票
     const voteLattePost = (post) => {
       const updatedVotes = (post.votes || 0) + 1;
       if (db) {
@@ -1369,22 +1289,529 @@ createApp({
       }
     };
 
-    // 綜合加權評分 (AI 評分佔 70% + 夥伴愛心每票 5 分加權)
     const calculateCombinedScore = (post) => {
       return (post.aiScore * 0.7 + (post.votes || 0) * 5).toFixed(1);
     };
 
-    // 當週參賽作品
     const weeklyLattePosts = computed(() => {
       return [...lattePosts.value].sort((a,b) => b.timestamp - a.timestamp);
     });
 
-    // 每週日 23:30 結算之首頁排行榜
     const weeklyLeaderboard = computed(() => {
       if (lattePosts.value.length === 0) {
-        return { champion: '', champScore: '', runnerUp: '', runnerScore: '', mostImproved: '', improvedScore: '' };
+        return { champion: '虛位以待', champScore: '', runnerUp: '虛位以待', runnerScore: '', mostImproved: '虛位以待', improvedScore: '' };
       }
 
-      // 依綜合加權分數排序
-      const sorted = [...lattePosts.value].sort((a, b) => {
-        return calculateCombined
+      const sorted = [...lattePosts.value].sort((a, b) => calculateCombinedScore(b) - calculateCombinedScore(a));
+      const champ = sorted[0];
+      const runner = sorted[1];
+      const improved = sorted[2] || sorted[0];
+
+      return {
+        champion: champ ? getStaffName(champ.authorStaffId) : '虛位以待',
+        champScore: champ ? calculateCombinedScore(champ) : '',
+        runnerUp: runner ? getStaffName(runner.authorStaffId) : '虛位以待',
+        runnerScore: runner ? calculateCombinedScore(runner) : '',
+        mostImproved: improved ? getStaffName(improved.authorStaffId) : '虛位以待',
+        improvedScore: improved ? '熱門推薦' : ''
+      };
+    });
+
+    // ==================== 物料打點計算與管理 ====================
+    const matSearchQuery = ref('');
+    const filteredMaterials = computed(() => {
+      const q = matSearchQuery.value.trim().toLowerCase();
+      if (!q) return materials.value;
+      return materials.value.filter(m => 
+        (m.code && String(m.code).toLowerCase().includes(q)) ||
+        (m.name && String(m.name).toLowerCase().includes(q))
+      );
+    });
+
+    const calculateOpenTime = (mat) => {
+      const now = new Date();
+      let target = new Date(now.getTime());
+      
+      let hours = parseInt(mat.hours) || 0;
+      let days = parseInt(mat.days) || 0;
+
+      if ((mat.code === 'MO' || (mat.name && mat.name.includes('摩卡'))) && hours === 0 && days === 0) {
+        hours = 24;
+      }
+
+      let isAdjusted = false;
+      let finalPullDate = '';
+      let finalTiming = '';
+      let resultText = '';
+
+      if (hours > 0) {
+        target.setTime(target.getTime() + hours * 3600 * 1000);
+        
+        const h = target.getHours();
+        const m = target.getMinutes();
+        const minutesOfDay = h * 60 + m;
+
+        // 營業時間 07:00 ~ 21:30 (21:30 = 1290分, 07:00 = 420分)
+        if (minutesOfDay >= 1290 || minutesOfDay < 420) {
+          isAdjusted = true;
+          if (minutesOfDay < 420) {
+            target.setDate(target.getDate() - 1);
+          }
+          target.setHours(21, 30, 0, 0);
+          finalTiming = '21:30 閉店前報廢';
+        } else {
+          finalTiming = `${target.getHours().toString().padStart(2,'0')}:${target.getMinutes().toString().padStart(2,'0')}`;
+        }
+
+        finalPullDate = `${target.getFullYear()}-${(target.getMonth()+1).toString().padStart(2,'0')}-${target.getDate().toString().padStart(2,'0')}`;
+        resultText = `依標示計算 應於${target.getFullYear()}年${(target.getMonth()+1).toString().padStart(2,'0')}月${target.getDate().toString().padStart(2,'0')}日 ${target.getHours().toString().padStart(2,'0')}:${target.getMinutes().toString().padStart(2,'0')} EXP`;
+
+      } else if (days > 0) {
+        target.setDate(target.getDate() + days);
+        target.setHours(21, 30, 0, 0);
+        finalPullDate = `${target.getFullYear()}-${(target.getMonth()+1).toString().padStart(2,'0')}-${target.getDate().toString().padStart(2,'0')}`;
+        finalTiming = `21:30 閉店前 (D+${days})`;
+        resultText = `依標示計算 應於${target.getFullYear()}年${(target.getMonth()+1).toString().padStart(2,'0')}月${target.getDate().toString().padStart(2,'0')}日 21:30 EXP`;
+      } else {
+        finalPullDate = todayStr.value;
+        finalTiming = '依原廠標示';
+        resultText = `依標示計算 應依原廠包裝標示 EXP`;
+      }
+
+      calcModal.value = {
+        show: true,
+        item: mat,
+        targetTimeStr: resultText,
+        pullDate: finalPullDate,
+        timing: finalTiming,
+        isAdjustedForClose: isAdjusted
+      };
+    };
+
+    const addMaterialToSchedule = () => {
+      const modal = calcModal.value;
+      if (!modal.pullDate) return;
+
+      const newItem = {
+        id: Date.now(),
+        itemName: `${modal.item.name} (${modal.item.code})`,
+        factoryExpiry: '開封打點',
+        pullDate: modal.pullDate,
+        timing: modal.timing,
+        isMaterial: true
+      };
+
+      if (db) db.ref('sbux/inventory/' + newItem.id).set(newItem);
+      selectedDate.value = modal.pullDate;
+      modal.show = false;
+      alert(`✅ 已將【${modal.item.name}】同步登記至 ${modal.pullDate} (${modal.timing}) 行事曆！`);
+    };
+
+    const openAddMaterialModal = () => {
+      matEditModal.value = {
+        show: true,
+        isNew: true,
+        form: { code: '', name: '', temp: '常溫', hours: 0, days: 0, notes: '' }
+      };
+    };
+
+    const editMaterial = (mat) => {
+      matEditModal.value = {
+        show: true,
+        isNew: false,
+        form: { ...mat }
+      };
+    };
+
+    const saveMaterialForm = () => {
+      const f = matEditModal.value.form;
+      const id = f.id || Date.now().toString();
+      const updated = { ...f, id };
+      if (db) db.ref('sbux/materials/' + id).set(updated);
+      matEditModal.value.show = false;
+    };
+
+    const deleteMaterial = (mat) => {
+      if (confirm(`確定要刪除物料【${mat.name} (${mat.code})】？此動作全店同步。`)) {
+        if (db && mat.id) db.ref('sbux/materials/' + mat.id).remove();
+      }
+    };
+
+    // ==================== 進貨與下架登記 ====================
+    const intakeForm = ref({ itemName: '', factoryExpiry: '', advanceDays: null, saveAsRule: false });
+    const submitIntake = () => {
+      if (!intakeForm.value.itemName || !intakeForm.value.factoryExpiry) return;
+
+      let advanceDays = intakeForm.value.advanceDays;
+      let timing = "21:30 閉店前";
+
+      if (advanceDays === null || advanceDays === undefined || advanceDays === '') {
+        const matched = rules.value.find(r => intakeForm.value.itemName.includes(r.keyword));
+        if (matched) {
+          advanceDays = parseInt(matched.advance_days) || 0;
+          timing = matched.timing || "21:30 閉店前";
+        } else {
+          advanceDays = 0;
+        }
+      } else {
+        advanceDays = parseInt(advanceDays) || 0;
+      }
+
+      if (intakeForm.value.saveAsRule) {
+        const newRule = {
+          id: Date.now(),
+          keyword: intakeForm.value.itemName.split(' ')[0],
+          advance_days: advanceDays,
+          timing: timing
+        };
+        if (db) db.ref('sbux/rules/' + newRule.id).set(newRule);
+      }
+
+      const d = new Date(intakeForm.value.factoryExpiry);
+      d.setDate(d.getDate() - advanceDays);
+      const pullDate = d.toISOString().split('T')[0];
+
+      const newItem = {
+        id: Date.now(),
+        itemName: intakeForm.value.itemName,
+        factoryExpiry: intakeForm.value.factoryExpiry,
+        pullDate,
+        timing,
+        isMaterial: false
+      };
+
+      if (db) db.ref('sbux/inventory/' + newItem.id).set(newItem);
+
+      selectedDate.value = pullDate;
+      intakeForm.value = { itemName: '', factoryExpiry: '', advanceDays: null, saveAsRule: false };
+      alert(`✅ 已登記進貨！依標準提早 ${advanceDays} 天，將於 ${pullDate} (${timing}) 撤架。全店手機已同步！`);
+    };
+
+    const deleteIntake = (id) => {
+      if (confirm('確定移除此筆下架排程紀錄？（全店同步刪除）')) {
+        if (db) db.ref('sbux/inventory/' + id).remove();
+      }
+    };
+
+    // 月曆日曆邏輯
+    const currentCalDate = ref(new Date());
+    const calYear = computed(() => currentCalDate.value.getFullYear());
+    const calMonth = computed(() => currentCalDate.value.getMonth());
+    const changeMonth = (d) => currentCalDate.value = new Date(calYear.value, calMonth.value + d, 1);
+    const resetToCurrentMonth = () => currentCalDate.value = new Date();
+    const todayStr = computed(() => new Date().toISOString().split('T')[0]);
+    const selectedDate = ref(todayStr.value);
+
+    const calendarDays = computed(() => {
+      const year = calYear.value;
+      const month = calMonth.value;
+      const firstDay = new Date(year, month, 1).getDay();
+      const totalDays = new Date(year, month + 1, 0).getDate();
+      const days = [];
+
+      for (let i = 0; i < firstDay; i++) {
+        days.push({ dayNum: '', isCurrentMonth: false, dateStr: '', items: [] });
+      }
+      for (let d = 1; d <= totalDays; d++) {
+        const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+        const items = inventory.value.filter(it => it.pullDate === dateStr);
+        days.push({ dayNum: d, isCurrentMonth: true, dateStr, items });
+      }
+      return days;
+    });
+
+    const selectedDateItems = computed(() => {
+      if (!selectedDate.value) return [];
+      return inventory.value.filter(it => it.pullDate === selectedDate.value);
+    });
+
+    // ==================== 門市夥伴與兩週後畫假排班 ====================
+    const allowedVacationStartStr = computed(() => {
+      const now = new Date();
+      const day = now.getDay();
+      const diffToMonday = (day === 0 ? -6 : 1) - day;
+      const thisMonday = new Date(now.setDate(now.getDate() + diffToMonday));
+      const targetMonday = new Date(thisMonday.setDate(thisMonday.getDate() + 14));
+      return targetMonday.toISOString().split('T')[0];
+    });
+
+    const scheduleStartDate = ref('');
+    const scheduleEndDate = ref('');
+
+    const setNextWeekRange = () => {
+      const start = allowedVacationStartStr.value;
+      scheduleStartDate.value = start;
+      const d = new Date(start);
+      d.setDate(d.getDate() + 6);
+      scheduleEndDate.value = d.toISOString().split('T')[0];
+    };
+    setNextWeekRange();
+
+    const targetRangeDates = computed(() => {
+      if (!scheduleStartDate.value || !scheduleEndDate.value) return [];
+      const dates = [];
+      const current = new Date(scheduleStartDate.value);
+      const end = new Date(scheduleEndDate.value);
+      const weekNames = ['日', '一', '二', '三', '四', '五', '六'];
+
+      while (current <= end) {
+        const dateStr = current.toISOString().split('T')[0];
+        const month = (current.getMonth() + 1).toString().padStart(2, '0');
+        const day = current.getDate().toString().padStart(2, '0');
+        dates.push({
+          dateStr: dateStr,
+          displayDate: `${month}/${day}`,
+          weekday: weekNames[current.getDay()],
+          dayIndex: (current.getDay() + 6) % 7
+        });
+        current.setDate(current.getDate() + 1);
+      }
+      return dates;
+    });
+
+    const vacationForm = ref({ staffId: '', date: '', type: '無法排班', notes: '' });
+    const submitVacation = () => {
+      if (!vacationForm.value.staffId || !vacationForm.value.date) return;
+      if (vacationForm.value.date < allowedVacationStartStr.value) {
+        alert(`❌ 違反應提早兩週畫假之門市規範！目前最早僅開放登記【${allowedVacationStartStr.value}】之後的假。`);
+        return;
+      }
+
+      const id = Date.now().toString();
+      const newVac = { id, ...vacationForm.value };
+      if (db) db.ref('sbux/vacations/' + id).set(newVac);
+
+      vacationForm.value = { staffId: '', date: '', type: '無法排班', notes: '' };
+      alert('✅ 畫假成功！排班表已同步標註【✕】與請假備註！');
+    };
+
+    const promptSecureDeleteVacation = (v) => {
+      secureDeleteModal.value = {
+        show: true,
+        target: v,
+        inputName: ''
+      };
+    };
+
+    const confirmSecureDelete = () => {
+      const modal = secureDeleteModal.value;
+      const targetStaff = staffList.value.find(s => (s.id === modal.target.staffId || s._key === modal.target.staffId));
+      if (!targetStaff) {
+        if (confirm('查無該夥伴檔案，是否直接強制刪除此孤立畫假紀錄？')) {
+          if (db) db.ref('sbux/vacations/' + modal.target.id).remove();
+          modal.show = false;
+        }
+        return;
+      }
+
+      if (modal.inputName.trim() === targetStaff.name.trim()) {
+        if (db) db.ref('sbux/vacations/' + modal.target.id).remove();
+        modal.show = false;
+        alert('✅ 姓名核對正確，已成功刪除該筆畫假紀錄！');
+      } else {
+        alert('❌ 輸入的姓名與該紀錄夥伴不符！系統已取消刪除。');
+      }
+    };
+
+    const sortedVacationList = computed(() => {
+      return [...vacationList.value].sort((a,b) => new Date(a.date) - new Date(b.date));
+    });
+
+    const getVacationData = (staffId, dateStr) => {
+      return vacationList.value.find(item => item.staffId === staffId && item.date === dateStr) || null;
+    };
+
+    const openAvailabilityModal = (staff) => {
+      const existing = staff.availability || {};
+      const form = {};
+      for (let i = 0; i < 7; i++) {
+        const key = 'day_' + i;
+        if (existing[key]) {
+          form[key] = { ...existing[key] };
+        } else {
+          form[key] = { type: 'all', start: '06:30', end: '22:30' };
+        }
+      }
+      availModal.value = {
+        show: true,
+        staff: staff,
+        form: form
+      };
+    };
+
+    const saveAvailability = () => {
+      const staff = availModal.value.staff;
+      const targetKey = staff._key || staff.id;
+      if (db && targetKey) {
+        db.ref('sbux/staff/' + targetKey + '/availability').set(availModal.value.form);
+      }
+      availModal.value.show = false;
+      alert(`✅ 已更新【${staff.name}】的每週固定排班時段設定！`);
+    };
+
+    const getAvailabilitySummary = (staff) => {
+      if (!staff.availability) return '尚未設定 (預設皆可)';
+      const weekNames = ['一', '二', '三', '四', '五', '六', '日'];
+      const notes = [];
+      for (let i = 0; i < 7; i++) {
+        const av = staff.availability['day_' + i];
+        if (av) {
+          if (av.type === 'none') notes.push(`週${weekNames[i]}休`);
+          else if (av.type === 'custom') notes.push(`週${weekNames[i]}:${av.start}-${av.end}`);
+        }
+      }
+      return notes.length > 0 ? notes.join(' | ') : '整週皆可';
+    };
+
+    const getAvailabilityText = (staff, dateStr) => {
+      if (!staff.availability) return '';
+      const d = new Date(dateStr);
+      const dayIdx = (d.getDay() + 6) % 7;
+      const av = staff.availability['day_' + dayIdx];
+      if (!av) return '';
+      if (av.type === 'none') return '不可配班';
+      if (av.type === 'custom') return `可 ${av.start}-${av.end}`;
+      return '';
+    };
+
+    const openAddStaffModal = () => {
+      staffModal.value = {
+        show: true,
+        isNew: true,
+        form: { empId: '', name: '', nickname: '', role: '兼職夥伴' }
+      };
+    };
+
+    const editStaff = (s) => {
+      staffModal.value = {
+        show: true,
+        isNew: false,
+        form: { ...s }
+      };
+    };
+
+    const saveStaffForm = () => {
+      const f = staffModal.value.form;
+      const key = f._key || f.id || ('staff_' + f.empId);
+      const updated = {
+        id: key,
+        empId: f.empId,
+        name: f.name,
+        nickname: f.nickname,
+        role: f.role || '兼職夥伴',
+        availability: f.availability || {
+          day_0: { type: 'all', start: '06:30', end: '22:30' },
+          day_1: { type: 'all', start: '06:30', end: '22:30' },
+          day_2: { type: 'all', start: '06:30', end: '22:30' },
+          day_3: { type: 'all', start: '06:30', end: '22:30' },
+          day_4: { type: 'all', start: '06:30', end: '22:30' },
+          day_5: { type: 'all', start: '06:30', end: '22:30' },
+          day_6: { type: 'all', start: '06:30', end: '22:30' }
+        }
+      };
+      if (db) db.ref('sbux/staff/' + key).set(updated);
+      staffModal.value.show = false;
+    };
+
+    const promptSecureDeleteStaff = (s) => {
+      secureStaffDeleteModal.value = {
+        show: true,
+        target: s,
+        inputName: '',
+        inputEmpId: ''
+      };
+    };
+
+    const confirmSecureStaffDelete = () => {
+      const modal = secureStaffDeleteModal.value;
+      const target = modal.target;
+      if (!target) return;
+
+      if (modal.inputName.trim() === target.name.trim() && modal.inputEmpId.trim() === target.empId.trim()) {
+        const staffKey = target._key || target.id;
+        if (db) {
+          db.ref('sbux/staff/' + staffKey).remove();
+
+          vacationList.value.forEach(v => {
+            if (v.staffId === staffKey || v.staffId === target.id) {
+              db.ref('sbux/vacations/' + v.id).remove();
+            }
+          });
+        }
+        secureStaffDeleteModal.value.show = false;
+        alert(`✅ 驗證成功！已刪除【${target.name}】及其所有歷史畫假紀錄！`);
+      } else {
+        alert('❌ 姓名或工號不符！系統已取消刪除以確保門市名冊安全。');
+      }
+    };
+
+    const forcePurgeStaffNode = (key) => {
+      if (confirm(`確定強制自雲端刪除節點 [${key}]？`)) {
+        if (db) db.ref('sbux/staff/' + key).remove();
+      }
+    };
+
+    const printTodayStr = computed(() => {
+      const d = new Date();
+      return `${d.getFullYear()}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`;
+    });
+
+    const triggerPrintSchedule = () => {
+      window.print();
+    };
+
+    const exportScheduleExcel = () => {
+      if (validStaffList.value.length === 0) {
+        alert('尚未建立門市夥伴名單！');
+        return;
+      }
+      const headers = ["員工編號", "員工姓名"];
+      targetRangeDates.value.forEach(d => headers.push(`${d.displayDate} (${d.weekday})`));
+
+      const rows = validStaffList.value.map(staff => {
+        const staffKey = staff._key || staff.id;
+        const row = [staff.empId, `${staff.name} (${staff.nickname})`];
+        targetRangeDates.value.forEach(d => {
+          const v = getVacationData(staffKey, d.dateStr);
+          if (v) {
+            row.push(`✕ 【${v.type}】${v.notes ? ' ' + v.notes : ''}`);
+          } else {
+            row.push(getAvailabilityText(staff, d.dateStr) || "");
+          }
+        });
+        return row;
+      });
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+      XLSX.utils.book_append_sheet(wb, ws, "門市人員週排班表");
+      XLSX.writeFile(wb, `永和永安_週排班表_${scheduleStartDate.value}_至_${scheduleEndDate.value}.xlsx`);
+    };
+
+    return {
+      currentTab, otherSubTab, isCloudConnected, currentDateTimeDisplay,
+      // 咖啡寶典與拉花擂台
+      coffeeSearchQuery, filteredCoffeeBeans,
+      latteForm, handleLattePhotoUpload, submitLattePost, isAiEvaluating,
+      weeklyLattePosts, voteLattePost, calculateCombinedScore, weeklyLeaderboard,
+      // 原核心功能
+      materials, matSearchQuery, filteredMaterials,
+      calcModal, calculateOpenTime, addMaterialToSchedule,
+      matEditModal, openAddMaterialModal, editMaterial, saveMaterialForm, deleteMaterial,
+      intakeForm, submitIntake, deleteIntake,
+      calYear, calMonth, changeMonth, resetToCurrentMonth, calendarDays, todayStr, selectedDate, selectedDateItems,
+      staffList, validStaffList, forcePurgeStaffNode,
+      vacationList, sortedVacationList, vacationForm, submitVacation,
+      secureDeleteModal, promptSecureDeleteVacation, confirmSecureDelete,
+      staffModal, openAddStaffModal, editStaff, saveStaffForm,
+      secureStaffDeleteModal, promptSecureDeleteStaff, confirmSecureStaffDelete,
+      availModal, openAvailabilityModal, saveAvailability, getAvailabilitySummary, getAvailabilityText, timeSlots,
+      allowedVacationStartStr, scheduleStartDate, scheduleEndDate, targetRangeDates, setNextWeekRange,
+      printTodayStr, triggerPrintSchedule, exportScheduleExcel, getStaffName, getVacationData
+    };
+  }
+}).mount('#app');
+</script>
+
+</body>
+</html>
