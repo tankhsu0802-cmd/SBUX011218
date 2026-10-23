@@ -1368,46 +1368,57 @@
               </div>
             </div>
 
-            <!-- 門市相簿庫 -->
+            <!-- 門市相簿庫 (支援自訂相簿建立與刪除) -->
             <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
               <div class="flex justify-between items-center">
                 <div>
                   <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                     <span>📷</span> 門市專屬相簿庫
                   </h3>
-                  <p class="text-[10px] text-slate-400">建立自訂相簿分類</p>
+                  <p class="text-[10px] text-slate-400">建立活動分類與照片紀錄</p>
                 </div>
-                <button @click="openCreateAlbumModal" class="text-[10px] font-bold px-2.5 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg shadow-sm">
+                <button @click="openCreateAlbumModal" class="text-[10px] font-bold px-2.5 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg shadow-sm active:scale-95 transition">
                   + 建立新相簿
                 </button>
               </div>
 
-              <div v-if="customAlbums.length > 0" class="flex gap-1.5 overflow-x-auto pb-1 text-[11px]">
+              <!-- 相簿分類選單標籤 (可點選切換、管理員可點 ✕ 刪除相簿) -->
+              <div class="flex gap-1.5 overflow-x-auto pb-1 text-[11px] items-center">
                 <button 
                   @click="selectedAlbum = 'all'" 
                   :class="selectedAlbum === 'all' ? 'bg-emerald-800 text-white font-bold' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" 
                   class="px-2.5 py-1 rounded-lg whitespace-nowrap transition">
                   全部照片
                 </button>
-                <button 
-                  v-for="alb in customAlbums" :key="alb" 
-                  @click="selectedAlbum = alb" 
-                  :class="selectedAlbum === alb ? 'bg-emerald-800 text-white font-bold' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" 
-                  class="px-2.5 py-1 rounded-lg whitespace-nowrap transition">
-                  {{ alb }}
-                </button>
-              </div>
-              <p v-else class="text-[11px] text-slate-400 py-1 bg-slate-50 dark:bg-slate-900/40 p-2 rounded-xl text-center">
-                目前尚未建立任何自訂相簿，請點擊上方按鈕建立。
-              </p>
 
-              <label class="block border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-3 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
+                <div 
+                  v-for="alb in customAlbums" :key="alb"
+                  class="flex items-center rounded-lg transition overflow-hidden flex-shrink-0"
+                  :class="selectedAlbum === alb ? 'bg-emerald-800 text-white font-bold' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'">
+                  <button 
+                    @click="selectedAlbum = alb" 
+                    class="px-2.5 py-1 whitespace-nowrap">
+                    {{ alb }}
+                  </button>
+                  <button 
+                    v-if="isManager" 
+                    @click.stop="deleteAlbum(alb)" 
+                    class="pr-2 pl-0.5 py-1 hover:text-red-400 text-xs" 
+                    title="刪除相簿分類">
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              <!-- 上傳照片入口 -->
+              <label class="block border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-3 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition active:scale-[0.99]">
                 <input type="file" accept="image/*" @change="handleStorePhotoUpload" class="hidden">
                 <div class="text-[11px] text-slate-500 dark:text-slate-400 font-bold flex items-center justify-center gap-1">
                   <span>📤</span> 點擊上傳照片至【{{ selectedAlbum === 'all' ? '一般門市相簿' : selectedAlbum }}】
                 </div>
               </label>
 
+              <!-- 照片展示網格 (支援點擊刪除單張照片) -->
               <div v-if="filteredStorePhotos.length > 0" class="grid grid-cols-2 gap-2 pt-1">
                 <div v-for="p in filteredStorePhotos" :key="p.id" class="bg-slate-50 dark:bg-slate-700 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-600 relative group">
                   <img :src="p.url" class="w-full h-28 object-cover">
@@ -1415,10 +1426,12 @@
                     <div class="font-bold text-slate-800 dark:text-slate-200 truncate">{{ p.album }}</div>
                     <div class="text-slate-400 text-[9px]">{{ p.dateStr }}</div>
                   </div>
-                  <button @click="deleteStorePhoto(p.id)" class="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 text-[10px] flex items-center justify-center">✕</button>
+                  <button @click="deleteStorePhoto(p.id)" class="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 text-[10px] flex items-center justify-center hover:bg-red-600 transition">✕</button>
                 </div>
               </div>
-              <p v-else class="text-xs text-slate-400 py-4 text-center">該分類尚無任何照片上傳。</p>
+              <p v-else class="text-xs text-slate-400 py-4 text-center bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-700">
+                該分類尚無任何照片上傳。
+              </p>
             </div>
 
             <!-- Bravo 感謝小卡 -->
@@ -2545,6 +2558,8 @@ createApp({
     };
 
     const openCreateAlbumModal = () => { createAlbumModal.value = { show: true, name: '' }; };
+    
+    // 建立新相簿
     const saveNewAlbum = () => {
       const name = createAlbumModal.value.name.trim();
       if (!name) return;
@@ -2557,6 +2572,19 @@ createApp({
       alert(`📁 已建立相簿【${name}】！`);
     };
 
+    // 刪除整個相簿分類 (若當前處於該相簿會自動跳回全部照片)
+    const deleteAlbum = (albumName) => {
+      if (confirm(`確定要刪除相簿【${albumName}】嗎？\n（該相簿底下的照片仍會保留在「全部照片」中）`)) {
+        customAlbums.value = customAlbums.value.filter(a => a !== albumName);
+        if (db) db.ref('sbux/custom_albums').set(customAlbums.value);
+        if (selectedAlbum.value === albumName) {
+          selectedAlbum.value = 'all';
+        }
+        alert(`🗑️ 已刪除相簿【${albumName}】！`);
+      }
+    };
+
+    // 上傳照片
     const handleStorePhotoUpload = (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -2575,39 +2603,17 @@ createApp({
       reader.readAsDataURL(file);
     };
 
+    // 刪除單張照片
     const deleteStorePhoto = (id) => {
       if (confirm('確定刪除此張相片？')) {
         if (db) db.ref('sbux/store_photos/' + id).remove();
       }
     };
 
+    // 依相簿篩選照片
     const filteredStorePhotos = computed(() => {
       if (selectedAlbum.value === 'all') return storePhotos.value;
       return storePhotos.value.filter(p => p.album === selectedAlbum.value);
-    });
-
-    const openBravoModal = () => { bravoModal.value = { show: true, form: { targetStaffId: '', message: '' } }; };
-    const submitBravoCard = () => {
-      const f = bravoModal.value.form;
-      if (!currentPartner.value || !f.targetStaffId || !f.message) return;
-      const newCard = {
-        id: Date.now().toString(),
-        senderStaffId: currentPartner.value.id || currentPartner.value._key,
-        targetStaffId: f.targetStaffId,
-        message: f.message,
-        dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`,
-        timestamp: Date.now()
-      };
-      if (db) db.ref('sbux/bravo_cards/' + newCard.id).set(newCard);
-      bravoModal.value.show = false;
-      alert('💌 Bravo 暖心感謝小卡已公開貼上感謝牆！');
-    };
-
-    const matSearchQuery = ref('');
-    const filteredMaterials = computed(() => {
-      const q = matSearchQuery.value.trim().toLowerCase();
-      if (!q) return materials.value;
-      return materials.value.filter(m => (m.code && String(m.code).toLowerCase().includes(q)) || (m.name && String(m.name).toLowerCase().includes(q)));
     });
 
     const calculateOpenTime = (mat) => {
@@ -2964,7 +2970,7 @@ createApp({
       showRulesLibrary, addRuleModal, openAddRuleModal, saveNewRule, deleteRule, applyRuleToForm,
       bulletinList, bulletinModal, openBulletinModal, submitBulletin, deleteBulletin,
       storePhotos, customAlbums, selectedAlbum, createAlbumModal, openCreateAlbumModal, saveNewAlbum,
-      handleStorePhotoUpload, deleteStorePhoto, filteredStorePhotos,
+      handleStorePhotoUpload, deleteStorePhoto, deleteAlbum, filteredStorePhotos,
       bravoCardsList, bravoModal, openBravoModal, submitBravoCard,
       starbucksCoreBeans, coffeeSearchQuery, filteredCoffeeBeans,
       tastingForm, submitTastingNote, tastingNotesList, getIntensityLabel,
