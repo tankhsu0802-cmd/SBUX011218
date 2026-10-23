@@ -53,11 +53,11 @@
 
     /* iOS 極致毛玻璃效果 */
     .ios-glass-bar {
-      background: rgba(255, 255, 255, 0.45) !important; /* 降低不透明度至 45%，透光感更強 */
+      background: rgba(255, 255, 255, 0.45) !important;
       backdrop-filter: blur(25px) saturate(190%) !important;
       -webkit-backdrop-filter: blur(25px) saturate(190%) !important;
       box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04) !important;
-      border-top: 1px solid rgba(255, 255, 255, 0.6) !important; /* 頂部微光細邊框 */
+      border-top: 1px solid rgba(255, 255, 255, 0.6) !important;
     }
     .dark .ios-glass-bar {
       background: rgba(15, 23, 42, 0.55) !important;
@@ -117,7 +117,7 @@
       transform: scale(0.95);
     }
 
-    /* 嚴格的 A4 直式列印排版 (徹底修復第一頁下方殘缺格子) */
+    /* 嚴格的 A4 直式列印排版 */
     @media screen {
       .print-only-container { display: none !important; }
     }
@@ -127,7 +127,7 @@
         color: black !important; 
         padding: 0 !important; 
         margin: 0 !important; 
-        /* 強制第 9 位夥伴從第二頁開始，徹底解決手機腰斬人名問題 */
+      }
       .print-page-break {
         page-break-before: always !important;
         break-before: page !important;
@@ -140,7 +140,6 @@
         padding: 0 !important; 
       }
       
-      /* 強制手機 WebKit 遵守整列不切斷規則 */
       table { 
         width: 100% !important; 
         table-layout: fixed !important; 
@@ -157,7 +156,7 @@
         break-inside: avoid !important; 
         -webkit-column-break-inside: avoid !important;
         break-inside: avoid-page !important;
-        height: 82px !important; /* 同步調為 82px，直式兩頁皆剛好垂直填滿 */
+        height: 82px !important;
       }
       th, td { 
         word-break: break-all !important; 
@@ -173,7 +172,7 @@
 
 <div id="app" v-cloak class="min-h-screen flex flex-col justify-between">
 
-  <!-- ==================== 1. 門市工號登入畫面 (清空所有範例) ==================== -->
+  <!-- ==================== 1. 門市工號登入畫面 ==================== -->
   <div v-if="!currentPartner" class="min-h-screen flex items-center justify-center p-4 bg-slate-900">
     <div class="w-full max-w-sm bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-2xl space-y-4 border border-slate-200 dark:border-slate-700 transition-all">
       <div class="text-center space-y-1">
@@ -235,7 +234,7 @@
       </div>
     </header>
 
-    <!-- 主要內容區 (平滑過場) -->
+    <!-- 主要內容區 -->
     <main class="flex-1 p-4 space-y-4">
       <transition name="fade" mode="out-in">
         <div :key="currentTab">
@@ -284,7 +283,7 @@
               </div>
             </div>
 
-            <!-- 門市公告欄 (僅管理者可發布) -->
+            <!-- 門市公告欄 -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 space-y-2.5">
               <div class="flex justify-between items-center">
                 <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
@@ -310,7 +309,7 @@
               </p>
             </div>
 
-            <!-- 每日隨機星巴克 & CA 100~300 小知識卡片 -->
+            <!-- 每日隨機小知識 -->
             <a 
               :href="todayTrivia.searchUrl" 
               target="_blank" 
@@ -333,7 +332,7 @@
               </div>
             </a>
 
-            <!-- 門市榮譽殿堂 (無預設假數據) -->
+            <!-- 門市榮譽殿堂 -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
               <div class="flex justify-between items-center">
                 <div>
@@ -383,49 +382,48 @@
               </button>
             </div>
 
-            <!-- 常用功能快速入口 -->
             <!-- 常用功能快速入口 (極簡線性風格) -->
-        <div class="grid grid-cols-2 gap-3">
-          <button @click="currentTab = 'materials'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
-            <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
-              <i data-lucide="clock" class="w-4 h-4"></i>
-            </div>
-            <div>
-              <div class="text-xs font-bold text-slate-900 dark:text-white">物料打點試算</div>
-              <div class="text-[10px] text-slate-400">24HR 閉店自動防呆</div>
-            </div>
-          </button>
+            <div class="grid grid-cols-2 gap-3">
+              <button @click="currentTab = 'materials'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
+                <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
+                  <i data-lucide="clock" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-slate-900 dark:text-white">物料打點試算</div>
+                  <div class="text-[10px] text-slate-400">24HR 閉店自動防呆</div>
+                </div>
+              </button>
 
-          <button @click="currentTab = 'intake'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
-            <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
-              <i data-lucide="package" class="w-4 h-4"></i>
-            </div>
-            <div>
-              <div class="text-xs font-bold text-slate-900 dark:text-white">進貨下架月曆</div>
-              <div class="text-[10px] text-slate-400">標準庫下拉快速登記</div>
-            </div>
-          </button>
+              <button @click="currentTab = 'intake'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
+                <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
+                  <i data-lucide="package" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-slate-900 dark:text-white">進貨下架月曆</div>
+                  <div class="text-[10px] text-slate-400">標準庫下拉快速登記</div>
+                </div>
+              </button>
 
-          <button @click="currentTab = 'roster'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
-            <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
-              <i data-lucide="users" class="w-4 h-4"></i>
-            </div>
-            <div>
-              <div class="text-xs font-bold text-slate-900 dark:text-white">兩週後畫假排班</div>
-              <div class="text-[10px] text-slate-400">匯出 A4 直式排班表</div>
-            </div>
-          </button>
+              <button @click="currentTab = 'roster'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
+                <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-slate-900 dark:text-white">兩週後畫假排班</div>
+                  <div class="text-[10px] text-slate-400">匯出 A4 直式排班表</div>
+                </div>
+              </button>
 
-          <button @click="currentTab = 'about'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
-            <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
-              <i data-lucide="coffee" class="w-4 h-4"></i>
+              <button @click="currentTab = 'about'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
+                <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
+                  <i data-lucide="coffee" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-slate-900 dark:text-white">關於永安門市</div>
+                  <div class="text-[10px] text-slate-400">門市資訊與相簿庫</div>
+                </div>
+              </button>
             </div>
-            <div>
-              <div class="text-xs font-bold text-slate-900 dark:text-white">關於永安門市</div>
-              <div class="text-[10px] text-slate-400">門市資訊與相簿庫</div>
-            </div>
-          </button>
-        </div>
 
           </section>
 
@@ -436,14 +434,14 @@
                 <input 
                   v-model="matSearchQuery" 
                   type="text" 
-                  placeholder="搜尋代號或品名..."
+                  placeholder="搜尋代號或品名..." 
                   class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-700"
                 >
                 <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
               </div>
               <button 
-                v-if="isManager"
-                @click="openAddMaterialModal"
+                v-if="isManager" 
+                @click="openAddMaterialModal" 
                 class="px-3 py-2 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition whitespace-nowrap">
                 + 手動新增
               </button>
@@ -451,7 +449,7 @@
 
             <div class="space-y-3">
               <div 
-                v-for="mat in filteredMaterials" :key="mat.id || (mat.code + mat.name)"
+                v-for="mat in filteredMaterials" :key="mat.id || (mat.code + mat.name)" 
                 class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2">
                 <div class="flex justify-between items-start">
                   <div>
@@ -462,7 +460,7 @@
                   </div>
                   <div class="flex items-center gap-1.5">
                     <span 
-                      :class="mat.temp === '冷藏' ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300' : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300'"
+                      :class="mat.temp === '冷藏' ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300' : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300'" 
                       class="px-2 py-0.5 text-xs font-bold rounded-full">
                       {{ mat.temp || '常溫' }}
                     </span>
@@ -477,7 +475,7 @@
                 </div>
 
                 <button 
-                  @click="calculateOpenTime(mat)"
+                  @click="calculateOpenTime(mat)" 
                   class="w-full py-2 bg-slate-100 dark:bg-slate-700 hover:bg-emerald-100 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-600 transition">
                   ⏱️ 試算此時開封到期打點
                 </button>
@@ -490,7 +488,7 @@
             </div>
           </section>
 
-          <!-- ==================== 頁籤 2：下架行事曆 (已修復日期欄壓扁) ==================== -->
+          <!-- ==================== 頁籤 2：下架行事曆 ==================== -->
           <section v-if="currentTab === 'intake'" class="space-y-4">
             
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3 overflow-hidden">
@@ -517,8 +515,8 @@
                 <input 
                   v-model="intakeForm.itemName" 
                   type="text" 
-                  required
-                  placeholder="請輸入食品品名"
+                  required 
+                  placeholder="請輸入食品品名" 
                   class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white block"
                 >
                 <div class="flex gap-2 w-full">
@@ -527,7 +525,7 @@
                     <input 
                       v-model="intakeForm.factoryExpiry" 
                       type="date" 
-                      required
+                      required 
                       class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white block"
                     >
                   </div>
@@ -537,7 +535,7 @@
                       v-model.number="intakeForm.advanceDays" 
                       type="number" 
                       min="0" 
-                      placeholder="天數"
+                      placeholder="天數" 
                       class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white block"
                     >
                   </div>
@@ -600,8 +598,8 @@
 
               <div class="grid grid-cols-7 gap-1">
                 <div 
-                  v-for="(day, idx) in calendarDays" :key="idx"
-                  @click="day.dateStr && (selectedDate = day.dateStr)"
+                  v-for="(day, idx) in calendarDays" :key="idx" 
+                  @click="day.dateStr && (selectedDate = day.dateStr)" 
                   :class="[
                     'h-12 p-1 rounded-lg border flex flex-col justify-between text-[11px] transition cursor-pointer',
                     day.isCurrentMonth ? 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700' : 'bg-slate-50 dark:bg-slate-900 border-transparent text-slate-300 dark:text-slate-600',
@@ -625,7 +623,7 @@
               
               <div v-if="selectedDateItems.length > 0" class="space-y-2">
                 <div 
-                  v-for="item in selectedDateItems" :key="item.id"
+                  v-for="item in selectedDateItems" :key="item.id" 
                   class="p-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 rounded-xl text-xs flex justify-between items-center">
                   <div>
                     <div class="font-bold text-red-950 dark:text-red-200 flex items-center gap-1.5">
@@ -642,7 +640,7 @@
 
           </section>
 
-          <!-- ==================== 頁籤 3：門市夥伴畫假與排班管理 (已修正最早日期) ==================== -->
+          <!-- ==================== 頁籤 3：門市夥伴畫假與排班管理 ==================== -->
           <section v-if="currentTab === 'roster'" class="space-y-4">
             
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3 overflow-hidden">
@@ -655,7 +653,6 @@
                 </button>
               </div>
 
-              <!-- 嚴格顯示兩週後週一：2026-11-02 起 -->
               <div class="p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl text-[11px] text-amber-800 dark:text-amber-300 space-y-0.5">
                 <div class="font-bold flex items-center gap-1">
                   <span>⚠️</span> 畫假規則：每週僅能預排兩週後的假
@@ -679,8 +676,8 @@
                     <input 
                       v-model="vacationForm.date" 
                       type="date" 
-                      :min="allowedVacationStartStr"
-                      required
+                      :min="allowedVacationStartStr" 
+                      required 
                       class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white block"
                     >
                   </div>
@@ -700,7 +697,7 @@
                     <input 
                       v-model="vacationForm.notes" 
                       type="text" 
-                      placeholder="選填備註事項"
+                      placeholder="選填備註事項" 
                       class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white block"
                     >
                   </div>
@@ -718,8 +715,8 @@
                 <div class="flex justify-between items-center">
                   <label class="text-[11px] text-slate-700 dark:text-slate-300 font-bold">📅 排班匯出範圍</label>
                   <button 
-                    @click="setNextWeekRange"
-                    type="button"
+                    @click="setNextWeekRange" 
+                    type="button" 
                     class="text-[10px] px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded font-medium">
                     ⚡ 快速填入 7 天
                   </button>
@@ -746,12 +743,12 @@
 
                 <div class="grid grid-cols-2 gap-2 pt-1">
                   <button 
-                    @click="triggerPrintSchedule"
+                    @click="triggerPrintSchedule" 
                     class="py-2.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5">
                     <span>🖨️</span> 列印空白排班表 (A4直式)
                   </button>
                   <button 
-                    @click="exportScheduleExcel"
+                    @click="exportScheduleExcel" 
                     class="py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5">
                     <span>📊</span> 匯出 Excel 表
                   </button>
@@ -768,7 +765,7 @@
               
               <div class="space-y-2 max-h-64 overflow-y-auto">
                 <div 
-                  v-for="s in staffList" :key="s._key || s.id"
+                  v-for="s in staffList" :key="s._key || s.id" 
                   :class="isSpecialCoffeeMaster(s) ? 'black-gold-card p-3 rounded-2xl relative overflow-hidden flex flex-col gap-1.5 text-xs text-amber-100' : 'p-2.5 bg-slate-50 dark:bg-slate-700/60 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col gap-1 text-xs'">
                   
                   <div v-if="s.nickname === 'Hazel'" class="absolute -top-1 -right-1 dcm-corner-badge text-[9px] font-black px-2.5 py-0.5 rounded-bl-xl flex items-center gap-1">
@@ -817,7 +814,7 @@
                     <span v-if="v.notes" class="text-slate-500 text-[11px] ml-1">({{ v.notes }})</span>
                   </div>
                   <button 
-                    v-if="isManager || v.staffId === currentPartner.id || v.staffId === currentPartner._key"
+                    v-if="isManager || v.staffId === currentPartner.id || v.staffId === currentPartner._key" 
                     @click="promptSecureDeleteVacation(v)" 
                     class="text-slate-400 hover:text-red-600 text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded">
                     刪除
@@ -847,7 +844,7 @@
               </button>
             </div>
 
-            <!-- CA 100~300 完整黑圍裙大師精編講義 (內建離線免外連) -->
+            <!-- CA 100~300 完整黑圍裙大師精編講義 (內建免外連) -->
             <div v-if="otherSubTab === 'academy'" class="space-y-3">
               
               <!-- 頂部講義抬頭 -->
@@ -864,7 +861,7 @@
                 </p>
               </div>
 
-              <!-- ==================== CA 100：基礎咖啡學 ==================== -->
+              <!-- CA 100：基礎咖啡學 -->
               <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
                 <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
                   <div class="flex items-center gap-2">
@@ -874,7 +871,6 @@
                   <span class="text-[10px] font-bold text-slate-400">Coffee Fundamentals</span>
                 </div>
 
-                <!-- 品嚐四步驟 -->
                 <div class="space-y-1.5">
                   <div class="text-xs font-bold text-emerald-900 dark:text-emerald-400 flex items-center gap-1">
                     <span>👃</span> 核心一：品嚐咖啡四步驟 (Four Steps of Tasting)
@@ -899,7 +895,6 @@
                   </div>
                 </div>
 
-                <!-- 四大特徵與沖煮四大原則 -->
                 <div class="space-y-2 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700 leading-relaxed">
                   <div>
                     <b class="text-slate-800 dark:text-slate-200">🎯 咖啡四大特徵 (Characteristics)：</b>
@@ -922,7 +917,7 @@
                 </div>
               </div>
 
-              <!-- ==================== CA 200：產區風土與永續 ==================== -->
+              <!-- CA 200：產區風土與永續 -->
               <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
                 <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
                   <div class="flex items-center gap-2">
@@ -932,7 +927,6 @@
                   <span class="text-[10px] font-bold text-slate-400">Origins & Processing</span>
                 </div>
 
-                <!-- 三大產區特色 -->
                 <div class="space-y-1.5">
                   <div class="text-xs font-bold text-emerald-900 dark:text-emerald-400 flex items-center gap-1">
                     <span>🌎</span> 三大核心咖啡產區風味密碼
@@ -956,7 +950,6 @@
                   </div>
                 </div>
 
-                <!-- 處理法與道德採購 -->
                 <div class="space-y-2 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700 leading-relaxed">
                   <div>
                     <b class="text-slate-800 dark:text-slate-200">🍒 三大主要生豆處理法：</b>
@@ -969,13 +962,13 @@
                   <div class="border-t border-slate-200 dark:border-slate-700 pt-2">
                     <b class="text-slate-800 dark:text-slate-200">🌱 C.A.F.E. Practices (道德採購規範)：</b>
                     <p class="text-slate-600 dark:text-slate-300 mt-0.5">
-                      星巴克與保護國際基金會（CI）共同制定的四大核心支柱：<b>品質標準</b>、<b>經濟透明度</b>（確保款項落入農民手中）、<b>社會責任</b>（工作環境與教育福祉）、<b>環境領導力</b>（水源土壤永續保護）。
+                      星巴克與保護國際基金會（CI）共同制定的四大核心支柱：<b>品質標準</b>、<b>經濟透明度</b>、<b>社會責任</b>、<b>環境領導力</b>。
                     </p>
                   </div>
                 </div>
               </div>
 
-              <!-- ==================== CA 300：烘焙工藝與大師品評 ==================== -->
+              <!-- CA 300：烘焙工藝與大師品評 -->
               <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
                 <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
                   <div class="flex items-center gap-2">
@@ -985,7 +978,6 @@
                   <span class="text-[10px] font-bold text-amber-500">Roast & Blend Master</span>
                 </div>
 
-                <!-- 烘焙熱力學 -->
                 <div class="space-y-2 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700 leading-relaxed">
                   <div>
                     <b class="text-slate-800 dark:text-slate-200">🔥 烘焙熱力學與梅納反應 (Roast Science)：</b>
@@ -1011,67 +1003,6 @@
                 </div>
               </div>
 
-            </div>
-
-              <!-- CA 100 -->
-              <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2.5">
-                <div class="flex justify-between items-center">
-                  <span class="px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-xs font-bold border border-amber-300 dark:border-amber-800">CA 100</span>
-                  <span class="text-[11px] font-bold text-slate-500">咖啡基礎知識入門</span>
-                </div>
-                <h4 class="font-bold text-slate-900 dark:text-white text-sm">Coffee Fundamentals</h4>
-                <div class="text-[11px] text-slate-600 dark:text-slate-300 space-y-1 bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700">
-                  <div><b>👃 品嚐四步驟：</b>聞香 (Smell)、啜飲 (Slurp)、定位 (Locate)、描述 (Describe)。</div>
-                  <div><b>☕ 咖啡四大特徵：</b>香氣 (Aroma)、酸度 (Acidity)、醇度 (Body)、風味 (Flavor)。</div>
-                  <div><b>⚖️ 沖煮四大原則：</b>比例 (Proportion)、研磨 (Grind)、水質 (Water)、新鮮度 (Freshness)。</div>
-                </div>
-                <a 
-              href="https://translate.google.com/translate?sl=en&tl=zh-TW&u=https://www.starbucksglobalacademy.com/learning-topics/coffee/" 
-              target="_blank" 
-              class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1 transition">
-              <span>🚀</span> 進入 CA 100 官方線上課程 (中文版) ↗
-            </a>
-              </div>
-
-              <!-- CA 200 -->
-              <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2.5">
-                <div class="flex justify-between items-center">
-                  <span class="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 text-xs font-bold border border-emerald-300 dark:border-emerald-800">CA 200</span>
-                  <span class="text-[11px] font-bold text-slate-500">產區風土與道德採購</span>
-                </div>
-                <h4 class="font-bold text-slate-900 dark:text-white text-sm">Coffee Sourcing & Origins</h4>
-                <div class="text-[11px] text-slate-600 dark:text-slate-300 space-y-1 bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700">
-                  <div><b>🌎 三大主要產區特質：</b>拉丁美洲（堅果可可）、非洲（莓果明亮果酸）、亞太（厚重草本）。</div>
-                  <div><b>🍒 三大水洗與濕刨處理法：</b>風味成因與乾燥過程。</div>
-                  <div><b>🌱 永續發展：</b>C.A.F.E. Practices 與全球農民支持中心（FSC）。</div>
-                </div>
-               <a 
-              href="https://translate.google.com/translate?sl=en&tl=zh-TW&u=https://www.starbucksglobalacademy.com/learning-topics/coffee/" 
-              target="_blank" 
-              class="w-full py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1 transition">
-              <span>🚀</span> 進入 CA 200 官方線上課程 (中文版) ↗
-            </a>
-              </div>
-
-              <!-- CA 300 -->
-              <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2.5">
-                <div class="flex justify-between items-center">
-                  <span class="px-2 py-0.5 rounded bg-zinc-950 text-amber-300 text-xs font-bold border border-amber-400">CA 300</span>
-                  <span class="text-[11px] font-bold text-amber-500">黑圍裙烘焙與大師工藝</span>
-                </div>
-                <h4 class="font-bold text-slate-900 dark:text-white text-sm">Roast, Blend & Craft</h4>
-                <div class="text-[11px] text-slate-600 dark:text-slate-300 space-y-1 bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700">
-                  <div><b>🔬 烘焙熱力學：</b>一爆、二爆焦糖化反應對酸醇結構的調控。</div>
-                  <div><b>🎨 拼配藝術：</b>多產區風味互補，締造如佛羅娜與義式濃縮之經典風味。</div>
-                  <div><b>🖤 黑圍裙咖啡大師使命：</b>以熱情主導感官品評，傳遞咖啡故事。</div>
-                </div>
-               <a 
-              href="https://translate.google.com/translate?sl=en&tl=zh-TW&u=https://www.starbucksglobalacademy.com/learning-topics/coffee/" 
-              target="_blank" 
-              class="w-full py-2 bg-zinc-900 hover:bg-black text-amber-300 border border-amber-500/50 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1 transition">
-              <span>🚀</span> 進入 CA 300 官方線上課程 (中文版) ↗
-             </a>
-               </div>
             </div>
 
             <!-- 沖煮秘笈與常態豆寶典 -->
@@ -1115,14 +1046,14 @@
                   <input 
                     v-model="coffeeSearchQuery" 
                     type="text" 
-                    placeholder="搜尋豆名、產區、烘焙度..."
+                    placeholder="搜尋豆名、產區、烘焙度..." 
                     class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white"
                   >
                   <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
                 </div>
 
                 <div 
-                  v-for="bean in filteredCoffeeBeans" :key="bean.name"
+                  v-for="bean in filteredCoffeeBeans" :key="bean.name" 
                   class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2">
                   <div class="flex justify-between items-start">
                     <div>
@@ -1134,7 +1065,7 @@
                         'bg-amber-100 text-amber-800 border-amber-300': bean.roast === '黃金烘焙',
                         'bg-orange-100 text-orange-900 border-orange-300': bean.roast === '中度烘焙',
                         'bg-stone-800 text-stone-100 border-stone-900': bean.roast === '深度烘焙'
-                      }"
+                      }" 
                       class="px-2 py-0.5 text-xs font-bold rounded-md border">
                       {{ bean.roast }}
                     </span>
@@ -1210,8 +1141,8 @@
                 <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200">📋 門市 Tasting 品評動態牆</h4>
                 <div v-if="tastingNotesList.length > 0" class="space-y-2.5">
                   <div 
-                    v-for="item in tastingNotesList" :key="item.id"
-                    :class="isSpecialCoffeeMasterById(item.authorStaffId) ? 'border-amber-400 bg-amber-50/20 dark:bg-amber-950/20' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'"
+                    v-for="item in tastingNotesList" :key="item.id" 
+                    :class="isSpecialCoffeeMasterById(item.authorStaffId) ? 'border-amber-400 bg-amber-50/20 dark:bg-amber-950/20' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'" 
                     class="rounded-2xl p-3.5 border shadow-sm space-y-2 text-xs">
                     <div class="flex justify-between items-center">
                       <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -1282,8 +1213,8 @@
                   </div>
 
                   <button 
-                    @click="submitLattePost"
-                    :disabled="isAiEvaluating || !latteForm.photoUrl"
+                    @click="submitLattePost" 
+                    :disabled="isAiEvaluating || !latteForm.photoUrl" 
                     class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 disabled:bg-slate-300 transition flex items-center justify-center gap-1.5">
                     <span v-if="isAiEvaluating" class="animate-spin">🔄</span>
                     <span>{{ isAiEvaluating ? 'AI 正在分析奶泡細緻度與對稱性...' : '✨ 提交作品並由 AI 評分' }}</span>
@@ -1300,13 +1231,13 @@
 
                 <div v-if="weeklyLattePosts.length > 0" class="space-y-3">
                   <div 
-                    v-for="post in weeklyLattePosts" :key="post.id"
-                    :class="isSpecialCoffeeMasterById(post.authorStaffId) ? 'border-amber-400 bg-amber-50/20 dark:bg-amber-950/20' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'"
+                    v-for="post in weeklyLattePosts" :key="post.id" 
+                    :class="isSpecialCoffeeMasterById(post.authorStaffId) ? 'border-amber-400 bg-amber-50/20 dark:bg-amber-950/20' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'" 
                     class="rounded-2xl p-4 border shadow-sm space-y-3">
                     <div class="flex justify-between items-center text-xs">
                       <div class="flex items-center gap-2">
                         <div 
-                          :class="isSpecialCoffeeMasterById(post.authorStaffId) ? 'bg-zinc-950 text-amber-300 border border-amber-400' : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'"
+                          :class="isSpecialCoffeeMasterById(post.authorStaffId) ? 'bg-zinc-950 text-amber-300 border border-amber-400' : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'" 
                           class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-[10px]">
                           {{ getStaffName(post.authorStaffId).slice(0, 1) }}
                         </div>
@@ -1336,63 +1267,60 @@
                       <p class="text-[10px] text-emerald-800 dark:text-emerald-300 leading-relaxed">{{ post.aiFeedback }}</p>
                     </div>
 
-                   <!-- 替換後的新程式碼：包含投票與留言圖示展開區 -->
-<div class="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-700 text-xs">
-  <span class="text-[11px] text-slate-500">
-    加權總分：<b class="text-emerald-900 dark:text-emerald-400">{{ calculateCombinedScore(post) }} 分</b>
-  </span>
+                    <!-- 投票與留言開關 -->
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-700 text-xs">
+                      <span class="text-[11px] text-slate-500">
+                        加權總分：<b class="text-emerald-900 dark:text-emerald-400">{{ calculateCombinedScore(post) }} 分</b>
+                      </span>
 
-  <div class="flex items-center gap-2">
-    <!-- 留言展開圖示按鈕 (僅顯示圖示與數字) -->
-    <button 
-      @click="toggleComments(post.id)"
-      class="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-full font-bold border border-slate-200 dark:border-slate-600 transition flex items-center gap-1 active:scale-95">
-      <span>💬</span>
-      <span>{{ getCommentCount(post) }}</span>
-    </button>
+                      <div class="flex items-center gap-2">
+                        <button 
+                          @click="toggleComments(post.id)" 
+                          class="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-full font-bold border border-slate-200 dark:border-slate-600 transition flex items-center gap-1 active:scale-95">
+                          <span>💬</span>
+                          <span>{{ getCommentCount(post) }}</span>
+                        </button>
 
-    <!-- 愛心投票按鈕 -->
-    <button 
-      @click="voteLattePost(post)"
-      :disabled="hasVoted(post.id)"
-      :class="hasVoted(post.id) ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 border-slate-200 dark:border-slate-600 cursor-not-allowed' : 'bg-red-50 hover:bg-red-100 text-red-600 border-red-200 active:scale-95'"
-      class="px-3 py-1 rounded-full font-bold border transition flex items-center gap-1">
-      <span>{{ hasVoted(post.id) ? '✓ 已投' : '❤️' }}</span>
-      <span>({{ post.votes || 0 }})</span>
-    </button>
-  </div>
-</div>
+                        <button 
+                          @click="voteLattePost(post)" 
+                          :disabled="hasVoted(post.id)" 
+                          :class="hasVoted(post.id) ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 border-slate-200 dark:border-slate-600 cursor-not-allowed' : 'bg-red-50 hover:bg-red-100 text-red-600 border-red-200 active:scale-95'" 
+                          class="px-3 py-1 rounded-full font-bold border transition flex items-center gap-1">
+                          <span>{{ hasVoted(post.id) ? '✓ 已投' : '❤️' }}</span>
+                          <span>({{ post.votes || 0 }})</span>
+                        </button>
+                      </div>
+                    </div>
 
-<!-- 點擊 💬 後展開的留言清單與輸入框 -->
-<div v-if="activeCommentPostId === post.id" class="mt-2.5 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2 text-xs">
-  <!-- 留言歷史串 -->
-  <div v-if="post.comments && Object.keys(post.comments).length > 0" class="space-y-1.5 max-h-40 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
-    <div v-for="c in Object.values(post.comments)" :key="c.id" class="pt-1.5 first:pt-0">
-      <div class="flex justify-between items-center text-[10px]">
-        <span class="font-bold text-slate-800 dark:text-slate-200">{{ c.authorName }}</span>
-        <span class="text-slate-400">{{ c.dateStr }}</span>
-      </div>
-      <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed">{{ c.text }}</p>
-    </div>
-  </div>
-  <p v-else class="text-[10px] text-slate-400 text-center py-2">目前尚無留言，留下第一則給夥伴的回饋吧！</p>
+                    <!-- 展開之留言區 -->
+                    <div v-if="activeCommentPostId === post.id" class="mt-2.5 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2 text-xs">
+                      <div v-if="post.comments && Object.keys(post.comments).length > 0" class="space-y-1.5 max-h-40 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                        <div v-for="c in Object.values(post.comments)" :key="c.id" class="pt-1.5 first:pt-0">
+                          <div class="flex justify-between items-center text-[10px]">
+                            <span class="font-bold text-slate-800 dark:text-slate-200">{{ c.authorName }}</span>
+                            <span class="text-slate-400">{{ c.dateStr }}</span>
+                          </div>
+                          <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed">{{ c.text }}</p>
+                        </div>
+                      </div>
+                      <p v-else class="text-[10px] text-slate-400 text-center py-2">目前尚無留言，留下第一則給夥伴的回饋吧！</p>
 
-  <!-- 發表留言輸入欄 -->
-  <form @submit.prevent="submitComment(post)" class="flex gap-1.5 pt-1">
-    <input 
-      v-model="newCommentText" 
-      type="text" 
-      required
-      placeholder="留下讚賞或拉花技巧回饋..."
-      class="flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-700"
-    >
-    <button 
-      type="submit" 
-      class="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition active:scale-95">
-      送出
-    </button>
-  </form>
-</div>
+                      <form @submit.prevent="submitComment(post)" class="flex gap-1.5 pt-1">
+                        <input 
+                          v-model="newCommentText" 
+                          type="text" 
+                          required 
+                          placeholder="留下讚賞或拉花技巧回饋..." 
+                          class="flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-700"
+                        >
+                        <button 
+                          type="submit" 
+                          class="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition active:scale-95">
+                          送出
+                        </button>
+                      </form>
+                    </div>
+
                   </div>
                 </div>
                 <p v-else class="text-xs text-slate-400 py-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
@@ -1406,7 +1334,6 @@
           <!-- ==================== 頁籤 5：【關於】 ==================== -->
           <section v-if="currentTab === 'about'" class="space-y-4">
             
-            <!-- 門市基本資料卡片 -->
             <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
               <div class="flex justify-between items-start">
                 <div>
@@ -1441,7 +1368,7 @@
               </div>
             </div>
 
-            <!-- 門市相簿庫 (無預設名稱) -->
+            <!-- 門市相簿庫 -->
             <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
               <div class="flex justify-between items-center">
                 <div>
@@ -1458,14 +1385,14 @@
               <div v-if="customAlbums.length > 0" class="flex gap-1.5 overflow-x-auto pb-1 text-[11px]">
                 <button 
                   @click="selectedAlbum = 'all'" 
-                  :class="selectedAlbum === 'all' ? 'bg-emerald-800 text-white font-bold' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'"
+                  :class="selectedAlbum === 'all' ? 'bg-emerald-800 text-white font-bold' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" 
                   class="px-2.5 py-1 rounded-lg whitespace-nowrap transition">
                   全部照片
                 </button>
                 <button 
-                  v-for="alb in customAlbums" :key="alb"
-                  @click="selectedAlbum = alb"
-                  :class="selectedAlbum === alb ? 'bg-emerald-800 text-white font-bold' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'"
+                  v-for="alb in customAlbums" :key="alb" 
+                  @click="selectedAlbum = alb" 
+                  :class="selectedAlbum === alb ? 'bg-emerald-800 text-white font-bold' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" 
                   class="px-2.5 py-1 rounded-lg whitespace-nowrap transition">
                   {{ alb }}
                 </button>
@@ -1510,7 +1437,7 @@
 
               <div v-if="bravoCardsList.length > 0" class="space-y-2">
                 <div 
-                  v-for="b in bravoCardsList" :key="b.id"
+                  v-for="b in bravoCardsList" :key="b.id" 
                   class="p-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/30 rounded-2xl border border-amber-200/80 dark:border-amber-900/40 text-xs space-y-1.5 relative shadow-sm">
                   <div class="flex justify-between items-center">
                     <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1">
@@ -1537,51 +1464,42 @@
 
   </div>
 
-  <!-- ==================== 底部 iPhone 極致半透明毛玻璃導航選單 ==================== -->
-<!-- ==================== 底部 iPhone 極致半透明毛玻璃導航選單 (極簡線條) ==================== -->
+  <!-- ==================== 底部極簡線條毛玻璃導航選單 ==================== -->
   <footer v-if="currentPartner" class="screen-element fixed bottom-0 left-0 right-0 z-[9999] ios-glass-bar border-t border-slate-200/60 dark:border-slate-800 shadow-sm transition-all">
     <div class="max-w-md mx-auto grid grid-cols-6 py-2 px-1 text-center">
-      
-      <!-- 1. 首頁 -->
       <button @click="currentTab = 'home'" :class="currentTab === 'home' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
         <i data-lucide="home" class="w-5 h-5 stroke-[1.8]"></i>
         <span class="text-[10px] mt-1 tracking-tight">首頁</span>
       </button>
 
-      <!-- 2. 物料 -->
       <button @click="currentTab = 'materials'" :class="currentTab === 'materials' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
         <i data-lucide="clock" class="w-5 h-5 stroke-[1.8]"></i>
         <span class="text-[10px] mt-1 tracking-tight">物料</span>
       </button>
 
-      <!-- 3. 下架 -->
       <button @click="currentTab = 'intake'" :class="currentTab === 'intake' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
         <i data-lucide="calendar" class="w-5 h-5 stroke-[1.8]"></i>
         <span class="text-[10px] mt-1 tracking-tight">下架</span>
       </button>
 
-      <!-- 4. 排班 -->
       <button @click="currentTab = 'roster'" :class="currentTab === 'roster' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
         <i data-lucide="users" class="w-5 h-5 stroke-[1.8]"></i>
         <span class="text-[10px] mt-1 tracking-tight">排班</span>
       </button>
 
-      <!-- 5. 其他 -->
       <button @click="currentTab = 'other'" :class="currentTab === 'other' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
         <i data-lucide="sparkles" class="w-5 h-5 stroke-[1.8]"></i>
         <span class="text-[10px] mt-1 tracking-tight">其他</span>
       </button>
 
-      <!-- 6. 關於 -->
       <button @click="currentTab = 'about'" :class="currentTab === 'about' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
         <i data-lucide="info" class="w-5 h-5 stroke-[1.8]"></i>
         <span class="text-[10px] mt-1 tracking-tight">關於</span>
       </button>
-
     </div>
   </footer>
 
-  <!-- ==================== 模態視窗群 (平滑縮放動畫) ==================== -->
+  <!-- ==================== 模態視窗群 (所有開關狀態獨立防呆) ==================== -->
 
   <!-- 個人設定 Modal -->
   <transition name="modal">
@@ -1803,7 +1721,7 @@
     </div>
   </transition>
 
-  <!-- 新增夥伴 Modal (已清除所有範例) -->
+  <!-- 新增夥伴 Modal -->
   <transition name="modal">
     <div v-if="staffModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-center justify-center p-4">
       <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
@@ -1892,9 +1810,9 @@
     </div>
   </transition>
 
-  <!-- 畫假刪除確認 Modal (僅核對姓名) -->
+  <!-- 畫假刪除確認 Modal -->
   <transition name="modal">
-    <div v-if="showDeleteRosterModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+    <div v-if="secureDeleteModal.show" class="fixed inset-0 bg-black/60 z-[99999] flex items-center justify-center p-4">
       <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-3">
         <div class="flex items-center gap-2 text-red-600">
           <span class="text-lg">🛡️</span>
@@ -1926,13 +1844,13 @@
   </transition>
 
   <!-- 刪除夥伴確認彈窗 -->
-<div v-if="showDeleteStaffModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-  <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-xl">
-    <!-- 標題與內容 -->
-    <div class="flex items-center gap-2 text-rose-600 font-bold">
-      <i data-lucide="shield-alert" class="w-5 h-5"></i>
-      <span>刪除夥伴基本資料確認</span>
-    </div>
+  <transition name="modal">
+    <div v-if="secureStaffDeleteModal.show" class="fixed inset-0 bg-black/60 z-[99999] flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-xl">
+        <div class="flex items-center gap-2 text-rose-600 font-bold">
+          <span class="text-lg">🛡️</span>
+          <span>刪除夥伴基本資料確認</span>
+        </div>
         <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
           請輸入被刪除夥伴本人的【姓名】與【員工編號】進行確認：
         </p>
@@ -1948,10 +1866,9 @@
     </div>
   </transition>
 
-<!-- ==================== A4 直式滿版列印表格 (已優化欄寬比例與放大字體) ==================== -->
+  <!-- ==================== A4 直式滿版列印表格 ==================== -->
   <div class="print-only-container p-2 bg-white text-black font-sans text-xs">
     
-    <!-- 表頭抬頭 -->
     <div class="border-b-2 border-black pb-2 mb-2">
       <div class="flex justify-between items-center mb-1">
         <div class="text-[11px] font-bold">
@@ -1968,15 +1885,11 @@
       </div>
     </div>
 
-    <!-- 表格主體 (寬度 100% 固定點陣，右側不再被截斷) -->
     <table class="w-full border-collapse border-2 border-black text-center text-xs" style="table-layout: fixed !important; width: 100% !important;">
       <thead>
         <tr class="bg-slate-100 border-b-2 border-black">
-          <!-- 員工編號縮小至 11% -->
           <th class="border border-black p-1 w-[11%] font-bold text-xs">員工編號</th>
-          <!-- 員工姓名縮小至 12% -->
           <th class="border border-black p-1 w-[12%] font-bold text-xs">員工姓名</th>
-          <!-- 每天平均分配 11%，合計 77% + 23% = 100% -->
           <th v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-1 w-[11%]">
             <div class="font-black text-sm">{{ d.displayDate }}</div>
             <div class="text-xs font-bold">({{ d.weekday }})</div>
@@ -1984,25 +1897,21 @@
         </tr>
       </thead>
       <tbody>
-       <tr 
+        <tr 
           v-for="(staff, sIdx) in validStaffList" 
           :key="staff._key || staff.id" 
           :class="[
             'border-b border-black h-[82px]',
-            sIdx === 10 ? 'print-page-break' : ''
+            sIdx === 8 ? 'print-page-break' : ''
           ]">
-         <!-- 工號強制單獨一行、不換行、緊湊字距 -->
           <td class="border border-black font-mono text-xs font-black p-0.5 whitespace-nowrap tracking-tighter align-middle">
             {{ staff.empId }}
           </td>
-          <!-- 姓名文字調大為 text-base 特粗 -->
           <td class="border border-black p-0.5 leading-tight">
             <div class="text-base font-black text-slate-900">{{ staff.name }}</div>
             <div class="text-xs font-bold text-slate-600">({{ staff.nickname }})</div>
           </td>
-          <!-- 每日內容格子 (文字放大) -->
           <td v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-1 relative align-middle">
-            <!-- 畫假顯示 (大叉放大、假別放大) -->
             <template v-if="getVacationData(staff.id || staff._key, d.dateStr)">
               <div class="text-black font-black text-3xl leading-none">✕</div>
               <div class="text-xs font-black text-slate-900 leading-tight mt-0.5">【{{ getVacationData(staff.id || staff._key, d.dateStr).type }}】</div>
@@ -2010,7 +1919,6 @@
                 ({{ getVacationData(staff.id || staff._key, d.dateStr).notes }})
               </div>
             </template>
-            <!-- 固定時段文字放大為 text-xs 粗體 -->
             <template v-else-if="getAvailabilityText(staff, d.dateStr)">
               <div class="text-xs font-bold text-slate-800 leading-snug">
                 {{ getAvailabilityText(staff, d.dateStr) }}
@@ -2022,6 +1930,7 @@
     </table>
   </div>
 
+</div>
 <script>
 // ==================== Firebase 金鑰設定 ====================
 const firebaseConfig = {
@@ -2096,12 +2005,6 @@ createApp({
     });
     const loginForm = ref({ empId: '', password: '' });
 
-    // ===== 彈窗控制變數 (預設關閉 false) =====
-    const showDeleteStaffModal = ref(false);
-    const showDeleteRosterModal = ref(false);
-    const staffToDelete = ref(null);
-    const rosterToDelete = ref(null);
-
     const currentTab = ref('home');
     Vue.watch(currentTab, () => {
       Vue.nextTick(() => { if (window.lucide) lucide.createIcons(); });
@@ -2129,6 +2032,7 @@ createApp({
     const weatherIcon = ref('☀️');
     const weatherGreeting = ref('陽光正好，今天也是元氣滿滿的一天 🌟');
 
+    // 彈窗狀態設定 (全部嚴格預設 false)
     const settingsModal = ref({ show: false, newPassword: '', birthday: '' });
     const addRuleModal = ref({ show: false, form: { keyword: '', advance_days: 7 } });
     const calcModal = ref({ show: false, item: {}, targetTimeStr: '', pullDate: '', timing: '', isAdjustedForClose: false });
@@ -2237,16 +2141,12 @@ createApp({
       const correctPassword = partner.password || partner.empId;
       if (inputPass === correctPassword) {
         currentPartner.value = partner;
-        // 登入成功後，等待 Vue 渲染畫面完畢立即生成圖示
-      Vue.nextTick(() => {
-        if (window.lucide) {
-          lucide.createIcons();
-        }
-      });
+        Vue.nextTick(() => {
+          if (window.lucide) lucide.createIcons();
+        });
         localStorage.setItem('sbux_logged_empid', partner.empId);
         loginForm.value = { empId: '', password: '' };
 
-        // 可愛且無壓迫感的登入溫馨小語
         const greetings = [
           `哈囉 ${partner.nickname}！今天也要開開心心當班喔 💚`,
           `Hi ${partner.nickname}，來杯好咖啡，開啟美好的一天 ☕`,
@@ -2292,7 +2192,6 @@ createApp({
       return `${d.getMonth() + 1}月${d.getDate()}日 (${weekdays[d.getDay()]})`;
     });
 
-    // 生日壽星提醒
     const birthdayAlerts = computed(() => {
       const alerts = [];
       const now = new Date();
@@ -2349,7 +2248,6 @@ createApp({
       }
     };
 
-    // 倒數計時器
     const countdownToSunday = ref('--天 --時 --分 --秒');
     const updateCountdown = () => {
       const now = new Date();
@@ -2385,30 +2283,24 @@ createApp({
       return `${now.getMonth() + 1}/${now.getDate()} 當週首期評選中`;
     });
 
-const settledHonors = computed(() => {
+    const settledHonors = computed(() => {
       const now = new Date();
-      // 取得今天星期幾 (0 是週日, 1 是週一 ... 6 是週六)
       const day = now.getDay();
       const hours = now.getHours();
       const minutes = now.getMinutes();
 
-      // 判斷當前是否已經過了週日 23:30 的結算臨界點
       const isPastSettlementTime = (day === 0 && (hours > 23 || (hours === 23 && minutes >= 30)));
 
-      // 預設未結算狀態
       let champName = isPastSettlementTime ? '本週結算無參賽' : '⏳ 評選統計中';
       let champScore = isPastSettlementTime ? '' : '週日 23:30 揭曉';
       let progressName = '次週結算';
       let progressDelta = '需累積兩週成績';
 
-      // 1. 當週冠軍計算 (必須滿足：已過週日 23:30 且有作品)
       if (lattePosts.value.length > 0) {
         if (!isPastSettlementTime) {
-          // 未到週日 23:30，不提前公佈名次，保持評選階段
           champName = '⏳ 評選激戰中';
           champScore = '週日 23:30 結算';
         } else {
-          // 週日 23:30 結算後，計算當週最高分夥伴
           const staffBestScoreMap = {};
           lattePosts.value.forEach(post => {
             const score = calculateCombinedScore(post);
@@ -2426,15 +2318,11 @@ const settledHonors = computed(() => {
         }
       }
 
-      // 2. 最佳進步獎計算 (必須具備至少兩週的週結算歷史才比對)
-      // 避免第一週單人上傳兩張照片就自己跟自己比出進步獎
       if (lattePosts.value.length > 0 && isPastSettlementTime) {
-        // 從資料庫讀取歷史結算紀錄 (若無跨週歷史則維持次週揭曉)
-        const weeklyHistory = {}; // 依週次分類的成績池
+        const weeklyHistory = {};
         lattePosts.value.forEach(p => {
           if (!p.timestamp) return;
           const pDate = new Date(p.timestamp);
-          // 簡易週次 key: 年-第幾週
           const startOfYear = new Date(pDate.getFullYear(), 0, 1);
           const weekNum = Math.ceil((((pDate - startOfYear) / 86400000) + startOfYear.getDay() + 1) / 7);
           const wKey = `${pDate.getFullYear()}-W${weekNum}`;
@@ -2448,7 +2336,6 @@ const settledHonors = computed(() => {
         });
 
         const availableWeeks = Object.keys(weeklyHistory).sort();
-        // 必須至少有 2 個不同週次的結算數據才能產生最佳進步獎
         if (availableWeeks.length >= 2) {
           const prevWeek = weeklyHistory[availableWeeks[availableWeeks.length - 2]];
           const currWeek = weeklyHistory[availableWeeks[availableWeeks.length - 1]];
@@ -2478,7 +2365,6 @@ const settledHonors = computed(() => {
         }
       }
 
-      // 3. 本週活躍夥伴 (即時顯示發表最熱絡之夥伴)
       let activeName = '虛位以待';
       let activeTitle = '';
       if (tastingNotesList.value.length > 0) {
@@ -2619,11 +2505,10 @@ const settledHonors = computed(() => {
     };
 
     const weeklyLattePosts = computed(() => [...lattePosts.value].sort((a,b) => b.timestamp - a.timestamp));
-// ==================== 拉花留言區專屬邏輯 ====================
+
     const activeCommentPostId = ref(null);
     const newCommentText = ref('');
 
-    // 切換展開/收合該拉花照片之留言區
     const toggleComments = (postId) => {
       if (activeCommentPostId.value === postId) {
         activeCommentPostId.value = null;
@@ -2633,13 +2518,11 @@ const settledHonors = computed(() => {
       }
     };
 
-    // 取得留言數量
     const getCommentCount = (post) => {
       if (!post.comments) return 0;
       return Object.keys(post.comments).length;
     };
 
-    // 送出留言 (寫入 Firebase 並自動標記作者)
     const submitComment = (post) => {
       const text = newCommentText.value.trim();
       if (!text || !currentPartner.value) return;
@@ -2660,6 +2543,7 @@ const settledHonors = computed(() => {
 
       newCommentText.value = '';
     };
+
     const openCreateAlbumModal = () => { createAlbumModal.value = { show: true, name: '' }; };
     const saveNewAlbum = () => {
       const name = createAlbumModal.value.name.trim();
@@ -2859,14 +2743,11 @@ const settledHonors = computed(() => {
 
     const selectedDateItems = computed(() => selectedDate.value ? inventory.value.filter(it => it.pullDate === selectedDate.value) : []);
 
-    // 核心演算法修正：精確推進到兩週後的週一 (保證 11/02 起)
     const allowedVacationStartStr = computed(() => {
       const now = new Date();
-      const day = now.getDay(); // 0(週日), 1(週一), ..., 6(週六)
-      // 計算本週一
+      const day = now.getDay();
       const diffToMonday = (day === 0 ? -6 : 1) - day;
       const thisMonday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday);
-      // 推進完整兩週 (14天) 到目標週一
       const targetMonday = new Date(thisMonday.getFullYear(), thisMonday.getMonth(), thisMonday.getDate() + 14);
       return `${targetMonday.getFullYear()}-${(targetMonday.getMonth() + 1).toString().padStart(2, '0')}-${targetMonday.getDate().toString().padStart(2, '0')}`;
     });
@@ -3024,12 +2905,6 @@ const settledHonors = computed(() => {
       }
     };
 
-    const forcePurgeStaffNode = (key) => {
-      if (confirm(`確定強制刪除節點 [${key}]？`)) {
-        if (db) db.ref('sbux/staff/' + key).remove();
-      }
-    };
-
     const printTodayStr = computed(() => {
       const d = new Date();
       return `${d.getFullYear()}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`;
@@ -3081,10 +2956,6 @@ const settledHonors = computed(() => {
     };
 
     return {
-      showDeleteStaffModal,
-      showDeleteRosterModal,
-      staffToDelete,
-      rosterToDelete,
       currentPartner, loginForm, handleLogin, handleLogout, isManager, isDarkMode, toggleDarkMode,
       settingsModal, openSettingsModal, saveNewPassword, saveBirthday, birthdayAlerts,
       currentTab, otherSubTab, isCloudConnected, currentDateTimeDisplay, todayTrivia,
@@ -3104,7 +2975,7 @@ const settledHonors = computed(() => {
       matEditModal, openAddMaterialModal, editMaterial, saveMaterialForm, deleteMaterial,
       intakeForm, submitIntake, deleteIntake, rules,
       calYear, calMonth, changeMonth, resetToCurrentMonth, calendarDays, todayStr, selectedDate, selectedDateItems,
-      staffList, validStaffList, forcePurgeStaffNode,
+      staffList, validStaffList,
       isSpecialCoffeeMaster, isSpecialCoffeeMasterById, getStaffNicknameById,
       vacationList, sortedVacationList, vacationForm, submitVacation,
       secureDeleteModal, promptSecureDeleteVacation, confirmSecureDelete,
