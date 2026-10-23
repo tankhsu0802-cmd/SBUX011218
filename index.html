@@ -20,13 +20,26 @@
       -webkit-tap-highlight-color: transparent;
       padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
     }
-    @media print {
-      body { background: white !important; color: black !important; padding-bottom: 0 !important; }
-      header, footer, nav, .no-print { display: none !important; }
-      .print-only { display: block !important; }
-      @page { size: landscape; margin: 0.6cm; }
+    @media screen {
+      .print-only-container { display: none !important; }
     }
-    .print-only { display: none; }
+    @media print {
+      body { 
+        background: white !important; 
+        color: black !important; 
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .no-print { display: none !important; }
+      .print-only-container { 
+        display: block !important; 
+        width: 100% !important;
+      }
+      @page { 
+        size: portrait; 
+        margin: 0.5cm; 
+      }
+    }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased">
@@ -72,7 +85,7 @@
         </button>
       </div>
 
-      <!-- 物料卡片清單 -->
+      <!-- 物料清單 -->
       <div class="space-y-3">
         <div 
           v-for="mat in filteredMaterials" :key="mat.id || (mat.code + mat.name)"
@@ -127,7 +140,7 @@
       <!-- 快速進貨登記 -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2">
         <h2 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-          <span>📦</span> 快速登記進貨（依標準自動推算，亦可手動指定天數）
+          <span>📦</span> 快速登記進貨（可手動自訂下架天數）
         </h2>
         <form @submit.prevent="submitIntake" class="space-y-2">
           <input 
@@ -324,7 +337,7 @@
           </button>
         </form>
 
-        <!-- 獨立的「起始日」與「結束日」排班目標設定 -->
+        <!-- 獨立的起始日與結束日 -->
         <div class="pt-3 border-t border-slate-100 space-y-2">
           <div class="flex justify-between items-center">
             <label class="text-[11px] text-slate-700 font-bold">📅 排班匯出範圍（支援跨週/春節連假）</label>
@@ -359,7 +372,7 @@
             <button 
               @click="triggerPrintSchedule"
               class="py-2.5 bg-slate-900 active:bg-black text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5">
-              <span>🖨️</span> 列印空白排班表
+              <span>🖨️</span> 列印空白排班表 (直式)
             </button>
             <button 
               @click="exportScheduleExcel"
@@ -370,7 +383,7 @@
         </div>
       </div>
 
-      <!-- 夥伴名單與畫假紀錄管理 -->
+      <!-- 夥伴名冊 -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <h3 class="text-xs font-bold text-slate-800 flex justify-between">
           <span>📋 門市夥伴名冊 (共 {{ staffList.length }} 人)</span>
@@ -395,7 +408,7 @@
         </div>
       </div>
 
-      <!-- 近期畫假清單 -->
+      <!-- 畫假清單 -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2">
         <h3 class="text-xs font-bold text-slate-800">📌 已登記畫假紀錄 (打叉清單)</h3>
         <div v-if="vacationList.length > 0" class="divide-y divide-slate-100 max-h-48 overflow-y-auto text-xs">
@@ -442,7 +455,7 @@
           <p class="text-[10px] text-amber-600">正在自動比對物料名稱、代號與 D+N 效期規則，請稍候。</p>
         </div>
 
-        <!-- 辨識結果預覽卡片（可逐筆手動調整） -->
+        <!-- 辨識結果預覽卡片 -->
         <div v-if="parsedPreview.show" class="p-4 bg-emerald-50/80 border border-emerald-300 rounded-2xl space-y-3">
           <div class="flex justify-between items-center">
             <h3 class="text-xs font-bold text-emerald-950">📋 辨識結果預覽與校對（共 {{ parsedPreview.items.length }} 筆）</h3>
@@ -519,7 +532,7 @@
 
   </main>
 
-  <!-- 底部導航選單 (4格大觸控) -->
+  <!-- 底部導航選單 -->
   <footer class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 no-print">
     <div class="max-w-md mx-auto grid grid-cols-4 py-2 px-2">
       <button 
@@ -553,7 +566,7 @@
     </div>
   </footer>
 
-  <!-- 打點試算 Modal（含精確 24 小時制與依標示計算） -->
+  <!-- 打點試算 Modal -->
   <div v-if="calcModal.show" class="fixed inset-0 bg-black/40 z-50 flex items-end justify-center p-4 no-print">
     <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
       <div class="flex justify-between items-center">
@@ -668,67 +681,108 @@
     </div>
   </div>
 
-</div>
+  <!-- ==================== A4 直式直出列印專用排班表（掛載在 #app 內，徹底解決大括號） ==================== -->
+  <div class="print-only-container p-2 bg-white text-black font-sans text-xs">
+    
+    <!-- 表頭抬頭 -->
+    <div class="flex justify-between items-end border-b-2 border-black pb-1 mb-1">
+      <div class="space-y-0.5 text-[10px]">
+        <div>營業日期：{{ scheduleStartDate ? scheduleStartDate.replace(/-/g, '/') : '' }} - {{ scheduleEndDate ? scheduleEndDate.replace(/-/g, '/') : '' }}</div>
+        <div>門市：永和永安 (011218)</div>
+      </div>
+      <div class="text-center font-bold text-lg tracking-widest leading-none">
+        門市人員週排班表
+      </div>
+      <div class="text-right text-[10px] space-y-0.5">
+        <div>製作日期：{{ printTodayStr }}</div>
+        <div>單位：小時</div>
+      </div>
+    </div>
 
-<!-- ==================== A4 橫向直出列印專用排班表 (完整擬真門市人員週排班表) ==================== -->
-<div class="print-only p-4 bg-white text-black font-sans">
-  <div class="flex justify-between items-end border-b-2 border-black pb-1 mb-2">
-    <div>
-      <div class="text-xs">營業日期：{{ scheduleStartDate ? scheduleStartDate.replace(/-/g, '/') : '' }} - {{ scheduleEndDate ? scheduleEndDate.replace(/-/g, '/') : '' }}</div>
-      <div class="text-xs">門市：永和永安 (011218)</div>
-    </div>
-    <div class="text-center font-bold text-xl tracking-widest">
-      門市人員週排班表
-    </div>
-    <div class="text-right text-xs">
-      <div>製作日期：{{ printTodayStr }}</div>
-      <div>單位：小時</div>
-    </div>
+    <!-- 主表格 (直式 A4 適配版) -->
+    <table class="w-full border-collapse border border-black text-center text-[10px]">
+      <thead>
+        <tr class="bg-slate-100 border-b border-black">
+          <th class="border border-black p-1 w-14">員工編號</th>
+          <th class="border border-black p-1 w-16">員工姓名</th>
+          <th v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-0.5 min-w-[40px]">
+            <div>{{ d.displayDate }}</div>
+            <div class="text-[9px]">({{ d.weekday }})</div>
+          </th>
+          <th class="border border-black p-0.5 w-10">工時小計</th>
+          <th class="border border-black p-0.5 w-20">FT本週加班轉代休</th>
+          <th class="border border-black p-0.5 w-18">我自願提出請假且已確認</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="staff in staffList" :key="staff.id" class="h-10 border-b border-black">
+          <td class="border border-black font-mono text-[9px]">{{ staff.empId }}</td>
+          <td class="border border-black font-bold p-0.5 leading-tight">
+            <div>{{ staff.name }}</div>
+            <div class="text-[9px] text-slate-600">({{ staff.nickname }})</div>
+          </td>
+          <td v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-0.5 relative">
+            <template v-if="getVacationMark(staff.id, d.dateStr)">
+              <div class="text-black font-black text-base leading-none">✕</div>
+              <div class="text-[8px] text-slate-700 leading-tight">{{ getVacationMark(staff.id, d.dateStr) }}</div>
+            </template>
+          </td>
+          <td class="border border-black"></td>
+          <td class="border border-black text-[8px] text-left p-1 leading-tight">
+            <div>□代休：___hr</div>
+            <div>□加班費：___hr</div>
+            <div class="mt-0.5">簽名：</div>
+          </td>
+          <td class="border border-black text-[8px] text-left p-1 leading-tight">
+            <div>簽名：</div>
+          </td>
+        </tr>
+        
+        <tr v-if="staffList.length === 0">
+          <td :colspan="targetRangeDates.length + 5" class="p-4 text-slate-400">尚未建立門市夥伴資料，請先至系統新增。</td>
+        </tr>
+
+        <!-- 底部統計欄位 (對齊實體排班表) -->
+        <tr class="h-6 font-bold bg-slate-50 border-t-2 border-black">
+          <td colspan="2" class="border border-black text-right pr-2">本店上班總計：</td>
+          <td v-for="d in targetRangeDates" :key="'work-'+d.dateStr" class="border border-black"></td>
+          <td class="border border-black"></td>
+          <td colspan="2" class="border border-black bg-slate-100"></td>
+        </tr>
+        <tr class="h-5 text-[9px]">
+          <td colspan="2" class="border border-black text-right pr-2">Coverage總計：</td>
+          <td v-for="d in targetRangeDates" :key="'cov-'+d.dateStr" class="border border-black"></td>
+          <td class="border border-black"></td>
+          <td colspan="2" class="border border-black bg-slate-100"></td>
+        </tr>
+        <tr class="h-5 text-[9px]">
+          <td colspan="2" class="border border-black text-right pr-2">NonCoverage總計：</td>
+          <td v-for="d in targetRangeDates" :key="'noncov-'+d.dateStr" class="border border-black"></td>
+          <td class="border border-black"></td>
+          <td colspan="2" class="border border-black bg-slate-100"></td>
+        </tr>
+        <tr class="h-5 text-[9px]">
+          <td colspan="2" class="border border-black text-right pr-2">教育訓練總計：</td>
+          <td v-for="d in targetRangeDates" :key="'edu-'+d.dateStr" class="border border-black"></td>
+          <td class="border border-black"></td>
+          <td colspan="2" class="border border-black bg-slate-100"></td>
+        </tr>
+        <tr class="h-5 text-[9px]">
+          <td colspan="2" class="border border-black text-right pr-2">小天使工作總計：</td>
+          <td v-for="d in targetRangeDates" :key="'angel-'+d.dateStr" class="border border-black"></td>
+          <td class="border border-black"></td>
+          <td colspan="2" class="border border-black bg-slate-100"></td>
+        </tr>
+        <tr class="h-6 font-bold bg-slate-100">
+          <td colspan="2" class="border border-black text-right pr-2">LST總計：</td>
+          <td v-for="d in targetRangeDates" :key="'lst-'+d.dateStr" class="border border-black"></td>
+          <td class="border border-black"></td>
+          <td colspan="2" class="border border-black bg-slate-200"></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
-  <table class="w-full border-collapse border border-black text-center text-xs">
-    <thead>
-      <tr class="bg-slate-100 border-b border-black">
-        <th class="border border-black p-1 w-16">員工編號</th>
-        <th class="border border-black p-1 w-20">員工姓名</th>
-        <th v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-1 min-w-[70px]">
-          <div>{{ d.displayDate }}</div>
-          <div class="text-[10px]">({{ d.weekday }})</div>
-        </th>
-        <th class="border border-black p-1 w-12">工時小計</th>
-        <th class="border border-black p-1 w-24">FT本週加班轉代休</th>
-        <th class="border border-black p-1 w-24">親自提出請假且已確認</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="staff in staffList" :key="staff.id" class="h-12 border-b border-black">
-        <td class="border border-black font-mono text-[11px]">{{ staff.empId }}</td>
-        <td class="border border-black font-bold">
-          <div>{{ staff.name }}</div>
-          <div class="text-[10px] text-slate-600">({{ staff.nickname }})</div>
-        </td>
-        <td v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-0.5 relative">
-          <!-- 若有畫假直接打大叉 ✕ -->
-          <template v-if="getVacationMark(staff.id, d.dateStr)">
-            <div class="text-red-600 font-black text-lg leading-none">✕</div>
-            <div class="text-[9px] text-slate-700 leading-tight">{{ getVacationMark(staff.id, d.dateStr) }}</div>
-          </template>
-        </td>
-        <td class="border border-black"></td>
-        <td class="border border-black text-[9px] text-left p-1">
-          <div>□代休：___hr</div>
-          <div>□加班費：___hr</div>
-          <div class="mt-1">簽名：</div>
-        </td>
-        <td class="border border-black text-[9px] text-left p-1">
-          <div>簽名：</div>
-        </td>
-      </tr>
-      <tr v-if="staffList.length === 0">
-        <td :colspan="targetRangeDates.length + 5" class="p-4 text-slate-400">尚未建立門市夥伴資料，請先至系統新增。</td>
-      </tr>
-    </tbody>
-  </table>
 </div>
 
 <script>
@@ -769,7 +823,7 @@ createApp({
     const staffList = ref([]);
     const vacationList = ref([]);
 
-    // Firebase 即時資料監聽
+    // Firebase 監聽
     if (db) {
       db.ref('.info/connected').on('value', snap => isCloudConnected.value = snap.val() === true);
       db.ref('sbux/materials').on('value', snap => materials.value = snap.val() ? Object.values(snap.val()) : []);
@@ -806,7 +860,7 @@ createApp({
       let hours = parseInt(mat.hours) || 0;
       let days = parseInt(mat.days) || 0;
 
-      // 特殊補正：摩卡醬 (MO) 常溫 24HR
+      // 摩卡醬 (MO) 常溫 24HR 防呆
       if ((mat.code === 'MO' || (mat.name && mat.name.includes('摩卡'))) && hours === 0 && days === 0) {
         hours = 24;
       }
@@ -908,7 +962,7 @@ createApp({
       }
     };
 
-    // ==================== 進貨與下架登記 (取消預設一週) ====================
+    // ==================== 進貨與下架登記 ====================
     const intakeForm = ref({ itemName: '', factoryExpiry: '', advanceDays: null, saveAsRule: false });
     const submitIntake = () => {
       if (!intakeForm.value.itemName || !intakeForm.value.factoryExpiry) return;
@@ -916,20 +970,18 @@ createApp({
       let advanceDays = intakeForm.value.advanceDays;
       let timing = "21:30 閉店前";
 
-      // 若未手動填寫提前天數，則向下架標準庫比對
       if (advanceDays === null || advanceDays === undefined || advanceDays === '') {
         const matched = rules.value.find(r => intakeForm.value.itemName.includes(r.keyword));
         if (matched) {
           advanceDays = parseInt(matched.advance_days) || 0;
           timing = matched.timing || "21:30 閉店前";
         } else {
-          advanceDays = 0; // 取消預設一週，無規則即為 0 天
+          advanceDays = 0;
         }
       } else {
         advanceDays = parseInt(advanceDays) || 0;
       }
 
-      // 若勾選儲存為規則
       if (intakeForm.value.saveAsRule) {
         const newRule = {
           id: Date.now(),
@@ -1006,22 +1058,18 @@ createApp({
     });
 
     // ==================== 門市夥伴與兩週後畫假排班 ====================
-    // 計算兩週後的週一（週首日）
     const allowedVacationStartStr = computed(() => {
       const now = new Date();
       const day = now.getDay();
       const diffToMonday = (day === 0 ? -6 : 1) - day;
       const thisMonday = new Date(now.setDate(now.getDate() + diffToMonday));
-      // 兩週後的週一 = 當週週一 + 14 天
       const targetMonday = new Date(thisMonday.setDate(thisMonday.getDate() + 14));
       return targetMonday.toISOString().split('T')[0];
     });
 
-    // 獨立的起始日與結束日選擇（預設兩週後的週一至週日）
     const scheduleStartDate = ref('');
     const scheduleEndDate = ref('');
 
-    // 快速填入 7 天捷徑
     const setNextWeekRange = () => {
       const start = allowedVacationStartStr.value;
       scheduleStartDate.value = start;
@@ -1031,7 +1079,6 @@ createApp({
     };
     setNextWeekRange();
 
-    // 動態計算所選區間的所有天數（支援 7 天、14 天或跨週）
     const targetRangeDates = computed(() => {
       if (!scheduleStartDate.value || !scheduleEndDate.value) return [];
       const dates = [];
@@ -1053,7 +1100,6 @@ createApp({
       return dates;
     });
 
-    // 畫假表單
     const vacationForm = ref({ staffId: '', date: '', type: '✕', notes: '' });
     const submitVacation = () => {
       if (!vacationForm.value.staffId || !vacationForm.value.date) return;
@@ -1136,7 +1182,7 @@ createApp({
       }
       const headers = ["員工編號", "員工姓名"];
       targetRangeDates.value.forEach(d => headers.push(`${d.displayDate} (${d.weekday})`));
-      headers.push("工時小計", "加班轉代休確認", "提出請假且確認簽名");
+      headers.push("工時小計", "FT本週加班轉代休", "我自願提出請假且已確認");
 
       const rows = staffList.value.map(staff => {
         const row = [staff.empId, `${staff.name} (${staff.nickname})`];
@@ -1147,6 +1193,15 @@ createApp({
         row.push("", "", "");
         return row;
       });
+
+      // 加入實體表底部統計列
+      const emptyDays = targetRangeDates.value.map(() => "");
+      rows.push(["", "本店上班總計", ...emptyDays, "", "", ""]);
+      rows.push(["", "Coverage總計", ...emptyDays, "", "", ""]);
+      rows.push(["", "NonCoverage總計", ...emptyDays, "", "", ""]);
+      rows.push(["", "教育訓練總計", ...emptyDays, "", "", ""]);
+      rows.push(["", "小天使工作總計", ...emptyDays, "", "", ""]);
+      rows.push(["", "LST總計", ...emptyDays, "", "", ""]);
 
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
