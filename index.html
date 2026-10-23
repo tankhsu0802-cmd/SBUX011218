@@ -1744,8 +1744,10 @@
     </div>
   </transition>
 
-  <!-- ==================== A4 直式滿版列印表格 (嚴格防斷行排版) ==================== -->
+<!-- ==================== A4 直式滿版列印表格 (已優化欄寬比例與放大字體) ==================== -->
   <div class="print-only-container p-2 bg-white text-black font-sans text-xs">
+    
+    <!-- 表頭抬頭 -->
     <div class="border-b-2 border-black pb-2 mb-2">
       <div class="flex justify-between items-center mb-1">
         <div class="text-[11px] font-bold">
@@ -1762,34 +1764,45 @@
       </div>
     </div>
 
-    <table class="w-full border-collapse border border-black text-center text-xs">
+    <!-- 表格主體 (寬度 100% 固定點陣，右側不再被截斷) -->
+    <table class="w-full border-collapse border-2 border-black text-center text-xs" style="table-layout: fixed !important; width: 100% !important;">
       <thead>
-        <tr class="bg-slate-100 border-b border-black">
-          <th class="border border-black p-2 w-[14%] font-bold">員工編號</th>
-          <th class="border border-black p-2 w-[16%] font-bold">員工姓名</th>
-          <th v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-2 min-w-[70px]">
-            <div class="font-bold text-sm">{{ d.displayDate }}</div>
-            <div class="text-[11px]">({{ d.weekday }})</div>
+        <tr class="bg-slate-100 border-b-2 border-black">
+          <!-- 員工編號縮小至 11% -->
+          <th class="border border-black p-1 w-[11%] font-bold text-xs">員工編號</th>
+          <!-- 員工姓名縮小至 12% -->
+          <th class="border border-black p-1 w-[12%] font-bold text-xs">員工姓名</th>
+          <!-- 每天平均分配 11%，合計 77% + 23% = 100% -->
+          <th v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-1 w-[11%]">
+            <div class="font-black text-sm">{{ d.displayDate }}</div>
+            <div class="text-xs font-bold">({{ d.weekday }})</div>
           </th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="staff in validStaffList" :key="staff._key || staff.id" class="h-20 border-b border-black" style="page-break-inside: avoid !important; break-inside: avoid !important;">
-          <td class="border border-black font-mono text-xs">{{ staff.empId }}</td>
-          <td class="border border-black font-bold p-1 leading-tight">
-            <div class="text-sm">{{ staff.name }}</div>
-            <div class="text-xs text-slate-600">({{ staff.nickname }})</div>
+          <!-- 工號文字調大為 text-sm 粗體 -->
+          <td class="border border-black font-mono text-sm font-bold p-0.5 leading-tight">
+            {{ staff.empId }}
           </td>
+          <!-- 姓名文字調大為 text-base 特粗 -->
+          <td class="border border-black p-0.5 leading-tight">
+            <div class="text-base font-black text-slate-900">{{ staff.name }}</div>
+            <div class="text-xs font-bold text-slate-600">({{ staff.nickname }})</div>
+          </td>
+          <!-- 每日內容格子 (文字放大) -->
           <td v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-1 relative align-middle">
+            <!-- 畫假顯示 (大叉放大、假別放大) -->
             <template v-if="getVacationData(staff.id || staff._key, d.dateStr)">
-              <div class="text-black font-black text-2xl leading-none">✕</div>
-              <div class="text-[11px] font-bold text-slate-800 leading-tight mt-0.5">【{{ getVacationData(staff.id || staff._key, d.dateStr).type }}】</div>
-              <div v-if="getVacationData(staff.id || staff._key, d.dateStr).notes" class="text-[10px] text-slate-600 leading-tight">
+              <div class="text-black font-black text-3xl leading-none">✕</div>
+              <div class="text-xs font-black text-slate-900 leading-tight mt-0.5">【{{ getVacationData(staff.id || staff._key, d.dateStr).type }}】</div>
+              <div v-if="getVacationData(staff.id || staff._key, d.dateStr).notes" class="text-[11px] font-bold text-slate-600 leading-tight">
                 ({{ getVacationData(staff.id || staff._key, d.dateStr).notes }})
               </div>
             </template>
+            <!-- 固定時段文字放大為 text-xs 粗體 -->
             <template v-else-if="getAvailabilityText(staff, d.dateStr)">
-              <div class="text-[10px] text-slate-500 font-medium leading-tight">
+              <div class="text-xs font-bold text-slate-800 leading-snug">
                 {{ getAvailabilityText(staff, d.dateStr) }}
               </div>
             </template>
@@ -1798,8 +1811,6 @@
       </tbody>
     </table>
   </div>
-
-</div>
 
 <script>
 // ==================== Firebase 金鑰設定 ====================
