@@ -1918,11 +1918,11 @@
             sIdx === 8 ? 'print-page-break' : ''
           ]">
           <td class="border border-black font-mono text-xs font-black p-0.5 whitespace-nowrap tracking-tighter align-middle">
-            {{ staff.empId }}
+            {{ staff?.empId || '' }}
           </td>
           <td class="border border-black p-0.5 leading-tight align-middle">
-            <div class="text-base font-black text-slate-900">{{ staff.name }}</div>
-            <div class="text-xs font-bold text-slate-600">({{ staff.nickname }})</div>
+            <div class="text-base font-black text-slate-900">{{ staff?.name || '' }}</div>
+            <div class="text-xs font-bold text-slate-600">({{ staff?.nickname || '' }})</div>
           </td>
           <td v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-1 relative align-middle">
             <template v-if="getVacationData(staff.id || staff._key, d.dateStr)">
@@ -2185,7 +2185,9 @@ createApp({
       return ['店經理', '副理', '值班經理'].includes(currentPartner.value.role);
     });
 
-    const validStaffList = computed(() => staffList.value.filter(s => s && s.name && s.name !== '0' && s.empId));
+    const validStaffList = computed(() => {
+      return (staffList.value || []).filter(s => s && typeof s === 'object' && s.empId && s.name && s.name !== '0');
+    });
 
     const getStaffName = (id) => {
       const s = staffList.value.find(x => x.id === id || x._key === id);
@@ -2616,6 +2618,23 @@ createApp({
       if (selectedAlbum.value === 'all') return storePhotos.value;
       return storePhotos.value.filter(p => p.album === selectedAlbum.value);
     });
+
+    const openBravoModal = () => { bravoModal.value = { show: true, form: { targetStaffId: '', message: '' } }; };
+    const submitBravoCard = () => {
+      const f = bravoModal.value.form;
+      if (!currentPartner.value || !f.targetStaffId || !f.message) return;
+      const newCard = {
+        id: Date.now().toString(),
+        senderStaffId: currentPartner.value.id || currentPartner.value._key,
+        targetStaffId: f.targetStaffId,
+        message: f.message,
+        dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`,
+        timestamp: Date.now()
+      };
+      if (db) db.ref('sbux/bravo_cards/' + newCard.id).set(newCard);
+      bravoModal.value.show = false;
+      alert('💌 Bravo 暖心感謝小卡已公開貼上感謝牆！');
+    };
 
     const calculateOpenTime = (mat) => {
       const now = new Date();
