@@ -1146,19 +1146,63 @@
                       <p class="text-[10px] text-emerald-800 dark:text-emerald-300 leading-relaxed">{{ post.aiFeedback }}</p>
                     </div>
 
-                    <div class="flex justify-between items-center pt-1 border-t border-slate-100 dark:border-slate-700 text-xs">
-                      <span class="text-[11px] text-slate-500">
-                        加權總分：<b class="text-emerald-900 dark:text-emerald-400">{{ calculateCombinedScore(post) }} 分</b>
-                      </span>
-                      <button 
-                        @click="voteLattePost(post)"
-                        :disabled="hasVoted(post.id)"
-                        :class="hasVoted(post.id) ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 border-slate-200 dark:border-slate-600 cursor-not-allowed' : 'bg-red-50 hover:bg-red-100 text-red-600 border-red-200 active:scale-95'"
-                        class="px-3 py-1 rounded-full font-bold border transition flex items-center gap-1">
-                        <span>{{ hasVoted(post.id) ? '✓ 已投票' : '❤️ 投一票' }}</span>
-                        <span>({{ post.votes || 0 }})</span>
-                      </button>
-                    </div>
+                   <!-- 替換後的新程式碼：包含投票與留言圖示展開區 -->
+<div class="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-700 text-xs">
+  <span class="text-[11px] text-slate-500">
+    加權總分：<b class="text-emerald-900 dark:text-emerald-400">{{ calculateCombinedScore(post) }} 分</b>
+  </span>
+
+  <div class="flex items-center gap-2">
+    <!-- 留言展開圖示按鈕 (僅顯示圖示與數字) -->
+    <button 
+      @click="toggleComments(post.id)"
+      class="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-full font-bold border border-slate-200 dark:border-slate-600 transition flex items-center gap-1 active:scale-95">
+      <span>💬</span>
+      <span>{{ getCommentCount(post) }}</span>
+    </button>
+
+    <!-- 愛心投票按鈕 -->
+    <button 
+      @click="voteLattePost(post)"
+      :disabled="hasVoted(post.id)"
+      :class="hasVoted(post.id) ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 border-slate-200 dark:border-slate-600 cursor-not-allowed' : 'bg-red-50 hover:bg-red-100 text-red-600 border-red-200 active:scale-95'"
+      class="px-3 py-1 rounded-full font-bold border transition flex items-center gap-1">
+      <span>{{ hasVoted(post.id) ? '✓ 已投' : '❤️' }}</span>
+      <span>({{ post.votes || 0 }})</span>
+    </button>
+  </div>
+</div>
+
+<!-- 點擊 💬 後展開的留言清單與輸入框 -->
+<div v-if="activeCommentPostId === post.id" class="mt-2.5 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2 text-xs">
+  <!-- 留言歷史串 -->
+  <div v-if="post.comments && Object.keys(post.comments).length > 0" class="space-y-1.5 max-h-40 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+    <div v-for="c in Object.values(post.comments)" :key="c.id" class="pt-1.5 first:pt-0">
+      <div class="flex justify-between items-center text-[10px]">
+        <span class="font-bold text-slate-800 dark:text-slate-200">{{ c.authorName }}</span>
+        <span class="text-slate-400">{{ c.dateStr }}</span>
+      </div>
+      <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed">{{ c.text }}</p>
+    </div>
+  </div>
+  <p v-else class="text-[10px] text-slate-400 text-center py-2">目前尚無留言，留下第一則給夥伴的回饋吧！</p>
+
+  <!-- 發表留言輸入欄 -->
+  <form @submit.prevent="submitComment(post)" class="flex gap-1.5 pt-1">
+    <input 
+      v-model="newCommentText" 
+      type="text" 
+      required
+      placeholder="留下讚賞或拉花技巧回饋..."
+      class="flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-700"
+    >
+    <button 
+      type="submit" 
+      class="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition active:scale-95">
+      送出
+    </button>
+  </form>
+</div>
                   </div>
                 </div>
                 <p v-else class="text-xs text-slate-400 py-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
@@ -2268,7 +2312,47 @@ createApp({
     };
 
     const weeklyLattePosts = computed(() => [...lattePosts.value].sort((a,b) => b.timestamp - a.timestamp));
+// ==================== 拉花留言區專屬邏輯 ====================
+    const activeCommentPostId = ref(null);
+    const newCommentText = ref('');
 
+    // 切換展開/收合該拉花照片之留言區
+    const toggleComments = (postId) => {
+      if (activeCommentPostId.value === postId) {
+        activeCommentPostId.value = null;
+      } else {
+        activeCommentPostId.value = postId;
+        newCommentText.value = '';
+      }
+    };
+
+    // 取得留言數量
+    const getCommentCount = (post) => {
+      if (!post.comments) return 0;
+      return Object.keys(post.comments).length;
+    };
+
+    // 送出留言 (寫入 Firebase 並自動標記作者)
+    const submitComment = (post) => {
+      const text = newCommentText.value.trim();
+      if (!text || !currentPartner.value) return;
+
+      const commentId = Date.now().toString();
+      const newComment = {
+        id: commentId,
+        authorStaffId: currentPartner.value.id || currentPartner.value._key,
+        authorName: `${currentPartner.value.name} (${currentPartner.value.nickname})`,
+        text: text,
+        dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()} ${new Date().getHours().toString().padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}`,
+        timestamp: Date.now()
+      };
+
+      if (db) {
+        db.ref('sbux/latte_posts/' + post.id + '/comments/' + commentId).set(newComment);
+      }
+
+      newCommentText.value = '';
+    };
     const openCreateAlbumModal = () => { createAlbumModal.value = { show: true, name: '' }; };
     const saveNewAlbum = () => {
       const name = createAlbumModal.value.name.trim();
@@ -2717,7 +2801,12 @@ createApp({
       secureStaffDeleteModal, promptSecureDeleteStaff, confirmSecureStaffDelete,
       availModal, openAvailabilityModal, saveAvailability, getAvailabilitySummary, getAvailabilityText, timeSlots,
       allowedVacationStartStr, scheduleStartDate, scheduleEndDate, targetRangeDates, setNextWeekRange,
-      printTodayStr, triggerPrintSchedule, exportScheduleExcel, getStaffName, getVacationData
+      printTodayStr, triggerPrintSchedule, exportScheduleExcel, getStaffName, getVacationData, 
+      activeCommentPostId,
+      newCommentText,
+      toggleComments,
+      getCommentCount,
+      submitComment
     };
   }
 }).mount('#app');
