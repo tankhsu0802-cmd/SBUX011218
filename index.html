@@ -1925,14 +1925,14 @@
     </div>
   </transition>
 
-  <!-- 刪除夥伴確認 Modal (僅主管) -->
-  <transition name="modal">
-    <div v-if="secureStaffDeleteModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-3">
-        <div class="flex items-center gap-2 text-red-600">
-          <span class="text-lg">🛡️</span>
-          <h3 class="font-bold text-sm">刪除夥伴基本資料確認</h3>
-        </div>
+  <!-- 刪除夥伴確認彈窗 -->
+<div v-if="showDeleteStaffModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+  <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-xl">
+    <!-- 標題與內容 -->
+    <div class="flex items-center gap-2 text-rose-600 font-bold">
+      <i data-lucide="shield-alert" class="w-5 h-5"></i>
+      <span>刪除夥伴基本資料確認</span>
+    </div>
         <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
           請輸入被刪除夥伴本人的【姓名】與【員工編號】進行確認：
         </p>
