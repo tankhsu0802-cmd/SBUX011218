@@ -127,28 +127,35 @@
       .print-only-container { 
         display: block !important; 
         width: 100% !important; 
-        margin: 0 !important;
-        padding: 0 !important;
+        margin: 0 !important; 
+        padding: 0 !important; 
       }
+      
+      /* 強制手機 WebKit 遵守整列不切斷規則 */
       table { 
         width: 100% !important; 
         table-layout: fixed !important; 
         border-collapse: collapse !important; 
       }
+      thead { 
+        display: table-header-group !important; 
+      }
+      tbody { 
+        display: table-row-group !important; 
+      }
+      tr { 
+        page-break-inside: avoid !important; 
+        break-inside: avoid !important; 
+        -webkit-column-break-inside: avoid !important;
+        break-inside: avoid-page !important;
+        height: 72px !important; /* 鎖定列高，避免剛好溢出一點點被攔腰剖半 */
+      }
       th, td { 
         word-break: break-all !important; 
       }
-      /* 關鍵：防止列印時格子被截斷兩半 */
-      tr { 
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-      }
-      thead {
-        display: table-header-group;
-      }
       @page { 
         size: portrait; 
-        margin: 0.8cm; 
+        margin: 0.8cm 0.5cm !important; 
       }
     }
   </style>
@@ -836,11 +843,11 @@
                   <div><b>⚖️ 沖煮四大原則：</b>比例 (Proportion)、研磨 (Grind)、水質 (Water)、新鮮度 (Freshness)。</div>
                 </div>
                 <a 
-                  href="https://www.starbucksglobalacademy.com/course/coffee-academy-100/" 
-                  target="_blank" 
-                  class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1 transition">
-                  <span>🚀</span> 進入 CA 100 官方線上學院 ↗
-                </a>
+              href="https://translate.google.com/translate?sl=en&tl=zh-TW&u=https://www.starbucksglobalacademy.com/learning-topics/coffee/" 
+              target="_blank" 
+              class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1 transition">
+              <span>🚀</span> 進入 CA 100 官方線上課程 (中文版) ↗
+            </a>
               </div>
 
               <!-- CA 200 -->
@@ -855,12 +862,12 @@
                   <div><b>🍒 三大水洗與濕刨處理法：</b>風味成因與乾燥過程。</div>
                   <div><b>🌱 永續發展：</b>C.A.F.E. Practices 與全球農民支持中心（FSC）。</div>
                 </div>
-                <a 
-                  href="https://www.starbucksglobalacademy.com/course/coffee-academy-200/" 
-                  target="_blank" 
-                  class="w-full py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1 transition">
-                  <span>🚀</span> 進入 CA 200 官方線上學院 ↗
-                </a>
+               <a 
+              href="https://translate.google.com/translate?sl=en&tl=zh-TW&u=https://www.starbucksglobalacademy.com/learning-topics/coffee/" 
+              target="_blank" 
+              class="w-full py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1 transition">
+              <span>🚀</span> 進入 CA 200 官方線上課程 (中文版) ↗
+            </a>
               </div>
 
               <!-- CA 300 -->
@@ -875,13 +882,13 @@
                   <div><b>🎨 拼配藝術：</b>多產區風味互補，締造如佛羅娜與義式濃縮之經典風味。</div>
                   <div><b>🖤 黑圍裙咖啡大師使命：</b>以熱情主導感官品評，傳遞咖啡故事。</div>
                 </div>
-                <a 
-                  href="https://www.starbucksglobalacademy.com/course/coffee-academy-300/" 
-                  target="_blank" 
-                  class="w-full py-2 bg-zinc-900 hover:bg-black text-amber-300 border border-amber-500/50 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1 transition">
-                  <span>🚀</span> 進入 CA 300 官方線上學院 ↗
-                </a>
-              </div>
+               <a 
+              href="https://translate.google.com/translate?sl=en&tl=zh-TW&u=https://www.starbucksglobalacademy.com/learning-topics/coffee/" 
+              target="_blank" 
+              class="w-full py-2 bg-zinc-900 hover:bg-black text-amber-300 border border-amber-500/50 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1 transition">
+              <span>🚀</span> 進入 CA 300 官方線上課程 (中文版) ↗
+             </a>
+               </div>
             </div>
 
             <!-- 沖煮秘笈與常態豆寶典 -->
@@ -1781,8 +1788,8 @@
       </thead>
       <tbody>
         <tr v-for="staff in validStaffList" :key="staff._key || staff.id" class="h-20 border-b border-black" style="page-break-inside: avoid !important; break-inside: avoid !important;">
-          <!-- 工號文字調大為 text-sm 粗體 -->
-          <td class="border border-black font-mono text-sm font-bold p-0.5 leading-tight">
+         <!-- 工號強制單獨一行、不換行、緊湊字距 -->
+          <td class="border border-black font-mono text-xs font-black p-0.5 whitespace-nowrap tracking-tighter align-middle">
             {{ staff.empId }}
           </td>
           <!-- 姓名文字調大為 text-base 特粗 -->
