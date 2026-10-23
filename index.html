@@ -30,14 +30,31 @@
         padding: 0 !important;
         margin: 0 !important;
       }
+      /* 解除手機版容器寬度限制，強制作滿整個 A4 寬度 */
+      #app {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
       .no-print { display: none !important; }
       .print-only-container { 
         display: block !important; 
         width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      /* 防止跨頁切斷夥伴列 */
+      tr {
+        page-break-inside: avoid !important;
+      }
+      thead {
+        display: table-header-group !important;
       }
       @page { 
-        size: portrait; 
-        margin: 0.6cm; 
+        size: A4 portrait; 
+        margin: 0.8cm 0.8cm 0.8cm 0.8cm; 
       }
     }
   </style>
@@ -85,7 +102,7 @@
         </button>
       </div>
 
-      <!-- 物料清單 -->
+      <!-- 物料卡片清單 -->
       <div class="space-y-3">
         <div 
           v-for="mat in filteredMaterials" :key="mat.id || (mat.code + mat.name)"
@@ -312,7 +329,6 @@
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-[10px] text-slate-500 font-bold block mb-0.5">假別標註</label>
-              <!-- 假別僅提供：無法排班、代休假、特別假 -->
               <select v-model="vacationForm.type" class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 bg-slate-50">
                 <option value="無法排班">無法排班</option>
                 <option value="代休假">代休假</option>
@@ -372,7 +388,7 @@
             <button 
               @click="triggerPrintSchedule"
               class="py-2.5 bg-slate-900 active:bg-black text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5">
-              <span>🖨️</span> 列印空白排班表 (直式加大)
+              <span>🖨️</span> 列印空白排班表 (A4滿版)
             </button>
             <button 
               @click="exportScheduleExcel"
@@ -681,53 +697,53 @@
     </div>
   </div>
 
-  <!-- ==================== A4 直式大格排班表（已移除右欄與底欄，含畫假原因備註） ==================== -->
-  <div class="print-only-container p-2 bg-white text-black font-sans text-xs">
+  <!-- ==================== A4 直式大格排班表（100% 滿版 A4 寬度，高度維持識別度，多頁自然延伸） ==================== -->
+  <div class="print-only-container p-0 bg-white text-black font-sans">
     
-    <!-- 表頭 -->
-    <div class="flex justify-between items-end border-b-2 border-black pb-1.5 mb-2">
-      <div class="space-y-0.5 text-xs">
-        <div class="font-bold">營業日期：{{ scheduleStartDate ? scheduleStartDate.replace(/-/g, '/') : '' }} - {{ scheduleEndDate ? scheduleEndDate.replace(/-/g, '/') : '' }}</div>
+    <!-- 表頭抬頭：完整橫幅撐滿 -->
+    <div class="flex justify-between items-end border-b-2 border-black pb-2 mb-3 w-full">
+      <div class="space-y-1 text-sm font-medium">
+        <div>營業日期：<span class="font-bold">{{ scheduleStartDate ? scheduleStartDate.replace(/-/g, '/') : '' }} - {{ scheduleEndDate ? scheduleEndDate.replace(/-/g, '/') : '' }}</span></div>
         <div>門市：永和永安 (011218)</div>
       </div>
-      <div class="text-center font-bold text-xl tracking-widest leading-none">
+      <div class="text-center font-bold text-2xl tracking-widest leading-none">
         門市人員週排班表
       </div>
-      <div class="text-right text-xs space-y-0.5">
+      <div class="text-right text-sm space-y-1">
         <div>製作日期：{{ printTodayStr }}</div>
         <div>單位：小時</div>
       </div>
     </div>
 
-    <!-- 主表格：純化僅剩 工號、姓名 與 放大後的每日排班格 -->
-    <table class="w-full border-collapse border-2 border-black text-center text-xs">
+    <!-- 主表格：寬度 100% 貼滿 A4，每列維持適當高度 -->
+    <table class="w-full border-collapse border-2 border-black text-center table-fixed">
       <thead>
-        <tr class="bg-slate-100 border-b-2 border-black">
-          <th class="border border-black p-2 w-20">員工編號</th>
-          <th class="border border-black p-2 w-24">員工姓名</th>
-          <th v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-1.5">
-            <div class="font-bold text-sm">{{ d.displayDate }}</div>
-            <div class="text-xs">({{ d.weekday }})</div>
+        <tr class="bg-slate-100 border-b-2 border-black h-12">
+          <th class="border border-black p-2 w-[14%] text-sm font-bold">員工編號</th>
+          <th class="border border-black p-2 w-[16%] text-sm font-bold">員工姓名</th>
+          <th v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-1 text-center">
+            <div class="font-bold text-base leading-tight">{{ d.displayDate }}</div>
+            <div class="text-xs text-slate-700 font-semibold leading-tight mt-0.5">({{ d.weekday }})</div>
           </th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="staff in staffList" :key="staff.id" class="h-16 border-b border-black">
-          <td class="border border-black font-mono text-xs">{{ staff.empId }}</td>
+        <tr v-for="staff in staffList" :key="staff.id" class="h-20 border-b border-black">
+          <td class="border border-black font-mono text-sm px-1 font-semibold">{{ staff.empId }}</td>
           <td class="border border-black font-bold p-1 leading-tight">
-            <div class="text-sm text-slate-900">{{ staff.name }}</div>
-            <div class="text-xs text-slate-600">({{ staff.nickname }})</div>
+            <div class="text-base text-slate-900">{{ staff.name }}</div>
+            <div class="text-xs text-slate-600 font-medium mt-0.5">({{ staff.nickname }})</div>
           </td>
           
-          <!-- 各日期大格子：畫假打大叉與備註 -->
-          <td v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-1 relative align-middle">
+          <!-- 各日期大格子：垂直水平置中，畫假打大叉與備註完整呈現 -->
+          <td v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-1 align-middle">
             <template v-if="getVacationInfo(staff.id, d.dateStr)">
-              <div class="flex flex-col items-center justify-center space-y-0.5">
-                <span class="text-black font-black text-xl leading-none">✕</span>
-                <span class="text-[10px] font-bold text-slate-800 leading-tight">
+              <div class="flex flex-col items-center justify-center space-y-0.5 py-1">
+                <span class="text-black font-black text-2xl leading-none">✕</span>
+                <span class="text-[11px] font-bold text-slate-900 leading-tight">
                   【{{ getVacationInfo(staff.id, d.dateStr).type }}】
                 </span>
-                <span v-if="getVacationInfo(staff.id, d.dateStr).notes" class="text-[9px] text-slate-600 leading-tight block max-w-[85px] truncate">
+                <span v-if="getVacationInfo(staff.id, d.dateStr).notes" class="text-[10px] text-slate-600 leading-snug break-all px-0.5">
                   {{ getVacationInfo(staff.id, d.dateStr).notes }}
                 </span>
               </div>
@@ -736,7 +752,7 @@
         </tr>
         
         <tr v-if="staffList.length === 0">
-          <td :colspan="targetRangeDates.length + 2" class="p-8 text-slate-400 text-center">
+          <td :colspan="targetRangeDates.length + 2" class="p-10 text-slate-400 text-center text-sm">
             尚未建立門市夥伴名單，請先至系統新增。
           </td>
         </tr>
@@ -1061,7 +1077,6 @@ createApp({
       return dates;
     });
 
-    // 假別預設為「無法排班」
     const vacationForm = ref({ staffId: '', date: '', type: '無法排班', notes: '' });
     const submitVacation = () => {
       if (!vacationForm.value.staffId || !vacationForm.value.date) return;
@@ -1093,7 +1108,6 @@ createApp({
       return s ? `${s.name} (${s.nickname})` : '未知夥伴';
     };
 
-    // 取得畫假完整資訊（型態 + 備註）
     const getVacationInfo = (staffId, dateStr) => {
       return vacationList.value.find(item => item.staffId === staffId && item.date === dateStr);
     };
@@ -1142,7 +1156,6 @@ createApp({
         alert('尚未建立門市夥伴名單！');
         return;
       }
-      // 僅保留員工編號、姓名與日期欄位
       const headers = ["員工編號", "員工姓名"];
       targetRangeDates.value.forEach(d => headers.push(`${d.displayDate} (${d.weekday})`));
 
