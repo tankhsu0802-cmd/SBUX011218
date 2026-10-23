@@ -122,6 +122,10 @@
         color: black !important; 
         padding: 0 !important; 
         margin: 0 !important; 
+        /* 強制第 9 位夥伴從第二頁開始，徹底解決手機腰斬人名問題 */
+      .print-page-break {
+        page-break-before: always !important;
+        break-before: page !important;
       }
       .app-screen, header, footer, .screen-element, .no-print { display: none !important; }
       .print-only-container { 
@@ -1787,7 +1791,13 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="staff in validStaffList" :key="staff._key || staff.id" class="border-b border-black" style="page-break-inside: avoid !important; break-inside: avoid !important; -webkit-column-break-inside: avoid !important; height: 60px !important;">
+       <tr 
+          v-for="(staff, sIdx) in validStaffList" 
+          :key="staff._key || staff.id" 
+          :class="[
+            'border-b border-black h-[58px]',
+            sIdx === 8 ? 'print-page-break' : ''
+          ]">
          <!-- 工號強制單獨一行、不換行、緊湊字距 -->
           <td class="border border-black font-mono text-xs font-black p-0.5 whitespace-nowrap tracking-tighter align-middle">
             {{ staff.empId }}
