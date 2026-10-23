@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>永和永安門市管理系統 (011218)</title>
@@ -379,28 +380,48 @@
             </div>
 
             <!-- 常用功能快速入口 -->
-            <div class="grid grid-cols-2 gap-3">
-              <button @click="currentTab = 'materials'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm text-left active:scale-[0.98] transition space-y-1">
-                <span class="text-2xl">⏱️</span>
-                <div class="text-xs font-bold text-slate-900 dark:text-white">物料打點試算</div>
-                <div class="text-[10px] text-slate-400">24HR 閉店自動防呆計算</div>
-              </button>
-              <button @click="currentTab = 'intake'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm text-left active:scale-[0.98] transition space-y-1">
-                <span class="text-2xl">📦</span>
-                <div class="text-xs font-bold text-slate-900 dark:text-white">進貨下架月曆</div>
-                <div class="text-[10px] text-slate-400">標準下拉選單快速登記</div>
-              </button>
-              <button @click="currentTab = 'roster'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm text-left active:scale-[0.98] transition space-y-1">
-                <span class="text-2xl">👥</span>
-                <div class="text-xs font-bold text-slate-900 dark:text-white">兩週後畫假排班</div>
-                <div class="text-[10px] text-slate-400">匯出 A4 直式排班表</div>
-              </button>
-              <button @click="currentTab = 'about'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm text-left active:scale-[0.98] transition space-y-1">
-                <span class="text-2xl">🏛️</span>
-                <div class="text-xs font-bold text-slate-900 dark:text-white">關於永安門市</div>
-                <div class="text-[10px] text-slate-400">門市資訊與相簿</div>
-              </button>
+            <!-- 常用功能快速入口 (極簡線性風格) -->
+        <div class="grid grid-cols-2 gap-3">
+          <button @click="currentTab = 'materials'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
+              <i data-lucide="clock" class="w-4 h-4"></i>
             </div>
+            <div>
+              <div class="text-xs font-bold text-slate-900 dark:text-white">物料打點試算</div>
+              <div class="text-[10px] text-slate-400">24HR 閉店自動防呆</div>
+            </div>
+          </button>
+
+          <button @click="currentTab = 'intake'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
+              <i data-lucide="package" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-slate-900 dark:text-white">進貨下架月曆</div>
+              <div class="text-[10px] text-slate-400">標準庫下拉快速登記</div>
+            </div>
+          </button>
+
+          <button @click="currentTab = 'roster'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
+              <i data-lucide="users" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-slate-900 dark:text-white">兩週後畫假排班</div>
+              <div class="text-[10px] text-slate-400">匯出 A4 直式排班表</div>
+            </div>
+          </button>
+
+          <button @click="currentTab = 'about'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
+              <i data-lucide="coffee" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-slate-900 dark:text-white">關於永安門市</div>
+              <div class="text-[10px] text-slate-400">門市資訊與相簿庫</div>
+            </div>
+          </button>
+        </div>
 
           </section>
 
@@ -1359,32 +1380,46 @@
   </div>
 
   <!-- ==================== 底部 iPhone 極致半透明毛玻璃導航選單 ==================== -->
-  <footer v-if="currentPartner" class="screen-element fixed bottom-0 left-0 right-0 z-[9999] ios-glass-bar border-t border-slate-200/60 dark:border-slate-700/60 shadow-2xl transition-all">
+<!-- ==================== 底部 iPhone 極致半透明毛玻璃導航選單 (極簡線條) ==================== -->
+  <footer v-if="currentPartner" class="screen-element fixed bottom-0 left-0 right-0 z-[9999] ios-glass-bar border-t border-slate-200/60 dark:border-slate-800 shadow-sm transition-all">
     <div class="max-w-md mx-auto grid grid-cols-6 py-2 px-1 text-center">
-      <button @click="currentTab = 'home'" :class="currentTab === 'home' ? 'text-emerald-800 dark:text-emerald-400 font-bold scale-105' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition">
-        <span class="text-xl">🏠</span>
-        <span class="text-[9px] mt-0.5">首頁</span>
+      
+      <!-- 1. 首頁 -->
+      <button @click="currentTab = 'home'" :class="currentTab === 'home' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
+        <i data-lucide="home" class="w-5 h-5 stroke-[1.8]"></i>
+        <span class="text-[10px] mt-1 tracking-tight">首頁</span>
       </button>
-      <button @click="currentTab = 'materials'" :class="currentTab === 'materials' ? 'text-emerald-800 dark:text-emerald-400 font-bold scale-105' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition">
-        <span class="text-xl">☕</span>
-        <span class="text-[9px] mt-0.5">物料</span>
+
+      <!-- 2. 物料 -->
+      <button @click="currentTab = 'materials'" :class="currentTab === 'materials' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
+        <i data-lucide="clock" class="w-5 h-5 stroke-[1.8]"></i>
+        <span class="text-[10px] mt-1 tracking-tight">物料</span>
       </button>
-      <button @click="currentTab = 'intake'" :class="currentTab === 'intake' ? 'text-emerald-800 dark:text-emerald-400 font-bold scale-105' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition">
-        <span class="text-xl">📅</span>
-        <span class="text-[9px] mt-0.5">下架</span>
+
+      <!-- 3. 下架 -->
+      <button @click="currentTab = 'intake'" :class="currentTab === 'intake' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
+        <i data-lucide="calendar" class="w-5 h-5 stroke-[1.8]"></i>
+        <span class="text-[10px] mt-1 tracking-tight">下架</span>
       </button>
-      <button @click="currentTab = 'roster'" :class="currentTab === 'roster' ? 'text-emerald-800 dark:text-emerald-400 font-bold scale-105' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition">
-        <span class="text-xl">👥</span>
-        <span class="text-[9px] mt-0.5">排班</span>
+
+      <!-- 4. 排班 -->
+      <button @click="currentTab = 'roster'" :class="currentTab === 'roster' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
+        <i data-lucide="users" class="w-5 h-5 stroke-[1.8]"></i>
+        <span class="text-[10px] mt-1 tracking-tight">排班</span>
       </button>
-      <button @click="currentTab = 'other'" :class="currentTab === 'other' ? 'text-emerald-800 dark:text-emerald-400 font-bold scale-105' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition">
-        <span class="text-xl">✨</span>
-        <span class="text-[9px] mt-0.5">其他</span>
+
+      <!-- 5. 其他 -->
+      <button @click="currentTab = 'other'" :class="currentTab === 'other' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
+        <i data-lucide="sparkles" class="w-5 h-5 stroke-[1.8]"></i>
+        <span class="text-[10px] mt-1 tracking-tight">其他</span>
       </button>
-      <button @click="currentTab = 'about'" :class="currentTab === 'about' ? 'text-emerald-800 dark:text-emerald-400 font-bold scale-105' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition">
-        <span class="text-xl">🏛️</span>
-        <span class="text-[9px] mt-0.5">關於</span>
+
+      <!-- 6. 關於 -->
+      <button @click="currentTab = 'about'" :class="currentTab === 'about' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
+        <i data-lucide="info" class="w-5 h-5 stroke-[1.8]"></i>
+        <span class="text-[10px] mt-1 tracking-tight">關於</span>
       </button>
+
     </div>
   </footer>
 
@@ -1895,6 +1930,9 @@ createApp({
     const loginForm = ref({ empId: '', password: '' });
 
     const currentTab = ref('home');
+    Vue.watch(currentTab, () => {
+      Vue.nextTick(() => { if (window.lucide) lucide.createIcons(); });
+    });
     const otherSubTab = ref('academy');
     const isCloudConnected = ref(false);
     const isDarkMode = ref(false);
@@ -2158,6 +2196,7 @@ createApp({
       fetchYongheWeather();
       updateCountdown();
       setInterval(updateCountdown, 1000);
+      setTimeout(() => { if (window.lucide) lucide.createIcons(); }, 100);
     });
 
     const calculateCombinedScore = (post) => Number((post.aiScore * 0.7 + (post.votes || 0) * 5).toFixed(1));
