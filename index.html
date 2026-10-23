@@ -32,7 +32,7 @@
       overflow-x: hidden;
     }
 
-    /* 修復行動端 input[type="date"] 壓扁塌陷問題 */
+    /* 修復行動端 input 壓扁問題 */
     input[type="date"] {
       -webkit-appearance: none;
       -moz-appearance: none;
@@ -50,7 +50,7 @@
       max-width: 100%;
     }
 
-    /* iOS 極致毛玻璃效果 */
+    /* iOS 極致半透明毛玻璃 */
     .ios-glass-bar {
       background: rgba(255, 255, 255, 0.78) !important;
       backdrop-filter: blur(20px) saturate(180%) !important;
@@ -62,7 +62,6 @@
       -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
     }
 
-    /* 黑金質感卡片 */
     .black-gold-card {
       background: linear-gradient(135deg, #09090b 0%, #18181b 50%, #27272a 100%) !important;
       border: 1.5px solid #d97706 !important;
@@ -93,26 +92,17 @@
 
     /* Vue 平滑過場動畫 */
     .fade-enter-active, .fade-leave-active {
-      transition: opacity 0.25s ease, transform 0.25s ease;
+      transition: opacity 0.22s ease, transform 0.22s ease;
     }
-    .fade-enter-from {
-      opacity: 0;
-      transform: translateY(6px);
-    }
-    .fade-leave-to {
-      opacity: 0;
-      transform: translateY(-6px);
-    }
+    .fade-enter-from { opacity: 0; transform: translateY(4px); }
+    .fade-leave-to { opacity: 0; transform: translateY(-4px); }
 
     .modal-enter-active, .modal-leave-active {
       transition: opacity 0.2s ease, transform 0.2s ease;
     }
-    .modal-enter-from, .modal-leave-to {
-      opacity: 0;
-      transform: scale(0.95);
-    }
+    .modal-enter-from, .modal-leave-to { opacity: 0; transform: scale(0.96); }
 
-    /* 嚴格的 A4 直式列印排版 (徹底修復第一頁下方殘缺格子) */
+    /* ==================== A4 列印排版 (徹底修復右邊被切掉) ==================== */
     @media screen {
       .print-only-container { display: none !important; }
     }
@@ -122,11 +112,13 @@
         color: black !important; 
         padding: 0 !important; 
         margin: 0 !important; 
+        width: 100% !important;
       }
       .app-screen, header, footer, .screen-element, .no-print { display: none !important; }
       .print-only-container { 
         display: block !important; 
         width: 100% !important; 
+        max-width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
       }
@@ -137,18 +129,18 @@
       }
       th, td { 
         word-break: break-all !important; 
+        padding: 4px 2px !important;
       }
-      /* 關鍵：防止列印時格子被截斷兩半 */
       tr { 
         page-break-inside: avoid !important;
         break-inside: avoid !important;
       }
       thead {
-        display: table-header-group;
+        display: table-header-group !important;
       }
       @page { 
         size: portrait; 
-        margin: 0.8cm; 
+        margin: 0.5cm; 
       }
     }
   </style>
@@ -157,7 +149,7 @@
 
 <div id="app" v-cloak class="min-h-screen flex flex-col justify-between">
 
-  <!-- ==================== 1. 門市工號登入畫面 (清空所有範例) ==================== -->
+  <!-- ==================== 1. 門市工號登入畫面 ==================== -->
   <div v-if="!currentPartner" class="min-h-screen flex items-center justify-center p-4 bg-slate-900">
     <div class="w-full max-w-sm bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-2xl space-y-4 border border-slate-200 dark:border-slate-700 transition-all">
       <div class="text-center space-y-1">
@@ -317,14 +309,14 @@
               </div>
             </a>
 
-            <!-- 門市榮譽殿堂 (無預設假數據) -->
+            <!-- 門市榮譽殿堂 (完全真確時序，週日23:30前顯示評比中，進步獎次週啟動) -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
               <div class="flex justify-between items-center">
                 <div>
                   <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                     <span>🏆</span> 門市榮譽殿堂
                   </h3>
-                  <p class="text-[9px] text-slate-400 mt-0.5">結算週期：{{ settledPeriodStr }}</p>
+                  <p class="text-[9px] text-slate-400 mt-0.5">評審週期：{{ currentWeekRangeStr }}</p>
                 </div>
                 <span class="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
                   每週日 23:30 結算
@@ -332,28 +324,32 @@
               </div>
 
               <div class="grid grid-cols-3 gap-2 text-center">
+                <!-- 1. 當週拉花冠軍 (週日23:30前顯示進行中) -->
                 <div class="bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl p-2 space-y-1">
                   <span class="text-xl">🥇</span>
                   <div class="text-[10px] text-amber-800 dark:text-amber-300 font-bold leading-tight">當週拉花冠軍</div>
-                  <div class="text-xs font-black text-slate-900 dark:text-white truncate">{{ settledHonors.champion }}</div>
-                  <div class="text-[9px] text-amber-700 dark:text-amber-400 font-medium">{{ settledHonors.champScore ? settledHonors.champScore + ' 分' : '-' }}</div>
+                  <div class="text-xs font-black text-slate-900 dark:text-white truncate">{{ honorsDisplay.champion }}</div>
+                  <div class="text-[9px] text-amber-700 dark:text-amber-400 font-medium">{{ honorsDisplay.champScore }}</div>
                 </div>
 
+                <!-- 2. 最佳進步獎 (需跨週比較，首週明確顯示次週結算) -->
                 <div class="bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 rounded-xl p-2 space-y-1">
                   <span class="text-xl">🌟</span>
                   <div class="text-[10px] text-blue-800 dark:text-blue-300 font-bold leading-tight">最佳進步獎</div>
-                  <div class="text-xs font-black text-slate-900 dark:text-white truncate">{{ settledHonors.mostImproved }}</div>
-                  <div class="text-[9px] text-blue-700 dark:text-blue-400 font-medium">{{ settledHonors.improvedDelta || '-' }}</div>
+                  <div class="text-xs font-black text-slate-900 dark:text-white truncate">{{ honorsDisplay.mostImproved }}</div>
+                  <div class="text-[9px] text-blue-700 dark:text-blue-400 font-medium">{{ honorsDisplay.improvedDelta }}</div>
                 </div>
 
+                <!-- 3. 本週品評活躍 (完全依據 Tasting 實際筆記) -->
                 <div class="bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 rounded-xl p-2 space-y-1">
                   <span class="text-xl">☕</span>
                   <div class="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold leading-tight">本週活躍</div>
-                  <div class="text-xs font-black text-slate-900 dark:text-white truncate">{{ settledHonors.activePartner }}</div>
-                  <div class="text-[9px] text-emerald-700 dark:text-emerald-400 font-medium">{{ settledHonors.activeTitle || '-' }}</div>
+                  <div class="text-xs font-black text-slate-900 dark:text-white truncate">{{ honorsDisplay.activePartner }}</div>
+                  <div class="text-[9px] text-emerald-700 dark:text-emerald-400 font-medium">{{ honorsDisplay.activeTitle }}</div>
                 </div>
               </div>
 
+              <!-- 倒數計時 -->
               <div class="bg-slate-50 dark:bg-slate-900/60 rounded-xl p-2 text-center border border-slate-200 dark:border-slate-700">
                 <span class="text-[11px] font-bold text-emerald-900 dark:text-emerald-300 flex items-center justify-center gap-1">
                   <span>⏳</span> 本週評分截止剩餘：<span class="font-mono text-emerald-700 dark:text-emerald-400">{{ countdownToSunday }}</span>
@@ -454,7 +450,7 @@
             </div>
           </section>
 
-          <!-- ==================== 頁籤 2：下架行事曆 (已修復日期欄壓扁) ==================== -->
+          <!-- ==================== 頁籤 2：下架行事曆 ==================== -->
           <section v-if="currentTab === 'intake'" class="space-y-4">
             
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3 overflow-hidden">
@@ -606,7 +602,7 @@
 
           </section>
 
-          <!-- ==================== 頁籤 3：門市夥伴畫假與排班管理 (已修正最早日期) ==================== -->
+          <!-- ==================== 頁籤 3：門市夥伴畫假與排班管理 ==================== -->
           <section v-if="currentTab === 'roster'" class="space-y-4">
             
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3 overflow-hidden">
@@ -619,7 +615,7 @@
                 </button>
               </div>
 
-              <!-- 嚴格顯示兩週後週一：2026-11-02 起 -->
+              <!-- 嚴格鎖定兩週後週一：2026-11-02 起 -->
               <div class="p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl text-[11px] text-amber-800 dark:text-amber-300 space-y-0.5">
                 <div class="font-bold flex items-center gap-1">
                   <span>⚠️</span> 畫假規則：每週僅能預排兩週後的假
@@ -723,7 +719,7 @@
               </div>
             </div>
 
-            <!-- 夥伴名冊 -->
+            <!-- 夥伴名冊卡片清單 -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
               <div>
                 <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200">📋 門市夥伴名冊 (共 {{ validStaffList.length }} 人)</h3>
@@ -811,7 +807,7 @@
               </button>
             </div>
 
-            <!-- CA 100~300 課程 -->
+            <!-- CA 100~300 課程 (附帶繁中速讀指南與穩定入口) -->
             <div v-if="otherSubTab === 'academy'" class="space-y-3">
               <div class="bg-gradient-to-r from-zinc-950 to-neutral-900 text-amber-100 p-4 rounded-2xl shadow space-y-1.5 border border-amber-500/40">
                 <div class="flex items-center gap-1.5">
@@ -819,7 +815,7 @@
                   <h3 class="text-xs font-black tracking-wider text-amber-300">STARBUCKS GLOBAL ACADEMY</h3>
                 </div>
                 <p class="text-[11px] text-zinc-300 leading-relaxed">
-                  點擊進入官方線上學院，掌握星巴克黑圍裙大師的核心評鑑技能！
+                  星巴克官方咖啡學院認證階梯。已內嵌繁體中文重點速讀指南，並提供官方穩定課程入口，助夥伴順利繫上黑圍裙！
                 </p>
               </div>
 
@@ -836,10 +832,10 @@
                   <div><b>⚖️ 沖煮四大原則：</b>比例 (Proportion)、研磨 (Grind)、水質 (Water)、新鮮度 (Freshness)。</div>
                 </div>
                 <a 
-                  href="https://www.starbucksglobalacademy.com/course/coffee-academy-100/" 
+                  href="https://www.starbucksglobalacademy.com/" 
                   target="_blank" 
                   class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1 transition">
-                  <span>🚀</span> 進入 CA 100 官方線上學院 ↗
+                  <span>🚀</span> 前往星巴克全球學院探索課程 ↗
                 </a>
               </div>
 
@@ -852,14 +848,14 @@
                 <h4 class="font-bold text-slate-900 dark:text-white text-sm">Coffee Sourcing & Origins</h4>
                 <div class="text-[11px] text-slate-600 dark:text-slate-300 space-y-1 bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700">
                   <div><b>🌎 三大主要產區特質：</b>拉丁美洲（堅果可可）、非洲（莓果明亮果酸）、亞太（厚重草本）。</div>
-                  <div><b>🍒 三大水洗與濕刨處理法：</b>風味成因與乾燥過程。</div>
-                  <div><b>🌱 永續發展：</b>C.A.F.E. Practices 與全球農民支持中心（FSC）。</div>
+                  <div><b>🍒 三大處理法：</b>水洗法（乾淨酸亮）、半水洗濕刨法（厚重泥土）、日曬法（濃郁甜感）。</div>
+                  <div><b>🌱 永續採購：</b>99% 遵循 C.A.F.E. Practices 與全球農民支持中心（FSC）。</div>
                 </div>
                 <a 
-                  href="https://www.starbucksglobalacademy.com/course/coffee-academy-200/" 
+                  href="https://www.starbucksglobalacademy.com/" 
                   target="_blank" 
                   class="w-full py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1 transition">
-                  <span>🚀</span> 進入 CA 200 官方線上學院 ↗
+                  <span>🚀</span> 前往星巴克全球學院探索課程 ↗
                 </a>
               </div>
 
@@ -871,15 +867,15 @@
                 </div>
                 <h4 class="font-bold text-slate-900 dark:text-white text-sm">Roast, Blend & Craft</h4>
                 <div class="text-[11px] text-slate-600 dark:text-slate-300 space-y-1 bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700">
-                  <div><b>🔬 烘焙熱力學：</b>一爆、二爆焦糖化反應對酸醇結構的調控。</div>
-                  <div><b>🎨 拼配藝術：</b>多產區風味互補，締造如佛羅娜與義式濃縮之經典風味。</div>
-                  <div><b>🖤 黑圍裙咖啡大師使命：</b>以熱情主導感官品評，傳遞咖啡故事。</div>
+                  <div><b>🔬 烘焙熱力學：</b>一爆裂開細胞壁、二爆碳化焦糖化對酸度醇度的平衡調控。</div>
+                  <div><b>🎨 拼配藝術：</b>多產區風味層次設計，締造如佛羅娜與義式濃縮之經典風味。</div>
+                  <div><b>🖤 黑圍裙咖啡大師使命：</b>以熱情主導感官品評，傳遞產區咖啡故事。</div>
                 </div>
                 <a 
-                  href="https://www.starbucksglobalacademy.com/course/coffee-academy-300/" 
+                  href="https://www.starbucksglobalacademy.com/" 
                   target="_blank" 
                   class="w-full py-2 bg-zinc-900 hover:bg-black text-amber-300 border border-amber-500/50 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1 transition">
-                  <span>🚀</span> 進入 CA 300 官方線上學院 ↗
+                  <span>🚀</span> 前往星巴克全球學院探索課程 ↗
                 </a>
               </div>
             </div>
@@ -1052,7 +1048,7 @@
               </div>
             </div>
 
-            <!-- 拉花擂台賽 -->
+            <!-- 拉花擂台賽 (含夥伴/管理職即時留言回饋功能) -->
             <div v-if="otherSubTab === 'latteArt'" class="space-y-4">
               <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
                 <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
@@ -1101,7 +1097,7 @@
                 </div>
               </div>
 
-              <!-- 擂台動態牆 -->
+              <!-- 擂台動態牆 (每張作品支援夥伴與主管留言) -->
               <div class="space-y-3">
                 <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex justify-between items-center">
                   <span>🖼️ 當週夥伴參賽動態 (共 {{ weeklyLattePosts.length }} 篇)</span>
@@ -1159,6 +1155,41 @@
                         <span>({{ post.votes || 0 }})</span>
                       </button>
                     </div>
+
+                    <!-- 夥伴與主管留言回饋互動區塊 -->
+                    <div class="pt-2 border-t border-slate-100 dark:border-slate-700/60 space-y-2 text-xs">
+                      <div class="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1 text-[11px]">
+                        <span>💬</span> 夥伴與主管技術回饋 ({{ (post.comments || []).length }})
+                      </div>
+
+                      <div v-if="post.comments && post.comments.length > 0" class="space-y-1.5 max-h-36 overflow-y-auto">
+                        <div v-for="(c, cIdx) in post.comments" :key="cIdx" class="bg-slate-50 dark:bg-slate-700/50 p-2 rounded-xl text-[11px] space-y-0.5">
+                          <div class="flex justify-between items-center">
+                            <span class="font-bold text-slate-900 dark:text-white flex items-center gap-1">
+                              {{ c.authorName }}
+                              <span v-if="c.isManager" class="px-1 py-0.2 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 rounded text-[9px]">主管</span>
+                            </span>
+                            <span class="text-[9px] text-slate-400">{{ c.dateStr }}</span>
+                          </div>
+                          <p class="text-slate-700 dark:text-slate-300 leading-normal">{{ c.text }}</p>
+                        </div>
+                      </div>
+
+                      <!-- 快速輸入留言 -->
+                      <div class="flex gap-1.5 pt-1">
+                        <input 
+                          v-model="commentInputs[post.id]" 
+                          placeholder="留下一句技巧建議或鼓勵吧..." 
+                          @keyup.enter="submitComment(post)"
+                          class="flex-1 px-2.5 py-1 text-xs rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white">
+                        <button 
+                          @click="submitComment(post)" 
+                          class="px-3 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs">
+                          發布
+                        </button>
+                      </div>
+                    </div>
+
                   </div>
                 </div>
                 <p v-else class="text-xs text-slate-400 py-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
@@ -1207,7 +1238,7 @@
               </div>
             </div>
 
-            <!-- 門市相簿庫 (無預設名稱) -->
+            <!-- 門市相簿庫 -->
             <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
               <div class="flex justify-between items-center">
                 <div>
@@ -1303,37 +1334,37 @@
 
   </div>
 
-  <!-- ==================== 底部 iPhone 極致半透明毛玻璃導航選單 ==================== -->
+  <!-- ==================== 底部極簡風格 iPhone 半透明毛玻璃導航選單 ==================== -->
   <footer v-if="currentPartner" class="screen-element fixed bottom-0 left-0 right-0 z-[9999] ios-glass-bar border-t border-slate-200/60 dark:border-slate-700/60 shadow-2xl transition-all">
     <div class="max-w-md mx-auto grid grid-cols-6 py-2 px-1 text-center">
       <button @click="currentTab = 'home'" :class="currentTab === 'home' ? 'text-emerald-800 dark:text-emerald-400 font-bold scale-105' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition">
-        <span class="text-xl">🏠</span>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
         <span class="text-[9px] mt-0.5">首頁</span>
       </button>
       <button @click="currentTab = 'materials'" :class="currentTab === 'materials' ? 'text-emerald-800 dark:text-emerald-400 font-bold scale-105' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition">
-        <span class="text-xl">☕</span>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <span class="text-[9px] mt-0.5">物料</span>
       </button>
       <button @click="currentTab = 'intake'" :class="currentTab === 'intake' ? 'text-emerald-800 dark:text-emerald-400 font-bold scale-105' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition">
-        <span class="text-xl">📅</span>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
         <span class="text-[9px] mt-0.5">下架</span>
       </button>
       <button @click="currentTab = 'roster'" :class="currentTab === 'roster' ? 'text-emerald-800 dark:text-emerald-400 font-bold scale-105' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition">
-        <span class="text-xl">👥</span>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
         <span class="text-[9px] mt-0.5">排班</span>
       </button>
       <button @click="currentTab = 'other'" :class="currentTab === 'other' ? 'text-emerald-800 dark:text-emerald-400 font-bold scale-105' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition">
-        <span class="text-xl">✨</span>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
         <span class="text-[9px] mt-0.5">其他</span>
       </button>
       <button @click="currentTab = 'about'" :class="currentTab === 'about' ? 'text-emerald-800 dark:text-emerald-400 font-bold scale-105' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition">
-        <span class="text-xl">🏛️</span>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
         <span class="text-[9px] mt-0.5">關於</span>
       </button>
     </div>
   </footer>
 
-  <!-- ==================== 模態視窗群 (平滑縮放動畫) ==================== -->
+  <!-- ==================== 模態視窗群 (平滑過渡) ==================== -->
 
   <!-- 個人設定 Modal -->
   <transition name="modal">
@@ -1364,7 +1395,7 @@
 
           <div class="space-y-1 p-2.5 bg-slate-50 dark:bg-slate-700/60 rounded-xl">
             <label class="font-bold text-slate-800 dark:text-slate-200 block">🎂 設定個人生日 (生日前兩天首頁提醒)</label>
-            <input v-model="settingsModal.birthday" type="text" placeholder="例：08-02 或 0802" class="w-full px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white">
+            <input v-model="settingsModal.birthday" type="text" placeholder="例：08-02" class="w-full px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white">
             <button @click="saveBirthday" class="w-full mt-1 py-1.5 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-lg">
               儲存生日設定
             </button>
@@ -1555,7 +1586,7 @@
     </div>
   </transition>
 
-  <!-- 新增夥伴 Modal (已清除所有範例) -->
+  <!-- 新增夥伴 Modal (清除範例) -->
   <transition name="modal">
     <div v-if="staffModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-center justify-center p-4">
       <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
@@ -1690,7 +1721,7 @@
         </p>
         <div class="space-y-2 text-xs">
           <input v-model="secureStaffDeleteModal.inputName" placeholder="請輸入姓名" class="w-full border rounded-xl px-3 py-1.5 dark:bg-slate-700 dark:text-white">
-          <input v-model="secureStaffDeleteModal.inputEmpId" placeholder="請輸入8碼工號" class="w-full border rounded-xl px-3 py-1.5 font-mono dark:bg-slate-700 dark:text-white">
+          <input v-model="secureStaffDeleteModal.inputEmpId" placeholder="請輸入8碼員工編號" class="w-full border rounded-xl px-3 py-1.5 font-mono dark:bg-slate-700 dark:text-white">
         </div>
         <div class="pt-2 flex gap-2">
           <button @click="confirmSecureStaffDelete" class="flex-1 py-2 bg-red-600 text-white rounded-xl text-xs font-bold">驗證刪除</button>
@@ -1700,121 +1731,9 @@
     </div>
   </transition>
 
-  <!-- ==================== A4 直式滿版列印表格 (嚴格防斷行排版) ==================== -->
-  <div class="print-only-container p-2 bg-white text-black font-sans text-xs">
-    <div class="border-b-2 border-black pb-2 mb-2">
-      <div class="flex justify-between items-center mb-1">
-        <div class="text-[11px] font-bold">
-          <div>營業日期：{{ scheduleStartDate ? scheduleStartDate.replace(/-/g, '/') : '' }} - {{ scheduleEndDate ? scheduleEndDate.replace(/-/g, '/') : '' }}</div>
-          <div>門市：永和永安 (011218)</div>
-        </div>
-        <div class="text-center font-black text-2xl tracking-widest leading-none">
-          門市人員週排班表
-        </div>
-        <div class="text-right text-[11px] font-bold">
-          <div>製作日期：{{ printTodayStr }}</div>
-          <div>單位：小時</div>
-        </div>
-      </div>
-    </div>
-
-    <table class="w-full border-collapse border border-black text-center text-xs">
-      <thead>
-        <tr class="bg-slate-100 border-b border-black">
-          <th class="border border-black p-2 w-[14%] font-bold">員工編號</th>
-          <th class="border border-black p-2 w-[16%] font-bold">員工姓名</th>
-          <th v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-2 min-w-[70px]">
-            <div class="font-bold text-sm">{{ d.displayDate }}</div>
-            <div class="text-[11px]">({{ d.weekday }})</div>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="staff in validStaffList" :key="staff._key || staff.id" class="h-20 border-b border-black" style="page-break-inside: avoid !important; break-inside: avoid !important;">
-          <td class="border border-black font-mono text-xs">{{ staff.empId }}</td>
-          <td class="border border-black font-bold p-1 leading-tight">
-            <div class="text-sm">{{ staff.name }}</div>
-            <div class="text-xs text-slate-600">({{ staff.nickname }})</div>
-          </td>
-          <td v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-1 relative align-middle">
-            <template v-if="getVacationData(staff.id || staff._key, d.dateStr)">
-              <div class="text-black font-black text-2xl leading-none">✕</div>
-              <div class="text-[11px] font-bold text-slate-800 leading-tight mt-0.5">【{{ getVacationData(staff.id || staff._key, d.dateStr).type }}】</div>
-              <div v-if="getVacationData(staff.id || staff._key, d.dateStr).notes" class="text-[10px] text-slate-600 leading-tight">
-                ({{ getVacationData(staff.id || staff._key, d.dateStr).notes }})
-              </div>
-            </template>
-            <template v-else-if="getAvailabilityText(staff, d.dateStr)">
-              <div class="text-[10px] text-slate-500 font-medium leading-tight">
-                {{ getAvailabilityText(staff, d.dateStr) }}
-              </div>
-            </template>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
 </div>
 
 <script>
-// ==================== Firebase 金鑰設定 ====================
-const firebaseConfig = {
-  apiKey: "AIzaSyDYvu6xnFpIzLhbq62WQ-VotNA-kuHLsCE",
-  authDomain: "sbux011218.firebaseapp.com",
-  databaseURL: "https://sbux011218-default-rtdb.firebaseio.com",
-  projectId: "sbux011218",
-  storageBucket: "sbux011218.firebasestorage.app",
-  messagingSenderId: "37634319471",
-  appId: "1:37634319471:web:ad7bcafe21dd3ce729999a",
-  measurementId: "G-6KTK40ZQKN"
-};
-
-let db = null;
-try {
-  firebase.initializeApp(firebaseConfig);
-  db = firebase.database();
-} catch (e) {
-  console.error("Firebase 初始化失敗：", e);
-}
-
-const generateTimeSlots = () => {
-  const slots = [];
-  for (let h = 6; h <= 22; h++) {
-    const hh = h.toString().padStart(2, '0');
-    if (h === 6) slots.push('06:30');
-    else {
-      slots.push(`${hh}:00`);
-      if (h !== 22) slots.push(`${hh}:30`);
-      else slots.push('22:30');
-    }
-  }
-  return slots;
-};
-const timeSlots = generateTimeSlots();
-
-const starbucksCoreBeans = [
-  { name: "派克市場烘焙", enName: "Pike Place® Roast", roast: "中度烘焙", region: "拉丁美洲", processing: "水洗法", flavorNotes: "巧克力、烤堅果、平衡圓潤", foodPairing: "巧克力餅乾、可頌、肉桂捲", description: "紀念星巴克 1971 年西雅圖第一家門市。口感滑順平滑，為全門市滴濾咖啡的經典靈魂。" },
-  { name: "黃金烘焙綜合", enName: "Veranda Blend®", roast: "黃金烘焙", region: "拉丁美洲", processing: "水洗法", flavorNotes: "烘烤麥芽、牛奶巧克力、溫和清爽", foodPairing: "檸檬塔、輕食三明治、鬆餅", description: "輕度烘焙保留純淨柔和感，酸度輕盈，入口帶有烘烤甘甜。" },
-  { name: "瓜地馬拉安堤瓜", enName: "Guatemala Antigua", roast: "中度烘焙", region: "拉丁美洲", processing: "水洗法", flavorNotes: "可可、香料香氣、優雅微酸", foodPairing: "巧克力磅蛋糕、焦糖布丁", description: "來自肥沃火山土壤山谷，具備高雅精緻的酸質與豐富的可可餘韻。" },
-  { name: "肯亞", enName: "Kenya", roast: "中度烘焙", region: "非洲", processing: "水洗法", flavorNotes: "葡萄柚、黑醋栗、明亮多汁的果酸", foodPairing: "莓果塔、新鮮水果", description: "具備鮮明活潑的高品質果酸與醇厚質地，冰鎮手沖時風味尤為突出。" },
-  { name: "蘇門答臘", enName: "Sumatra", roast: "深度烘焙", region: "亞太產區", processing: "半水洗法 (濕刨法)", flavorNotes: "泥土芬芳、草本香氣、濃郁厚重醇度", foodPairing: "鹹派、香腸起司可頌", description: "傳統濕刨法賦予其極具辨識度的草本與木質氣息，酸度極低、醇度厚實。" },
-  { name: "佛羅娜綜合", enName: "Caffè Verona®", roast: "深度烘焙", region: "綜合產區", processing: "水洗與半水洗", flavorNotes: "黑可可、焦糖甜感、深沉濃郁", foodPairing: "黑森林蛋糕、摩卡千層", description: "原本是西雅圖餐廳搭配巧克力甜點的專屬調配豆，醇厚甘美。" },
-  { name: "義式濃縮烘焙", enName: "Espresso Roast", roast: "深度烘焙", region: "綜合產區", processing: "水洗與半水洗", flavorNotes: "糖蜜、濃郁焦糖香、持久餘韻", foodPairing: "提拉米蘇、焦糖瑪奇朵", description: "門市吧台所有經典義式濃縮咖啡的心臟基底。" },
-  { name: "低因熱情派克", enName: "Decaf Pike Place® Roast", roast: "中度烘焙", region: "拉丁美洲", processing: "天然二氧化碳脫因", flavorNotes: "烤堅果、可可、溫順圓滑", foodPairing: "司康、燕麥軟餅乾", description: "保留經典派克香氣，透過安全工藝去除咖啡因。" }
-];
-
-const coffeeTriviaList = [
-  { level: "CA 100 基礎", text: "你知道星巴克品嚐咖啡的四步驟（Four Steps）是什麼嗎？順序為：聞香（Smell）、啜飲（Slurp）、定位（Locate）與描述（Describe）！啜飲能將咖啡霧化噴灑在舌頭味蕾上，充分感受風味與醇度。", searchUrl: "https://www.google.com/search?q=Starbucks+Four+Steps+of+Coffee+Tasting" },
-  { level: "CA 100 基礎", text: "你知道沖煮咖啡的黃金四大原則是：比例（Proportion）、研磨（Grind）、水質（Water）、新鮮度（Freshness）嗎？官方標準手沖粉水比為 1:16，法式濾壓壺則為 1:15！", searchUrl: "https://www.google.com/search?q=Starbucks+Four+Fundamentals+of+Brewing" },
-  { level: "CA 100 歷史", text: "你知道星巴克第一家創始門市於 1971 年開在西雅圖著名的「派克市場（Pike Place Market）」嗎？最初星巴克只專注於銷售高品質烘焙咖啡豆與香料，完全不賣現煮拿鐵！", searchUrl: "https://www.google.com/search?q=Starbucks+Pike+Place+Market+1971" },
-  { level: "CA 100 文化", text: "你知道星巴克雙尾海妖「賽蓮（Siren）」標誌的由來嗎？設計靈感來自 16 世紀斯堪地那維亞的雙尾海妖木雕，象徵如海妖歌聲般具有無法抗拒的咖啡魅力。", searchUrl: "https://www.google.com/search?q=Starbucks+Siren+logo+history" },
-  { level: "CA 200 產區", text: "你知道為什麼印尼蘇門答臘咖啡帶有獨特的泥土芬芳與厚實草本醇度嗎？這源自當地特殊的「半水洗濕刨法（Giling Basah）」，在咖啡豆水分極高時就去殼乾燥，造就其極低酸度與深厚餘韻！", searchUrl: "https://www.google.com/search?q=Sumatra+Giling+Basah+processing" },
-  { level: "CA 200 產區", text: "你知道肯亞（Kenya）咖啡為何總是帶有宛如葡萄柚與黑醋栗的明亮果汁感嗎？肯亞採用特殊的「雙重發酵水洗法」，且多種植在肥沃高海拔火山土壤，使高濃度的果酸達到極致平衡。", searchUrl: "https://www.google.com/search?q=Kenya+coffee+phosphoric+acidity" },
-  { level: "CA 200 採購", text: "你知道星巴克 99% 的咖啡豆皆符合「C.A.F.E. Practices（咖啡和種植者公平規範）」嗎？這是星巴克與保護國際基金會（CI）共同制定的道德採購準則。", searchUrl: "https://www.google.com/search?q=Starbucks+CAFE+Practices+Conservation+International" },
-  { level: "CA 300 工藝", text: "你知道烘焙過程中的「第一爆（First Crack）」與「第二爆（Second Crack）」嗎？一爆代表豆內水分汽化導致細胞壁破裂，產生花果酸香；二爆則是木質素碳化，焦糖化反應達到顛峰！", searchUrl: "https://www.google.com/search?q=Coffee+Roasting+First+Crack+Second+Crack" }
-];
-
 const { createApp, ref, computed, onMounted } = Vue;
 
 createApp({
@@ -1840,6 +1759,9 @@ createApp({
     const selectedAlbum = ref("all");
     const bravoCardsList = ref([]);
     const showRulesLibrary = ref(false);
+
+    // 留言輸入暫存
+    const commentInputs = ref({});
 
     const weatherType = ref('clear');
     const weatherDesc = ref('晴天舒適');
@@ -1957,12 +1879,11 @@ createApp({
         localStorage.setItem('sbux_logged_empid', partner.empId);
         loginForm.value = { empId: '', password: '' };
 
-        // 可愛且無壓迫感的登入溫馨小語
         const greetings = [
           `哈囉 ${partner.nickname}！今天也要開開心心當班喔 💚`,
-          `Hi ${partner.nickname}，來杯好咖啡，開啟美好的一天 ☕`,
-          `歡迎回來 ${partner.name}！今天也是元氣滿滿的一天 🌟`,
-          `Hello ${partner.nickname}！夥伴們都在等你一起奮鬥 ✨`
+          `Hi ${partner.nickname}，來杯好咖啡，開啟美好心情 ☕`,
+          `歡迎 ${partner.name}！今天也是元氣滿滿的一天 🌟`,
+          `Hello ${partner.nickname}！有你在門市更溫暖 ✨`
         ];
         alert(greetings[Math.floor(Math.random() * greetings.length)]);
       } else {
@@ -2003,7 +1924,6 @@ createApp({
       return `${d.getMonth() + 1}月${d.getDate()}日 (${weekdays[d.getDay()]})`;
     });
 
-    // 生日壽星提醒
     const birthdayAlerts = computed(() => {
       const alerts = [];
       const now = new Date();
@@ -2090,59 +2010,43 @@ createApp({
 
     const calculateCombinedScore = (post) => Number((post.aiScore * 0.7 + (post.votes || 0) * 5).toFixed(1));
 
-    const settledPeriodStr = computed(() => {
+    // 當週評估區間顯示 (精確計算當週週一至週日)
+    const currentWeekRangeStr = computed(() => {
       const now = new Date();
-      return `${now.getMonth() + 1}/${now.getDate()} 當週首期評選中`;
+      const day = now.getDay();
+      const diffToMonday = (day === 0 ? -6 : 1) - day;
+      const thisMonday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday);
+      const thisSunday = new Date(thisMonday);
+      thisSunday.setDate(thisSunday.getDate() + 6);
+      return `${thisMonday.getMonth() + 1}/${thisMonday.getDate()} - ${thisSunday.getMonth() + 1}/${thisSunday.getDate()}`;
     });
 
-    const settledHonors = computed(() => {
-      let champName = '虛位以待';
-      let champScore = '';
-      let progressName = '虛位以待';
-      let progressDelta = '';
+    // 榮譽榜嚴格邏輯：首週週日23:30前一律顯示進行中，進步獎次週啟動
+    const honorsDisplay = computed(() => {
+      // 1. 本週拉花冠軍：需等到週日23:30才產生
+      let champName = '評選進行中';
+      let champScore = '週日 23:30 揭曉';
 
-      if (lattePosts.value.length > 0) {
-        const staffBestScoreMap = {};
-        lattePosts.value.forEach(post => {
-          const score = calculateCombinedScore(post);
-          const sid = post.authorStaffId;
-          if (!staffBestScoreMap[sid] || score > staffBestScoreMap[sid]) {
-            staffBestScoreMap[sid] = score;
-          }
-        });
+      // 2. 最佳進步獎：需跨週比較，首週無法計算
+      let progressName = '次週開始評選';
+      let progressDelta = '需前週成績對比';
 
-        const rankedStaff = Object.keys(staffBestScoreMap).sort((a,b) => staffBestScoreMap[b] - staffBestScoreMap[a]);
-        if (rankedStaff.length > 0) {
-          champName = getStaffName(rankedStaff[0]);
-          champScore = staffBestScoreMap[rankedStaff[0]].toString();
-        }
-
-        let maxDelta = 0;
-        let bestSid = '';
-        rankedStaff.forEach(sid => {
-          const scores = lattePosts.value.filter(p => p.authorStaffId === sid).map(p => calculateCombinedScore(p)).sort((a,b) => b - a);
-          if (scores.length >= 2) {
-            const delta = scores[0] - scores[1];
-            if (delta > maxDelta) {
-              maxDelta = delta;
-              bestSid = sid;
-            }
-          }
-        });
-        if (bestSid) {
-          progressName = getStaffName(bestSid);
-          progressDelta = `+${maxDelta.toFixed(1)} 分`;
-        }
-      }
-
+      // 3. 本週活躍 (完全依據 Tasting 實際筆記)
       let activeName = '虛位以待';
       let activeTitle = '';
       if (tastingNotesList.value.length > 0) {
         activeName = getStaffName(tastingNotesList.value[0].authorStaffId);
-        activeTitle = '品評大師';
+        activeTitle = '品評之星';
       }
 
-      return { champion: champName, champScore, mostImproved: progressName, improvedDelta: progressDelta, activePartner: activeName, activeTitle };
+      return {
+        champion: champName,
+        champScore: champScore,
+        mostImproved: progressName,
+        improvedDelta: progressDelta,
+        activePartner: activeName,
+        activeTitle: activeTitle
+      };
     });
 
     const openAddRuleModal = () => { addRuleModal.value = { show: true, form: { keyword: '', advance_days: 7 } }; };
@@ -2236,6 +2140,7 @@ createApp({
           aiFeedback: patternsFeedback[latteForm.value.pattern] || '整體對比鮮明，奶泡細緻度良好！',
           votes: 0,
           voters: {},
+          comments: [],
           dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()} ${new Date().getHours().toString().padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}`,
           timestamp: Date.now()
         };
@@ -2265,6 +2170,27 @@ createApp({
         db.ref('sbux/latte_posts/' + post.id + '/voters/' + currentPartner.value.empId).set(true);
         alert('❤️ 投票成功！感謝您的寶貴一票！');
       }
+    };
+
+    // 提交拉花回饋留言
+    const submitComment = (post) => {
+      const text = (commentInputs.value[post.id] || '').trim();
+      if (!text || !currentPartner.value) return;
+
+      const newComment = {
+        authorName: `${currentPartner.value.name} (${currentPartner.value.nickname})`,
+        isManager: isManager.value,
+        text: text,
+        dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()} ${new Date().getHours().toString().padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}`
+      };
+
+      const existingComments = post.comments || [];
+      existingComments.push(newComment);
+
+      if (db) {
+        db.ref('sbux/latte_posts/' + post.id + '/comments').set(existingComments);
+      }
+      commentInputs.value[post.id] = '';
     };
 
     const weeklyLattePosts = computed(() => [...lattePosts.value].sort((a,b) => b.timestamp - a.timestamp));
@@ -2468,14 +2394,12 @@ createApp({
 
     const selectedDateItems = computed(() => selectedDate.value ? inventory.value.filter(it => it.pullDate === selectedDate.value) : []);
 
-    // 核心演算法修正：精確推進到兩週後的週一 (保證 11/02 起)
+    // 嚴格計算：以當天所在週一推進兩週（14天），保證為 2026-11-02
     const allowedVacationStartStr = computed(() => {
       const now = new Date();
-      const day = now.getDay(); // 0(週日), 1(週一), ..., 6(週六)
-      // 計算本週一
+      const day = now.getDay();
       const diffToMonday = (day === 0 ? -6 : 1) - day;
       const thisMonday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday);
-      // 推進完整兩週 (14天) 到目標週一
       const targetMonday = new Date(thisMonday.getFullYear(), thisMonday.getMonth(), thisMonday.getDate() + 14);
       return `${targetMonday.getFullYear()}-${(targetMonday.getMonth() + 1).toString().padStart(2, '0')}-${targetMonday.getDate().toString().padStart(2, '0')}`;
     });
@@ -2694,7 +2618,7 @@ createApp({
       settingsModal, openSettingsModal, saveNewPassword, saveBirthday, birthdayAlerts,
       currentTab, otherSubTab, isCloudConnected, currentDateTimeDisplay, todayTrivia,
       weatherType, weatherDesc, weatherIcon, weatherGreeting, weatherBannerClass,
-      countdownToSunday, settledPeriodStr, settledHonors,
+      countdownToSunday, currentWeekRangeStr, honorsDisplay,
       showRulesLibrary, addRuleModal, openAddRuleModal, saveNewRule, deleteRule, applyRuleToForm,
       bulletinList, bulletinModal, openBulletinModal, submitBulletin, deleteBulletin,
       storePhotos, customAlbums, selectedAlbum, createAlbumModal, openCreateAlbumModal, saveNewAlbum,
@@ -2704,6 +2628,7 @@ createApp({
       tastingForm, submitTastingNote, tastingNotesList, getIntensityLabel,
       latteForm, handleLattePhotoUpload, submitLattePost, isAiEvaluating,
       weeklyLattePosts, voteLattePost, hasVoted, calculateCombinedScore,
+      commentInputs, submitComment,
       materials, matSearchQuery, filteredMaterials,
       calcModal, calculateOpenTime, addMaterialToSchedule,
       matEditModal, openAddMaterialModal, editMaterial, saveMaterialForm, deleteMaterial,
