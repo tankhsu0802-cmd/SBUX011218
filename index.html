@@ -18,7 +18,12 @@
     [v-cloak] { display: none; }
     body {
       -webkit-tap-highlight-color: transparent;
-      padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+      margin: 0;
+      padding: 0;
+      background-color: #f1f5f9;
+    }
+    .app-screen {
+      padding-bottom: 85px; /* 保證內容不被底部固定選單遮擋 */
     }
     @media screen {
       .print-only-container { display: none !important; }
@@ -30,7 +35,7 @@
         padding: 0 !important;
         margin: 0 !important;
       }
-      .screen-only { display: none !important; }
+      .app-screen, header, footer, .screen-element { display: none !important; }
       .print-only-container { 
         display: block !important; 
         width: 100% !important;
@@ -42,16 +47,16 @@
     }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+<body class="text-slate-800 font-sans antialiased">
 
-<div id="app" v-cloak class="w-full flex-1 flex flex-col">
+<div id="app" v-cloak class="min-h-screen flex flex-col justify-between">
 
-  <!-- 手機與電腦螢幕專用主畫面 -->
-  <div class="screen-only max-w-md mx-auto w-full min-h-screen bg-slate-50 flex flex-col shadow-lg border-x border-slate-200">
+  <!-- ==================== 螢幕操作主容器 ==================== -->
+  <div class="app-screen max-w-md mx-auto w-full min-h-screen bg-slate-50 flex flex-col shadow-lg border-x border-slate-200">
 
     <!-- 頂部 Header -->
-    <header class="bg-emerald-900 text-white px-5 py-4 sticky top-0 z-30 shadow-md">
-      <div class="flex items-center justify-between">
+    <header class="bg-emerald-900 text-white sticky top-0 z-40 shadow-md">
+      <div class="px-4 py-3 flex items-center justify-between border-b border-emerald-800">
         <div class="flex items-center space-x-2">
           <span class="text-xl">☕</span>
           <div>
@@ -59,11 +64,39 @@
             <p class="text-[10px] text-emerald-300">效期打點與排班整合系統</p>
           </div>
         </div>
-        <div class="flex items-center space-x-1.5">
+        <div class="flex items-center space-x-1.5 bg-emerald-950/60 px-2 py-1 rounded-full border border-emerald-700">
           <span class="inline-block w-2 h-2 rounded-full" :class="isCloudConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'"></span>
-          <span class="text-[11px] text-emerald-200">{{ isCloudConnected ? '雲端同步中' : '連線中...' }}</span>
+          <span class="text-[10px] text-emerald-200">{{ isCloudConnected ? '雲端同步中' : '連線中...' }}</span>
         </div>
       </div>
+
+      <!-- 頂部輔助分頁列（雙重保障，手機或電腦皆能點選） -->
+      <nav class="flex text-xs font-bold bg-emerald-950/40 divide-x divide-emerald-800/60">
+        <button 
+          @click="currentTab = 'materials'" 
+          :class="currentTab === 'materials' ? 'bg-emerald-800 text-white' : 'text-emerald-200/80 hover:bg-emerald-900'"
+          class="flex-1 py-2 text-center transition">
+          物料查詢
+        </button>
+        <button 
+          @click="currentTab = 'intake'" 
+          :class="currentTab === 'intake' ? 'bg-emerald-800 text-white' : 'text-emerald-200/80 hover:bg-emerald-900'"
+          class="flex-1 py-2 text-center transition">
+          下架行事曆
+        </button>
+        <button 
+          @click="currentTab = 'roster'" 
+          :class="currentTab === 'roster' ? 'bg-emerald-800 text-white' : 'text-emerald-200/80 hover:bg-emerald-900'"
+          class="flex-1 py-2 text-center transition">
+          夥伴排班
+        </button>
+        <button 
+          @click="currentTab = 'settings'" 
+          :class="currentTab === 'settings' ? 'bg-emerald-800 text-white' : 'text-emerald-200/80 hover:bg-emerald-900'"
+          class="flex-1 py-2 text-center transition">
+          檔期標準
+        </button>
+      </nav>
     </header>
 
     <!-- 主要內容區 -->
@@ -71,15 +104,15 @@
 
       <!-- ==================== 頁籤 1：物料效期查詢 ==================== -->
       <section v-if="currentTab === 'materials'" class="space-y-4">
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex gap-2 items-center">
+        <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex gap-2 items-center">
           <div class="relative flex-1">
             <input 
               v-model="matSearchQuery" 
               type="text" 
               placeholder="搜尋代號 (如 MO, FR) 或 品名..."
-              class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-slate-50"
+              class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-slate-50"
             >
-            <span class="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
+            <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
           </div>
           <button 
             @click="openAddMaterialModal"
@@ -95,7 +128,7 @@
             class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2">
             <div class="flex justify-between items-start">
               <div>
-                <span class="px-2 py-0.5 text-xs font-bold rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <span class="px-2 py-0.5 text-xs font-bold rounded bg-emerald-100 text-emerald-800 border border-emerald-200 font-mono">
                   {{ mat.code }}
                 </span>
                 <h3 class="text-base font-bold text-slate-900 mt-1">{{ mat.name }}</h3>
@@ -388,7 +421,7 @@
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
           <h3 class="text-xs font-bold text-slate-800 flex justify-between">
             <span>📋 門市夥伴名冊 (共 {{ staffList.length }} 人)</span>
-            <span class="text-[10px] text-slate-400">可設定固定可上班時段</span>
+            <span class="text-[10px] text-slate-400">可設定固定上班時段</span>
           </h3>
           
           <div class="space-y-2 max-h-60 overflow-y-auto">
@@ -539,46 +572,46 @@
 
     </main>
 
-    <!-- 底部導航選單 (最高層級常駐保證) -->
-    <footer class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg">
-      <div class="max-w-md mx-auto grid grid-cols-4 py-2 px-2">
-        <button 
-          @click="currentTab = 'materials'" 
-          :class="currentTab === 'materials' ? 'text-emerald-800 font-bold' : 'text-slate-400'"
-          class="flex flex-col items-center justify-center py-1">
-          <span class="text-base">☕</span>
-          <span class="text-[10px] mt-0.5">物料查詢</span>
-        </button>
-        <button 
-          @click="currentTab = 'intake'" 
-          :class="currentTab === 'intake' ? 'text-emerald-800 font-bold' : 'text-slate-400'"
-          class="flex flex-col items-center justify-center py-1">
-          <span class="text-base">📅</span>
-          <span class="text-[10px] mt-0.5">下架行事曆</span>
-        </button>
-        <button 
-          @click="currentTab = 'roster'" 
-          :class="currentTab === 'roster' ? 'text-emerald-800 font-bold' : 'text-slate-400'"
-          class="flex flex-col items-center justify-center py-1">
-          <span class="text-base">👥</span>
-          <span class="text-[10px] mt-0.5">夥伴排班</span>
-        </button>
-        <button 
-          @click="currentTab = 'settings'" 
-          :class="currentTab === 'settings' ? 'text-emerald-800 font-bold' : 'text-slate-400'"
-          class="flex flex-col items-center justify-center py-1">
-          <span class="text-base">⚙️</span>
-          <span class="text-[10px] mt-0.5">檔期標準</span>
-        </button>
-      </div>
-    </footer>
+  </div> <!-- end of app-screen -->
 
-  </div>
+  <!-- ==================== 底部固定導航選單 (最高層級 z-[9999] 常駐顯示) ==================== -->
+  <footer class="screen-element fixed bottom-0 left-0 right-0 z-[9999] bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-2xl">
+    <div class="max-w-md mx-auto grid grid-cols-4 py-2 px-2">
+      <button 
+        @click="currentTab = 'materials'" 
+        :class="currentTab === 'materials' ? 'text-emerald-800 font-bold scale-105' : 'text-slate-400'"
+        class="flex flex-col items-center justify-center py-1 transition">
+        <span class="text-xl">☕</span>
+        <span class="text-[11px] mt-0.5">物料查詢</span>
+      </button>
+      <button 
+        @click="currentTab = 'intake'" 
+        :class="currentTab === 'intake' ? 'text-emerald-800 font-bold scale-105' : 'text-slate-400'"
+        class="flex flex-col items-center justify-center py-1 transition">
+        <span class="text-xl">📅</span>
+        <span class="text-[11px] mt-0.5">下架行事曆</span>
+      </button>
+      <button 
+        @click="currentTab = 'roster'" 
+        :class="currentTab === 'roster' ? 'text-emerald-800 font-bold scale-105' : 'text-slate-400'"
+        class="flex flex-col items-center justify-center py-1 transition">
+        <span class="text-xl">👥</span>
+        <span class="text-[11px] mt-0.5">夥伴排班</span>
+      </button>
+      <button 
+        @click="currentTab = 'settings'" 
+        :class="currentTab === 'settings' ? 'text-emerald-800 font-bold scale-105' : 'text-slate-400'"
+        class="flex flex-col items-center justify-center py-1 transition">
+        <span class="text-xl">⚙️</span>
+        <span class="text-[11px] mt-0.5">檔期標準</span>
+      </button>
+    </div>
+  </footer>
 
   <!-- ==================== 模態視窗群 (Modals) ==================== -->
 
   <!-- 打點試算 Modal -->
-  <div v-if="calcModal.show" class="fixed inset-0 bg-black/40 z-50 flex items-end justify-center p-4">
+  <div v-if="calcModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-end justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
       <div class="flex justify-between items-center">
         <h3 class="font-bold text-sm text-slate-900">{{ calcModal.item.name }} ({{ calcModal.item.code }})</h3>
@@ -606,7 +639,7 @@
   </div>
 
   <!-- 手動新增 / 編輯物料 Modal -->
-  <div v-if="matEditModal.show" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+  <div v-if="matEditModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
       <div class="flex justify-between items-center">
         <h3 class="font-bold text-sm text-slate-900">{{ matEditModal.isNew ? '新增物料' : '編輯物料內容' }}</h3>
@@ -653,7 +686,7 @@
   </div>
 
   <!-- 新增 / 編輯夥伴基本資料 Modal -->
-  <div v-if="staffModal.show" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+  <div v-if="staffModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
       <div class="flex justify-between items-center">
         <h3 class="font-bold text-sm text-slate-900">{{ staffModal.isNew ? '新增門市夥伴' : '編輯夥伴資料' }}</h3>
@@ -693,7 +726,7 @@
   </div>
 
   <!-- 夥伴每週固定上班時間設定 Modal (06:30 ~ 22:30 以 30 分鐘為單位) -->
-  <div v-if="availModal.show" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-3">
+  <div v-if="availModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-center justify-center p-3">
     <div class="bg-white rounded-2xl w-full max-w-md p-4 shadow-xl space-y-3 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
         <div>
@@ -740,7 +773,7 @@
   </div>
 
   <!-- 畫假安全刪除確認 Modal (防呆驗證) -->
-  <div v-if="secureDeleteModal.show" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div v-if="secureDeleteModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-3">
       <div class="flex items-center gap-2 text-red-600">
         <span class="text-lg">🛡️</span>
@@ -791,7 +824,7 @@
       </div>
     </div>
 
-    <!-- 滿版排班表格 (格度最大化、移除右側與底部次要欄位) -->
+    <!-- 滿版排班表格 -->
     <table class="w-full border-collapse border border-black text-center text-xs">
       <thead>
         <tr class="bg-slate-100 border-b border-black">
@@ -875,7 +908,7 @@ const generateTimeSlots = () => {
 };
 const timeSlots = generateTimeSlots();
 
-// 16 位門市夥伴預設資料（預設全 PT）
+// 16 位門市夥伴預設資料
 const initialStaffRoster = [
   { empId: "10165771", name: "張升豪", nickname: "Zero", role: "兼職夥伴" },
   { empId: "10002453", name: "陳錫玄", nickname: "David", role: "兼職夥伴" },
@@ -912,7 +945,7 @@ createApp({
     const staffList = ref([]);
     const vacationList = ref([]);
 
-    // Firebase 即時資料監聽
+    // Firebase 監聽
     if (db) {
       db.ref('.info/connected').on('value', snap => isCloudConnected.value = snap.val() === true);
       db.ref('sbux/materials').on('value', snap => materials.value = snap.val() ? Object.values(snap.val()) : []);
@@ -920,13 +953,12 @@ createApp({
       db.ref('sbux/inventory').on('value', snap => inventory.value = snap.val() ? Object.values(snap.val()) : []);
       db.ref('sbux/vacations').on('value', snap => vacationList.value = snap.val() ? Object.values(snap.val()) : []);
 
-      // 監聽夥伴名冊，若為空則自動寫入 16 位夥伴
+      // 夥伴名冊自動同步與初始化
       db.ref('sbux/staff').on('value', snap => {
         const data = snap.val();
         if (data && Object.keys(data).length > 0) {
           staffList.value = Object.values(data);
         } else {
-          // 初始化注入名冊
           initialStaffRoster.forEach(s => {
             const id = 'staff_' + s.empId;
             db.ref('sbux/staff/' + id).set({ ...s, id, availability: {} });
@@ -1264,7 +1296,7 @@ createApp({
       return vacationList.value.find(item => item.staffId === staffId && item.date === dateStr) || null;
     };
 
-    // 固定可上班時間設定模態 (Availability)
+    // 固定上班時間設定模態 (Availability)
     const availModal = ref({
       show: false,
       staff: {},
@@ -1311,7 +1343,7 @@ createApp({
     const getAvailabilityText = (staff, dateStr) => {
       if (!staff.availability) return '';
       const d = new Date(dateStr);
-      const dayIdx = (d.getDay() + 6) % 7; // 0=週一, 6=週日
+      const dayIdx = (d.getDay() + 6) % 7;
       const av = staff.availability[dayIdx];
       if (!av) return '';
       if (av.type === 'none') return '不可配班';
