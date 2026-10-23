@@ -36,7 +36,6 @@
       min-width: 0;
       max-width: 100%;
     }
-    /* 黑圍裙專屬黑金卡片樣式 */
     .black-gold-card {
       background: linear-gradient(135deg, #09090b 0%, #18181b 50%, #27272a 100%) !important;
       border: 1.5px solid #d97706 !important;
@@ -46,6 +45,27 @@
       background: linear-gradient(135deg, #f59e0b, #d97706);
       color: #000;
       box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+    }
+    /* 動態毛毛雨特效 (CSS Rain Effect) */
+    .rain-container {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .rain-drop {
+      position: absolute;
+      bottom: 100%;
+      width: 1.5px;
+      height: 18px;
+      background: linear-gradient(transparent, rgba(255, 255, 255, 0.6));
+      animation: rainDrop 1.2s linear infinite;
+    }
+    @keyframes rainDrop {
+      0% { transform: translateY(0); opacity: 0; }
+      50% { opacity: 0.8; }
+      100% { transform: translateY(220px); opacity: 0.2; }
     }
     @media screen {
       .print-only-container { display: none !important; }
@@ -96,18 +116,35 @@
     <!-- 主要內容區 -->
     <main class="flex-1 p-4 space-y-4">
 
-      <!-- ==================== 頁籤 0：首頁主視覺 ==================== -->
+      <!-- ==================== 頁籤 0：首頁主視覺 (天氣動態背景) ==================== -->
       <section v-if="currentTab === 'home'" class="space-y-4">
         
-        <!-- 門市歡迎 Banner -->
-        <div class="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white rounded-3xl p-5 shadow-sm space-y-3 relative overflow-hidden">
-          <div class="absolute -right-3 -bottom-3 text-emerald-700/20 text-8xl select-none font-serif z-0 pointer-events-none">SBUX</div>
-          <div class="relative z-10">
-            <span class="px-2 py-0.5 bg-emerald-700 text-emerald-200 text-[10px] font-bold rounded-full uppercase tracking-wider">永安門市 Hub</span>
-            <h2 class="text-lg font-black mt-1">Hello, Partners!</h2>
-            <p class="text-xs text-emerald-200 mt-0.5">今天也是充滿咖啡香與活力的一天 💚</p>
+        <!-- 動態天氣 Banner (依永和當前天氣自動變更色彩與雨絲特效) -->
+        <div 
+          :class="weatherBannerClass"
+          class="text-white rounded-3xl p-5 shadow-sm space-y-3 relative overflow-hidden transition-all duration-700">
+          
+          <!-- 毛毛雨動態圖層 -->
+          <div v-if="weatherType === 'rain'" class="rain-container">
+            <div v-for="n in 12" :key="n" class="rain-drop" :style="{ left: (n * 8) + '%', animationDelay: (n * 0.15) + 's', animationDuration: (0.9 + (n % 4) * 0.2) + 's' }"></div>
           </div>
-          <div class="relative z-10 flex justify-between items-center text-[11px] text-emerald-300 border-t border-emerald-700/50 pt-2.5">
+
+          <div class="absolute -right-3 -bottom-3 text-white/10 text-8xl select-none font-serif z-0 pointer-events-none">SBUX</div>
+          
+          <div class="relative z-10">
+            <div class="flex justify-between items-center">
+              <span class="px-2 py-0.5 bg-white/20 text-white text-[10px] font-bold rounded-full uppercase tracking-wider backdrop-blur-sm">
+                永安門市 Hub
+              </span>
+              <span class="text-xs font-bold flex items-center gap-1 bg-black/25 px-2.5 py-0.5 rounded-full">
+                {{ weatherIcon }} {{ weatherDesc }}
+              </span>
+            </div>
+            <h2 class="text-lg font-black mt-2">Hello, Partners!</h2>
+            <p class="text-xs text-white/90 mt-0.5">{{ weatherGreeting }}</p>
+          </div>
+
+          <div class="relative z-10 flex justify-between items-center text-[11px] text-white/80 border-t border-white/20 pt-2.5">
             <span>📅 {{ currentDateTimeDisplay }}</span>
             <span>門市營業 07:00-21:30</span>
           </div>
@@ -162,7 +199,7 @@
           </div>
         </a>
 
-        <!-- 門市榮譽殿堂 -->
+        <!-- 門市榮譽殿堂 (完全無造假，無人上傳時顯示虛位以待，週日23:30前鎖定上週) -->
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3">
           <div class="flex justify-between items-center">
             <div>
@@ -181,24 +218,24 @@
             <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-2 space-y-1">
               <span class="text-xl">🥇</span>
               <div class="text-[10px] text-amber-800 font-bold leading-tight">當週拉花冠軍</div>
-              <div class="text-xs font-black text-slate-900 truncate">{{ previousWeekSummary.champion }}</div>
-              <div class="text-[9px] text-amber-700 font-medium">{{ previousWeekSummary.champScore ? previousWeekSummary.champScore + ' 分' : '-' }}</div>
+              <div class="text-xs font-black text-slate-900 truncate">{{ settledHonors.champion }}</div>
+              <div class="text-[9px] text-amber-700 font-medium">{{ settledHonors.champScore ? settledHonors.champScore + ' 分' : '-' }}</div>
             </div>
 
             <!-- 2. 最佳進步獎 -->
             <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-2 space-y-1">
               <span class="text-xl">🌟</span>
               <div class="text-[10px] text-blue-800 font-bold leading-tight">最佳進步獎</div>
-              <div class="text-xs font-black text-slate-900 truncate">{{ previousWeekSummary.mostImproved }}</div>
-              <div class="text-[9px] text-blue-700 font-medium">{{ previousWeekSummary.improvedDelta }}</div>
+              <div class="text-xs font-black text-slate-900 truncate">{{ settledHonors.mostImproved }}</div>
+              <div class="text-[9px] text-blue-700 font-medium">{{ settledHonors.improvedDelta || '-' }}</div>
             </div>
 
-            <!-- 3. 本週品評活躍 -->
+            <!-- 3. 本週品評活躍 (無人品評時顯示虛位以待) -->
             <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-2 space-y-1">
               <span class="text-xl">☕</span>
               <div class="text-[10px] text-emerald-800 font-bold leading-tight">本週活躍</div>
-              <div class="text-xs font-black text-slate-900 truncate">{{ previousWeekSummary.activePartner }}</div>
-              <div class="text-[9px] text-emerald-700 font-medium">{{ previousWeekSummary.activeTitle }}</div>
+              <div class="text-xs font-black text-slate-900 truncate">{{ settledHonors.activePartner }}</div>
+              <div class="text-[9px] text-emerald-700 font-medium">{{ settledHonors.activeTitle || '-' }}</div>
             </div>
           </div>
 
@@ -244,7 +281,7 @@
             class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm text-left active:scale-[0.98] transition space-y-1">
             <span class="text-2xl">🏛️</span>
             <div class="text-xs font-bold text-slate-900">關於永安門市</div>
-            <div class="text-[10px] text-slate-400">門市相簿與 Bravo 感謝卡</div>
+            <div class="text-[10px] text-slate-400">門市資訊與相簿</div>
           </button>
         </div>
 
@@ -420,7 +457,7 @@
 
       </section>
 
-      <!-- ==================== 頁籤 3：門市夥伴畫假與排班管理 (黑金專屬卡片與標誌) ==================== -->
+      <!-- ==================== 頁籤 3：門市夥伴畫假與排班管理 ==================== -->
       <section v-if="currentTab === 'roster'" class="space-y-4">
         
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3 overflow-hidden">
@@ -475,7 +512,7 @@
                 </select>
               </div>
               <div class="flex-1 min-w-0">
-                <label class="text-[10px] text-slate-500 font-bold block mb-0.5 truncate">請假備註 (顯示於班表格內)</label>
+                <label class="text-[10px] text-slate-500 font-bold block mb-0.5 truncate">請假備註</label>
                 <input 
                   v-model="vacationForm.notes" 
                   type="text" 
@@ -538,7 +575,7 @@
           </div>
         </div>
 
-        <!-- 夥伴名冊 (黑圍裙夥伴整體黑金呈現，不捨去原職稱，Hazel掛上專屬DCM咖啡標誌) -->
+        <!-- 夥伴名冊 (黑圍裙夥伴整體黑金呈現，Hazel 掛上 DCM 咖啡專屬標誌) -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
           <div>
             <h3 class="text-xs font-bold text-slate-800">📋 門市夥伴名冊 (共 {{ validStaffList.length }} 人)</h3>
@@ -555,7 +592,7 @@
                 <span>☕</span> 🌟 DCM
               </div>
 
-              <!-- 黑圍裙 Master 右上標誌 (Zero, Winona) -->
+              <!-- 黑圍裙 Master 右上標誌 -->
               <div v-else-if="['Zero', 'Winona'].includes(s.nickname)" class="absolute -top-1 -right-1 bg-amber-400 text-black text-[9px] font-black px-2 py-0.5 rounded-bl-xl flex items-center gap-0.5">
                 <span>☕</span> Master
               </div>
@@ -566,7 +603,6 @@
                   <span :class="isSpecialCoffeeMaster(s) ? 'text-amber-200 font-black text-sm' : 'text-slate-900 font-bold'">{{ s.name }}</span>
                   <span :class="isSpecialCoffeeMaster(s) ? 'text-amber-300/80' : 'text-slate-500'">({{ s.nickname }})</span>
                   
-                  <!-- 不捨去原職稱，黑圍裙加註黑金原職稱標籤 -->
                   <span 
                     :class="isSpecialCoffeeMaster(s) ? 'px-1.5 py-0.2 bg-amber-400/20 text-amber-300 border border-amber-400/40' : 'px-1.5 py-0.2 bg-emerald-100 text-emerald-800'" 
                     class="rounded text-[10px] font-medium">
@@ -582,7 +618,7 @@
               </div>
 
               <div v-else class="flex justify-between items-center text-red-600 bg-red-50 p-1.5 rounded-lg border border-red-200">
-                <span class="text-[10px] font-bold">⚠️ 異常/空白幽靈資料節點 (Key: {{ s._key }})</span>
+                <span class="text-[10px] font-bold">⚠️ 異常資料節點 (Key: {{ s._key }})</span>
                 <button @click="forcePurgeStaffNode(s._key)" class="px-2 py-0.5 bg-red-600 text-white rounded text-[10px] font-bold">強制清除</button>
               </div>
 
@@ -595,7 +631,7 @@
 
         <!-- 畫假清單與安全刪除 -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2">
-          <h3 class="text-xs font-bold text-slate-800">📌 已登記畫假紀錄 (打叉清單)</h3>
+          <h3 class="text-xs font-bold text-slate-800">📌 已登記畫假紀錄</h3>
           <div v-if="vacationList.length > 0" class="divide-y divide-slate-100 max-h-48 overflow-y-auto text-xs">
             <div v-for="v in sortedVacationList" :key="v.id" class="py-2 flex justify-between items-center">
               <div>
@@ -612,7 +648,7 @@
 
       </section>
 
-      <!-- ==================== 頁籤 4：【其他】黑圍裙課程(直通中文官方課程)、沖煮秘笈、品評、拉花 ==================== -->
+      <!-- ==================== 頁籤 4：【其他】黑圍裙課程、沖煮、品評、拉花 ==================== -->
       <section v-if="currentTab === 'other'" class="space-y-4">
         
         <!-- 4 大子標籤切換 -->
@@ -645,7 +681,6 @@
 
         <!-- 子功能 0：黑圍裙官方課程直通 (可直接點入中文版上課) -->
         <div v-if="otherSubTab === 'academy'" class="space-y-3">
-          
           <div class="bg-gradient-to-r from-zinc-950 to-neutral-900 text-amber-100 p-4 rounded-2xl shadow space-y-1.5 border border-amber-500/40">
             <div class="flex items-center gap-1.5">
               <span class="text-xl">🎓</span>
@@ -668,7 +703,6 @@
               <div><b>☕ 咖啡四大特徵：</b>香氣 (Aroma)、酸度 (Acidity)、醇度 (Body)、風味 (Flavor)。</div>
               <div><b>⚖️ 沖煮黃金四原則：</b>比例 (Proportion)、研磨 (Grind)、水質 (Water)、新鮮度 (Freshness)。</div>
             </div>
-            <!-- 直通中文官方課程連結按鈕 -->
             <a 
               href="https://www.starbucksglobalacademy.com/coffee-academy-100/" 
               target="_blank" 
@@ -829,7 +863,6 @@
                 </div>
               </div>
 
-              <!-- 拖拉軸：酸度 -->
               <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1">
                 <div class="flex justify-between items-center text-[11px]">
                   <span class="font-bold text-slate-700">🍋 酸度 (Acidity)</span>
@@ -842,7 +875,6 @@
                 >
               </div>
 
-              <!-- 拖拉軸：醇度 -->
               <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1">
                 <div class="flex justify-between items-center text-[11px]">
                   <span class="font-bold text-slate-700">🧈 醇度 (Body)</span>
@@ -1037,7 +1069,7 @@
       <!-- ==================== 頁籤 5：【關於】永和永安門市專屬資料、相簿與 Bravo 感謝小卡 ==================== -->
       <section v-if="currentTab === 'about'" class="space-y-4">
         
-        <!-- 門市基本資料卡片 -->
+        <!-- 門市基本資料卡片 (已校正正確地址、電話與 Google Maps 連結) -->
         <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
           <div class="flex justify-between items-start">
             <div>
@@ -1048,30 +1080,38 @@
             <span class="text-3xl">🏛️</span>
           </div>
 
-          <div class="text-xs space-y-2 text-slate-600 border-t border-slate-100 pt-2.5">
-            <div class="flex items-center gap-2">
-              <span class="text-emerald-800 font-bold">📍 地址：</span>
-              <span>新北市永和區中和路 501 號 (近捷運永安市場站)</span>
+          <div class="text-xs space-y-2.5 text-slate-600 border-t border-slate-100 pt-3">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-start gap-1.5 flex-1">
+                <span class="text-emerald-800 font-bold whitespace-nowrap">📍 地址：</span>
+                <span class="text-slate-800">新北市永和區安樂路 248-7 號 1F</span>
+              </div>
+              <a 
+                href="https://maps.google.com/?q=星巴克+永和永安門市+新北市永和區安樂路248-7號" 
+                target="_blank" 
+                class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded-lg text-[10px] font-bold flex items-center gap-1 flex-shrink-0 transition">
+                <span>🗺️</span> 地圖導航 ↗
+              </a>
             </div>
             <div class="flex items-center gap-2">
-              <span class="text-emerald-800 font-bold">📞 電話：</span>
-              <a href="tel:0229202758" class="text-emerald-700 underline font-mono">02-2920-2758</a>
+              <span class="text-emerald-800 font-bold whitespace-nowrap">📞 電話：</span>
+              <a href="tel:0289215223" class="text-emerald-700 font-mono font-bold hover:underline">02-8921-5223</a>
             </div>
             <div class="flex items-center gap-2">
-              <span class="text-emerald-800 font-bold">⏰ 營業時間：</span>
-              <span>每日 07:00 ~ 21:30</span>
+              <span class="text-emerald-800 font-bold whitespace-nowrap">⏰ 營業時間：</span>
+              <span class="text-slate-800">週一至週日 07:00 ~ 21:30</span>
             </div>
           </div>
         </div>
 
-        <!-- 門市分類相簿 (CE、FSA、夥伴歡聚等自訂相簿) -->
+        <!-- 門市自訂分類相簿 (預設無名稱，由店長與夥伴自訂創建) -->
         <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
           <div class="flex justify-between items-center">
             <div>
               <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                 <span>📷</span> 門市專屬相簿庫
               </h3>
-              <p class="text-[10px] text-slate-400">支援店長與夥伴自訂相簿分類追蹤</p>
+              <p class="text-[10px] text-slate-400">點擊右側按鈕即可自由建立新相簿分類</p>
             </div>
             <button @click="openCreateAlbumModal" class="text-[10px] font-bold px-2.5 py-1 bg-emerald-800 text-white rounded-lg shadow-sm">
               + 建立新相簿
@@ -1079,7 +1119,7 @@
           </div>
 
           <!-- 相簿分類按鈕 -->
-          <div class="flex gap-1.5 overflow-x-auto pb-1 text-[11px]">
+          <div v-if="customAlbums.length > 0" class="flex gap-1.5 overflow-x-auto pb-1 text-[11px]">
             <button 
               @click="selectedAlbum = 'all'" 
               :class="selectedAlbum === 'all' ? 'bg-emerald-800 text-white font-bold' : 'bg-slate-100 text-slate-600'"
@@ -1094,12 +1134,15 @@
               {{ alb }}
             </button>
           </div>
+          <p v-else class="text-[11px] text-slate-400 py-1 bg-slate-50 p-2 rounded-xl text-center">
+            目前尚未建立自訂相簿分類，請點擊上方按鈕建立（例如：CE、FSA 等）。
+          </p>
 
           <!-- 照片上傳按鈕 -->
           <label class="block border-2 border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:bg-slate-50 transition">
             <input type="file" accept="image/*" @change="handleStorePhotoUpload" class="hidden">
             <div class="text-[11px] text-slate-500 font-bold flex items-center justify-center gap-1">
-              <span>📤</span> 點擊上傳照片至【{{ selectedAlbum === 'all' ? '一般門市紀錄' : selectedAlbum }}】
+              <span>📤</span> 點擊上傳照片至【{{ selectedAlbum === 'all' ? '一般門市相簿' : selectedAlbum }}】
             </div>
           </label>
 
@@ -1117,7 +1160,7 @@
           <p v-else class="text-xs text-slate-400 py-4 text-center">該分類尚無任何照片上傳。</p>
         </div>
 
-        <!-- 夥伴互助 Bravo 感謝小卡 (Green Apron Recognition) -->
+        <!-- 夥伴互助 Bravo 感謝小卡 -->
         <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
           <div class="flex justify-between items-center">
             <div>
@@ -1131,7 +1174,6 @@
             </button>
           </div>
 
-          <!-- Bravo 留言便利貼清單 -->
           <div v-if="bravoCardsList.length > 0" class="space-y-2">
             <div 
               v-for="b in bravoCardsList" :key="b.id"
@@ -1159,7 +1201,7 @@
 
   </div> <!-- end of app-screen -->
 
-  <!-- ==================== 底部唯一常駐導航選單 (6大功能：首頁、物料、下架、排班、其他、關於) ==================== -->
+  <!-- ==================== 底部唯一常駐導航選單 (6大功能) ==================== -->
   <footer class="screen-element fixed bottom-0 left-0 right-0 z-[9999] bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-2xl">
     <div class="max-w-md mx-auto grid grid-cols-6 py-2 px-1 text-center">
       <button 
@@ -1248,15 +1290,15 @@
           </select>
         </div>
         <div>
-          <label class="font-bold text-slate-600 block mb-0.5">感謝對象 (Recipient)</label>
+          <label class="font-bold text-slate-600 block mb-0.5">感謝對象</label>
           <select v-model="bravoModal.form.targetStaffId" required class="w-full px-2 py-1.5 rounded-xl border border-slate-300 bg-slate-50">
             <option value="" disabled>請選擇要感謝的夥伴</option>
             <option v-for="s in validStaffList" :key="s._key || s.id" :value="s.id || s._key">{{ s.name }} ({{ s.nickname }})</option>
           </select>
         </div>
         <div>
-          <label class="font-bold text-slate-600 block mb-0.5">感謝話語 (Bravo Message)</label>
-          <textarea v-model="bravoModal.form.message" required rows="3" placeholder="謝謝你今天尖峰時的超強吧台支援，有你真好！" class="w-full px-3 py-1.5 rounded-xl border border-slate-300 bg-slate-50"></textarea>
+          <label class="font-bold text-slate-600 block mb-0.5">感謝話語</label>
+          <textarea v-model="bravoModal.form.message" required rows="3" placeholder="謝謝你今天尖峰時的超強支援，辛苦了！" class="w-full px-3 py-1.5 rounded-xl border border-slate-300 bg-slate-50"></textarea>
         </div>
 
         <div class="pt-2 flex gap-2">
@@ -1408,7 +1450,7 @@
     </div>
   </div>
 
-  <!-- 刪除夥伴安全確認 Modal (姓名 + 工號) -->
+  <!-- 刪除夥伴安全確認 Modal -->
   <div v-if="secureStaffDeleteModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-3">
       <div class="flex items-center gap-2 text-red-600">
@@ -1490,7 +1532,7 @@
     </div>
   </div>
 
-  <!-- 畫假刪除確認 Modal (僅核對姓名) -->
+  <!-- 畫假刪除確認 Modal -->
   <div v-if="secureDeleteModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-3">
       <div class="flex items-center gap-2 text-red-600">
@@ -1719,7 +1761,7 @@ const coffeeTriviaList = [
   },
   {
     level: "CA 100 歷史",
-    text: "你知道星巴克第一家創始門市於 1971 年開在西雅圖著名的「派克市場（Pike Place Market）」嗎？最初星巴克只專注於銷售高品質烘焙咖啡豆與香料，完全不賣義式拿鐵！",
+    text: "你知道星巴克第一家創始門市於 1971 年開在西雅圖著名的「派克市場（Pike Place Market）」嗎？最初星巴克只專注於銷售高品質烘焙咖啡豆與香料，完全不賣現煮義式拿鐵！",
     searchUrl: "https://www.google.com/search?q=Starbucks+Pike+Place+Market+1971"
   },
   {
@@ -1776,9 +1818,54 @@ createApp({
     const tastingNotesList = ref([]);
     const bulletinList = ref([]);
     const storePhotos = ref([]);
-    const bravoCardsList = ref([]);
-    const customAlbums = ref(["CE 顧客體驗", "FSA 食品安全", "夥伴歡聚與慶生", "檔期陳列與活動"]);
+    const customAlbums = ref([]); // 清空預設，由使用者自訂創建
     const selectedAlbum = ref("all");
+    const bravoCardsList = ref([]);
+
+    // 即時天氣狀態
+    const weatherType = ref('clear'); // clear, rain, clouds
+    const weatherDesc = ref('晴天舒適');
+    const weatherIcon = ref('☀️');
+    const weatherGreeting = ref('陽光正好，適合來杯香醇咖啡 ☕');
+
+    // 取得永和地區天氣 (Open-Meteo 免金鑰 API)
+    const fetchYongheWeather = async () => {
+      try {
+        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=25.00&longitude=121.51&current_weather=true');
+        const data = await res.json();
+        if (data && data.current_weather) {
+          const code = data.current_weather.weathercode;
+          // WMO 氣象代碼解析
+          if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) {
+            weatherType.value = 'rain';
+            weatherDesc.value = '局部有雨';
+            weatherIcon.value = '🌧️';
+            weatherGreeting.value = '永和今天有雨，溫暖咖啡陪你當班 💚';
+          } else if ([1, 2, 3, 45, 48].includes(code)) {
+            weatherType.value = 'clouds';
+            weatherDesc.value = '多雲舒適';
+            weatherIcon.value = '☁️';
+            weatherGreeting.value = '微風輕拂，適合來杯熱焦糖瑪奇朵 ☕';
+          } else {
+            weatherType.value = 'clear';
+            weatherDesc.value = '晴朗陽光';
+            weatherIcon.value = '☀️';
+            weatherGreeting.value = '陽光正好，今天也是元氣滿滿的一天 🌟';
+          }
+        }
+      } catch (e) {
+        console.log('天氣資料載入略過，使用預設晴天主題');
+      }
+    };
+
+    const weatherBannerClass = computed(() => {
+      if (weatherType.value === 'rain') {
+        return 'bg-gradient-to-br from-slate-800 via-teal-900 to-emerald-950';
+      } else if (weatherType.value === 'clouds') {
+        return 'bg-gradient-to-br from-slate-700 via-emerald-900 to-zinc-900';
+      }
+      return 'bg-gradient-to-br from-emerald-800 to-emerald-950';
+    });
 
     // 模態視窗旗標
     const calcModal = ref({ show: false, item: {}, targetTimeStr: '', pullDate: '', timing: '', isAdjustedForClose: false });
@@ -1823,7 +1910,7 @@ createApp({
 
       db.ref('sbux/custom_albums').on('value', snap => {
         const data = snap.val();
-        if (data) customAlbums.value = Object.values(data);
+        customAlbums.value = data ? Object.values(data) : [];
       });
 
       db.ref('sbux/bravo_cards').on('value', snap => {
@@ -1858,7 +1945,6 @@ createApp({
       return s ? s.nickname : '';
     };
 
-    // 判斷是否為黑圍裙大師 (Zero, Hazel, Winona)
     const isSpecialCoffeeMaster = (staff) => {
       if (!staff || !staff.nickname) return false;
       return ['Zero', 'Hazel', 'Winona'].includes(staff.nickname);
@@ -1924,6 +2010,7 @@ createApp({
     };
 
     onMounted(() => {
+      fetchYongheWeather();
       updateCountdown();
       setInterval(updateCountdown, 1000);
     });
@@ -1946,62 +2033,67 @@ createApp({
       return Number((post.aiScore * 0.7 + (post.votes || 0) * 5).toFixed(1));
     };
 
-    // 榮譽榜結算 (冠軍、最佳進步獎、本週活躍)
-    const previousWeekSummary = computed(() => {
-      if (lattePosts.value.length === 0) {
-        return {
-          champion: '徐爰坦 (Tan)',
-          champScore: '88.5',
-          mostImproved: '盧玟卉 (Abby)',
-          improvedDelta: '+6.2 分',
-          activePartner: '沈洺序 (Hazel)',
-          activeTitle: 'DCM大師'
-        };
+    // 榮譽榜完全真確結算 (無造假，無人上傳時顯示虛位以待)
+    const settledHonors = computed(() => {
+      // 1. 若完全無拉花資料
+      let champName = '虛位以待';
+      let champScore = '';
+      let progressName = '虛位以待';
+      let progressDelta = '';
+
+      if (lattePosts.value.length > 0) {
+        const staffBestScoreMap = {};
+        lattePosts.value.forEach(post => {
+          const score = calculateCombinedScore(post);
+          const sid = post.authorStaffId;
+          if (!staffBestScoreMap[sid] || score > staffBestScoreMap[sid]) {
+            staffBestScoreMap[sid] = score;
+          }
+        });
+
+        const rankedStaff = Object.keys(staffBestScoreMap).sort((a,b) => staffBestScoreMap[b] - staffBestScoreMap[a]);
+        if (rankedStaff.length > 0) {
+          champName = getStaffName(rankedStaff[0]);
+          champScore = staffBestScoreMap[rankedStaff[0]].toString();
+        }
+
+        // 最佳進步獎：比較該夥伴單張最高分與次高分之差距
+        let maxDelta = 0;
+        let bestSid = '';
+        rankedStaff.forEach(sid => {
+          const scores = lattePosts.value
+            .filter(p => p.authorStaffId === sid)
+            .map(p => calculateCombinedScore(p))
+            .sort((a,b) => b - a);
+          if (scores.length >= 2) {
+            const delta = scores[0] - scores[1];
+            if (delta > maxDelta) {
+              maxDelta = delta;
+              bestSid = sid;
+            }
+          }
+        });
+        if (bestSid) {
+          progressName = getStaffName(bestSid);
+          progressDelta = `+${maxDelta.toFixed(1)} 分`;
+        }
       }
 
-      const staffBestScoreMap = {};
-      lattePosts.value.forEach(post => {
-        const score = calculateCombinedScore(post);
-        const sid = post.authorStaffId;
-        if (!staffBestScoreMap[sid] || score > staffBestScoreMap[sid]) {
-          staffBestScoreMap[sid] = score;
-        }
-      });
-
-      const rankedStaff = Object.keys(staffBestScoreMap).sort((a,b) => staffBestScoreMap[b] - staffBestScoreMap[a]);
-      const champId = rankedStaff[0];
-      const champScore = champId ? staffBestScoreMap[champId] : 0;
-
-      let bestProgressStaffId = rankedStaff[1] || rankedStaff[0];
-      let maxProgress = 4.8;
-
-      rankedStaff.forEach(sid => {
-        const postsByStaff = lattePosts.value
-          .filter(p => p.authorStaffId === sid)
-          .map(p => calculateCombinedScore(p))
-          .sort((a,b) => b - a);
-
-        if (postsByStaff.length >= 2) {
-          const delta = postsByStaff[0] - postsByStaff[1];
-          if (delta > maxProgress) {
-            maxProgress = delta;
-            bestProgressStaffId = sid;
-          }
-        }
-      });
-
-      let activeName = '沈洺序 (Hazel)';
+      // 2. 本週品評活躍 (完全依據 Tasting 真實筆記，無人發表時顯示虛位以待)
+      let activeName = '虛位以待';
+      let activeTitle = '';
       if (tastingNotesList.value.length > 0) {
         activeName = getStaffName(tastingNotesList.value[0].authorStaffId);
+        activeTitle = '品評之星';
       }
 
       return {
-        champion: champId ? getStaffName(champId) : '徐爰坦 (Tan)',
-        champScore: champScore ? champScore.toString() : '88.5',
-        mostImproved: bestProgressStaffId ? getStaffName(bestProgressStaffId) : '盧玟卉 (Abby)',
-        improvedDelta: `+${maxProgress.toFixed(1)} 分`,
+        champion: champName,
+        champScore: champScore,
+        mostImproved: progressName,
+        improvedDelta: progressDelta,
         activePartner: activeName,
-        activeTitle: '品評大師'
+        activeTitle: activeTitle
       };
     });
 
@@ -2163,7 +2255,7 @@ createApp({
       reader.onload = (evt) => {
         const photoItem = {
           id: Date.now().toString(),
-          album: selectedAlbum.value === 'all' ? '一般門市紀錄' : selectedAlbum.value,
+          album: selectedAlbum.value === 'all' ? '一般門市相簿' : selectedAlbum.value,
           url: evt.target.result,
           dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`,
           timestamp: Date.now()
@@ -2606,8 +2698,10 @@ createApp({
 
     return {
       currentTab, otherSubTab, isCloudConnected, currentDateTimeDisplay, todayTrivia,
-      // 倒數與結算
-      countdownToSunday, lastWeekDateRangeStr, previousWeekSummary,
+      // 天氣
+      weatherType, weatherDesc, weatherIcon, weatherGreeting, weatherBannerClass,
+      // 倒數與真實榮譽榜
+      countdownToSunday, lastWeekDateRangeStr, settledHonors,
       // 布告欄
       bulletinList, bulletinModal, openBulletinModal, submitBulletin, deleteBulletin,
       // 關於與相簿、Bravo
