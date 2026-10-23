@@ -102,7 +102,7 @@
     }
     .modal-enter-from, .modal-leave-to { opacity: 0; transform: scale(0.96); }
 
-    /* ==================== A4 列印排版 (徹底修復右邊被切掉) ==================== */
+    /* ==================== A4 列印排版 ==================== */
     @media screen {
       .print-only-container { display: none !important; }
     }
@@ -211,7 +211,7 @@
       </div>
     </header>
 
-    <!-- 主要內容區 (平滑過場) -->
+    <!-- 主要內容區 -->
     <main class="flex-1 p-4 space-y-4">
       <transition name="fade" mode="out-in">
         <div :key="currentTab">
@@ -309,7 +309,7 @@
               </div>
             </a>
 
-            <!-- 門市榮譽殿堂 (完全真確時序，週日23:30前顯示評比中，進步獎次週啟動) -->
+            <!-- 門市榮譽殿堂 -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
               <div class="flex justify-between items-center">
                 <div>
@@ -324,7 +324,6 @@
               </div>
 
               <div class="grid grid-cols-3 gap-2 text-center">
-                <!-- 1. 當週拉花冠軍 (週日23:30前顯示進行中) -->
                 <div class="bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl p-2 space-y-1">
                   <span class="text-xl">🥇</span>
                   <div class="text-[10px] text-amber-800 dark:text-amber-300 font-bold leading-tight">當週拉花冠軍</div>
@@ -332,7 +331,6 @@
                   <div class="text-[9px] text-amber-700 dark:text-amber-400 font-medium">{{ honorsDisplay.champScore }}</div>
                 </div>
 
-                <!-- 2. 最佳進步獎 (需跨週比較，首週明確顯示次週結算) -->
                 <div class="bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 rounded-xl p-2 space-y-1">
                   <span class="text-xl">🌟</span>
                   <div class="text-[10px] text-blue-800 dark:text-blue-300 font-bold leading-tight">最佳進步獎</div>
@@ -340,7 +338,6 @@
                   <div class="text-[9px] text-blue-700 dark:text-blue-400 font-medium">{{ honorsDisplay.improvedDelta }}</div>
                 </div>
 
-                <!-- 3. 本週品評活躍 (完全依據 Tasting 實際筆記) -->
                 <div class="bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 rounded-xl p-2 space-y-1">
                   <span class="text-xl">☕</span>
                   <div class="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold leading-tight">本週活躍</div>
@@ -349,7 +346,6 @@
                 </div>
               </div>
 
-              <!-- 倒數計時 -->
               <div class="bg-slate-50 dark:bg-slate-900/60 rounded-xl p-2 text-center border border-slate-200 dark:border-slate-700">
                 <span class="text-[11px] font-bold text-emerald-900 dark:text-emerald-300 flex items-center justify-center gap-1">
                   <span>⏳</span> 本週評分截止剩餘：<span class="font-mono text-emerald-700 dark:text-emerald-400">{{ countdownToSunday }}</span>
@@ -807,7 +803,7 @@
               </button>
             </div>
 
-            <!-- CA 100~300 課程 (附帶繁中速讀指南與穩定入口) -->
+            <!-- CA 100~300 課程 -->
             <div v-if="otherSubTab === 'academy'" class="space-y-3">
               <div class="bg-gradient-to-r from-zinc-950 to-neutral-900 text-amber-100 p-4 rounded-2xl shadow space-y-1.5 border border-amber-500/40">
                 <div class="flex items-center gap-1.5">
@@ -1048,7 +1044,7 @@
               </div>
             </div>
 
-            <!-- 拉花擂台賽 (含夥伴/管理職即時留言回饋功能) -->
+            <!-- 拉花擂台賽 -->
             <div v-if="otherSubTab === 'latteArt'" class="space-y-4">
               <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
                 <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
@@ -1097,7 +1093,7 @@
                 </div>
               </div>
 
-              <!-- 擂台動態牆 (每張作品支援夥伴與主管留言) -->
+              <!-- 擂台動態牆 (極簡留言區圖示) -->
               <div class="space-y-3">
                 <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex justify-between items-center">
                   <span>🖼️ 當週夥伴參賽動態 (共 {{ weeklyLattePosts.length }} 篇)</span>
@@ -1156,10 +1152,13 @@
                       </button>
                     </div>
 
-                    <!-- 夥伴與主管留言回饋互動區塊 -->
+                    <!-- 夥伴留言區塊 (極簡對話圖示 + 數量) -->
                     <div class="pt-2 border-t border-slate-100 dark:border-slate-700/60 space-y-2 text-xs">
-                      <div class="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1 text-[11px]">
-                        <span>💬</span> 夥伴與主管技術回饋 ({{ (post.comments || []).length }})
+                      <div class="text-slate-500 dark:text-slate-400 flex items-center gap-1.5 text-[11px] font-medium">
+                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                        </svg>
+                        <span>{{ (post.comments || []).length }} 則留言</span>
                       </div>
 
                       <div v-if="post.comments && post.comments.length > 0" class="space-y-1.5 max-h-36 overflow-y-auto">
@@ -1179,7 +1178,7 @@
                       <div class="flex gap-1.5 pt-1">
                         <input 
                           v-model="commentInputs[post.id]" 
-                          placeholder="留下一句技巧建議或鼓勵吧..." 
+                          placeholder="留下想法或交流吧..." 
                           @keyup.enter="submitComment(post)"
                           class="flex-1 px-2.5 py-1 text-xs rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white">
                         <button 
@@ -1364,373 +1363,6 @@
     </div>
   </footer>
 
-  <!-- ==================== 模態視窗群 (平滑過渡) ==================== -->
-
-  <!-- 個人設定 Modal -->
-  <transition name="modal">
-    <div v-if="settingsModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-4 border border-slate-200 dark:border-slate-700">
-        <div class="flex justify-between items-center border-b dark:border-slate-700 pb-2">
-          <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
-            <span>⚙️</span> 個人偏好與設定
-          </h3>
-          <button @click="settingsModal.show = false" class="text-slate-400 text-sm">✕</button>
-        </div>
-
-        <div class="space-y-3 text-xs">
-          <div class="flex justify-between items-center p-2.5 bg-slate-50 dark:bg-slate-700/60 rounded-xl">
-            <span class="font-bold text-slate-800 dark:text-slate-200">🌓 暗黑模式 (Dark Mode)</span>
-            <button @click="toggleDarkMode" class="px-3 py-1 bg-emerald-800 text-white rounded-lg font-bold">
-              {{ isDarkMode ? '已開啟' : '切換暗黑' }}
-            </button>
-          </div>
-
-          <div class="space-y-1 p-2.5 bg-slate-50 dark:bg-slate-700/60 rounded-xl">
-            <label class="font-bold text-slate-800 dark:text-slate-200 block">🔑 變更個人密碼</label>
-            <input v-model="settingsModal.newPassword" type="password" placeholder="請輸入新密碼" class="w-full px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white">
-            <button @click="saveNewPassword" class="w-full mt-1 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg">
-              確認修改密碼
-            </button>
-          </div>
-
-          <div class="space-y-1 p-2.5 bg-slate-50 dark:bg-slate-700/60 rounded-xl">
-            <label class="font-bold text-slate-800 dark:text-slate-200 block">🎂 設定個人生日 (生日前兩天首頁提醒)</label>
-            <input v-model="settingsModal.birthday" type="text" placeholder="例：08-02" class="w-full px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white">
-            <button @click="saveBirthday" class="w-full mt-1 py-1.5 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-lg">
-              儲存生日設定
-            </button>
-          </div>
-        </div>
-
-        <button @click="settingsModal.show = false" class="w-full py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold">
-          關閉設定
-        </button>
-      </div>
-    </div>
-  </transition>
-
-  <!-- 手動新增下架標準 Modal -->
-  <transition name="modal">
-    <div v-if="addRuleModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
-        <div class="flex justify-between items-center">
-          <h3 class="font-bold text-sm text-slate-900 dark:text-white">📋 手動新增下架標準</h3>
-          <button @click="addRuleModal.show = false" class="text-slate-400 text-sm">✕</button>
-        </div>
-        <div class="space-y-2 text-xs">
-          <div>
-            <label class="font-bold text-slate-700 dark:text-slate-300 block mb-0.5">品項名稱/關鍵字</label>
-            <input v-model="addRuleModal.form.keyword" placeholder="請輸入品項名稱" class="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-1.5 bg-slate-50 dark:bg-slate-700 dark:text-white">
-          </div>
-          <div>
-            <label class="font-bold text-slate-700 dark:text-slate-300 block mb-0.5">提前下架天數</label>
-            <input v-model.number="addRuleModal.form.advance_days" type="number" min="0" placeholder="天數" class="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-1.5 bg-slate-50 dark:bg-slate-700 dark:text-white">
-          </div>
-        </div>
-        <div class="pt-2 flex gap-2">
-          <button @click="saveNewRule" class="flex-1 py-2 bg-emerald-800 text-white font-bold rounded-xl text-xs">儲存標準</button>
-          <button @click="addRuleModal.show = false" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs">取消</button>
-        </div>
-      </div>
-    </div>
-  </transition>
-
-  <!-- 建立新相簿 Modal -->
-  <transition name="modal">
-    <div v-if="createAlbumModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
-        <div class="flex justify-between items-center">
-          <h3 class="font-bold text-sm text-slate-900 dark:text-white">📁 建立自訂相簿分類</h3>
-          <button @click="createAlbumModal.show = false" class="text-slate-400 text-sm">✕</button>
-        </div>
-        <div class="space-y-2 text-xs">
-          <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">相簿名稱</label>
-          <input v-model="createAlbumModal.name" placeholder="請輸入相簿名稱" class="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-1.5 bg-slate-50 dark:bg-slate-700 dark:text-white">
-        </div>
-        <div class="pt-2 flex gap-2">
-          <button @click="saveNewAlbum" class="flex-1 py-2 bg-emerald-800 text-white rounded-xl text-xs font-bold">確認建立</button>
-          <button @click="createAlbumModal.show = false" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs">取消</button>
-        </div>
-      </div>
-    </div>
-  </transition>
-
-  <!-- 送出 Bravo 小卡 Modal -->
-  <transition name="modal">
-    <div v-if="bravoModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
-        <div class="flex justify-between items-center">
-          <h3 class="font-bold text-sm text-amber-950 dark:text-amber-300 flex items-center gap-1">
-            <span>💌</span> 傳送綠圍裙 Bravo 小卡
-          </h3>
-          <button @click="bravoModal.show = false" class="text-slate-400 text-sm">✕</button>
-        </div>
-        <form @submit.prevent="submitBravoCard" class="space-y-2.5 text-xs">
-          <div>
-            <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">送出人 (自己)</label>
-            <input :value="currentPartner.name" disabled class="w-full px-2 py-1.5 rounded-xl border border-slate-200 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold">
-          </div>
-          <div>
-            <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">感謝對象</label>
-            <select v-model="bravoModal.form.targetStaffId" required class="w-full px-2 py-1.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white">
-              <option value="" disabled>請選擇要感謝的夥伴</option>
-              <option v-for="s in validStaffList" :key="s._key || s.id" :value="s.id || s._key">{{ s.name }} ({{ s.nickname }})</option>
-            </select>
-          </div>
-          <div>
-            <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">感謝話語</label>
-            <textarea v-model="bravoModal.form.message" required rows="3" placeholder="請輸入想感謝的話語..." class="w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white"></textarea>
-          </div>
-          <div class="pt-2 flex gap-2">
-            <button type="submit" class="flex-1 py-2 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl text-xs">公開貼上感謝牆</button>
-            <button type="button" @click="bravoModal.show = false" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs">取消</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </transition>
-
-  <!-- 發布布告 Modal -->
-  <transition name="modal">
-    <div v-if="bulletinModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
-        <div class="flex justify-between items-center">
-          <h3 class="font-bold text-sm text-slate-900 dark:text-white">📢 發布門市布告</h3>
-          <button @click="bulletinModal.show = false" class="text-slate-400 text-sm">✕</button>
-        </div>
-        <form @submit.prevent="submitBulletin" class="space-y-2 text-xs">
-          <div>
-            <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">公告主旨</label>
-            <input v-model="bulletinModal.form.title" required placeholder="請輸入主旨" class="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-1.5 bg-slate-50 dark:bg-slate-700 dark:text-white">
-          </div>
-          <div>
-            <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">公告詳情內容</label>
-            <textarea v-model="bulletinModal.form.content" required rows="3" placeholder="請填寫詳細布達事項..." class="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-1.5 bg-slate-50 dark:bg-slate-700 dark:text-white"></textarea>
-          </div>
-          <div class="pt-2 flex gap-2">
-            <button type="submit" class="flex-1 py-2 bg-emerald-800 text-white rounded-xl font-bold">發布公告</button>
-            <button type="button" @click="bulletinModal.show = false" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl">取消</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </transition>
-
-  <!-- 打點試算 Modal -->
-  <transition name="modal">
-    <div v-if="calcModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-end justify-center p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
-        <div class="flex justify-between items-center">
-          <h3 class="font-bold text-sm text-slate-900 dark:text-white">{{ calcModal.item.name }} ({{ calcModal.item.code }})</h3>
-          <button @click="calcModal.show = false" class="text-slate-400 text-sm">✕</button>
-        </div>
-        <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl text-center border border-emerald-200 dark:border-emerald-800 space-y-1">
-          <span class="text-[11px] text-emerald-800 dark:text-emerald-300 font-semibold block">標籤打點規範</span>
-          <div class="text-sm font-black text-emerald-950 dark:text-emerald-200 leading-relaxed">{{ calcModal.targetTimeStr }}</div>
-          <p v-if="calcModal.isAdjustedForClose" class="text-[10px] text-amber-700 dark:text-amber-300 font-medium pt-1">
-            ⚠️ 到期時間落於 21:30~07:00 門市非營業時段，依規範提前至 21:30 閉店前報廢
-          </p>
-        </div>
-        <button @click="addMaterialToSchedule" class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center justify-center gap-1.5">
-          <span>📌</span> 同步登記至下架行事曆
-        </button>
-        <button @click="calcModal.show = false" class="w-full py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-medium">關閉</button>
-      </div>
-    </div>
-  </transition>
-
-  <!-- 手動新增物料 Modal -->
-  <transition name="modal">
-    <div v-if="matEditModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
-        <div class="flex justify-between items-center">
-          <h3 class="font-bold text-sm text-slate-900 dark:text-white">{{ matEditModal.isNew ? '新增物料' : '編輯物料內容' }}</h3>
-          <button @click="matEditModal.show = false" class="text-slate-400 text-sm">✕</button>
-        </div>
-        <form @submit.prevent="saveMaterialForm" class="space-y-2 text-xs">
-          <div>
-            <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">物料代號</label>
-            <input v-model="matEditModal.form.code" required placeholder="如：MO" class="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-1.5 uppercase font-mono bg-slate-50 dark:bg-slate-700 dark:text-white">
-          </div>
-          <div>
-            <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">中文品名</label>
-            <input v-model="matEditModal.form.name" required placeholder="如：摩卡醬" class="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-1.5 bg-slate-50 dark:bg-slate-700 dark:text-white">
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <div>
-              <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">溫層</label>
-              <select v-model="matEditModal.form.temp" class="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-2 py-1.5 bg-slate-50 dark:bg-slate-700 dark:text-white">
-                <option value="常溫">常溫</option>
-                <option value="冷藏">冷藏</option>
-              </select>
-            </div>
-            <div>
-              <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">小時</label>
-              <input v-model.number="matEditModal.form.hours" type="number" class="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-2 py-1.5 bg-slate-50 dark:bg-slate-700 dark:text-white">
-            </div>
-            <div>
-              <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">天數</label>
-              <input v-model.number="matEditModal.form.days" type="number" class="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-2 py-1.5 bg-slate-50 dark:bg-slate-700 dark:text-white">
-            </div>
-          </div>
-          <div>
-            <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">備註規範文字</label>
-            <input v-model="matEditModal.form.notes" placeholder="開封後規範" class="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-1.5 bg-slate-50 dark:bg-slate-700 dark:text-white">
-          </div>
-          <div class="pt-2 flex gap-2">
-            <button type="submit" class="flex-1 py-2 bg-emerald-800 text-white rounded-xl font-bold">儲存</button>
-            <button type="button" @click="matEditModal.show = false" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl">取消</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </transition>
-
-  <!-- 新增夥伴 Modal (清除範例) -->
-  <transition name="modal">
-    <div v-if="staffModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
-        <div class="flex justify-between items-center">
-          <h3 class="font-bold text-sm text-slate-900 dark:text-white">{{ staffModal.isNew ? '新增門市夥伴' : '編輯夥伴資料' }}</h3>
-          <button @click="staffModal.show = false" class="text-slate-400 text-sm">✕</button>
-        </div>
-        <form @submit.prevent="saveStaffForm" class="space-y-2 text-xs">
-          <div>
-            <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">員工編號 (8碼工號/亦為初始密碼)</label>
-            <input v-model="staffModal.form.empId" required placeholder="請輸入8碼員工編號" class="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-1.5 font-mono bg-slate-50 dark:bg-slate-700 dark:text-white">
-          </div>
-          <div>
-            <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">員工中文姓名</label>
-            <input v-model="staffModal.form.name" required placeholder="請輸入中文姓名" class="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-1.5 bg-slate-50 dark:bg-slate-700 dark:text-white">
-          </div>
-          <div>
-            <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">英文暱稱</label>
-            <input v-model="staffModal.form.nickname" required placeholder="請輸入英文暱稱" class="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-1.5 bg-slate-50 dark:bg-slate-700 dark:text-white">
-          </div>
-          <div>
-            <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">職位</label>
-            <select v-model="staffModal.form.role" class="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-1.5 bg-slate-50 dark:bg-slate-700 dark:text-white">
-              <option value="兼職夥伴">兼職夥伴 (PT)</option>
-              <option value="正職夥伴">正職夥伴 (FT)</option>
-              <option value="值班經理">值班經理 (SSV)</option>
-              <option value="副理">副理 (ASM)</option>
-              <option value="店經理">店經理 (SM)</option>
-            </select>
-          </div>
-          <div class="pt-2 flex gap-2">
-            <button type="submit" class="flex-1 py-2 bg-emerald-800 text-white rounded-xl font-bold">儲存夥伴</button>
-            <button type="button" @click="staffModal.show = false" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl">取消</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </transition>
-
-  <!-- 夥伴固定上班時間設定 Modal -->
-  <transition name="modal">
-    <div v-if="availModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-center justify-center p-3">
-      <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-4 shadow-xl space-y-3 max-h-[90vh] overflow-y-auto">
-        <div class="flex justify-between items-center border-b dark:border-slate-700 pb-2">
-          <div>
-            <h3 class="font-bold text-sm text-slate-900 dark:text-white">⏰ 設定固定可排班時間</h3>
-            <p class="text-[11px] text-slate-500">{{ availModal.staff.name }} ({{ availModal.staff.nickname }})</p>
-          </div>
-          <button @click="availModal.show = false" class="text-slate-400 text-sm">✕</button>
-        </div>
-
-        <div class="space-y-2 text-xs">
-          <div v-for="(dayName, dIdx) in ['一', '二', '三', '四', '五', '六', '日']" :key="dIdx" class="p-2 bg-slate-50 dark:bg-slate-700/60 rounded-xl border border-slate-200 dark:border-slate-600 space-y-1.5">
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-slate-800 dark:text-slate-200">星期{{ dayName }}</span>
-              <div class="flex gap-2 text-[11px]">
-                <label class="flex items-center gap-1 cursor-pointer">
-                  <input type="radio" :name="'avail_type_'+dIdx" value="all" v-model="availModal.form['day_' + dIdx].type"> 全天皆可
-                </label>
-                <label class="flex items-center gap-1 cursor-pointer">
-                  <input type="radio" :name="'avail_type_'+dIdx" value="none" v-model="availModal.form['day_' + dIdx].type"> 固定不配
-                </label>
-                <label class="flex items-center gap-1 cursor-pointer">
-                  <input type="radio" :name="'avail_type_'+dIdx" value="custom" v-model="availModal.form['day_' + dIdx].type"> 指定時段
-                </label>
-              </div>
-            </div>
-
-            <div v-if="availModal.form['day_' + dIdx].type === 'custom'" class="flex items-center gap-2 pt-1">
-              <select v-model="availModal.form['day_' + dIdx].start" class="border rounded px-1.5 py-1 text-xs bg-white dark:bg-slate-800 dark:text-white">
-                <option v-for="t in timeSlots" :key="t" :value="t">{{ t }}</option>
-              </select>
-              <span class="text-slate-400">至</span>
-              <select v-model="availModal.form['day_' + dIdx].end" class="border rounded px-1.5 py-1 text-xs bg-white dark:bg-slate-800 dark:text-white">
-                <option v-for="t in timeSlots" :key="t" :value="t">{{ t }}</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="pt-2 flex gap-2">
-          <button @click="saveAvailability" class="flex-1 py-2 bg-emerald-800 text-white rounded-xl text-xs font-bold">儲存配班設定</button>
-          <button @click="availModal.show = false" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs">關閉</button>
-        </div>
-      </div>
-    </div>
-  </transition>
-
-  <!-- 畫假刪除確認 Modal (僅核對姓名) -->
-  <transition name="modal">
-    <div v-if="secureDeleteModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-3">
-        <div class="flex items-center gap-2 text-red-600">
-          <span class="text-lg">🛡️</span>
-          <h3 class="font-bold text-sm">畫假紀錄刪除確認</h3>
-        </div>
-        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-          為防呆並避免誤刪他人假單，請輸入該紀錄本人的【中文姓名】即可刪除：
-        </p>
-
-        <div class="bg-slate-50 dark:bg-slate-700 p-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-xs space-y-0.5">
-          <div>請假夥伴：<span class="font-bold text-slate-900 dark:text-white">{{ getStaffName(secureDeleteModal.target.staffId) }}</span></div>
-          <div>請假日期：<span class="font-bold text-slate-800 dark:text-slate-200">{{ secureDeleteModal.target.date }}</span></div>
-          <div>假別內容：<span class="font-bold text-red-700">【{{ secureDeleteModal.target.type }}】</span> {{ secureDeleteModal.target.notes }}</div>
-        </div>
-
-        <div class="space-y-2 text-xs">
-          <div>
-            <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">本人中文姓名</label>
-            <input v-model="secureDeleteModal.inputName" placeholder="請輸入姓名" class="w-full border rounded-xl px-3 py-1.5 dark:bg-slate-700 dark:text-white">
-          </div>
-        </div>
-
-        <div class="pt-2 flex gap-2">
-          <button @click="confirmSecureDelete" class="flex-1 py-2 bg-red-600 active:bg-red-700 text-white rounded-xl text-xs font-bold">確認刪除</button>
-          <button @click="secureDeleteModal.show = false" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs">取消</button>
-        </div>
-      </div>
-    </div>
-  </transition>
-
-  <!-- 刪除夥伴確認 Modal (僅主管) -->
-  <transition name="modal">
-    <div v-if="secureStaffDeleteModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-3">
-        <div class="flex items-center gap-2 text-red-600">
-          <span class="text-lg">🛡️</span>
-          <h3 class="font-bold text-sm">刪除夥伴基本資料確認</h3>
-        </div>
-        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-          請輸入被刪除夥伴本人的【姓名】與【員工編號】進行確認：
-        </p>
-        <div class="space-y-2 text-xs">
-          <input v-model="secureStaffDeleteModal.inputName" placeholder="請輸入姓名" class="w-full border rounded-xl px-3 py-1.5 dark:bg-slate-700 dark:text-white">
-          <input v-model="secureStaffDeleteModal.inputEmpId" placeholder="請輸入8碼員工編號" class="w-full border rounded-xl px-3 py-1.5 font-mono dark:bg-slate-700 dark:text-white">
-        </div>
-        <div class="pt-2 flex gap-2">
-          <button @click="confirmSecureStaffDelete" class="flex-1 py-2 bg-red-600 text-white rounded-xl text-xs font-bold">驗證刪除</button>
-          <button @click="secureStaffDeleteModal.show = false" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs">取消</button>
-        </div>
-      </div>
-    </div>
-  </transition>
-
 </div>
 
 <script>
@@ -1760,7 +1392,6 @@ createApp({
     const bravoCardsList = ref([]);
     const showRulesLibrary = ref(false);
 
-    // 留言輸入暫存
     const commentInputs = ref({});
 
     const weatherType = ref('clear');
@@ -1980,7 +1611,6 @@ createApp({
       }
     };
 
-    // 倒數計時器
     const countdownToSunday = ref('--天 --時 --分 --秒');
     const updateCountdown = () => {
       const now = new Date();
@@ -2010,7 +1640,6 @@ createApp({
 
     const calculateCombinedScore = (post) => Number((post.aiScore * 0.7 + (post.votes || 0) * 5).toFixed(1));
 
-    // 當週評估區間顯示 (精確計算當週週一至週日)
     const currentWeekRangeStr = computed(() => {
       const now = new Date();
       const day = now.getDay();
@@ -2021,17 +1650,12 @@ createApp({
       return `${thisMonday.getMonth() + 1}/${thisMonday.getDate()} - ${thisSunday.getMonth() + 1}/${thisSunday.getDate()}`;
     });
 
-    // 榮譽榜嚴格邏輯：首週週日23:30前一律顯示進行中，進步獎次週啟動
     const honorsDisplay = computed(() => {
-      // 1. 本週拉花冠軍：需等到週日23:30才產生
       let champName = '評選進行中';
       let champScore = '週日 23:30 揭曉';
-
-      // 2. 最佳進步獎：需跨週比較，首週無法計算
       let progressName = '次週開始評選';
       let progressDelta = '需前週成績對比';
 
-      // 3. 本週活躍 (完全依據 Tasting 實際筆記)
       let activeName = '虛位以待';
       let activeTitle = '';
       if (tastingNotesList.value.length > 0) {
@@ -2172,7 +1796,6 @@ createApp({
       }
     };
 
-    // 提交拉花回饋留言
     const submitComment = (post) => {
       const text = (commentInputs.value[post.id] || '').trim();
       if (!text || !currentPartner.value) return;
@@ -2394,7 +2017,6 @@ createApp({
 
     const selectedDateItems = computed(() => selectedDate.value ? inventory.value.filter(it => it.pullDate === selectedDate.value) : []);
 
-    // 嚴格計算：以當天所在週一推進兩週（14天），保證為 2026-11-02
     const allowedVacationStartStr = computed(() => {
       const now = new Date();
       const day = now.getDay();
