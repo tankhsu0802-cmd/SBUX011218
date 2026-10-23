@@ -1894,7 +1894,7 @@
 
   <!-- 畫假刪除確認 Modal (僅核對姓名) -->
   <transition name="modal">
-    <div v-if="secureDeleteModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
+    <div v-if="showDeleteRosterModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-3">
         <div class="flex items-center gap-2 text-red-600">
           <span class="text-lg">🛡️</span>
@@ -2095,6 +2095,12 @@ createApp({
       }
     });
     const loginForm = ref({ empId: '', password: '' });
+
+    // ===== 彈窗控制變數 (預設關閉 false) =====
+    const showDeleteStaffModal = ref(false);
+    const showDeleteRosterModal = ref(false);
+    const staffToDelete = ref(null);
+    const rosterToDelete = ref(null);
 
     const currentTab = ref('home');
     Vue.watch(currentTab, () => {
@@ -3075,6 +3081,10 @@ const settledHonors = computed(() => {
     };
 
     return {
+      showDeleteStaffModal,
+      showDeleteRosterModal,
+      staffToDelete,
+      rosterToDelete,
       currentPartner, loginForm, handleLogin, handleLogout, isManager, isDarkMode, toggleDarkMode,
       settingsModal, openSettingsModal, saveNewPassword, saveBirthday, birthdayAlerts,
       currentTab, otherSubTab, isCloudConnected, currentDateTimeDisplay, todayTrivia,
