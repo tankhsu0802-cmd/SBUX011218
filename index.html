@@ -403,22 +403,28 @@
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <h3 class="text-xs font-bold text-slate-800 flex justify-between">
           <span>📋 門市夥伴名冊 (共 {{ staffList.length }} 人)</span>
-          <span class="text-[10px] text-slate-400">點擊編輯或移除</span>
+          <span class="text-[10px] text-slate-400">點擊編輯固定配班時間</span>
         </h3>
         
-        <div class="space-y-1.5 max-h-48 overflow-y-auto">
+        <div class="space-y-2 max-h-56 overflow-y-auto">
           <div 
             v-for="s in staffList" :key="s.id"
-            class="p-2 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
+            class="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
             <div>
-              <span class="font-mono text-slate-400 text-[10px] mr-1">{{ s.empId }}</span>
-              <span class="font-bold text-slate-900">{{ s.name }}</span>
-              <span class="text-slate-500 ml-1">({{ s.nickname }})</span>
-              <span class="ml-1.5 px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded text-[10px]">{{ s.role }}</span>
+              <div class="flex items-center">
+                <span class="font-mono text-slate-400 text-[10px] mr-1.5">{{ s.empId }}</span>
+                <span class="font-bold text-slate-900">{{ s.name }}</span>
+                <span class="text-slate-500 ml-1">({{ s.nickname }})</span>
+                <span class="ml-1.5 px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded text-[10px]">{{ s.role }}</span>
+              </div>
+              <div class="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
+                <span>⏱️ 固定配班：</span>
+                <span class="text-emerald-700 font-medium">{{ getStaffAvailabilitySummary(s) }}</span>
+              </div>
             </div>
-            <div class="flex gap-1.5">
-              <button @click="editStaff(s)" class="text-slate-400 hover:text-emerald-700">✏️</button>
-              <button @click="deleteStaff(s.id)" class="text-slate-400 hover:text-red-600">🗑️</button>
+            <div class="flex gap-1.5 items-center">
+              <button @click="editStaff(s)" class="px-2 py-1 bg-white border border-slate-200 rounded-lg text-emerald-800 hover:bg-emerald-50 text-[11px] font-bold">時段/資料 ✏️</button>
+              <button @click="deleteStaff(s.id)" class="text-slate-400 hover:text-red-600 p-1">🗑️</button>
             </div>
           </div>
         </div>
@@ -435,7 +441,7 @@
               <span class="text-red-600 font-bold ml-2">【{{ v.type }}】</span>
               <span v-if="v.notes" class="text-slate-500 text-[11px] ml-1">理由：{{ v.notes }}</span>
             </div>
-            <button @click="deleteVacation(v.id)" class="text-slate-400 hover:text-red-600 text-xs px-1">✕</button>
+            <button @click="openDeleteVacationModal(v)" class="text-slate-400 hover:text-red-600 text-xs px-2 py-0.5 border border-slate-200 rounded-lg bg-white">刪除 ✕</button>
           </div>
         </div>
         <p v-else class="text-xs text-slate-400 py-3 text-center">目前尚無任何畫假紀錄。</p>
@@ -444,263 +450,133 @@
     </section>
 
     <!-- ==================== 頁籤 4：檔期標準與辨識匯入中心 ==================== -->
-    <section v-if="currentTab === 'settings'" class="space-y-4">
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-        <div>
-          <h2 class="text-sm font-bold text-slate-900">📥 檔期標準匯入中心</h2>
-          <p class="text-[11px] text-slate-500 mt-1">
-            上傳更新後全店即時同步。支援拍攝手冊照片（JPG/PNG）、官方 PDF 或 Excel。
-          </p>
-        </div>
-
-        <label class="block border-2 border-dashed border-emerald-600 bg-emerald-50/40 rounded-2xl p-6 text-center cursor-pointer active:bg-emerald-100/50 transition">
-          <input type="file" accept=".jpg, .jpeg, .png, .pdf, .xlsx, .xls" @change="handleFileSelect" class="hidden">
-          <div class="space-y-1">
-            <span class="text-2xl">📸 / 📄</span>
-            <p class="text-xs font-bold text-emerald-900">點擊上傳手冊照片 (JPG) 或 PDF / Excel</p>
-            <p class="text-[10px] text-slate-500">手機可直接呼叫相機拍照上傳</p>
-          </div>
-        </label>
-
-        <!-- 辨識進度 -->
-        <div v-if="isProcessing" class="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
-          <div class="flex items-center space-x-2 text-xs font-bold text-amber-800">
-            <span class="animate-spin">🔄</span>
-            <span>正在分析表格文字... {{ processProgress }}%</span>
-          </div>
-          <p class="text-[10px] text-amber-600">正在自動比對物料名稱、代號與 D+N 效期規則，請稍候。</p>
-        </div>
-
-        <!-- 辨識結果預覽卡片 -->
-        <div v-if="parsedPreview.show" class="p-4 bg-emerald-50/80 border border-emerald-300 rounded-2xl space-y-3">
-          <div class="flex justify-between items-center">
-            <h3 class="text-xs font-bold text-emerald-950">📋 辨識結果預覽與校對（共 {{ parsedPreview.items.length }} 筆）</h3>
-            <span class="text-[10px] text-emerald-700">寫入前可手動修改</span>
-          </div>
-
-          <div class="max-h-60 overflow-y-auto space-y-2 text-[11px] bg-white p-2.5 rounded-xl border border-emerald-200">
-            <div v-for="(item, idx) in parsedPreview.items" :key="idx" class="border-b border-slate-100 pb-2 space-y-1">
-              <div class="flex items-center gap-1.5">
-                <input v-model="item.code" class="w-16 font-mono text-center font-bold border border-slate-200 rounded px-1 py-0.5 text-xs" placeholder="代號">
-                <input v-model="item.name" class="flex-1 font-bold border border-slate-200 rounded px-1.5 py-0.5 text-xs" placeholder="品名">
-                <button @click="parsedPreview.items.splice(idx, 1)" class="text-red-500 font-bold px-1">✕</button>
-              </div>
-              <div class="grid grid-cols-3 gap-1 text-[10px]">
-                <select v-model="item.temp" class="border border-slate-200 rounded px-1 py-0.5 bg-slate-50">
-                  <option value="常溫">常溫</option>
-                  <option value="冷藏">冷藏</option>
-                </select>
-                <input v-model.number="item.hours" type="number" placeholder="小時數" class="border border-slate-200 rounded px-1 py-0.5">
-                <input v-model.number="item.days" type="number" placeholder="D+天數" class="border border-slate-200 rounded px-1 py-0.5">
-              </div>
-            </div>
-          </div>
-
-          <div class="flex gap-2">
-            <button 
-              @click="applyParsedData" 
-              class="flex-1 py-2 bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 transition">
-              確認同步至雲端主檔
-            </button>
-            <button 
-              @click="parsedPreview.show = false" 
-              class="px-3 py-2 bg-slate-200 text-slate-700 rounded-xl text-xs font-medium">
-              取消
-            </button>
-          </div>
-        </div>
-
-        <div class="pt-2 flex flex-col gap-2">
-          <button 
-            @click="downloadBlankTemplate" 
-            class="w-full py-2.5 bg-slate-100 active:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl border border-slate-200">
-            📄 下載標準空白 Excel 格式備用範本
-          </button>
-          
-          <button 
-            @click="clearAllData" 
-            class="w-full py-2 text-xs text-red-600 active:text-red-800 font-medium">
-            🗑️ 清空全門市雲端資料（回歸純空白）
-          </button>
-        </div>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 text-xs space-y-1.5">
-        <h3 class="font-bold text-slate-800">📊 全門市雲端庫狀態</h3>
-        <div class="flex justify-between text-slate-600">
-          <span>已同步物料品項：</span>
-          <span class="font-bold text-emerald-800">{{ materials.length }} 項</span>
-        </div>
-        <div class="flex justify-between text-slate-600">
-          <span>已同步下架規則：</span>
-          <span class="font-bold text-emerald-800">{{ rules.length }} 條</span>
-        </div>
-        <div class="flex justify-between text-slate-600">
-          <span>全店在架進貨紀錄：</span>
-          <span class="font-bold text-emerald-800">{{ inventory.length }} 筆</span>
-        </div>
-        <div class="flex justify-between text-slate-600">
-          <span>門市夥伴人數：</span>
-          <span class="font-bold text-emerald-800">{{ staffList.length }} 人</span>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- 底部導航選單 -->
-  <footer class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 no-print">
-    <div class="max-w-md mx-auto grid grid-cols-4 py-2 px-2">
-      <button 
-        @click="currentTab = 'materials'" 
-        :class="currentTab === 'materials' ? 'text-emerald-800 font-bold' : 'text-slate-400'"
-        class="flex flex-col items-center justify-center py-1">
-        <span class="text-base">☕</span>
-        <span class="text-[10px] mt-0.5">物料查詢</span>
-      </button>
-      <button 
-        @click="currentTab = 'intake'" 
-        :class="currentTab === 'intake' ? 'text-emerald-800 font-bold' : 'text-slate-400'"
-        class="flex flex-col items-center justify-center py-1">
-        <span class="text-base">📅</span>
-        <span class="text-[10px] mt-0.5">下架行事曆</span>
-      </button>
-      <button 
-        @click="currentTab = 'roster'" 
-        :class="currentTab === 'roster' ? 'text-emerald-800 font-bold' : 'text-slate-400'"
-        class="flex flex-col items-center justify-center py-1">
-        <span class="text-base">👥</span>
-        <span class="text-[10px] mt-0.5">夥伴排班</span>
-      </button>
-      <button 
-        @click="currentTab = 'settings'" 
-        :class="currentTab === 'settings' ? 'text-emerald-800 font-bold' : 'text-slate-400'"
-        class="flex flex-col items-center justify-center py-1">
-        <span class="text-base">⚙️</span>
-        <span class="text-[10px] mt-0.5">檔期標準</span>
-      </button>
-    </div>
-  </footer>
-
-  <!-- 打點試算 Modal -->
-  <div v-if="calcModal.show" class="fixed inset-0 bg-black/40 z-50 flex items-end justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
-      <div class="flex justify-between items-center">
-        <h3 class="font-bold text-sm text-slate-900">{{ calcModal.item.name }} ({{ calcModal.item.code }})</h3>
-        <button @click="calcModal.show = false" class="text-slate-400 text-sm">✕</button>
-      </div>
-
-      <div class="p-3.5 bg-emerald-50 rounded-xl text-center border border-emerald-200 space-y-1">
-        <span class="text-[11px] text-emerald-800 font-semibold block">標籤打點規範</span>
-        <div class="text-sm font-black text-emerald-950 leading-relaxed">{{ calcModal.targetTimeStr }}</div>
-        <p v-if="calcModal.isAdjustedForClose" class="text-[10px] text-amber-700 font-medium pt-1">
-          ⚠️ 到期時間落於 21:30~07:00 門市非營業時段，依規範提前至 21:30 閉店前報廢
-        </p>
-      </div>
-
-      <button 
-        @click="addMaterialToSchedule" 
-        class="w-full py-2.5 bg-emerald-800 active:bg-emerald-900 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center justify-center gap-1.5">
-        <span>📌</span> 同步登記至下架行事曆
-      </button>
-
-      <button @click="calcModal.show = false" class="w-full py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-medium">
-        關閉
-      </button>
-    </div>
-  </div>
-
-  <!-- 手動新增 / 編輯物料 Modal -->
-  <div v-if="matEditModal.show" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
-      <div class="flex justify-between items-center">
-        <h3 class="font-bold text-sm text-slate-900">{{ matEditModal.isNew ? '新增物料' : '編輯物料內容' }}</h3>
-        <button @click="matEditModal.show = false" class="text-slate-400 text-sm">✕</button>
-      </div>
-
-      <form @submit.prevent="saveMaterialForm" class="space-y-2 text-xs">
-        <div>
-          <label class="font-bold text-slate-600 block mb-0.5">物料代號 (例如：MO)</label>
-          <input v-model="matEditModal.form.code" required class="w-full border border-slate-300 rounded-xl px-3 py-1.5 uppercase font-mono">
-        </div>
-        <div>
-          <label class="font-bold text-slate-600 block mb-0.5">中文品名 (例如：摩卡醬)</label>
-          <input v-model="matEditModal.form.name" required class="w-full border border-slate-300 rounded-xl px-3 py-1.5">
-        </div>
-        <div class="grid grid-cols-3 gap-2">
-          <div>
-            <label class="font-bold text-slate-600 block mb-0.5">溫層</label>
-            <select v-model="matEditModal.form.temp" class="w-full border border-slate-300 rounded-xl px-2 py-1.5 bg-slate-50">
-              <option value="常溫">常溫</option>
-              <option value="冷藏">冷藏</option>
-            </select>
-          </div>
-          <div>
-            <label class="font-bold text-slate-600 block mb-0.5">小時 (HR)</label>
-            <input v-model.number="matEditModal.form.hours" type="number" class="w-full border border-slate-300 rounded-xl px-2 py-1.5">
-          </div>
-          <div>
-            <label class="font-bold text-slate-600 block mb-0.5">天數 (D+)</label>
-            <input v-model.number="matEditModal.form.days" type="number" class="w-full border border-slate-300 rounded-xl px-2 py-1.5">
-          </div>
-        </div>
-        <div>
-          <label class="font-bold text-slate-600 block mb-0.5">備註規範文字</label>
-          <input v-model="matEditModal.form.notes" placeholder="例如：開封後24小時" class="w-full border border-slate-300 rounded-xl px-3 py-1.5">
-        </div>
-
-        <div class="pt-2 flex gap-2">
-          <button type="submit" class="flex-1 py-2 bg-emerald-800 text-white rounded-xl font-bold">儲存</button>
-          <button type="button" @click="matEditModal.show = false" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl">取消</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- 新增 / 編輯夥伴 Modal -->
-  <div v-if="staffModal.show" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
-      <div class="flex justify-between items-center">
-        <h3 class="font-bold text-sm text-slate-900">{{ staffModal.isNew ? '新增門市夥伴' : '編輯夥伴資料' }}</h3>
+  <!-- 新增 / 編輯夥伴 Modal（含 06:30~22:30 每 30 分鐘配班時段設定） -->
+  <div v-if="staffModal.show" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-3 no-print">
+    <div class="bg-white rounded-2xl w-full max-w-md p-5 shadow-xl space-y-3 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-sm text-slate-900">{{ staffModal.isNew ? '新增門市夥伴' : '編輯夥伴資料與固定配班時段' }}</h3>
         <button @click="staffModal.show = false" class="text-slate-400 text-sm">✕</button>
       </div>
 
-      <form @submit.prevent="saveStaffForm" class="space-y-2 text-xs">
-        <div>
-          <label class="font-bold text-slate-600 block mb-0.5">員工編號 (工號)</label>
-          <input v-model="staffModal.form.empId" required placeholder="例如：10386493" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 font-mono">
+      <form @submit.prevent="saveStaffForm" class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold text-slate-600 block mb-0.5">員工編號 (工號)</label>
+            <input v-model="staffModal.form.empId" required placeholder="例如：10386493" class="w-full border border-slate-300 rounded-xl px-2.5 py-1.5 font-mono">
+          </div>
+          <div>
+            <label class="font-bold text-slate-600 block mb-0.5">員工中文姓名</label>
+            <input v-model="staffModal.form.name" required placeholder="例如：徐爰坦" class="w-full border border-slate-300 rounded-xl px-2.5 py-1.5">
+          </div>
         </div>
-        <div>
-          <label class="font-bold text-slate-600 block mb-0.5">員工中文姓名</label>
-          <input v-model="staffModal.form.name" required placeholder="例如：徐爰坦" class="w-full border border-slate-300 rounded-xl px-3 py-1.5">
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold text-slate-600 block mb-0.5">英文暱稱</label>
+            <input v-model="staffModal.form.nickname" required placeholder="例如：Tan" class="w-full border border-slate-300 rounded-xl px-2.5 py-1.5">
+          </div>
+          <div>
+            <label class="font-bold text-slate-600 block mb-0.5">職位</label>
+            <select v-model="staffModal.form.role" class="w-full border border-slate-300 rounded-xl px-2 py-1.5 bg-slate-50">
+              <option value="店經理">店經理 (SM)</option>
+              <option value="副理">副理 (ASM)</option>
+              <option value="值班經理">值班經理 (SSV)</option>
+              <option value="正職夥伴">正職夥伴 (FT)</option>
+              <option value="兼職夥伴">兼職夥伴 (PT)</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label class="font-bold text-slate-600 block mb-0.5">英文暱稱</label>
-          <input v-model="staffModal.form.nickname" required placeholder="例如：Tan" class="w-full border border-slate-300 rounded-xl px-3 py-1.5">
-        </div>
-        <div>
-          <label class="font-bold text-slate-600 block mb-0.5">職位</label>
-          <select v-model="staffModal.form.role" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 bg-slate-50">
-            <option value="店經理">店經理 (SM)</option>
-            <option value="副理">副理 (ASM)</option>
-            <option value="值班經理">值班經理 (SSV)</option>
-            <option value="正職夥伴">正職夥伴 (FT)</option>
-            <option value="兼職夥伴">兼職夥伴 (PT)</option>
-          </select>
+
+        <!-- 每日固定可配班時間設定 -->
+        <div class="pt-2 border-t border-slate-200 space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-slate-800 flex items-center gap-1">⏱️ 每週固定可排班時間（30分鐘為單位）</span>
+            <button type="button" @click="setAllDaysFullTime" class="text-[10px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-medium">全設為皆可</button>
+          </div>
+          <p class="text-[10px] text-slate-500">供課表或兼職固定時間之夥伴使用，將同步呈現在匯出排班表的每日格子中。</p>
+
+          <div class="space-y-1.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <div v-for="d in weekDayNames" :key="d.key" class="flex items-center gap-1 text-[11px]">
+              <span class="w-10 font-bold text-slate-700">{{ d.label }}</span>
+              <select v-model="staffModal.form.availability[d.key].mode" class="border border-slate-300 rounded-lg px-1.5 py-1 bg-white text-[10px]">
+                <option value="all">皆可配合</option>
+                <option value="custom">指定時段</option>
+                <option value="none">不可排</option>
+              </select>
+
+              <div v-if="staffModal.form.availability[d.key].mode === 'custom'" class="flex items-center gap-1 flex-1">
+                <select v-model="staffModal.form.availability[d.key].start" class="border border-slate-300 rounded px-1 py-0.5 bg-white text-[10px] flex-1">
+                  <option v-for="t in timeSlots" :key="t" :value="t">{{ t }}</option>
+                </select>
+                <span class="text-slate-400">~</span>
+                <select v-model="staffModal.form.availability[d.key].end" class="border border-slate-300 rounded px-1 py-0.5 bg-white text-[10px] flex-1">
+                  <option v-for="t in timeSlots" :key="t" :value="t">{{ t }}</option>
+                </select>
+              </div>
+              <div v-else class="text-[10px] text-slate-400 flex-1 pl-2">
+                {{ staffModal.form.availability[d.key].mode === 'all' ? '06:30 ~ 22:30 全日可排' : '整天不排班' }}
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="pt-2 flex gap-2">
-          <button type="submit" class="flex-1 py-2 bg-emerald-800 text-white rounded-xl font-bold">儲存夥伴</button>
+          <button type="submit" class="flex-1 py-2 bg-emerald-800 text-white rounded-xl font-bold">儲存夥伴與配班設定</button>
           <button type="button" @click="staffModal.show = false" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl">取消</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- ==================== A4 直式大格排班表（100% 滿版 A4 寬度，高度維持識別度，多頁自然延伸） ==================== -->
+  <!-- 刪除畫假身分驗證防呆 Modal -->
+  <div v-if="deleteVerifyModal.show" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-sm text-red-700 flex items-center gap-1">
+          <span>⚠️</span> 刪除畫假身分防呆確認
+        </h3>
+        <button @click="deleteVerifyModal.show = false" class="text-slate-400 text-sm">✕</button>
+      </div>
+
+      <p class="text-xs text-slate-600 leading-relaxed">
+        為避免誤刪他人排假，請輸入<span class="font-bold text-slate-900">該畫假夥伴本人</span>的姓名與員工編號進行驗證：
+      </p>
+
+      <div class="bg-red-50 p-2.5 rounded-xl border border-red-200 text-xs space-y-0.5">
+        <div>請假日期：<span class="font-bold text-red-900">{{ deleteVerifyModal.targetVacation.date }}</span></div>
+        <div>假別：<span class="font-bold text-red-900">{{ deleteVerifyModal.targetVacation.type }}</span></div>
+      </div>
+
+      <div class="space-y-2 text-xs">
+        <div>
+          <label class="font-bold text-slate-600 block mb-0.5">請假人中文姓名</label>
+          <input v-model="deleteVerifyModal.verifyName" placeholder="例如：徐爰坦" class="w-full border border-slate-300 rounded-xl px-3 py-1.5">
+        </div>
+        <div>
+          <label class="font-bold text-slate-600 block mb-0.5">員工編號 (8碼工號)</label>
+          <input v-model="deleteVerifyModal.verifyEmpId" placeholder="例如：10386493" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 font-mono">
+        </div>
+      </div>
+
+      <div class="pt-2 flex gap-2">
+        <button 
+          @click="confirmDeleteVacation" 
+          class="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition">
+          驗證並刪除
+        </button>
+        <button 
+          @click="deleteVerifyModal.show = false" 
+          class="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl text-xs font-medium">
+          取消
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== A4 直式大格排班表 ==================== -->
   <div class="print-only-container p-0 bg-white text-black font-sans">
     
-    <!-- 表頭抬頭：完整橫幅撐滿 -->
+    <!-- 表頭抬頭 -->
     <div class="flex justify-between items-end border-b-2 border-black pb-2 mb-3 w-full">
       <div class="space-y-1 text-sm font-medium">
         <div>營業日期：<span class="font-bold">{{ scheduleStartDate ? scheduleStartDate.replace(/-/g, '/') : '' }} - {{ scheduleEndDate ? scheduleEndDate.replace(/-/g, '/') : '' }}</span></div>
@@ -715,7 +591,7 @@
       </div>
     </div>
 
-    <!-- 主表格：寬度 100% 貼滿 A4，每列維持適當高度 -->
+    <!-- 主表格：100% 寬度滿版，格子呈現畫假✕或可上班時段 -->
     <table class="w-full border-collapse border-2 border-black text-center table-fixed">
       <thead>
         <tr class="bg-slate-100 border-b-2 border-black h-12">
@@ -735,7 +611,7 @@
             <div class="text-xs text-slate-600 font-medium mt-0.5">({{ staff.nickname }})</div>
           </td>
           
-          <!-- 各日期大格子：垂直水平置中，畫假打大叉與備註完整呈現 -->
+          <!-- 各日期大格子：畫假優先標示 ✕，未畫假則顯示該日固定可排時段 -->
           <td v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-1 align-middle">
             <template v-if="getVacationInfo(staff.id, d.dateStr)">
               <div class="flex flex-col items-center justify-center space-y-0.5 py-1">
@@ -746,6 +622,11 @@
                 <span v-if="getVacationInfo(staff.id, d.dateStr).notes" class="text-[10px] text-slate-600 leading-snug break-all px-0.5">
                   {{ getVacationInfo(staff.id, d.dateStr).notes }}
                 </span>
+              </div>
+            </template>
+            <template v-else>
+              <div class="text-[11px] text-slate-700 leading-tight font-medium">
+                {{ getStaffDayAvailabilityText(staff, d.dayIndex) }}
               </div>
             </template>
           </td>
@@ -800,14 +681,80 @@ createApp({
     const staffList = ref([]);
     const vacationList = ref([]);
 
-    // Firebase 監聽
+    // 06:30 ~ 22:30 每 30 分鐘為一個單位
+    const timeSlots = [];
+    for (let h = 6; h <= 22; h++) {
+      if (h === 6) {
+        timeSlots.push('06:30');
+      } else {
+        timeSlots.push(`${h.toString().padStart(2, '0')}:00`);
+        timeSlots.push(`${h.toString().padStart(2, '0')}:30`);
+      }
+    }
+    timeSlots.push('22:30');
+
+    const weekDayNames = [
+      { key: 'mon', label: '週一', index: 1 },
+      { key: 'tue', label: '週二', index: 2 },
+      { key: 'wed', label: '週三', index: 3 },
+      { key: 'thu', label: '週四', index: 4 },
+      { key: 'fri', label: '週五', index: 5 },
+      { key: 'sat', label: '週六', index: 6 },
+      { key: 'sun', label: '週日', index: 0 },
+    ];
+
+    const defaultAvailability = () => ({
+      mon: { mode: 'all', start: '06:30', end: '22:30' },
+      tue: { mode: 'all', start: '06:30', end: '22:30' },
+      wed: { mode: 'all', start: '06:30', end: '22:30' },
+      thu: { mode: 'all', start: '06:30', end: '22:30' },
+      fri: { mode: 'all', start: '06:30', end: '22:30' },
+      sat: { mode: 'all', start: '06:30', end: '22:30' },
+      sun: { mode: 'all', start: '06:30', end: '22:30' },
+    });
+
+    // 預設 16 位夥伴名單（全數預設兼職夥伴 PT）
+    const initialDefaultStaff = [
+      { empId: '10165771', name: '張升豪', nickname: 'Zero', role: '兼職夥伴' },
+      { empId: '10002453', name: '陳錫玄', nickname: 'David', role: '兼職夥伴' },
+      { empId: '10241428', name: '沈洺序', nickname: 'Hazel', role: '兼職夥伴' },
+      { empId: '10426868', name: '蔡孟淳', nickname: 'Lydia', role: '兼職夥伴' },
+      { empId: '10386493', name: '徐爰坦', nickname: 'Tan', role: '兼職夥伴' },
+      { empId: '10282332', name: '傅璿家', nickname: 'Oli', role: '兼職夥伴' },
+      { empId: '10351554', name: '何心妤', nickname: 'Cindy', role: '兼職夥伴' },
+      { empId: '10368797', name: '林宸戎', nickname: 'Amo', role: '兼職夥伴' },
+      { empId: '10382711', name: '盧玟卉', nickname: 'Abby', role: '兼職夥伴' },
+      { empId: '10389231', name: '吳書涵', nickname: 'Winona', role: '兼職夥伴' },
+      { empId: '10414699', name: '戴翊如', nickname: 'Irene', role: '兼職夥伴' },
+      { empId: '10404223', name: '何彥融', nickname: 'Ivan', role: '兼職夥伴' },
+      { empId: '10416947', name: '林皓華', nickname: 'Ken', role: '兼職夥伴' },
+      { empId: '10428275', name: '蕭椿偉', nickname: 'Hai', role: '兼職夥伴' },
+      { empId: '10419960', name: '陳玟潔', nickname: 'Jessie', role: '兼職夥伴' },
+      { empId: '10369234', name: '謝羽捷', nickname: 'Ashley', role: '兼職夥伴' }
+    ];
+
+    // Firebase 監聽與自動初始化夥伴
     if (db) {
       db.ref('.info/connected').on('value', snap => isCloudConnected.value = snap.val() === true);
       db.ref('sbux/materials').on('value', snap => materials.value = snap.val() ? Object.values(snap.val()) : []);
       db.ref('sbux/rules').on('value', snap => rules.value = snap.val() ? Object.values(snap.val()) : []);
       db.ref('sbux/inventory').on('value', snap => inventory.value = snap.val() ? Object.values(snap.val()) : []);
-      db.ref('sbux/staff').on('value', snap => staffList.value = snap.val() ? Object.values(snap.val()) : []);
       db.ref('sbux/vacations').on('value', snap => vacationList.value = snap.val() ? Object.values(snap.val()) : []);
+      
+      db.ref('sbux/staff').on('value', snap => {
+        const val = snap.val();
+        if (val) {
+          staffList.value = Object.values(val);
+        } else {
+          // 若雲端為空，自動建入 16 位夥伴
+          const batch = {};
+          initialDefaultStaff.forEach(s => {
+            const id = s.empId;
+            batch[id] = { id, ...s, availability: defaultAvailability() };
+          });
+          db.ref('sbux/staff').set(batch);
+        }
+      });
     }
 
     // ==================== 物料管理與打點計算 ====================
@@ -1070,12 +1017,33 @@ createApp({
         dates.push({
           dateStr: dateStr,
           displayDate: `${month}/${day}`,
-          weekday: weekNames[current.getDay()]
+          weekday: weekNames[current.getDay()],
+          dayIndex: current.getDay()
         });
         current.setDate(current.getDate() + 1);
       }
       return dates;
     });
+
+    // 取得夥伴每日排班文字
+    const getStaffDayAvailabilityText = (staff, dayIndex) => {
+      if (!staff.availability) return '';
+      const dayKeys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+      const key = dayKeys[dayIndex];
+      const conf = staff.availability[key];
+      if (!conf || conf.mode === 'all') return ''; // 全天可排保持空白供主管填班
+      if (conf.mode === 'none') return '不可排';
+      if (conf.mode === 'custom') return `可 ${conf.start}-${conf.end}`;
+      return '';
+    };
+
+    const getStaffAvailabilitySummary = (staff) => {
+      if (!staff.availability) return '皆可配合';
+      const dayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+      const customDays = dayKeys.filter(k => staff.availability[k] && staff.availability[k].mode !== 'all');
+      if (customDays.length === 0) return '全週皆可配合';
+      return `${customDays.length} 天有特定限制`;
+    };
 
     const vacationForm = ref({ staffId: '', date: '', type: '無法排班', notes: '' });
     const submitVacation = () => {
@@ -1093,9 +1061,44 @@ createApp({
       alert('✅ 畫假成功！排班表已同步標註【✕】與備註內容！');
     };
 
-    const deleteVacation = (id) => {
-      if (confirm('確定刪除此筆畫假紀錄？')) {
-        if (db) db.ref('sbux/vacations/' + id).remove();
+    // 刪除畫假防呆身分驗證
+    const deleteVerifyModal = ref({
+      show: false,
+      targetVacation: {},
+      verifyName: '',
+      verifyEmpId: ''
+    });
+
+    const openDeleteVacationModal = (v) => {
+      deleteVerifyModal.value = {
+        show: true,
+        targetVacation: v,
+        verifyName: '',
+        verifyEmpId: ''
+      };
+    };
+
+    const confirmDeleteVacation = () => {
+      const { targetVacation, verifyName, verifyEmpId } = deleteVerifyModal.value;
+      const staff = staffList.value.find(s => s.id === targetVacation.staffId);
+      
+      if (!staff) {
+        alert('❌ 查無此夥伴資料，無法刪除！');
+        return;
+      }
+
+      // 嚴格比對姓名與工號防呆
+      const nameMatch = verifyName.trim() === staff.name.trim();
+      const empIdMatch = verifyEmpId.trim() === staff.empId.trim();
+
+      if (nameMatch && empIdMatch) {
+        if (db && targetVacation.id) {
+          db.ref('sbux/vacations/' + targetVacation.id).remove();
+        }
+        deleteVerifyModal.value.show = false;
+        alert(`✅ 身分驗證成功！已刪除【${staff.name}】於 ${targetVacation.date} 的畫假紀錄。`);
+      } else {
+        alert('❌ 驗證失敗：您輸入的姓名或員工編號與該畫假人員不符，無法刪除他人畫假！');
       }
     };
 
@@ -1118,30 +1121,42 @@ createApp({
       staffModal.value = {
         show: true,
         isNew: true,
-        form: { empId: '', name: '', nickname: '', role: '兼職夥伴' }
+        form: {
+          empId: '',
+          name: '',
+          nickname: '',
+          role: '兼職夥伴',
+          availability: defaultAvailability()
+        }
       };
     };
     const editStaff = (s) => {
       staffModal.value = {
         show: true,
         isNew: false,
-        form: { ...s }
+        form: JSON.parse(JSON.stringify({
+          ...s,
+          availability: s.availability || defaultAvailability()
+        }))
       };
+    };
+    const setAllDaysFullTime = () => {
+      staffModal.value.form.availability = defaultAvailability();
     };
     const saveStaffForm = () => {
       const f = staffModal.value.form;
-      const id = f.id || Date.now().toString();
+      const id = f.id || f.empId || Date.now().toString();
       const updated = { ...f, id };
       if (db) db.ref('sbux/staff/' + id).set(updated);
       staffModal.value.show = false;
     };
     const deleteStaff = (id) => {
-      if (confirm('確定要移除此夥伴資料？')) {
+      if (confirm('確定要移除此夥伴資料？此動作全店同步。')) {
         if (db) db.ref('sbux/staff/' + id).remove();
       }
     };
 
-    // 排班表列印與 Excel 匯出
+    // 排班表列印與 Excel 匯出（含固定時段）
     const printTodayStr = computed(() => {
       const d = new Date();
       return `${d.getFullYear()}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`;
@@ -1167,7 +1182,8 @@ createApp({
             const noteText = v.notes ? ` - ${v.notes}` : '';
             row.push(`✕ [${v.type}]${noteText}`);
           } else {
-            row.push("");
+            const avail = getStaffDayAvailabilityText(staff, d.dayIndex);
+            row.push(avail || "");
           }
         });
         return row;
@@ -1349,8 +1365,10 @@ createApp({
       matEditModal, openAddMaterialModal, editMaterial, saveMaterialForm, deleteMaterial,
       intakeForm, submitIntake, deleteIntake,
       calYear, calMonth, changeMonth, resetToCurrentMonth, calendarDays, todayStr, selectedDate, selectedDateItems, currentMonthItems,
-      staffList, vacationList, sortedVacationList, vacationForm, submitVacation, deleteVacation,
-      staffModal, openAddStaffModal, editStaff, saveStaffForm, deleteStaff,
+      staffList, vacationList, sortedVacationList, vacationForm, submitVacation,
+      deleteVerifyModal, openDeleteVacationModal, confirmDeleteVacation,
+      staffModal, openAddStaffModal, editStaff, saveStaffForm, deleteStaff, setAllDaysFullTime,
+      timeSlots, weekDayNames, getStaffDayAvailabilityText, getStaffAvailabilitySummary,
       allowedVacationStartStr, scheduleStartDate, scheduleEndDate, targetRangeDates, setNextWeekRange,
       printTodayStr, triggerPrintSchedule, exportScheduleExcel, getStaffName, getVacationInfo,
       handleFileSelect, isProcessing, processProgress, parsedPreview, applyParsedData,
