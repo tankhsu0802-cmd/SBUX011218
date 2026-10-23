@@ -2210,54 +2210,115 @@ createApp({
       return `${now.getMonth() + 1}/${now.getDate()} 當週首期評選中`;
     });
 
-    const settledHonors = computed(() => {
-      let champName = '虛位以待';
-      let champScore = '';
-      let progressName = '虛位以待';
-      let progressDelta = '';
+const settledHonors = computed(() => {
+      const now = new Date();
+      // 取得今天星期幾 (0 是週日, 1 是週一 ... 6 是週六)
+      const day = now.getDay();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
 
+      // 判斷當前是否已經過了週日 23:30 的結算臨界點
+      const isPastSettlementTime = (day === 0 && (hours > 23 || (hours === 23 && minutes >= 30)));
+
+      // 預設未結算狀態
+      let champName = isPastSettlementTime ? '本週結算無參賽' : '⏳ 評選統計中';
+      let champScore = isPastSettlementTime ? '' : '週日 23:30 揭曉';
+      let progressName = '次週結算';
+      let progressDelta = '需累積兩週成績';
+
+      // 1. 當週冠軍計算 (必須滿足：已過週日 23:30 且有作品)
       if (lattePosts.value.length > 0) {
-        const staffBestScoreMap = {};
-        lattePosts.value.forEach(post => {
-          const score = calculateCombinedScore(post);
-          const sid = post.authorStaffId;
-          if (!staffBestScoreMap[sid] || score > staffBestScoreMap[sid]) {
-            staffBestScoreMap[sid] = score;
-          }
-        });
-
-        const rankedStaff = Object.keys(staffBestScoreMap).sort((a,b) => staffBestScoreMap[b] - staffBestScoreMap[a]);
-        if (rankedStaff.length > 0) {
-          champName = getStaffName(rankedStaff[0]);
-          champScore = staffBestScoreMap[rankedStaff[0]].toString();
-        }
-
-        let maxDelta = 0;
-        let bestSid = '';
-        rankedStaff.forEach(sid => {
-          const scores = lattePosts.value.filter(p => p.authorStaffId === sid).map(p => calculateCombinedScore(p)).sort((a,b) => b - a);
-          if (scores.length >= 2) {
-            const delta = scores[0] - scores[1];
-            if (delta > maxDelta) {
-              maxDelta = delta;
-              bestSid = sid;
+        if (!isPastSettlementTime) {
+          // 未到週日 23:30，不提前公佈名次，保持評選階段
+          champName = '⏳ 評選激戰中';
+          champScore = '週日 23:30 結算';
+        } else {
+          // 週日 23:30 結算後，計算當週最高分夥伴
+          const staffBestScoreMap = {};
+          lattePosts.value.forEach(post => {
+            const score = calculateCombinedScore(post);
+            const sid = post.authorStaffId;
+            if (!staffBestScoreMap[sid] || score > staffBestScoreMap[sid]) {
+              staffBestScoreMap[sid] = score;
             }
+          });
+
+          const rankedStaff = Object.keys(staffBestScoreMap).sort((a, b) => staffBestScoreMap[b] - staffBestScoreMap[a]);
+          if (rankedStaff.length > 0) {
+            champName = getStaffName(rankedStaff[0]);
+            champScore = staffBestScoreMap[rankedStaff[0]].toString();
           }
-        });
-        if (bestSid) {
-          progressName = getStaffName(bestSid);
-          progressDelta = `+${maxDelta.toFixed(1)} 分`;
         }
       }
 
+      // 2. 最佳進步獎計算 (必須具備至少兩週的週結算歷史才比對)
+      // 避免第一週單人上傳兩張照片就自己跟自己比出進步獎
+      if (lattePosts.value.length > 0 && isPastSettlementTime) {
+        // 從資料庫讀取歷史結算紀錄 (若無跨週歷史則維持次週揭曉)
+        const weeklyHistory = {}; // 依週次分類的成績池
+        lattePosts.value.forEach(p => {
+          if (!p.timestamp) return;
+          const pDate = new Date(p.timestamp);
+          // 簡易週次 key: 年-第幾週
+          const startOfYear = new Date(pDate.getFullYear(), 0, 1);
+          const weekNum = Math.ceil((((pDate - startOfYear) / 86400000) + startOfYear.getDay() + 1) / 7);
+          const wKey = `${pDate.getFullYear()}-W${weekNum}`;
+
+          if (!weeklyHistory[wKey]) weeklyHistory[wKey] = {};
+          const sid = p.authorStaffId;
+          const sc = calculateCombinedScore(p);
+          if (!weeklyHistory[wKey][sid] || sc > weeklyHistory[wKey][sid]) {
+            weeklyHistory[wKey][sid] = sc;
+          }
+        });
+
+        const availableWeeks = Object.keys(weeklyHistory).sort();
+        // 必須至少有 2 個不同週次的結算數據才能產生最佳進步獎
+        if (availableWeeks.length >= 2) {
+          const prevWeek = weeklyHistory[availableWeeks[availableWeeks.length - 2]];
+          const currWeek = weeklyHistory[availableWeeks[availableWeeks.length - 1]];
+          let maxDelta = 0;
+          let bestProgressSid = '';
+
+          Object.keys(currWeek).forEach(sid => {
+            if (prevWeek[sid]) {
+              const delta = currWeek[sid] - prevWeek[sid];
+              if (delta > maxDelta) {
+                maxDelta = delta;
+                bestProgressSid = sid;
+              }
+            }
+          });
+
+          if (bestProgressSid && maxDelta > 0) {
+            progressName = getStaffName(bestProgressSid);
+            progressDelta = `+${maxDelta.toFixed(1)} 分`;
+          } else {
+            progressName = '本週持平';
+            progressDelta = '無顯著進步差';
+          }
+        } else {
+          progressName = '次週結算';
+          progressDelta = '下週開始比對';
+        }
+      }
+
+      // 3. 本週活躍夥伴 (即時顯示發表最熱絡之夥伴)
       let activeName = '虛位以待';
       let activeTitle = '';
       if (tastingNotesList.value.length > 0) {
         activeName = getStaffName(tastingNotesList.value[0].authorStaffId);
-        activeTitle = '品評大師';
+        activeTitle = '品評分享大師';
       }
 
-      return { champion: champName, champScore, mostImproved: progressName, improvedDelta: progressDelta, activePartner: activeName, activeTitle };
+      return {
+        champion: champName,
+        champScore,
+        mostImproved: progressName,
+        improvedDelta: progressDelta,
+        activePartner: activeName,
+        activeTitle
+      };
     });
 
     const openAddRuleModal = () => { addRuleModal.value = { show: true, form: { keyword: '', advance_days: 7 } }; };
