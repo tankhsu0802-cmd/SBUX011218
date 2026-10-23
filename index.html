@@ -53,14 +53,18 @@
 
     /* iOS 極致毛玻璃效果 */
     .ios-glass-bar {
-      background: rgba(255, 255, 255, 0.78) !important;
-      backdrop-filter: blur(20px) saturate(180%) !important;
-      -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+      background: rgba(255, 255, 255, 0.45) !important; /* 降低不透明度至 45%，透光感更強 */
+      backdrop-filter: blur(25px) saturate(190%) !important;
+      -webkit-backdrop-filter: blur(25px) saturate(190%) !important;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04) !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.6) !important; /* 頂部微光細邊框 */
     }
     .dark .ios-glass-bar {
-      background: rgba(15, 23, 42, 0.78) !important;
-      backdrop-filter: blur(20px) saturate(180%) !important;
-      -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+      background: rgba(15, 23, 42, 0.55) !important;
+      backdrop-filter: blur(25px) saturate(190%) !important;
+      -webkit-backdrop-filter: blur(25px) saturate(190%) !important;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3) !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
     }
 
     /* 黑金質感卡片 */
