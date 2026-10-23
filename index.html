@@ -148,7 +148,7 @@
         break-inside: avoid !important; 
         -webkit-column-break-inside: avoid !important;
         break-inside: avoid-page !important;
-        height: 72px !important; /* 鎖定列高，避免剛好溢出一點點被攔腰剖半 */
+        height: 60px !important; /* 調降高度，避免踩到 iOS 第一頁底部的裁切死線 */
       }
       th, td { 
         word-break: break-all !important; 
@@ -1787,7 +1787,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="staff in validStaffList" :key="staff._key || staff.id" class="h-20 border-b border-black" style="page-break-inside: avoid !important; break-inside: avoid !important;">
+        <tr v-for="staff in validStaffList" :key="staff._key || staff.id" class="border-b border-black" style="page-break-inside: avoid !important; break-inside: avoid !important; -webkit-column-break-inside: avoid !important; height: 60px !important;">
          <!-- 工號強制單獨一行、不換行、緊湊字距 -->
           <td class="border border-black font-mono text-xs font-black p-0.5 whitespace-nowrap tracking-tighter align-middle">
             {{ staff.empId }}
