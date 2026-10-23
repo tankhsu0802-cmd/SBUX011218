@@ -21,21 +21,12 @@
       padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
     }
     @media print {
-      body {
-        padding-bottom: 0 !important;
-        background: white !important;
-      }
-      .no-print {
-        display: none !important;
-      }
-      .print-only {
-        display: block !important;
-      }
-      @page {
-        size: A4 landscape;
-        margin: 5mm;
-      }
+      body { background: white !important; color: black !important; padding-bottom: 0 !important; }
+      header, footer, nav, .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      @page { size: landscape; margin: 0.6cm; }
     }
+    .print-only { display: none; }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased">
@@ -48,8 +39,8 @@
       <div class="flex items-center space-x-2">
         <span class="text-xl">☕</span>
         <div>
-          <h1 class="text-base font-bold tracking-wider leading-none">永和永安 (011218)</h1>
-          <span class="text-[10px] text-emerald-200">效期打點與排班整合系統</span>
+          <h1 class="text-base font-bold tracking-wider leading-tight">永和永安 (011218)</h1>
+          <p class="text-[10px] text-emerald-300">效期打點與排班整合系統</p>
         </div>
       </div>
       <div class="flex items-center space-x-1.5">
@@ -62,21 +53,21 @@
   <!-- 主要內容區 -->
   <main class="flex-1 p-4 space-y-4 no-print">
 
-    <!-- ==================== 頁籤 1：物料效期查詢與打點 ==================== -->
+    <!-- ==================== 頁籤 1：物料效期查詢 ==================== -->
     <section v-if="currentTab === 'materials'" class="space-y-4">
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex gap-2">
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex gap-2 items-center">
         <div class="relative flex-1">
           <input 
             v-model="matSearchQuery" 
             type="text" 
             placeholder="搜尋代號 (如 MO, FR) 或 品名關鍵字..."
-            class="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-slate-50"
+            class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-slate-50"
           >
           <span class="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
         </div>
         <button 
           @click="openAddMaterialModal"
-          class="px-3 py-2 bg-emerald-800 text-white rounded-xl text-xs font-bold shrink-0 shadow-sm active:scale-95 transition">
+          class="px-3 py-2 bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition whitespace-nowrap">
           + 手動新增
         </button>
       </div>
@@ -84,49 +75,36 @@
       <!-- 物料卡片清單 -->
       <div class="space-y-3">
         <div 
-          v-for="(mat, idx) in filteredMaterials" :key="mat.id || (mat.code + mat.name + idx)"
-          class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
+          v-for="mat in filteredMaterials" :key="mat.id || (mat.code + mat.name)"
+          class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2">
           <div class="flex justify-between items-start">
             <div>
-              <div class="flex items-center gap-1.5">
-                <span class="px-2 py-0.5 text-xs font-bold rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  {{ mat.code }}
-                </span>
-                <span 
-                  :class="mat.temp === '冷藏' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'"
-                  class="px-2 py-0.5 text-[11px] font-bold rounded-full">
-                  {{ mat.temp || '常溫' }}
-                </span>
-              </div>
+              <span class="px-2 py-0.5 text-xs font-bold rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
+                {{ mat.code }}
+              </span>
               <h3 class="text-base font-bold text-slate-900 mt-1">{{ mat.name }}</h3>
               <p v-if="mat.en_name" class="text-xs text-slate-400 italic">{{ mat.en_name }}</p>
             </div>
-            
-            <div class="flex items-center gap-1">
-              <button 
-                @click="openEditMaterialModal(mat)"
-                class="p-1.5 text-slate-500 hover:text-emerald-800 text-xs rounded-lg hover:bg-slate-100"
-                title="修改品名或規範">
-                ✏️
-              </button>
-              <button 
-                @click="deleteMaterial(mat)"
-                class="p-1.5 text-slate-400 hover:text-red-600 text-xs rounded-lg hover:bg-red-50"
-                title="刪除物料">
-                🗑️
-              </button>
+            <div class="flex items-center gap-1.5">
+              <span 
+                :class="mat.temp === '冷藏' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'"
+                class="px-2 py-0.5 text-xs font-bold rounded-full">
+                {{ mat.temp || '常溫' }}
+              </span>
+              <button @click="editMaterial(mat)" class="p-1 text-slate-400 hover:text-emerald-700 text-xs">✏️</button>
+              <button @click="deleteMaterial(mat)" class="p-1 text-slate-400 hover:text-red-600 text-xs">🗑️</button>
             </div>
           </div>
 
-          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs flex justify-between items-center">
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs flex justify-between">
             <span class="text-slate-500">開封次級規範：</span>
-            <span class="font-bold text-emerald-800">{{ getMaterialSpecText(mat) }}</span>
+            <span class="font-bold text-emerald-800">{{ mat.notes || (mat.hours ? mat.hours + '小時' : (mat.days ? 'D+' + mat.days : '依標示')) }}</span>
           </div>
 
           <button 
             @click="calculateOpenTime(mat)"
-            class="w-full py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold rounded-xl border border-emerald-200 active:scale-98 transition flex items-center justify-center gap-1">
-            <span>⏱️</span> 試算此時開封到期打點
+            class="w-full py-2 bg-slate-100 active:bg-emerald-100 text-slate-700 active:text-emerald-800 text-xs font-bold rounded-xl border border-slate-200 transition">
+            ⏱️ 試算此時開封到期打點
           </button>
         </div>
 
@@ -143,68 +121,55 @@
       </div>
     </section>
 
-    <!-- ==================== 頁籤 2：下架行事曆與進貨登記 ==================== -->
+    <!-- ==================== 頁籤 2：下架行事曆 ==================== -->
     <section v-if="currentTab === 'intake'" class="space-y-4">
       
-      <!-- 快速進貨登記 (無預設一週，支援自動配對或手動新增下架標準) -->
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-        <h2 class="text-xs font-bold text-slate-700 flex items-center justify-between">
-          <span class="flex items-center gap-1.5"><span>📦</span> 包裝食品進貨登記</span>
-          <span class="text-[10px] text-slate-400">依門市標準倒推下架日</span>
+      <!-- 快速進貨登記 -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2">
+        <h2 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+          <span>📦</span> 快速登記進貨（依標準自動推算，亦可手動指定天數）
         </h2>
-        <form @submit.prevent="submitIntake" class="space-y-2.5">
+        <form @submit.prevent="submitIntake" class="space-y-2">
           <input 
             v-model="intakeForm.itemName" 
             type="text" 
             required
-            @input="checkRuleMatch"
             placeholder="食品品名 (例：摩卡杏仁肉鬆捲 2盒)"
             class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-slate-50"
           >
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block text-[10px] text-slate-500 mb-0.5">原包裝有效期限</label>
+              <label class="text-[10px] text-slate-500 font-bold block mb-0.5">原廠到期日</label>
               <input 
                 v-model="intakeForm.factoryExpiry" 
                 type="date" 
                 required
-                class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-slate-50"
+                class="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-slate-50"
               >
             </div>
             <div>
-              <label class="block text-[10px] text-slate-500 mb-0.5">提早下架天數</label>
-              <div class="flex items-center gap-1">
-                <input 
-                  v-model.number="intakeForm.advanceDays" 
-                  type="number" 
-                  min="0"
-                  required
-                  placeholder="自訂天數"
-                  class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-slate-50 text-center font-bold text-emerald-900"
-                >
-                <span class="text-xs text-slate-500 shrink-0">天</span>
-              </div>
+              <label class="text-[10px] text-slate-500 font-bold block mb-0.5">提前下架天數</label>
+              <input 
+                v-model.number="intakeForm.advanceDays" 
+                type="number" 
+                min="0"
+                placeholder="留空則依標準庫"
+                class="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-slate-50"
+              >
             </div>
           </div>
 
-          <div class="flex items-center justify-between text-[11px] bg-slate-50 p-2 rounded-xl border border-slate-100">
-            <span class="text-slate-500">
-              匹配標準：
-              <span class="font-bold" :class="intakeForm.matchedRule ? 'text-emerald-800' : 'text-amber-700'">
-                {{ intakeForm.matchedRule ? `已套用標準 (提早 ${intakeForm.advanceDays} 天)` : '未命中現有標準 (請自訂天數)' }}
-              </span>
-            </span>
-            <label v-if="!intakeForm.matchedRule" class="flex items-center gap-1 text-[10px] text-emerald-800 font-medium cursor-pointer">
-              <input type="checkbox" v-model="intakeForm.saveAsNewRule" class="rounded text-emerald-700">
-              儲存此標準供日後套用
+          <div class="flex items-center justify-between pt-1">
+            <label class="text-[11px] text-slate-600 flex items-center gap-1 cursor-pointer">
+              <input type="checkbox" v-model="intakeForm.saveAsRule" class="rounded text-emerald-800">
+              <span>儲存此下架標準至雲端庫</span>
             </label>
+            <button 
+              type="submit" 
+              class="px-4 py-2 bg-emerald-800 text-white text-xs font-bold rounded-xl shadow active:scale-95 transition">
+              + 登記進貨
+            </button>
           </div>
-
-          <button 
-            type="submit" 
-            class="w-full py-2.5 bg-emerald-800 text-white text-xs font-bold rounded-xl shadow active:scale-95 transition">
-            + 登記並寫入下架排程
-          </button>
         </form>
       </div>
 
@@ -230,7 +195,7 @@
             v-for="(day, idx) in calendarDays" :key="idx"
             @click="day.dateStr && (selectedDate = day.dateStr)"
             :class="[
-              'h-12 p-1 rounded-lg border flex flex-col justify-between text-[11px] transition',
+              'h-12 p-1 rounded-lg border flex flex-col justify-between text-[11px] transition cursor-pointer',
               day.isCurrentMonth ? 'bg-white border-slate-200' : 'bg-slate-50 border-transparent text-slate-300',
               day.dateStr === todayStr ? 'border-emerald-600 bg-emerald-50/40 font-bold' : '',
               selectedDate === day.dateStr ? 'ring-2 ring-emerald-700 bg-emerald-100/30' : ''
@@ -256,10 +221,10 @@
             class="p-2.5 bg-red-50 border border-red-200 rounded-xl text-xs flex justify-between items-center">
             <div>
               <div class="font-bold text-red-950 flex items-center gap-1.5">
-                <span v-if="item.isMaterial" class="px-1.5 py-0.2 bg-emerald-800 text-white rounded text-[10px]">物料打點</span>
+                <span v-if="item.isMaterial" class="px-1.5 py-0.2 bg-emerald-800 text-white rounded text-[10px]">物料</span>
                 <span>{{ item.itemName }}</span>
               </div>
-              <div class="text-[11px] text-red-700 mt-0.5">時機：{{ item.timing }} (原效期: {{ item.factoryExpiry }})</div>
+              <div class="text-[11px] text-red-700 mt-0.5">撤架時機：{{ item.timing }}</div>
             </div>
             <button @click="deleteIntake(item.id)" class="text-slate-400 active:text-red-600 text-xs px-2 py-1">✕</button>
           </div>
@@ -284,130 +249,167 @@
 
     </section>
 
-    <!-- ==================== 頁籤 3：員工職位管理與畫假排班 ==================== -->
-    <section v-if="currentTab === 'schedule'" class="space-y-4">
+    <!-- ==================== 頁籤 3：門市夥伴畫假與排班管理 ==================== -->
+    <section v-if="currentTab === 'roster'" class="space-y-4">
       
-      <!-- 排班與畫假控制中樞 -->
+      <!-- 畫假操作卡片 -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
             <span>👥</span> 門市夥伴畫假與排班中心
           </h2>
           <button 
             @click="openAddStaffModal"
-            class="px-2.5 py-1 bg-emerald-800 text-white rounded-lg text-xs font-bold active:scale-95 transition">
+            class="px-2.5 py-1 bg-emerald-800 text-white rounded-lg text-xs font-bold">
             + 新增夥伴
           </button>
         </div>
 
-        <!-- 畫假規則嚴格防呆說明 -->
-        <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-[11px] space-y-1">
-          <div class="font-bold text-amber-900 flex items-center gap-1">
+        <!-- 兩週後畫假規範防呆提醒 -->
+        <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800 space-y-0.5">
+          <div class="font-bold flex items-center gap-1">
             <span>⚠️</span> 畫假規則：每週僅能預排兩週後的假
           </div>
-          <p class="text-amber-700">
-            週一為每週首日。目前最早可畫假區間為：<span class="font-bold underline text-amber-950">{{ minAllowedLeaveDateStr }}</span> 起。
-          </p>
+          <p class="text-amber-700">週一為每週首日。目前最早可畫假區間為：<span class="font-bold underline">{{ allowedVacationStartStr }} 起</span>。</p>
         </div>
 
-        <!-- 畫假操作區 -->
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2.5">
-          <div class="grid grid-cols-2 gap-2 text-xs">
+        <form @submit.prevent="submitVacation" class="space-y-2 pt-1">
+          <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block text-slate-600 mb-1 font-semibold">選擇畫假夥伴</label>
-              <select v-model="leaveForm.staffId" class="w-full border rounded-lg px-2 py-1.5 bg-white font-medium">
-                <option value="" disabled>請選擇姓名</option>
+              <label class="text-[10px] text-slate-500 font-bold block mb-0.5">選擇畫假夥伴</label>
+              <select v-model="vacationForm.staffId" required class="w-full px-2 py-2 text-xs rounded-xl border border-slate-300 bg-slate-50">
+                <option value="" disabled>請選擇夥伴</option>
                 <option v-for="s in staffList" :key="s.id" :value="s.id">
                   {{ s.name }} ({{ s.nickname }}) - {{ s.role }}
                 </option>
               </select>
             </div>
             <div>
-              <label class="block text-slate-600 mb-1 font-semibold">休假日期</label>
+              <label class="text-[10px] text-slate-500 font-bold block mb-0.5">休假日期</label>
               <input 
-                v-model="leaveForm.date" 
+                v-model="vacationForm.date" 
                 type="date" 
-                :min="minAllowedLeaveDateStr"
-                class="w-full border rounded-lg px-2 py-1.5 bg-white font-medium text-xs"
+                :min="allowedVacationStartStr"
+                required
+                class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 bg-slate-50"
               >
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block text-slate-600 mb-1 font-semibold">假別標註</label>
-              <select v-model="leaveForm.leaveType" class="w-full border rounded-lg px-2 py-1.5 bg-white">
-                <option value="例假">例假</option>
-                <option value="休息日">休息日</option>
-                <option value="特別假">特別假</option>
-                <option value="不排班">不可排班 (✕)</option>
+              <label class="text-[10px] text-slate-500 font-bold block mb-0.5">假別標註</label>
+              <select v-model="vacationForm.type" class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 bg-slate-50">
+                <option value="✕">不可排班 (✕)</option>
+                <option value="例假">例假 (✕)</option>
+                <option value="休息日">休息日 (✕)</option>
+                <option value="特休">特休 (✕)</option>
               </select>
             </div>
             <div>
-              <label class="block text-slate-600 mb-1 font-semibold">請假備註</label>
-              <input v-model="leaveForm.note" placeholder="例如：回南部、上課" class="w-full border rounded-lg px-2 py-1.5 bg-white">
+              <label class="text-[10px] text-slate-500 font-bold block mb-0.5">請假備註</label>
+              <input 
+                v-model="vacationForm.notes" 
+                type="text" 
+                placeholder="例如：回南部、上課"
+                class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 bg-slate-50"
+              >
             </div>
           </div>
 
           <button 
-            @click="submitStaffLeave"
-            class="w-full py-2 bg-emerald-800 text-white rounded-xl text-xs font-bold active:scale-95 transition shadow-sm">
+            type="submit" 
+            class="w-full py-2 bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 transition">
             登記畫假 (自動標記 ✕)
           </button>
-        </div>
+        </form>
 
-        <!-- 匯出與列印排班表功能 -->
-        <div class="pt-1 flex flex-col gap-2">
-          <div class="flex items-center gap-2">
-            <span class="text-xs text-slate-600 font-semibold shrink-0">排班目標週：</span>
-            <input 
-              v-model="scheduleTargetMonday" 
-              type="date" 
-              step="7"
-              class="border rounded-lg px-2 py-1 text-xs bg-white flex-1 font-medium"
-            >
-          </div>
-          <div class="grid grid-cols-2 gap-2">
+        <!-- 獨立的「起始日」與「結束日」排班目標設定 -->
+        <div class="pt-3 border-t border-slate-100 space-y-2">
+          <div class="flex justify-between items-center">
+            <label class="text-[11px] text-slate-700 font-bold">📅 排班匯出範圍（支援跨週/春節連假）</label>
             <button 
-              @click="preparePrintSchedule"
-              class="py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 transition flex items-center justify-center gap-1.5">
+              @click="setNextWeekRange"
+              type="button"
+              class="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-medium">
+              ⚡ 快速填入 7 天
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <span class="text-[10px] text-slate-400 block mb-0.5">起始日 (例如 11/02 週一)</span>
+              <input 
+                v-model="scheduleStartDate" 
+                type="date" 
+                class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 bg-slate-50 font-medium"
+              >
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 block mb-0.5">結束日 (例如 11/08 週日)</span>
+              <input 
+                v-model="scheduleEndDate" 
+                type="date" 
+                class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 bg-slate-50 font-medium"
+              >
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button 
+              @click="triggerPrintSchedule"
+              class="py-2.5 bg-slate-900 active:bg-black text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5">
               <span>🖨️</span> 列印空白排班表
             </button>
             <button 
-              @click="exportScheduleToExcel"
-              class="py-2.5 bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 transition flex items-center justify-center gap-1.5">
+              @click="exportScheduleExcel"
+              class="py-2.5 bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5">
               <span>📊</span> 匯出 Excel 表
             </button>
           </div>
         </div>
       </div>
 
-      <!-- 夥伴名單維護列表 -->
+      <!-- 夥伴名單與畫假紀錄管理 -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-        <h3 class="text-xs font-bold text-slate-900 flex justify-between">
+        <h3 class="text-xs font-bold text-slate-800 flex justify-between">
           <span>📋 門市夥伴名冊 (共 {{ staffList.length }} 人)</span>
           <span class="text-[10px] text-slate-400">點擊編輯或移除</span>
         </h3>
         
-        <div class="divide-y divide-slate-100 text-xs">
-          <div v-for="s in staffList" :key="s.id" class="py-2.5 flex justify-between items-center">
+        <div class="space-y-1.5 max-h-48 overflow-y-auto">
+          <div 
+            v-for="s in staffList" :key="s.id"
+            class="p-2 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
             <div>
-              <div class="flex items-center gap-2">
-                <span class="font-mono text-slate-400 text-[11px]">{{ s.empId }}</span>
-                <span class="font-bold text-slate-900">{{ s.name }}</span>
-                <span class="text-slate-500 font-medium">({{ s.nickname }})</span>
-                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold"
-                  :class="s.role === '店經理' || s.role === '副理' ? 'bg-amber-100 text-amber-800' : (s.role === '值班經理' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600')">
-                  {{ s.role }}
-                </span>
-              </div>
+              <span class="font-mono text-slate-400 text-[10px] mr-1">{{ s.empId }}</span>
+              <span class="font-bold text-slate-900">{{ s.name }}</span>
+              <span class="text-slate-500 ml-1">({{ s.nickname }})</span>
+              <span class="ml-1.5 px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded text-[10px]">{{ s.role }}</span>
             </div>
-            <div class="flex items-center gap-1">
-              <button @click="openEditStaffModal(s)" class="text-slate-400 hover:text-emerald-700 p-1">✏️</button>
-              <button @click="deleteStaff(s.id)" class="text-slate-400 hover:text-red-600 p-1">🗑️</button>
+            <div class="flex gap-1.5">
+              <button @click="editStaff(s)" class="text-slate-400 hover:text-emerald-700">✏️</button>
+              <button @click="deleteStaff(s.id)" class="text-slate-400 hover:text-red-600">🗑️</button>
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- 近期畫假清單 -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2">
+        <h3 class="text-xs font-bold text-slate-800">📌 已登記畫假紀錄 (打叉清單)</h3>
+        <div v-if="vacationList.length > 0" class="divide-y divide-slate-100 max-h-48 overflow-y-auto text-xs">
+          <div v-for="v in sortedVacationList" :key="v.id" class="py-1.5 flex justify-between items-center">
+            <div>
+              <span class="font-bold text-emerald-900 mr-1.5">{{ v.date }}</span>
+              <span class="font-semibold text-slate-800">{{ getStaffName(v.staffId) }}</span>
+              <span class="text-red-600 font-bold ml-2">【{{ v.type }}】</span>
+              <span v-if="v.notes" class="text-slate-400 text-[11px] ml-1">({{ v.notes }})</span>
+            </div>
+            <button @click="deleteVacation(v.id)" class="text-slate-400 hover:text-red-600 text-xs px-1">✕</button>
+          </div>
+        </div>
+        <p v-else class="text-xs text-slate-400 py-3 text-center">目前尚無任何畫假紀錄。</p>
       </div>
 
     </section>
@@ -418,7 +420,7 @@
         <div>
           <h2 class="text-sm font-bold text-slate-900">📥 檔期標準匯入中心</h2>
           <p class="text-[11px] text-slate-500 mt-1">
-            支援拍攝官方手冊照片（JPG/PNG）、PDF 或 Excel，系統自動辨識「物料次級效期」與「包裝食品下架標準」。
+            上傳更新後全店即時同步。支援拍攝手冊照片（JPG/PNG）、官方 PDF 或 Excel。
           </p>
         </div>
 
@@ -427,7 +429,7 @@
           <div class="space-y-1">
             <span class="text-2xl">📸 / 📄</span>
             <p class="text-xs font-bold text-emerald-900">點擊上傳手冊照片 (JPG) 或 PDF / Excel</p>
-            <p class="text-[10px] text-slate-500">手機可直接呼叫相機拍照上傳，並在寫入前逐筆微調</p>
+            <p class="text-[10px] text-slate-500">手機可直接呼叫相機拍照上傳</p>
           </div>
         </label>
 
@@ -437,42 +439,31 @@
             <span class="animate-spin">🔄</span>
             <span>正在分析表格文字... {{ processProgress }}%</span>
           </div>
-          <p class="text-[10px] text-amber-600">正在自動比對物料品名、D+N 與下架標準，請稍候。</p>
+          <p class="text-[10px] text-amber-600">正在自動比對物料名稱、代號與 D+N 效期規則，請稍候。</p>
         </div>
 
-        <!-- 辨識結果預覽卡片（支援匯入前手動調整存放時間與下架標準） -->
-        <div v-if="parsedPreview.show" class="p-4 bg-emerald-50/90 border border-emerald-300 rounded-2xl space-y-3">
+        <!-- 辨識結果預覽卡片（可逐筆手動調整） -->
+        <div v-if="parsedPreview.show" class="p-4 bg-emerald-50/80 border border-emerald-300 rounded-2xl space-y-3">
           <div class="flex justify-between items-center">
-            <h3 class="text-xs font-bold text-emerald-950">📋 辨識預覽與自訂調整（共 {{ parsedPreview.items.length }} 筆）</h3>
-            <span class="text-[10px] text-emerald-700">寫入前可逐筆修改</span>
+            <h3 class="text-xs font-bold text-emerald-950">📋 辨識結果預覽與校對（共 {{ parsedPreview.items.length }} 筆）</h3>
+            <span class="text-[10px] text-emerald-700">寫入前可手動修改</span>
           </div>
 
-          <div class="max-h-64 overflow-y-auto space-y-2 text-[11px] bg-white p-2.5 rounded-xl border border-emerald-200">
-            <div v-for="(item, idx) in parsedPreview.items" :key="idx" class="border-b border-slate-200 pb-2 space-y-1.5">
+          <div class="max-h-60 overflow-y-auto space-y-2 text-[11px] bg-white p-2.5 rounded-xl border border-emerald-200">
+            <div v-for="(item, idx) in parsedPreview.items" :key="idx" class="border-b border-slate-100 pb-2 space-y-1">
               <div class="flex items-center gap-1.5">
-                <input v-model="item.code" class="w-16 font-mono text-center border rounded px-1 py-0.5 font-bold text-emerald-900 bg-slate-50" placeholder="代號">
-                <input v-model="item.name" class="flex-1 font-bold border rounded px-2 py-0.5 text-slate-900 bg-slate-50" placeholder="物料/品名">
-                <select v-model="item.temp" class="border rounded px-1.5 py-0.5 text-xs bg-slate-50">
+                <input v-model="item.code" class="w-16 font-mono text-center font-bold border border-slate-200 rounded px-1 py-0.5 text-xs" placeholder="代號">
+                <input v-model="item.name" class="flex-1 font-bold border border-slate-200 rounded px-1.5 py-0.5 text-xs" placeholder="品名">
+                <button @click="parsedPreview.items.splice(idx, 1)" class="text-red-500 font-bold px-1">✕</button>
+              </div>
+              <div class="grid grid-cols-3 gap-1 text-[10px]">
+                <select v-model="item.temp" class="border border-slate-200 rounded px-1 py-0.5 bg-slate-50">
                   <option value="常溫">常溫</option>
                   <option value="冷藏">冷藏</option>
                 </select>
-                <button @click="parsedPreview.items.splice(idx, 1)" class="text-red-500 font-bold px-1">✕</button>
+                <input v-model.number="item.hours" type="number" placeholder="小時數" class="border border-slate-200 rounded px-1 py-0.5">
+                <input v-model.number="item.days" type="number" placeholder="D+天數" class="border border-slate-200 rounded px-1 py-0.5">
               </div>
-
-              <!-- 存放時效自訂 -->
-              <div class="grid grid-cols-2 gap-1.5 bg-slate-50 p-1.5 rounded-lg border border-slate-100">
-                <div class="flex items-center gap-1">
-                  <span class="text-slate-500">小時:</span>
-                  <input v-model.number="item.hours" type="number" min="0" class="w-14 border rounded px-1 py-0.5 text-center bg-white" placeholder="0">
-                  <span class="text-[10px] text-slate-400">HR</span>
-                </div>
-                <div class="flex items-center gap-1">
-                  <span class="text-slate-500">天數:</span>
-                  <input v-model.number="item.days" type="number" min="0" class="w-14 border rounded px-1 py-0.5 text-center bg-white" placeholder="0">
-                  <span class="text-[10px] text-slate-400">天(D+)</span>
-                </div>
-              </div>
-              <input v-model="item.notes" class="w-full border rounded px-1.5 py-0.5 text-[10px] text-slate-600 bg-slate-50" placeholder="規範備註（如：開封後24小時）">
             </div>
           </div>
 
@@ -490,24 +481,6 @@
           </div>
         </div>
 
-        <!-- 下架規則管理清單 -->
-        <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2 text-xs">
-          <div class="flex justify-between items-center">
-            <h3 class="font-bold text-slate-800">📐 現行包裝食品下架標準規則 ({{ rules.length }} 條)</h3>
-            <button @click="openAddRuleModal" class="text-emerald-800 font-bold hover:underline">+ 新增規則</button>
-          </div>
-          <div v-if="rules.length > 0" class="divide-y divide-slate-100 max-h-40 overflow-y-auto">
-            <div v-for="(r, idx) in rules" :key="idx" class="py-1.5 flex justify-between items-center">
-              <div>
-                <span class="font-bold text-slate-900">{{ r.keyword }}</span>
-                <span class="text-slate-500 ml-2">提早 {{ r.advance_days }} 天 ({{ r.timing || '21:30 閉店前' }})</span>
-              </div>
-              <button @click="deleteRule(idx)" class="text-red-500 text-xs px-1">✕</button>
-            </div>
-          </div>
-          <p v-else class="text-slate-400 text-center py-2">目前尚無已儲存的下架標準規則。</p>
-        </div>
-
         <div class="pt-2 flex flex-col gap-2">
           <button 
             @click="downloadBlankTemplate" 
@@ -522,11 +495,31 @@
           </button>
         </div>
       </div>
+
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 text-xs space-y-1.5">
+        <h3 class="font-bold text-slate-800">📊 全門市雲端庫狀態</h3>
+        <div class="flex justify-between text-slate-600">
+          <span>已同步物料品項：</span>
+          <span class="font-bold text-emerald-800">{{ materials.length }} 項</span>
+        </div>
+        <div class="flex justify-between text-slate-600">
+          <span>已同步下架規則：</span>
+          <span class="font-bold text-emerald-800">{{ rules.length }} 條</span>
+        </div>
+        <div class="flex justify-between text-slate-600">
+          <span>全店在架進貨紀錄：</span>
+          <span class="font-bold text-emerald-800">{{ inventory.length }} 筆</span>
+        </div>
+        <div class="flex justify-between text-slate-600">
+          <span>門市夥伴人數：</span>
+          <span class="font-bold text-emerald-800">{{ staffList.length }} 人</span>
+        </div>
+      </div>
     </section>
 
   </main>
 
-  <!-- 底部導航選單 (新增排班分頁) -->
+  <!-- 底部導航選單 (4格大觸控) -->
   <footer class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 no-print">
     <div class="max-w-md mx-auto grid grid-cols-4 py-2 px-2">
       <button 
@@ -544,8 +537,8 @@
         <span class="text-[10px] mt-0.5">下架行事曆</span>
       </button>
       <button 
-        @click="currentTab = 'schedule'" 
-        :class="currentTab === 'schedule' ? 'text-emerald-800 font-bold' : 'text-slate-400'"
+        @click="currentTab = 'roster'" 
+        :class="currentTab === 'roster' ? 'text-emerald-800 font-bold' : 'text-slate-400'"
         class="flex flex-col items-center justify-center py-1">
         <span class="text-base">👥</span>
         <span class="text-[10px] mt-0.5">夥伴排班</span>
@@ -560,26 +553,19 @@
     </div>
   </footer>
 
-  <!-- ==================== 模態視窗集合 ==================== -->
-
-  <!-- 打點試算 Modal (依標示計算 應於YYYY年MM月DD日 HH:mm EXP 24小時制) -->
+  <!-- 打點試算 Modal（含精確 24 小時制與依標示計算） -->
   <div v-if="calcModal.show" class="fixed inset-0 bg-black/40 z-50 flex items-end justify-center p-4 no-print">
     <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
       <div class="flex justify-between items-center">
-        <div>
-          <span class="text-xs font-mono font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded mr-1.5">{{ calcModal.item.code }}</span>
-          <h3 class="font-bold text-sm text-slate-900 inline">{{ calcModal.item.name }}</h3>
-        </div>
+        <h3 class="font-bold text-sm text-slate-900">{{ calcModal.item.name }} ({{ calcModal.item.code }})</h3>
         <button @click="calcModal.show = false" class="text-slate-400 text-sm">✕</button>
       </div>
 
-      <div class="p-3.5 bg-emerald-50 rounded-xl text-center border border-emerald-200 space-y-1.5">
-        <span class="text-[11px] text-emerald-800 font-bold block">次級效期打點試算結果</span>
-        <div class="text-sm sm:text-base font-black text-emerald-950 tracking-wide">
-          {{ calcModal.targetTimeStr }}
-        </div>
-        <p v-if="calcModal.isAdjustedForClose" class="text-[10px] text-amber-800 font-medium bg-amber-100/70 p-1.5 rounded-lg border border-amber-200">
-          ⚠️ 原始到期時間落於非營業時間（21:30~07:00），依門市防呆規範提前至 21:30 閉店前報廢
+      <div class="p-3.5 bg-emerald-50 rounded-xl text-center border border-emerald-200 space-y-1">
+        <span class="text-[11px] text-emerald-800 font-semibold block">標籤打點規範</span>
+        <div class="text-sm font-black text-emerald-950 leading-relaxed">{{ calcModal.targetTimeStr }}</div>
+        <p v-if="calcModal.isAdjustedForClose" class="text-[10px] text-amber-700 font-medium pt-1">
+          ⚠️ 到期時間落於 21:30~07:00 門市非營業時段，依規範提前至 21:30 閉店前報廢
         </p>
       </div>
 
@@ -595,60 +581,54 @@
     </div>
   </div>
 
-  <!-- 物料新增 / 編輯 Modal -->
+  <!-- 手動新增 / 編輯物料 Modal -->
   <div v-if="matEditModal.show" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 no-print">
     <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
       <div class="flex justify-between items-center">
-        <h3 class="font-bold text-sm text-slate-900">{{ matEditModal.isNew ? '新增原物料標準' : '變更原物料內容' }}</h3>
+        <h3 class="font-bold text-sm text-slate-900">{{ matEditModal.isNew ? '新增物料' : '編輯物料內容' }}</h3>
         <button @click="matEditModal.show = false" class="text-slate-400 text-sm">✕</button>
       </div>
 
-      <form @submit.prevent="saveMaterialEdit" class="space-y-2.5 text-xs">
+      <form @submit.prevent="saveMaterialForm" class="space-y-2 text-xs">
         <div>
-          <label class="block text-slate-600 mb-1 font-semibold">物料代號 (簡寫)</label>
-          <input v-model="matEditModal.form.code" required placeholder="如 MO, FR, PM" class="w-full border rounded-xl px-3 py-2 bg-slate-50 uppercase font-mono">
+          <label class="font-bold text-slate-600 block mb-0.5">物料代號 (例如：MO)</label>
+          <input v-model="matEditModal.form.code" required class="w-full border border-slate-300 rounded-xl px-3 py-1.5 uppercase font-mono">
         </div>
         <div>
-          <label class="block text-slate-600 mb-1 font-semibold">中文品名</label>
-          <input v-model="matEditModal.form.name" required placeholder="如 摩卡醬, 星冰樂咖啡液" class="w-full border rounded-xl px-3 py-2 bg-slate-50">
+          <label class="font-bold text-slate-600 block mb-0.5">中文品名 (例如：摩卡醬)</label>
+          <input v-model="matEditModal.form.name" required class="w-full border border-slate-300 rounded-xl px-3 py-1.5">
         </div>
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-3 gap-2">
           <div>
-            <label class="block text-slate-600 mb-1 font-semibold">保存溫層</label>
-            <select v-model="matEditModal.form.temp" class="w-full border rounded-xl px-3 py-2 bg-slate-50">
+            <label class="font-bold text-slate-600 block mb-0.5">溫層</label>
+            <select v-model="matEditModal.form.temp" class="w-full border border-slate-300 rounded-xl px-2 py-1.5 bg-slate-50">
               <option value="常溫">常溫</option>
               <option value="冷藏">冷藏</option>
             </select>
           </div>
           <div>
-            <label class="block text-slate-600 mb-1 font-semibold">開封時數 (小時)</label>
-            <input v-model.number="matEditModal.form.hours" type="number" min="0" placeholder="24" class="w-full border rounded-xl px-3 py-2 bg-slate-50">
+            <label class="font-bold text-slate-600 block mb-0.5">小時 (HR)</label>
+            <input v-model.number="matEditModal.form.hours" type="number" class="w-full border border-slate-300 rounded-xl px-2 py-1.5">
+          </div>
+          <div>
+            <label class="font-bold text-slate-600 block mb-0.5">天數 (D+)</label>
+            <input v-model.number="matEditModal.form.days" type="number" class="w-full border border-slate-300 rounded-xl px-2 py-1.5">
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-slate-600 mb-1 font-semibold">存放下架天數 (D+N)</label>
-            <input v-model.number="matEditModal.form.days" type="number" min="0" placeholder="6" class="w-full border rounded-xl px-3 py-2 bg-slate-50">
-          </div>
-          <div>
-            <label class="block text-slate-600 mb-1 font-semibold">備註說明</label>
-            <input v-model="matEditModal.form.notes" placeholder="如 開封後24小時" class="w-full border rounded-xl px-3 py-2 bg-slate-50">
-          </div>
+        <div>
+          <label class="font-bold text-slate-600 block mb-0.5">備註規範文字</label>
+          <input v-model="matEditModal.form.notes" placeholder="例如：開封後24小時" class="w-full border border-slate-300 rounded-xl px-3 py-1.5">
         </div>
 
         <div class="pt-2 flex gap-2">
-          <button type="submit" class="flex-1 py-2.5 bg-emerald-800 text-white rounded-xl font-bold shadow-sm active:scale-95 transition">
-            儲存並同步全門市
-          </button>
-          <button type="button" @click="matEditModal.show = false" class="px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-medium">
-            取消
-          </button>
+          <button type="submit" class="flex-1 py-2 bg-emerald-800 text-white rounded-xl font-bold">儲存</button>
+          <button type="button" @click="matEditModal.show = false" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl">取消</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- 夥伴新增 / 編輯 Modal -->
+  <!-- 新增 / 編輯夥伴 Modal -->
   <div v-if="staffModal.show" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 no-print">
     <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
       <div class="flex justify-between items-center">
@@ -656,71 +636,33 @@
         <button @click="staffModal.show = false" class="text-slate-400 text-sm">✕</button>
       </div>
 
-      <form @submit.prevent="saveStaffData" class="space-y-2.5 text-xs">
+      <form @submit.prevent="saveStaffForm" class="space-y-2 text-xs">
         <div>
-          <label class="block text-slate-600 mb-1 font-semibold">員工編號 (8碼)</label>
-          <input v-model="staffModal.form.empId" required placeholder="如 10386493" class="w-full border rounded-xl px-3 py-2 bg-slate-50 font-mono">
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-slate-600 mb-1 font-semibold">中文姓名</label>
-            <input v-model="staffModal.form.name" required placeholder="如 徐爰坦" class="w-full border rounded-xl px-3 py-2 bg-slate-50">
-          </div>
-          <div>
-            <label class="block text-slate-600 mb-1 font-semibold">英文名 / 暱稱</label>
-            <input v-model="staffModal.form.nickname" required placeholder="如 Tan" class="w-full border rounded-xl px-3 py-2 bg-slate-50">
-          </div>
+          <label class="font-bold text-slate-600 block mb-0.5">員工編號 (工號)</label>
+          <input v-model="staffModal.form.empId" required placeholder="例如：10386493" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 font-mono">
         </div>
         <div>
-          <label class="block text-slate-600 mb-1 font-semibold">門市職位</label>
-          <select v-model="staffModal.form.role" class="w-full border rounded-xl px-3 py-2 bg-slate-50">
+          <label class="font-bold text-slate-600 block mb-0.5">員工中文姓名</label>
+          <input v-model="staffModal.form.name" required placeholder="例如：徐爰坦" class="w-full border border-slate-300 rounded-xl px-3 py-1.5">
+        </div>
+        <div>
+          <label class="font-bold text-slate-600 block mb-0.5">英文暱稱</label>
+          <input v-model="staffModal.form.nickname" required placeholder="例如：Tan" class="w-full border border-slate-300 rounded-xl px-3 py-1.5">
+        </div>
+        <div>
+          <label class="font-bold text-slate-600 block mb-0.5">職位</label>
+          <select v-model="staffModal.form.role" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 bg-slate-50">
             <option value="店經理">店經理 (SM)</option>
             <option value="副理">副理 (ASM)</option>
-            <option value="值班經理">值班經理 (Shift Supervisor)</option>
-            <option value="正職夥伴">正職夥伴 (FT Barista)</option>
-            <option value="兼職夥伴">兼職夥伴 (PT Barista)</option>
+            <option value="值班經理">值班經理 (SSV)</option>
+            <option value="正職夥伴">正職夥伴 (FT)</option>
+            <option value="兼職夥伴">兼職夥伴 (PT)</option>
           </select>
         </div>
 
         <div class="pt-2 flex gap-2">
-          <button type="submit" class="flex-1 py-2.5 bg-emerald-800 text-white rounded-xl font-bold shadow-sm active:scale-95 transition">
-            儲存夥伴資料
-          </button>
-          <button type="button" @click="staffModal.show = false" class="px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-medium">
-            取消
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- 新增下架標準規則 Modal -->
-  <div v-if="ruleModal.show" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
-      <div class="flex justify-between items-center">
-        <h3 class="font-bold text-sm text-slate-900">新增下架標準規則</h3>
-        <button @click="ruleModal.show = false" class="text-slate-400 text-sm">✕</button>
-      </div>
-      <form @submit.prevent="saveNewRule" class="space-y-2.5 text-xs">
-        <div>
-          <label class="block text-slate-600 mb-1 font-semibold">品名比對關鍵字</label>
-          <input v-model="ruleModal.form.keyword" required placeholder="例：肉鬆捲, 捲心酥, 蛋糕" class="w-full border rounded-xl px-3 py-2 bg-slate-50">
-        </div>
-        <div>
-          <label class="block text-slate-600 mb-1 font-semibold">提前下架天數 (天)</label>
-          <input v-model.number="ruleModal.form.advance_days" type="number" min="0" required placeholder="例：14" class="w-full border rounded-xl px-3 py-2 bg-slate-50">
-        </div>
-        <div>
-          <label class="block text-slate-600 mb-1 font-semibold">下架時機</label>
-          <input v-model="ruleModal.form.timing" placeholder="21:30 閉店前" class="w-full border rounded-xl px-3 py-2 bg-slate-50">
-        </div>
-        <div class="pt-2 flex gap-2">
-          <button type="submit" class="flex-1 py-2.5 bg-emerald-800 text-white rounded-xl font-bold shadow-sm active:scale-95 transition">
-            儲存下架標準
-          </button>
-          <button type="button" @click="ruleModal.show = false" class="px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-medium">
-            取消
-          </button>
+          <button type="submit" class="flex-1 py-2 bg-emerald-800 text-white rounded-xl font-bold">儲存夥伴</button>
+          <button type="button" @click="staffModal.show = false" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl">取消</button>
         </div>
       </form>
     </div>
@@ -728,92 +670,69 @@
 
 </div>
 
-<!-- ==================== A4 橫向擬真空白週排班表 (列印與預覽專區) ==================== -->
-<div id="printScheduleSection" class="hidden print:block p-2 bg-white text-black font-sans">
-  <div class="border border-black p-2">
-    <!-- 排班表表頭 (完全仿照星巴克實體單據) -->
-    <div class="flex justify-between items-start text-xs border-b border-black pb-1.5 mb-1.5">
-      <div>
-        <div class="font-bold">營業日期：{{ targetWeekDateRangeStr }}</div>
-        <div>門市：永和永安 (011218)</div>
-      </div>
-      <div class="text-center">
-        <h2 class="text-xl font-extrabold tracking-widest">門市人員週排班表</h2>
-      </div>
-      <div class="text-right">
-        <div>製作日期：{{ printCreatedDateStr }}</div>
-        <div>單位：小時</div>
-      </div>
+<!-- ==================== A4 橫向直出列印專用排班表 (完整擬真門市人員週排班表) ==================== -->
+<div class="print-only p-4 bg-white text-black font-sans">
+  <div class="flex justify-between items-end border-b-2 border-black pb-1 mb-2">
+    <div>
+      <div class="text-xs">營業日期：{{ scheduleStartDate ? scheduleStartDate.replace(/-/g, '/') : '' }} - {{ scheduleEndDate ? scheduleEndDate.replace(/-/g, '/') : '' }}</div>
+      <div class="text-xs">門市：永和永安 (011218)</div>
     </div>
-
-    <!-- 表格本體 -->
-    <table class="w-full border-collapse border border-black text-center text-[10px] leading-tight">
-      <thead>
-        <tr class="bg-slate-100">
-          <th rowspan="2" class="border border-black w-14 py-1">員工編號</th>
-          <th rowspan="2" class="border border-black w-16 py-1">員工姓名</th>
-          <th colspan="7" class="border border-black py-0.5">預 定 時 間</th>
-          <th rowspan="2" class="border border-black w-10 py-1">工時<br>小計</th>
-          <th rowspan="2" class="border border-black w-24 py-1">FT本週<br>加班時數轉成</th>
-          <th rowspan="2" class="border border-black w-28 py-1">我自願提出請假<br>且已確認</th>
-        </tr>
-        <tr class="bg-slate-50">
-          <th v-for="(day, dIdx) in targetWeekDates" :key="dIdx" class="border border-black py-1 w-16">
-            {{ day.dateShort }}<br>({{ day.dayName }})
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="staff in staffList" :key="staff.id" class="h-10">
-          <td class="border border-black font-mono font-medium">{{ staff.empId }}</td>
-          <td class="border border-black font-medium">
-            <div>{{ staff.name }}</div>
-            <div class="text-[9px] text-slate-500">({{ staff.nickname }})</div>
-          </td>
-          
-          <!-- 週一至週日 格子 (若有畫假則打大叉 ✕) -->
-          <td v-for="(day, dIdx) in targetWeekDates" :key="dIdx" class="border border-black relative">
-            <template v-if="hasStaffLeave(staff.id, day.dateStr)">
-              <div class="absolute inset-0 flex flex-col items-center justify-center font-bold text-red-600">
-                <span class="text-lg leading-none font-black">✕</span>
-                <span class="text-[8px] text-slate-700 leading-none mt-0.5">{{ getStaffLeaveType(staff.id, day.dateStr) }}</span>
-              </div>
-            </template>
-            <template v-else>
-              <span class="text-slate-300"></span>
-            </template>
-          </td>
-
-          <!-- 工時小計 (空白供手寫或填報) -->
-          <td class="border border-black"></td>
-
-          <!-- FT本週加班轉代休確認欄 -->
-          <td class="border border-black text-left px-1 text-[8px] space-y-0.5">
-            <div>□ 代休: ___ hr</div>
-            <div>□ 加班費: ___ hr</div>
-            <div class="pt-1">簽名: _________</div>
-          </td>
-
-          <!-- 自願請假確認欄 -->
-          <td class="border border-black text-left px-1 text-[8px] space-y-1">
-            <div>___假: ___ hr</div>
-            <div>簽名: _________</div>
-          </td>
-        </tr>
-
-        <!-- 本店上班總計 -->
-        <tr class="h-6 font-bold bg-slate-50">
-          <td colspan="2" class="border border-black text-left px-1">本店上班總計:</td>
-          <td v-for="d in 7" :key="d" class="border border-black"></td>
-          <td colspan="3" class="border border-black"></td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="text-center font-bold text-xl tracking-widest">
+      門市人員週排班表
+    </div>
+    <div class="text-right text-xs">
+      <div>製作日期：{{ printTodayStr }}</div>
+      <div>單位：小時</div>
+    </div>
   </div>
+
+  <table class="w-full border-collapse border border-black text-center text-xs">
+    <thead>
+      <tr class="bg-slate-100 border-b border-black">
+        <th class="border border-black p-1 w-16">員工編號</th>
+        <th class="border border-black p-1 w-20">員工姓名</th>
+        <th v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-1 min-w-[70px]">
+          <div>{{ d.displayDate }}</div>
+          <div class="text-[10px]">({{ d.weekday }})</div>
+        </th>
+        <th class="border border-black p-1 w-12">工時小計</th>
+        <th class="border border-black p-1 w-24">FT本週加班轉代休</th>
+        <th class="border border-black p-1 w-24">親自提出請假且已確認</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="staff in staffList" :key="staff.id" class="h-12 border-b border-black">
+        <td class="border border-black font-mono text-[11px]">{{ staff.empId }}</td>
+        <td class="border border-black font-bold">
+          <div>{{ staff.name }}</div>
+          <div class="text-[10px] text-slate-600">({{ staff.nickname }})</div>
+        </td>
+        <td v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-0.5 relative">
+          <!-- 若有畫假直接打大叉 ✕ -->
+          <template v-if="getVacationMark(staff.id, d.dateStr)">
+            <div class="text-red-600 font-black text-lg leading-none">✕</div>
+            <div class="text-[9px] text-slate-700 leading-tight">{{ getVacationMark(staff.id, d.dateStr) }}</div>
+          </template>
+        </td>
+        <td class="border border-black"></td>
+        <td class="border border-black text-[9px] text-left p-1">
+          <div>□代休：___hr</div>
+          <div>□加班費：___hr</div>
+          <div class="mt-1">簽名：</div>
+        </td>
+        <td class="border border-black text-[9px] text-left p-1">
+          <div>簽名：</div>
+        </td>
+      </tr>
+      <tr v-if="staffList.length === 0">
+        <td :colspan="targetRangeDates.length + 5" class="p-4 text-slate-400">尚未建立門市夥伴資料，請先至系統新增。</td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
 <script>
-// ==================== Firebase 設定 ====================
+// ==================== 1. Firebase 金鑰設定 ====================
 const firebaseConfig = {
   apiKey: "AIzaSyDYvu6xnFpIzLhbq62WQ-VotNA-kuHLsCE",
   authDomain: "sbux011218.firebaseapp.com",
@@ -833,7 +752,7 @@ try {
   console.error("Firebase 初始化失敗：", e);
 }
 
-const { createApp, ref, computed, onMounted } = Vue;
+const { createApp, ref, computed } = Vue;
 
 if (window.pdfjsLib) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -848,126 +767,29 @@ createApp({
     const rules = ref([]);
     const inventory = ref([]);
     const staffList = ref([]);
-    const leaveRecords = ref([]);
+    const vacationList = ref([]);
 
-    // 雲端即時監聽
+    // Firebase 即時資料監聽
     if (db) {
-      db.ref('.info/connected').on('value', snap => {
-        isCloudConnected.value = snap.val() === true;
-      });
-
-      db.ref('sbux/materials').on('value', snap => {
-        const val = snap.val();
-        materials.value = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
-      });
-
-      db.ref('sbux/rules').on('value', snap => {
-        const val = snap.val();
-        rules.value = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
-      });
-
-      db.ref('sbux/inventory').on('value', snap => {
-        const data = snap.val();
-        inventory.value = data ? Object.values(data) : [];
-      });
-
-      db.ref('sbux/staff').on('value', snap => {
-        const data = snap.val();
-        staffList.value = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-      });
-
-      db.ref('sbux/leaves').on('value', snap => {
-        const data = snap.val();
-        leaveRecords.value = data ? Object.values(data) : [];
-      });
+      db.ref('.info/connected').on('value', snap => isCloudConnected.value = snap.val() === true);
+      db.ref('sbux/materials').on('value', snap => materials.value = snap.val() ? Object.values(snap.val()) : []);
+      db.ref('sbux/rules').on('value', snap => rules.value = snap.val() ? Object.values(snap.val()) : []);
+      db.ref('sbux/inventory').on('value', snap => inventory.value = snap.val() ? Object.values(snap.val()) : []);
+      db.ref('sbux/staff').on('value', snap => staffList.value = snap.val() ? Object.values(snap.val()) : []);
+      db.ref('sbux/vacations').on('value', snap => vacationList.value = snap.val() ? Object.values(snap.val()) : []);
     }
 
-    const syncMaterialsToCloud = (list) => { if (db) db.ref('sbux/materials').set(list); };
-    const syncRulesToCloud = (list) => { if (db) db.ref('sbux/rules').set(list); };
-    const syncStaffToCloud = (list) => { if (db) db.ref('sbux/staff').set(list); };
-
-    // ==================== 物料查詢與打點 ====================
+    // ==================== 物料管理與打點計算 ====================
     const matSearchQuery = ref('');
-    const getMaterialSpecText = (mat) => {
-      if (mat.hours && parseInt(mat.hours) > 0) return `開封後 ${mat.hours} 小時`;
-      if (mat.days && parseInt(mat.days) > 0) return `開封後 D+${mat.days} 天`;
-      if (mat.notes && mat.notes.trim() !== '') return mat.notes;
-      return '依原廠標示';
-    };
-
     const filteredMaterials = computed(() => {
       const q = matSearchQuery.value.trim().toLowerCase();
       if (!q) return materials.value;
       return materials.value.filter(m => 
         (m.code && String(m.code).toLowerCase().includes(q)) ||
-        (m.name && String(m.name).toLowerCase().includes(q)) ||
-        (m.en_name && String(m.en_name).toLowerCase().includes(q))
+        (m.name && String(m.name).toLowerCase().includes(q))
       );
     });
 
-    const matEditModal = ref({
-      show: false,
-      isNew: false,
-      targetId: null,
-      form: { code: '', name: '', temp: '常溫', hours: 0, days: 0, notes: '' }
-    });
-
-    const openAddMaterialModal = () => {
-      matEditModal.value = {
-        show: true,
-        isNew: true,
-        targetId: null,
-        form: { code: '', name: '', temp: '常溫', hours: 24, days: 0, notes: '' }
-      };
-    };
-
-    const openEditMaterialModal = (mat) => {
-      matEditModal.value = {
-        show: true,
-        isNew: false,
-        targetId: mat.id || (mat.code + '_' + mat.name),
-        form: {
-          id: mat.id || Date.now().toString(),
-          code: mat.code || '',
-          name: mat.name || '',
-          temp: mat.temp || '常溫',
-          hours: mat.hours !== undefined ? mat.hours : (mat.notes && mat.notes.includes('24') ? 24 : 0),
-          days: mat.days || 0,
-          notes: mat.notes || ''
-        }
-      };
-    };
-
-    const saveMaterialEdit = () => {
-      const form = { ...matEditModal.value.form };
-      form.code = form.code.trim().toUpperCase();
-      form.name = form.name.trim();
-      if (!form.notes) {
-        form.notes = form.hours > 0 ? `開封後 ${form.hours} 小時` : (form.days > 0 ? `開封 D+${form.days}` : '依標示');
-      }
-
-      let currentList = [...materials.value];
-      if (matEditModal.value.isNew) {
-        form.id = Date.now().toString();
-        currentList.push(form);
-      } else {
-        const idx = currentList.findIndex(m => (m.id && m.id === matEditModal.value.targetId) || (m.code === form.code && m.name === form.name));
-        if (idx !== -1) currentList[idx] = form;
-        else currentList.push(form);
-      }
-      syncMaterialsToCloud(currentList);
-      matEditModal.value.show = false;
-      alert(`✅ 物料【${form.name}】已儲存並同步全門市！`);
-    };
-
-    const deleteMaterial = (mat) => {
-      if (confirm(`確定要刪除物料【${mat.name} (${mat.code})】嗎？（全店手機將同步刪除）`)) {
-        const currentList = materials.value.filter(m => !(m.code === mat.code && m.name === mat.name));
-        syncMaterialsToCloud(currentList);
-      }
-    };
-
-    // 24小時制打點計算與 21:30 閉店防呆
     const calcModal = ref({
       show: false,
       item: {},
@@ -980,55 +802,62 @@ createApp({
     const calculateOpenTime = (mat) => {
       const now = new Date();
       let target = new Date(now.getTime());
+      
       let hours = parseInt(mat.hours) || 0;
       let days = parseInt(mat.days) || 0;
 
-      if (hours === 0 && days === 0) {
-        if (mat.name.includes('摩卡') || mat.code === 'MO' || (mat.notes && mat.notes.includes('24'))) hours = 24;
-        else if (mat.notes && mat.notes.includes('48')) hours = 48;
-        else if (mat.notes && mat.notes.includes('8')) hours = 8;
-        else hours = 24;
+      // 特殊補正：摩卡醬 (MO) 常溫 24HR
+      if ((mat.code === 'MO' || (mat.name && mat.name.includes('摩卡'))) && hours === 0 && days === 0) {
+        hours = 24;
       }
 
       let isAdjusted = false;
       let finalPullDate = '';
       let finalTiming = '';
-      let displayTime = '';
+      let resultText = '';
 
       if (hours > 0) {
         target.setTime(target.getTime() + hours * 3600 * 1000);
+        
         const h = target.getHours();
         const m = target.getMinutes();
-        const totalMinutes = h * 60 + m;
+        const minutesOfDay = h * 60 + m;
 
-        // 21:30 = 1290 分鐘；07:00 = 420 分鐘 (非營業時間自動提早至 21:30)
-        if (totalMinutes >= 1290 || totalMinutes < 420) {
+        // 營業時間 07:00 ~ 21:30 (21:30 = 1290分, 07:00 = 420分)
+        if (minutesOfDay >= 1290 || minutesOfDay < 420) {
           isAdjusted = true;
-          if (totalMinutes < 420) target.setDate(target.getDate() - 1);
+          if (minutesOfDay < 420) {
+            target.setDate(target.getDate() - 1);
+          }
           target.setHours(21, 30, 0, 0);
-          displayTime = '21:30';
           finalTiming = '21:30 閉店前報廢';
         } else {
-          displayTime = `${target.getHours().toString().padStart(2, '0')}:${target.getMinutes().toString().padStart(2, '0')}`;
-          finalTiming = `${displayTime} 報廢`;
+          finalTiming = `${target.getHours().toString().padStart(2,'0')}:${target.getMinutes().toString().padStart(2,'0')}`;
         }
+
+        finalPullDate = `${target.getFullYear()}-${(target.getMonth()+1).toString().padStart(2,'0')}-${target.getDate().toString().padStart(2,'0')}`;
+        resultText = `依標示計算 應於${target.getFullYear()}年${(target.getMonth()+1).toString().padStart(2,'0')}月${target.getDate().toString().padStart(2,'0')}日 ${target.getHours().toString().padStart(2,'0')}:${target.getMinutes().toString().padStart(2,'0')} EXP`;
+
       } else if (days > 0) {
         target.setDate(target.getDate() + days);
-        displayTime = '21:30';
+        target.setHours(21, 30, 0, 0);
+        finalPullDate = `${target.getFullYear()}-${(target.getMonth()+1).toString().padStart(2,'0')}-${target.getDate().toString().padStart(2,'0')}`;
         finalTiming = `21:30 閉店前 (D+${days})`;
+        resultText = `依標示計算 應於${target.getFullYear()}年${(target.getMonth()+1).toString().padStart(2,'0')}月${target.getDate().toString().padStart(2,'0')}日 21:30 EXP`;
+      } else {
+        finalPullDate = todayStr.value;
+        finalTiming = '依原廠標示';
+        resultText = `依標示計算 應依原廠包裝標示 EXP`;
       }
 
-      const yearStr = target.getFullYear();
-      const monthStr = (target.getMonth() + 1).toString().padStart(2, '0');
-      const dateStr = target.getDate().toString().padStart(2, '0');
-      finalPullDate = `${yearStr}-${monthStr}-${dateStr}`;
-
-      calcModal.value.targetTimeStr = `依標示計算 應於${yearStr}年${monthStr}月${dateStr}日 ${displayTime} EXP`;
-      calcModal.value.pullDate = finalPullDate;
-      calcModal.value.timing = finalTiming;
-      calcModal.value.isAdjustedForClose = isAdjusted;
-      calcModal.value.item = mat;
-      calcModal.value.show = true;
+      calcModal.value = {
+        show: true,
+        item: mat,
+        targetTimeStr: resultText,
+        pullDate: finalPullDate,
+        timing: finalTiming,
+        isAdjustedForClose: isAdjusted
+      };
     };
 
     const addMaterialToSchedule = () => {
@@ -1047,46 +876,68 @@ createApp({
       if (db) db.ref('sbux/inventory/' + newItem.id).set(newItem);
       selectedDate.value = modal.pullDate;
       modal.show = false;
-      alert(`✅ 已將【${modal.item.name}】同步排入 ${modal.pullDate} (${modal.timing}) 行事曆！`);
+      alert(`✅ 已將【${modal.item.name}】同步登記至 ${modal.pullDate} (${modal.timing}) 行事曆！`);
     };
 
-    // ==================== 進貨登記 (取消預設一週，支援動態標準) ====================
-    const intakeForm = ref({
-      itemName: '',
-      factoryExpiry: '',
-      advanceDays: 0,
-      matchedRule: false,
-      saveAsNewRule: false
-    });
-
-    const checkRuleMatch = () => {
-      const name = intakeForm.value.itemName.trim();
-      if (!name) {
-        intakeForm.value.matchedRule = false;
-        return;
-      }
-      const matched = rules.value.find(r => name.includes(r.keyword));
-      if (matched) {
-        intakeForm.value.advanceDays = parseInt(matched.advance_days) || 0;
-        intakeForm.value.matchedRule = true;
-      } else {
-        intakeForm.value.matchedRule = false;
+    // 物料手動增刪修
+    const matEditModal = ref({ show: false, isNew: true, form: {} });
+    const openAddMaterialModal = () => {
+      matEditModal.value = {
+        show: true,
+        isNew: true,
+        form: { code: '', name: '', temp: '常溫', hours: 0, days: 0, notes: '' }
+      };
+    };
+    const editMaterial = (mat) => {
+      matEditModal.value = {
+        show: true,
+        isNew: false,
+        form: { ...mat }
+      };
+    };
+    const saveMaterialForm = () => {
+      const f = matEditModal.value.form;
+      const id = f.id || Date.now().toString();
+      const updated = { ...f, id };
+      if (db) db.ref('sbux/materials/' + id).set(updated);
+      matEditModal.value.show = false;
+    };
+    const deleteMaterial = (mat) => {
+      if (confirm(`確定要刪除物料【${mat.name} (${mat.code})】？此動作全店同步。`)) {
+        if (db && mat.id) db.ref('sbux/materials/' + mat.id).remove();
       }
     };
 
+    // ==================== 進貨與下架登記 (取消預設一週) ====================
+    const intakeForm = ref({ itemName: '', factoryExpiry: '', advanceDays: null, saveAsRule: false });
     const submitIntake = () => {
       if (!intakeForm.value.itemName || !intakeForm.value.factoryExpiry) return;
-      const advanceDays = parseInt(intakeForm.value.advanceDays) || 0;
 
-      // 若勾選將此自訂天數存入雲端規則庫
-      if (!intakeForm.value.matchedRule && intakeForm.value.saveAsNewRule && advanceDays > 0) {
+      let advanceDays = intakeForm.value.advanceDays;
+      let timing = "21:30 閉店前";
+
+      // 若未手動填寫提前天數，則向下架標準庫比對
+      if (advanceDays === null || advanceDays === undefined || advanceDays === '') {
+        const matched = rules.value.find(r => intakeForm.value.itemName.includes(r.keyword));
+        if (matched) {
+          advanceDays = parseInt(matched.advance_days) || 0;
+          timing = matched.timing || "21:30 閉店前";
+        } else {
+          advanceDays = 0; // 取消預設一週，無規則即為 0 天
+        }
+      } else {
+        advanceDays = parseInt(advanceDays) || 0;
+      }
+
+      // 若勾選儲存為規則
+      if (intakeForm.value.saveAsRule) {
         const newRule = {
+          id: Date.now(),
           keyword: intakeForm.value.itemName.split(' ')[0],
           advance_days: advanceDays,
-          timing: "21:30 閉店前"
+          timing: timing
         };
-        const updatedRules = [...rules.value, newRule];
-        syncRulesToCloud(updatedRules);
+        if (db) db.ref('sbux/rules/' + newRule.id).set(newRule);
       }
 
       const d = new Date(intakeForm.value.factoryExpiry);
@@ -1098,32 +949,29 @@ createApp({
         itemName: intakeForm.value.itemName,
         factoryExpiry: intakeForm.value.factoryExpiry,
         pullDate,
-        timing: "21:30 閉店前",
-        advanceDays: advanceDays,
+        timing,
         isMaterial: false
       };
 
       if (db) db.ref('sbux/inventory/' + newItem.id).set(newItem);
+
       selectedDate.value = pullDate;
-      const itemName = intakeForm.value.itemName;
-      intakeForm.value = { itemName: '', factoryExpiry: '', advanceDays: 0, matchedRule: false, saveAsNewRule: false };
-      alert(`✅ 已登記進貨！依標準提早 ${advanceDays} 天，將於 ${pullDate} 21:30 閉店前撤架！`);
+      intakeForm.value = { itemName: '', factoryExpiry: '', advanceDays: null, saveAsRule: false };
+      alert(`✅ 已登記進貨！依標準提早 ${advanceDays} 天，將於 ${pullDate} (${timing}) 撤架。全店手機已同步！`);
     };
 
     const deleteIntake = (id) => {
-      if (confirm('確定移除此筆下架排程紀錄？')) {
+      if (confirm('確定移除此筆下架排程紀錄？（全店同步刪除）')) {
         if (db) db.ref('sbux/inventory/' + id).remove();
       }
     };
 
-    // 月曆檢視
+    // 月曆日曆邏輯
     const currentCalDate = ref(new Date());
     const calYear = computed(() => currentCalDate.value.getFullYear());
     const calMonth = computed(() => currentCalDate.value.getMonth());
-
     const changeMonth = (d) => currentCalDate.value = new Date(calYear.value, calMonth.value + d, 1);
     const resetToCurrentMonth = () => currentCalDate.value = new Date();
-
     const todayStr = computed(() => new Date().toISOString().split('T')[0]);
     const selectedDate = ref(todayStr.value);
 
@@ -1153,217 +1001,160 @@ createApp({
     const currentMonthItems = computed(() => {
       const mStr = `${calYear.value}-${(calMonth.value + 1).toString().padStart(2, '0')}`;
       return inventory.value
-        .filter(it => it.pullDate.startsWith(mStr))
+        .filter(it => it.pullDate && it.pullDate.startsWith(mStr))
         .sort((a,b) => new Date(a.pullDate) - new Date(b.pullDate));
     });
 
-    // ==================== 員工職位管理與畫假排班 ====================
-    // 計算「兩週後的週一」（嚴格防呆）
-    const getMinAllowedLeaveDate = () => {
+    // ==================== 門市夥伴與兩週後畫假排班 ====================
+    // 計算兩週後的週一（週首日）
+    const allowedVacationStartStr = computed(() => {
       const now = new Date();
-      const dayOfWeek = now.getDay(); // 0(日), 1(一)...
-      // 計算本週週一
-      const distanceToMonday = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek;
-      const currentMonday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + distanceToMonday);
-      // 兩週後的週一 = 本週週一 + 14 天
-      const twoWeeksLaterMonday = new Date(currentMonday.getFullYear(), currentMonday.getMonth(), currentMonday.getDate() + 14);
-      return twoWeeksLaterMonday;
-    };
-
-    const minAllowedLeaveDate = getMinAllowedLeaveDate();
-    const minAllowedLeaveDateStr = computed(() => {
-      const y = minAllowedLeaveDate.getFullYear();
-      const m = (minAllowedLeaveDate.getMonth() + 1).toString().padStart(2, '0');
-      const d = minAllowedLeaveDate.getDate().toString().padStart(2, '0');
-      return `${y}-${m}-${d}`;
+      const day = now.getDay();
+      const diffToMonday = (day === 0 ? -6 : 1) - day;
+      const thisMonday = new Date(now.setDate(now.getDate() + diffToMonday));
+      // 兩週後的週一 = 當週週一 + 14 天
+      const targetMonday = new Date(thisMonday.setDate(thisMonday.getDate() + 14));
+      return targetMonday.toISOString().split('T')[0];
     });
 
-    // 畫假登記表單
-    const leaveForm = ref({
-      staffId: '',
-      date: minAllowedLeaveDateStr.value,
-      leaveType: '例假',
-      note: ''
-    });
+    // 獨立的起始日與結束日選擇（預設兩週後的週一至週日）
+    const scheduleStartDate = ref('');
+    const scheduleEndDate = ref('');
 
-    const submitStaffLeave = () => {
-      if (!leaveForm.value.staffId || !leaveForm.value.date) {
-        alert('請完整選擇夥伴與休假日期！');
-        return;
-      }
-      if (leaveForm.value.date < minAllowedLeaveDateStr.value) {
-        alert(`❌ 違規畫假！依門市規範僅能畫兩週後的假（最早可畫假日期為 ${minAllowedLeaveDateStr.value}）。`);
-        return;
-      }
-
-      const selectedStaff = staffList.value.find(s => s.id === leaveForm.value.staffId);
-      const leaveId = `${leaveForm.value.staffId}_${leaveForm.value.date}`;
-      const newLeave = {
-        id: leaveId,
-        staffId: leaveForm.value.staffId,
-        staffName: selectedStaff ? selectedStaff.name : '',
-        date: leaveForm.value.date,
-        leaveType: leaveForm.value.leaveType,
-        note: leaveForm.value.note || ''
-      };
-
-      if (db) db.ref('sbux/leaves/' + leaveId).set(newLeave);
-      alert(`✅ 已為【${selectedStaff.name}】登記 ${leaveForm.value.date} (${leaveForm.value.leaveType})，排班表將自動標記 ✕！`);
+    // 快速填入 7 天捷徑
+    const setNextWeekRange = () => {
+      const start = allowedVacationStartStr.value;
+      scheduleStartDate.value = start;
+      const d = new Date(start);
+      d.setDate(d.getDate() + 6);
+      scheduleEndDate.value = d.toISOString().split('T')[0];
     };
+    setNextWeekRange();
 
-    // 夥伴管理 Modal
-    const staffModal = ref({
-      show: false,
-      isNew: true,
-      targetId: null,
-      form: { empId: '', name: '', nickname: '', role: '兼職夥伴' }
-    });
-
-    const openAddStaffModal = () => {
-      staffModal.value = {
-        show: true,
-        isNew: true,
-        targetId: null,
-        form: { empId: '', name: '', nickname: '', role: '兼職夥伴' }
-      };
-    };
-
-    const openEditStaffModal = (s) => {
-      staffModal.value = {
-        show: true,
-        isNew: false,
-        targetId: s.id,
-        form: { empId: s.empId, name: s.name, nickname: s.nickname, role: s.role }
-      };
-    };
-
-    const saveStaffData = () => {
-      let list = [...staffList.value];
-      if (staffModal.value.isNew) {
-        const newStaff = {
-          id: Date.now().toString(),
-          ...staffModal.value.form
-        };
-        list.push(newStaff);
-      } else {
-        const idx = list.findIndex(s => s.id === staffModal.value.targetId);
-        if (idx !== -1) list[idx] = { id: staffModal.value.targetId, ...staffModal.value.form };
-      }
-      syncStaffToCloud(list);
-      staffModal.value.show = false;
-      alert('✅ 夥伴名冊已更新並全店同步！');
-    };
-
-    const deleteStaff = (id) => {
-      if (confirm('確定移除此夥伴？')) {
-        const updated = staffList.value.filter(s => s.id !== id);
-        syncStaffToCloud(updated);
-      }
-    };
-
-    // ==================== 排班表匯出與 A4 擬真列印 ====================
-    // 預設為兩週後的週一
-    const scheduleTargetMonday = ref(minAllowedLeaveDateStr.value);
-
-    const targetWeekDates = computed(() => {
-      const monday = new Date(scheduleTargetMonday.value);
-      const names = ['一', '二', '三', '四', '五', '六', '日'];
+    // 動態計算所選區間的所有天數（支援 7 天、14 天或跨週）
+    const targetRangeDates = computed(() => {
+      if (!scheduleStartDate.value || !scheduleEndDate.value) return [];
       const dates = [];
-      for (let i = 0; i < 7; i++) {
-        const cur = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i);
-        const m = (cur.getMonth() + 1).toString().padStart(2, '0');
-        const d = cur.getDate().toString().padStart(2, '0');
+      const current = new Date(scheduleStartDate.value);
+      const end = new Date(scheduleEndDate.value);
+      const weekNames = ['日', '一', '二', '三', '四', '五', '六'];
+
+      while (current <= end) {
+        const dateStr = current.toISOString().split('T')[0];
+        const month = (current.getMonth() + 1).toString().padStart(2, '0');
+        const day = current.getDate().toString().padStart(2, '0');
         dates.push({
-          dateStr: `${cur.getFullYear()}-${m}-${d}`,
-          dateShort: `${m}/${d}`,
-          dayName: names[i]
+          dateStr: dateStr,
+          displayDate: `${month}/${day}`,
+          weekday: weekNames[current.getDay()]
         });
+        current.setDate(current.getDate() + 1);
       }
       return dates;
     });
 
-    const targetWeekDateRangeStr = computed(() => {
-      if (targetWeekDates.value.length === 0) return '';
-      const first = targetWeekDates.value[0].dateStr.replace(/-/g, '/');
-      const last = targetWeekDates.value[6].dateStr.replace(/-/g, '/');
-      return `${first}~${last}`;
-    });
+    // 畫假表單
+    const vacationForm = ref({ staffId: '', date: '', type: '✕', notes: '' });
+    const submitVacation = () => {
+      if (!vacationForm.value.staffId || !vacationForm.value.date) return;
+      if (vacationForm.value.date < allowedVacationStartStr.value) {
+        alert(`❌ 違反應提早兩週畫假之門市規範！目前最早僅開放登記【${allowedVacationStartStr.value}】之後的假。`);
+        return;
+      }
 
-    const printCreatedDateStr = computed(() => {
-      const now = new Date();
-      const days = ['日', '一', '二', '三', '四', '五', '六'];
-      return `${now.getFullYear()}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getDate().toString().padStart(2,'0')} (${days[now.getDay()]}) ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-    });
+      const id = Date.now().toString();
+      const newVac = { id, ...vacationForm.value };
+      if (db) db.ref('sbux/vacations/' + id).set(newVac);
 
-    const hasStaffLeave = (staffId, dateStr) => {
-      return leaveRecords.value.some(l => l.staffId === staffId && l.date === dateStr);
+      vacationForm.value = { staffId: '', date: '', type: '✕', notes: '' };
+      alert('✅ 畫假成功！排班表已同步標註【✕】！');
     };
 
-    const getStaffLeaveType = (staffId, dateStr) => {
-      const found = leaveRecords.value.find(l => l.staffId === staffId && l.date === dateStr);
-      return found ? found.leaveType : '';
+    const deleteVacation = (id) => {
+      if (confirm('確定刪除此筆畫假紀錄？')) {
+        if (db) db.ref('sbux/vacations/' + id).remove();
+      }
     };
 
-    const preparePrintSchedule = () => {
+    const sortedVacationList = computed(() => {
+      return [...vacationList.value].sort((a,b) => new Date(a.date) - new Date(b.date));
+    });
+
+    const getStaffName = (id) => {
+      const s = staffList.value.find(x => x.id === id);
+      return s ? `${s.name} (${s.nickname})` : '未知夥伴';
+    };
+
+    const getVacationMark = (staffId, dateStr) => {
+      const v = vacationList.value.find(item => item.staffId === staffId && item.date === dateStr);
+      return v ? (v.type === '✕' ? '✕' : `${v.type}`) : null;
+    };
+
+    // 夥伴管理 Modal
+    const staffModal = ref({ show: false, isNew: true, form: {} });
+    const openAddStaffModal = () => {
+      staffModal.value = {
+        show: true,
+        isNew: true,
+        form: { empId: '', name: '', nickname: '', role: '兼職夥伴' }
+      };
+    };
+    const editStaff = (s) => {
+      staffModal.value = {
+        show: true,
+        isNew: false,
+        form: { ...s }
+      };
+    };
+    const saveStaffForm = () => {
+      const f = staffModal.value.form;
+      const id = f.id || Date.now().toString();
+      const updated = { ...f, id };
+      if (db) db.ref('sbux/staff/' + id).set(updated);
+      staffModal.value.show = false;
+    };
+    const deleteStaff = (id) => {
+      if (confirm('確定要移除此夥伴資料？')) {
+        if (db) db.ref('sbux/staff/' + id).remove();
+      }
+    };
+
+    // 排班表列印與 Excel 匯出
+    const printTodayStr = computed(() => {
+      const d = new Date();
+      return `${d.getFullYear()}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`;
+    });
+
+    const triggerPrintSchedule = () => {
       window.print();
     };
 
-    const exportScheduleToExcel = () => {
-      const wb = XLSX.utils.book_new();
-      const headers = ["員工編號", "員工姓名", "職位"];
-      targetWeekDates.value.forEach(d => headers.push(`${d.dateShort} (${d.dayName})`));
-      headers.push("工時小計", "FT本週加班轉代休", "請假確認");
+    const exportScheduleExcel = () => {
+      if (staffList.value.length === 0) {
+        alert('尚未建立門市夥伴名單！');
+        return;
+      }
+      const headers = ["員工編號", "員工姓名"];
+      targetRangeDates.value.forEach(d => headers.push(`${d.displayDate} (${d.weekday})`));
+      headers.push("工時小計", "加班轉代休確認", "提出請假且確認簽名");
 
-      const rows = staffList.value.map(s => {
-        const row = [s.empId, `${s.name} (${s.nickname})`, s.role];
-        targetWeekDates.value.forEach(d => {
-          const isLeave = hasStaffLeave(s.id, d.dateStr);
-          row.push(isLeave ? `✕ (${getStaffLeaveType(s.id, d.dateStr)})` : "");
+      const rows = staffList.value.map(staff => {
+        const row = [staff.empId, `${staff.name} (${staff.nickname})`];
+        targetRangeDates.value.forEach(d => {
+          const mark = getVacationMark(staff.id, d.dateStr);
+          row.push(mark ? `✕ (${mark})` : "");
         });
         row.push("", "", "");
         return row;
       });
 
-      const ws = XLSX.utils.aoa_to_sheet([
-        [`門市人員週排班表 - 永和永安 (011218)`],
-        [`營業日期：${targetWeekDateRangeStr.value} ｜ 製作日期：${printCreatedDateStr.value}`],
-        headers,
-        ...rows
-      ]);
-      XLSX.utils.book_append_sheet(wb, ws, "排班表");
-      XLSX.writeFile(wb, `永和永安_週排班表_${scheduleTargetMonday.value}.xlsx`);
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+      XLSX.utils.book_append_sheet(wb, ws, "門市人員週排班表");
+      XLSX.writeFile(wb, `永和永安_週排班表_${scheduleStartDate.value}_至_${scheduleEndDate.value}.xlsx`);
     };
 
-    // ==================== 下架規則手動新增 ====================
-    const ruleModal = ref({
-      show: false,
-      form: { keyword: '', advance_days: 7, timing: '21:30 閉店前' }
-    });
-
-    const openAddRuleModal = () => {
-      ruleModal.value = {
-        show: true,
-        form: { keyword: '', advance_days: 7, timing: '21:30 閉店前' }
-      };
-    };
-
-    const saveNewRule = () => {
-      if (!ruleModal.value.form.keyword) return;
-      const updated = [...rules.value, { ...ruleModal.value.form }];
-      syncRulesToCloud(updated);
-      ruleModal.value.show = false;
-      alert('✅ 下架標準已成功儲存至雲端庫！');
-    };
-
-    const deleteRule = (idx) => {
-      if (confirm('確定移除此條下架標準？')) {
-        const updated = [...rules.value];
-        updated.splice(idx, 1);
-        syncRulesToCloud(updated);
-      }
-    };
-
-    // ==================== 檔期辨識匯入中心 ====================
+    // ==================== 手冊檔案辨識 (OCR / PDF / Excel) ====================
     const isProcessing = ref(false);
     const processProgress = ref(0);
     const parsedPreview = ref({ show: false, items: [] });
@@ -1381,30 +1172,25 @@ createApp({
           const reader = new FileReader();
           reader.onload = (evt) => {
             const wb = XLSX.read(evt.target.result, { type: 'binary' });
-            let importedMaterials = [];
+            let found = [];
             if (wb.SheetNames.includes("物料效期")) {
               const data = XLSX.utils.sheet_to_json(wb.Sheets["物料效期"]);
-              importedMaterials = data.map((d, i) => ({
-                id: Date.now() + '_' + i,
-                code: d.code || '',
-                name: d.name || '',
-                en_name: d.en_name || '',
-                temp: d.temp || '常溫',
-                hours: parseInt(d.hours) || 0,
-                days: parseInt(d.days) || 0,
-                notes: d.notes || ''
-              }));
+              data.forEach(it => {
+                const id = it.id || Date.now().toString() + Math.random().toString(36).substr(2, 4);
+                if (db) db.ref('sbux/materials/' + id).set({ ...it, id });
+              });
+              found.push(`物料效期 (${data.length} 項)`);
             }
             if (wb.SheetNames.includes("下架標準")) {
               const data = XLSX.utils.sheet_to_json(wb.Sheets["下架標準"]);
-              syncRulesToCloud(data);
+              data.forEach(it => {
+                const id = it.id || Date.now().toString() + Math.random().toString(36).substr(2, 4);
+                if (db) db.ref('sbux/rules/' + id).set({ ...it, id });
+              });
+              found.push(`下架標準 (${data.length} 條)`);
             }
             isProcessing.value = false;
-            if (importedMaterials.length > 0) {
-              parsedPreview.value = { show: true, items: importedMaterials };
-            } else {
-              alert('Excel 匯入完成！');
-            }
+            alert('🎉 Excel 匯入完成並已同步至雲端：\n' + found.join('\n'));
           };
           reader.readAsBinaryString(file);
 
@@ -1447,7 +1233,7 @@ createApp({
       const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
       const extracted = [];
 
-      lines.forEach((rawLine, i) => {
+      lines.forEach(rawLine => {
         let line = rawLine;
         const dPlusMatch = line.match(/D\s*\+\s*(\d+)/i);
         const hourMatch = line.match(/(\d+)\s*(小時|hr|h)/i);
@@ -1458,7 +1244,7 @@ createApp({
 
         if (dPlusMatch) {
           days = parseInt(dPlusMatch[1]);
-          notes = `開封 D+${days}`;
+          notes = `開封 D+${days} (天)`;
         } else if (hourMatch) {
           hours = parseInt(hourMatch[1]);
           notes = `開封後 ${hours} 小時`;
@@ -1466,7 +1252,9 @@ createApp({
 
         let code = '';
         const codeMatch = line.match(/\b([A-Z]{2,4})\b/);
-        if (codeMatch && !['D', 'COD', 'NEW'].includes(codeMatch[1])) code = codeMatch[1];
+        if (codeMatch && !['D', 'COD', 'NEW'].includes(codeMatch[1])) {
+          code = codeMatch[1];
+        }
 
         let name = line
           .replace(/D\s*\+\s*\d+/ig, '')
@@ -1477,12 +1265,14 @@ createApp({
           .trim();
 
         if (name.length >= 2 && (code || hours > 0 || days > 0)) {
-          let temp = line.includes('冷藏') || ['濃縮咖啡鮮奶油', '鮮奶油', '牛奶', '冷萃'].some(k => name.includes(k)) ? '冷藏' : '常溫';
+          let temp = '常溫';
+          if (line.includes('冷藏') || ['濃縮咖啡鮮奶油', '鮮奶油', '牛奶', '冷萃'].some(k => name.includes(k))) {
+            temp = '冷藏';
+          }
+
           extracted.push({
-            id: Date.now() + '_' + i,
             code: code || name.slice(0, 3).toUpperCase(),
             name: name,
-            en_name: '',
             temp: temp,
             hours: hours,
             days: days,
@@ -1494,19 +1284,16 @@ createApp({
       if (extracted.length > 0) {
         parsedPreview.value = { show: true, items: extracted };
       } else {
-        alert('⚠️ 未偵測到明確物料，請確認照片平整清晰，或直接點選「+ 手動新增」建立！');
+        alert('⚠️ 未辨識到明顯物料行。建議確認照片清晰度與光線，或改用 Excel 匯入！');
       }
     };
 
     const applyParsedData = () => {
       if (parsedPreview.value.items.length > 0) {
-        let merged = [...materials.value];
-        parsedPreview.value.items.forEach(newItem => {
-          const idx = merged.findIndex(m => m.code === newItem.code && m.name === newItem.name);
-          if (idx !== -1) merged[idx] = newItem;
-          else merged.push(newItem);
+        parsedPreview.value.items.forEach(it => {
+          const id = Date.now().toString() + Math.random().toString(36).substr(2, 4);
+          if (db) db.ref('sbux/materials/' + id).set({ ...it, id });
         });
-        syncMaterialsToCloud(merged);
         parsedPreview.value.show = false;
         alert(`🎉 成功同步！已將 ${parsedPreview.value.items.length} 項物料寫入全門市雲端庫！`);
       }
@@ -1514,36 +1301,35 @@ createApp({
 
     const downloadBlankTemplate = () => {
       const wb = XLSX.utils.book_new();
-      const wsMat = XLSX.utils.json_to_sheet([], { header: ["code", "name", "en_name", "temp", "hours", "days", "notes"] });
-      const wsRules = XLSX.utils.json_to_sheet([], { header: ["keyword", "advance_days", "timing"] });
+      const wsMat = XLSX.utils.json_to_sheet([], {
+        header: ["code", "name", "en_name", "temp", "hours", "days", "notes"]
+      });
+      const wsRules = XLSX.utils.json_to_sheet([], {
+        header: ["keyword", "advance_days", "timing"]
+      });
       XLSX.utils.book_append_sheet(wb, wsMat, "物料效期");
       XLSX.utils.book_append_sheet(wb, wsRules, "下架標準");
       XLSX.writeFile(wb, "永和永安_檔期標準空白範本.xlsx");
     };
 
     const clearAllData = () => {
-      if (confirm('確定清空全門市的雲端資料庫（含物料、下架、排班名單）？此動作無法復原。')) {
-        if (db) {
-          db.ref('sbux').remove().then(() => {
-            alert('全門市資料庫已清空。');
-          });
-        }
+      if (confirm('確定清空全門市雲端資料庫（物料、規則、排班全清空）？此動作無法復原。')) {
+        if (db) db.ref('sbux').remove().then(() => alert('全門市資料庫已重設為純空白。'));
       }
     };
 
     return {
-      currentTab, isCloudConnected, materials, matSearchQuery, filteredMaterials, getMaterialSpecText,
+      currentTab, isCloudConnected, materials, matSearchQuery, filteredMaterials,
       calcModal, calculateOpenTime, addMaterialToSchedule,
-      matEditModal, openAddMaterialModal, openEditMaterialModal, saveMaterialEdit, deleteMaterial,
-      intakeForm, checkRuleMatch, submitIntake, deleteIntake,
+      matEditModal, openAddMaterialModal, editMaterial, saveMaterialForm, deleteMaterial,
+      intakeForm, submitIntake, deleteIntake,
       calYear, calMonth, changeMonth, resetToCurrentMonth, calendarDays, todayStr, selectedDate, selectedDateItems, currentMonthItems,
-      staffList, leaveRecords, staffModal, openAddStaffModal, openEditStaffModal, saveStaffData, deleteStaff,
-      leaveForm, submitStaffLeave, minAllowedLeaveDateStr,
-      scheduleTargetMonday, targetWeekDates, targetWeekDateRangeStr, printCreatedDateStr,
-      hasStaffLeave, getStaffLeaveType, preparePrintSchedule, exportScheduleToExcel,
-      rules, ruleModal, openAddRuleModal, saveNewRule, deleteRule,
+      staffList, vacationList, sortedVacationList, vacationForm, submitVacation, deleteVacation,
+      staffModal, openAddStaffModal, editStaff, saveStaffForm, deleteStaff,
+      allowedVacationStartStr, scheduleStartDate, scheduleEndDate, targetRangeDates, setNextWeekRange,
+      printTodayStr, triggerPrintSchedule, exportScheduleExcel, getStaffName, getVacationMark,
       handleFileSelect, isProcessing, processProgress, parsedPreview, applyParsedData,
-      downloadBlankTemplate, clearAllData
+      downloadBlankTemplate, clearAllData, rules, inventory
     };
   }
 }).mount('#app');
