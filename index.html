@@ -847,17 +847,171 @@
               </button>
             </div>
 
-            <!-- CA 100~300 課程 -->
+            <!-- CA 100~300 完整黑圍裙大師精編講義 (內建離線免外連) -->
             <div v-if="otherSubTab === 'academy'" class="space-y-3">
-              <div class="bg-gradient-to-r from-zinc-950 to-neutral-900 text-amber-100 p-4 rounded-2xl shadow space-y-1.5 border border-amber-500/40">
-                <div class="flex items-center gap-1.5">
-                  <span class="text-xl">🎓</span>
-                  <h3 class="text-xs font-black tracking-wider text-amber-300">STARBUCKS GLOBAL ACADEMY</h3>
+              
+              <!-- 頂部講義抬頭 -->
+              <div class="bg-gradient-to-r from-zinc-950 via-neutral-900 to-zinc-950 text-amber-100 p-4 rounded-2xl shadow-sm space-y-1.5 border border-amber-500/40">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xl">🎓</span>
+                    <h3 class="text-xs font-black tracking-wider text-amber-300">星巴克黑圍裙大師認證專用講義</h3>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-bold border border-amber-400/30">核心考點收錄</span>
                 </div>
                 <p class="text-[11px] text-zinc-300 leading-relaxed">
-                  點擊進入官方線上學院，掌握星巴克黑圍裙大師的核心評鑑技能！
+                  免連外網。彙整 Coffee Academy 100~300、沖煮原理、產區風味與感官評鑑之標準指南。
                 </p>
               </div>
+
+              <!-- ==================== CA 100：基礎咖啡學 ==================== -->
+              <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-xs font-black border border-amber-300 dark:border-amber-800">CA 100</span>
+                    <h4 class="font-black text-slate-900 dark:text-white text-sm">咖啡基礎學與感官入門</h4>
+                  </div>
+                  <span class="text-[10px] font-bold text-slate-400">Coffee Fundamentals</span>
+                </div>
+
+                <!-- 品嚐四步驟 -->
+                <div class="space-y-1.5">
+                  <div class="text-xs font-bold text-emerald-900 dark:text-emerald-400 flex items-center gap-1">
+                    <span>👃</span> 核心一：品嚐咖啡四步驟 (Four Steps of Tasting)
+                  </div>
+                  <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+                    <div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700">
+                      <b class="text-slate-800 dark:text-slate-200">1. 聞香 (Smell)：</b>
+                      <p class="text-slate-500 mt-0.5">杯口微罩嗅吸。人體 80% 的風味感受來自嗅覺，先捕捉前調香氣。</p>
+                    </div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700">
+                      <b class="text-slate-800 dark:text-slate-200">2. 啜飲 (Slurp)：</b>
+                      <p class="text-slate-500 mt-0.5">大聲吸入，讓咖啡在口腔呈霧狀均勻散佈於舌面所有味蕾區。</p>
+                    </div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700">
+                      <b class="text-slate-800 dark:text-slate-200">3. 定位 (Locate)：</b>
+                      <p class="text-slate-500 mt-0.5">感知舌頭兩側（酸度）與舌根、上顎（重量醇度）的物理落點。</p>
+                    </div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700">
+                      <b class="text-slate-800 dark:text-slate-200">4. 描述 (Describe)：</b>
+                      <p class="text-slate-500 mt-0.5">以香氣、酸度、醇度、風味字彙具體描繪整體咖啡體驗。</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 四大特徵與沖煮四大原則 -->
+                <div class="space-y-2 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700 leading-relaxed">
+                  <div>
+                    <b class="text-slate-800 dark:text-slate-200">🎯 咖啡四大特徵 (Characteristics)：</b>
+                    <ul class="list-disc pl-4 mt-0.5 text-slate-600 dark:text-slate-300 space-y-0.5">
+                      <li><b>香氣 (Aroma)：</b>乾香與濕香帶出的氣味感受（花香、可可、焦糖、煙燻）。</li>
+                      <li><b>酸度 (Acidity)：</b>非醋酸，為類似水果的明亮清爽感，集中於舌頭兩側。</li>
+                      <li><b>醇度 (Body)：</b>咖啡在口中的重量感與黏稠質地（似脫脂奶粉 vs 全脂牛奶）。</li>
+                      <li><b>風味 (Flavor)：</b>香氣、酸度與醇度在口鼻間融合產生的整體味覺印象。</li>
+                    </ul>
+                  </div>
+                  <div class="border-t border-slate-200 dark:border-slate-700 pt-2">
+                    <b class="text-slate-800 dark:text-slate-200">⚖️ 沖煮四大基本原則 (Fundamentals)：</b>
+                    <ul class="list-disc pl-4 mt-0.5 text-slate-600 dark:text-slate-300 space-y-0.5">
+                      <li><b>比例 (Proportion)：</b>標準手沖粉水比為 1:16（10g 咖啡粉配 160ml 水）。</li>
+                      <li><b>研磨 (Grind)：</b>依器具匹配顆粒粗細（濾壓壺粗研磨、手沖中度、義式極細）。</li>
+                      <li><b>水質 (Water)：</b>占一杯咖啡 98% 以上，需使用過濾軟水，水溫 90°C~96°C。</li>
+                      <li><b>新鮮度 (Freshness)：</b>防潮避光常溫保存，開封後於保鮮效期內飲用完畢。</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ==================== CA 200：產區風土與永續 ==================== -->
+              <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 text-xs font-black border border-emerald-300 dark:border-emerald-800">CA 200</span>
+                    <h4 class="font-black text-slate-900 dark:text-white text-sm">產區風土、處理法與永續採購</h4>
+                  </div>
+                  <span class="text-[10px] font-bold text-slate-400">Origins & Processing</span>
+                </div>
+
+                <!-- 三大產區特色 -->
+                <div class="space-y-1.5">
+                  <div class="text-xs font-bold text-emerald-900 dark:text-emerald-400 flex items-center gap-1">
+                    <span>🌎</span> 三大核心咖啡產區風味密碼
+                  </div>
+                  <div class="grid grid-cols-3 gap-1.5 text-[11px] text-center">
+                    <div class="p-2 bg-amber-50/70 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-900/50">
+                      <b class="text-amber-950 dark:text-amber-200">拉丁美洲</b>
+                      <div class="text-[10px] text-amber-700 dark:text-amber-400 mt-0.5">爽脆平衡</div>
+                      <p class="text-[10px] text-slate-600 dark:text-slate-300 mt-1 leading-tight">堅果、黑可可、蘋果酸，經典百搭。</p>
+                    </div>
+                    <div class="p-2 bg-rose-50/70 dark:bg-rose-950/30 rounded-xl border border-rose-200 dark:border-rose-900/50">
+                      <b class="text-rose-950 dark:text-rose-200">非洲產區</b>
+                      <div class="text-[10px] text-rose-700 dark:text-rose-400 mt-0.5">明亮多汁</div>
+                      <p class="text-[10px] text-slate-600 dark:text-slate-300 mt-1 leading-tight">柑橘、葡萄柚、黑醋栗與豐富花香。</p>
+                    </div>
+                    <div class="p-2 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                      <b class="text-emerald-950 dark:text-emerald-200">亞太產區</b>
+                      <div class="text-[10px] text-emerald-700 dark:text-emerald-400 mt-0.5">厚重深沉</div>
+                      <p class="text-[10px] text-slate-600 dark:text-slate-300 mt-1 leading-tight">草本、雪松木質、泥土芳香、極低酸度。</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 處理法與道德採購 -->
+                <div class="space-y-2 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700 leading-relaxed">
+                  <div>
+                    <b class="text-slate-800 dark:text-slate-200">🍒 三大主要生豆處理法：</b>
+                    <ul class="list-disc pl-4 mt-0.5 text-slate-600 dark:text-slate-300 space-y-0.5">
+                      <li><b>水洗法 (Washed)：</b>去果肉發酵洗淨後乾燥。風味最純淨、酸度明亮。</li>
+                      <li><b>半水洗/濕刨法 (Semi-Washed / Giling Basah)：</b>印尼蘇門答臘特色。豆體含水量高時去殼，造就醇厚草本質地。</li>
+                      <li><b>日曬法 (Natural)：</b>保留整顆果實曝曬乾燥。果膠完全滲入豆體，發酵水果甜感與莓果香極濃。</li>
+                    </ul>
+                  </div>
+                  <div class="border-t border-slate-200 dark:border-slate-700 pt-2">
+                    <b class="text-slate-800 dark:text-slate-200">🌱 C.A.F.E. Practices (道德採購規範)：</b>
+                    <p class="text-slate-600 dark:text-slate-300 mt-0.5">
+                      星巴克與保護國際基金會（CI）共同制定的四大核心支柱：<b>品質標準</b>、<b>經濟透明度</b>（確保款項落入農民手中）、<b>社會責任</b>（工作環境與教育福祉）、<b>環境領導力</b>（水源土壤永續保護）。
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ==================== CA 300：烘焙工藝與大師品評 ==================== -->
+              <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-zinc-950 text-amber-300 text-xs font-black border border-amber-400">CA 300</span>
+                    <h4 class="font-black text-slate-900 dark:text-white text-sm">烘焙熱力學、拼配藝術與黑圍裙使命</h4>
+                  </div>
+                  <span class="text-[10px] font-bold text-amber-500">Roast & Blend Master</span>
+                </div>
+
+                <!-- 烘焙熱力學 -->
+                <div class="space-y-2 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700 leading-relaxed">
+                  <div>
+                    <b class="text-slate-800 dark:text-slate-200">🔥 烘焙熱力學與梅納反應 (Roast Science)：</b>
+                    <ul class="list-disc pl-4 mt-0.5 text-slate-600 dark:text-slate-300 space-y-0.5">
+                      <li><b>脫水期：</b>生豆由草綠轉為黃褐，水分逐漸蒸發。</li>
+                      <li><b>第一爆 (First Crack)：</b>內部水氣汽化壓破細胞壁，豆體膨脹，酸質與花果香發展高峰（黃金烘焙 Veranda）。</li>
+                      <li><b>焦糖化與發展期：</b>醣類轉化，醇度快速提升，酸度逐漸轉為甜感（中度烘焙 Pike Place / Guatemala）。</li>
+                      <li><b>第二爆 (Second Crack)：</b>木質結構碳化，油脂浮出表面，產生烘烤可可與深沉煙燻風味（深度烘焙 Espresso / Verona）。</li>
+                    </ul>
+                  </div>
+                  <div class="border-t border-slate-200 dark:border-slate-700 pt-2">
+                    <b class="text-slate-800 dark:text-slate-200">🎨 經典拼配哲學 (The Art of Blending)：</b>
+                    <p class="text-slate-600 dark:text-slate-300 mt-0.5">
+                      <b>單一產區</b>凸顯獨特風土（如肯亞明亮果酸）；<b>綜合拼配</b>追求一年四季風味始終如一的平衡度。以佛羅娜（Caffè Verona）為例，結合拉丁美洲的可可平衡與印尼的厚重醇度，並拼配少許義式濃縮烘焙帶來深度甜感。
+                    </p>
+                  </div>
+                  <div class="border-t border-slate-200 dark:border-slate-700 pt-2">
+                    <b class="text-slate-800 dark:text-slate-200">🖤 黑圍裙咖啡大師的核心使命：</b>
+                    <p class="text-slate-600 dark:text-slate-300 mt-0.5">
+                      以熱情主導門市 Coffee Tasting，擔任夥伴與顧客之間的咖啡橋樑；具備敏銳的感官品評能力，並能根據顧客喜好推薦最契合的咖啡豆款與器具。
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
 
               <!-- CA 100 -->
               <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2.5">
@@ -1931,6 +2085,15 @@ const { createApp, ref, computed, onMounted } = Vue;
 createApp({
   setup() {
     const currentPartner = ref(null);
+    Vue.watch(currentPartner, (newVal) => {
+      if (newVal) {
+        Vue.nextTick(() => {
+          setTimeout(() => {
+            if (window.lucide) lucide.createIcons();
+          }, 50);
+        });
+      }
+    });
     const loginForm = ref({ empId: '', password: '' });
 
     const currentTab = ref('home');
@@ -2068,6 +2231,12 @@ createApp({
       const correctPassword = partner.password || partner.empId;
       if (inputPass === correctPassword) {
         currentPartner.value = partner;
+        // 登入成功後，等待 Vue 渲染畫面完畢立即生成圖示
+      Vue.nextTick(() => {
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+      });
         localStorage.setItem('sbux_logged_empid', partner.empId);
         loginForm.value = { empId: '', password: '' };
 
