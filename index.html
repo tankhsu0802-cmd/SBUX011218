@@ -28,7 +28,8 @@
       overflow-x: hidden;
     }
     .app-screen {
-      padding-bottom: 95px;
+      padding-top: 64px; /* 為固定頂部 Header 預留空間 */
+      padding-bottom: 95px; /* 為固定底部 Navigation 預留空間 */
       width: 100%;
       overflow-x: hidden;
     }
@@ -53,18 +54,26 @@
 
     /* iOS 極致毛玻璃效果 */
     .ios-glass-bar {
-      background: rgba(255, 255, 255, 0.45) !important;
+      background: rgba(255, 255, 255, 0.65) !important;
       backdrop-filter: blur(25px) saturate(190%) !important;
       -webkit-backdrop-filter: blur(25px) saturate(190%) !important;
       box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04) !important;
       border-top: 1px solid rgba(255, 255, 255, 0.6) !important;
     }
     .dark .ios-glass-bar {
-      background: rgba(15, 23, 42, 0.55) !important;
+      background: rgba(15, 23, 42, 0.75) !important;
       backdrop-filter: blur(25px) saturate(190%) !important;
       -webkit-backdrop-filter: blur(25px) saturate(190%) !important;
       box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3) !important;
       border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+
+    /* 固定頂部 Header 毛玻璃效果 */
+    .ios-header-glass {
+      background: rgba(6, 78, 59, 0.88) !important; /* 墨綠毛玻璃 */
+      backdrop-filter: blur(20px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
     }
 
     /* 黑金質感卡片 */
@@ -138,7 +147,6 @@
         padding: 0 !important; 
       }
       
-      /* 每頁獨立頁面容器：第 2 頁、第 3 頁開始強制換頁 */
       .print-page {
         width: 100% !important;
         height: 100vh !important;
@@ -165,7 +173,6 @@
       tbody { 
         display: table-row-group !important; 
       }
-      /* 10位夥伴的最佳垂直滿版高度為 86px，完全不溢出不切斷 */
       tr { 
         page-break-inside: avoid !important; 
         break-inside: avoid !important; 
@@ -176,7 +183,7 @@
       }
       th, td { 
         word-break: break-all !important; 
-        box-sizing: border-box !important;
+        box-sizing: border-box !important; 
       }
       @page { 
         size: portrait; 
@@ -226,16 +233,16 @@
   </div>
 
   <!-- ==================== 2. 登入後主容器 ==================== -->
-  <div v-else class="app-screen max-w-md mx-auto w-full min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col shadow-lg border-x border-slate-200 dark:border-slate-800">
+  <div v-else class="app-screen max-w-md mx-auto w-full min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col shadow-lg border-x border-slate-200 dark:border-slate-800 relative">
 
-    <!-- 頂部 Header (已加上 currentPartner 安全鏈保護) -->
-    <header class="bg-emerald-900 text-white sticky top-0 z-40 shadow-md">
-      <div class="px-4 py-3 flex items-center justify-between">
+    <!-- 頂部 Header：已全面改為 fixed 固定在頁面最上方 -->
+    <header class="fixed top-0 left-0 right-0 z-50 ios-header-glass text-white shadow-md">
+      <div class="max-w-md mx-auto px-4 py-2.5 flex items-center justify-between">
         <div class="flex items-center space-x-2">
           <span class="text-xl">☕</span>
           <div>
-            <h1 class="text-base font-bold tracking-wider leading-tight">永和永安 (011218)</h1>
-            <p class="text-[10px] text-emerald-300">
+            <h1 class="text-sm font-bold tracking-wider leading-tight">永和永安 (011218)</h1>
+            <p class="text-[10px] text-emerald-200">
               Hi, {{ currentPartner?.name || '夥伴' }} ({{ currentPartner?.role || '夥伴' }})
             </p>
           </div>
@@ -244,7 +251,7 @@
           <button @click="openSettingsModal" class="p-1 text-emerald-200 hover:text-white text-base active:scale-95 transition" title="個人設定">
             ⚙️
           </button>
-          <button @click="handleLogout" class="px-2.5 py-0.5 bg-emerald-950/80 hover:bg-red-900 border border-emerald-700 rounded-full text-[10px] text-emerald-200 transition">
+          <button @click="handleLogout" class="px-2 py-0.5 bg-emerald-950/80 hover:bg-red-900 border border-emerald-700 rounded-full text-[10px] text-emerald-200 transition">
             登出
           </button>
         </div>
@@ -399,11 +406,10 @@
               </button>
             </div>
 
-            <!-- 常用功能快速入口 (極簡線性風格 - 原生 SVG 免動態加載) -->
+            <!-- 常用功能快速入口 -->
             <div class="grid grid-cols-2 gap-3">
               <button @click="currentTab = 'materials'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
                 <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
-                  <!-- Clock SVG -->
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
@@ -417,7 +423,6 @@
 
               <button @click="currentTab = 'intake'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
                 <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
-                  <!-- Package SVG -->
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
@@ -433,7 +438,6 @@
 
               <button @click="currentTab = 'roster'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
                 <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
-                  <!-- Users SVG -->
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                     <circle cx="9" cy="7" r="4"></circle>
@@ -449,7 +453,6 @@
 
               <button @click="currentTab = 'about'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
                 <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
-                  <!-- Coffee SVG -->
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
                     <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
@@ -603,20 +606,21 @@
                   <span>📋</span> 門市下架標準庫 (共 {{ rules.length }} 條)
                 </h3>
                 <div class="flex items-center gap-1.5">
-            <button v-if="isManager" @click="openAddRuleModal" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded text-[10px] font-bold transition">
-              + 手動新增
-            </button>
-            <label v-if="isManager" class="px-2 py-0.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-[10px] font-bold transition cursor-pointer flex items-center gap-1 active:scale-95 shadow-sm">
-              <span>📄</span> AI 辨識 (照片/PDF)
-              <input type="file" accept="image/*,application/pdf" @change="handleAiRuleImageUpload" class="hidden" :disabled="isAiRecognizingRules">
-            </label>
-          </div>
+                  <button v-if="isManager" @click="openAddRuleModal" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded text-[10px] font-bold transition">
+                    + 手動新增
+                  </button>
+                  <label v-if="isManager" class="px-2 py-0.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded text-[10px] font-bold transition cursor-pointer flex items-center gap-1 active:scale-95 shadow-sm">
+                    <span>📄</span> AI 辨識 (照片/PDF)
+                    <input type="file" accept="image/*,application/pdf" @change="handleAiRuleImageUpload" class="hidden" :disabled="isAiRecognizingRules">
+                  </label>
+                </div>
               </div>
+              
               <!-- AI 辨識載入提示 -->
-        <div v-if="isAiRecognizingRules" class="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-pulse">
-          <span class="animate-spin text-sm">🔄</span>
-          <span class="font-bold">AI 正在深度掃描檔期文件中的品項與下架天數，請稍候...</span>
-        </div>
+              <div v-if="isAiRecognizingRules" class="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-pulse">
+                <span class="animate-spin text-sm">🔄</span>
+                <span class="font-bold">AI 正在深度掃描檔期文件中的品項與下架天數，請稍候...</span>
+              </div>
 
               <div class="divide-y divide-slate-100 dark:divide-slate-700 max-h-48 overflow-y-auto text-xs">
                 <div v-for="r in rules" :key="r.id" class="py-2 flex justify-between items-center">
@@ -876,10 +880,10 @@
 
           </section>
 
-         <!-- ==================== 頁籤 4：【其他】 ==================== -->
+          <!-- ==================== 頁籤 4：【其他】 ==================== -->
           <section v-if="currentTab === 'other'" class="space-y-4">
             
-            <!-- 子頁籤選單：改為可滑動按鈕列，避免 5 個按鈕排版崩潰 -->
+            <!-- 子頁籤選單 -->
             <div class="flex gap-1.5 overflow-x-auto pb-1 text-xs font-bold no-scrollbar">
               <button @click="otherSubTab = 'academy'" :class="otherSubTab === 'academy' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
                 🎓 黑圍裙課程
@@ -898,7 +902,7 @@
               </button>
             </div>
 
-            <!-- CA 100~300 完整黑圍裙大師精編講義 (保持原有內容) -->
+            <!-- CA 100~300 黑圍裙大師精編講義 -->
             <div v-if="otherSubTab === 'academy'" class="space-y-3">
               <div class="bg-gradient-to-r from-zinc-950 via-neutral-900 to-zinc-950 text-amber-100 p-4 rounded-2xl shadow-sm space-y-1.5 border border-amber-500/40">
                 <div class="flex items-center justify-between">
@@ -996,8 +1000,9 @@
                   </button>
                 </div>
               </div>
-            <!-- 歷屆拉花集錦資料夾展示 -->
-              <div v-if="latteArtArchives.length > 0" class="mt-6 space-y-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+
+              <!-- 歷屆拉花歷史集錦資料夾 -->
+              <div v-if="latteArtArchives.length > 0" class="mt-4 space-y-2 pt-2 border-t border-slate-200 dark:border-slate-700">
                 <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <span>📁</span> 歷屆拉花集錦相簿 ({{ latteArtArchives.length }} 個展期)
                 </h4>
@@ -1023,8 +1028,9 @@
                   </div>
                 </div>
               </div>
+            </div>
 
-            <!-- ==================== 永安小學堂 (獨立 subTab: quiz) ==================== -->
+            <!-- ==================== 永安小學堂 ==================== -->
             <div v-if="otherSubTab === 'quiz'" class="space-y-4">
               <div class="bg-gradient-to-r from-emerald-800 to-teal-900 rounded-2xl p-4 text-white shadow-sm space-y-3">
                 <div class="flex justify-between items-center">
@@ -1088,11 +1094,10 @@
               <!-- 知識列表 -->
               <div class="space-y-2">
                 <div v-for="item in coffeeKnowledgeList" :key="item.id" class="bg-white dark:bg-slate-800 rounded-2xl p-3 border border-slate-200 dark:border-slate-700 space-y-1">
-                 <div class="flex justify-between items-center">
+                  <div class="flex justify-between items-center">
                     <span class="text-xs font-bold text-slate-900 dark:text-white">{{ item.title }}</span>
                     <div class="flex items-center gap-2">
                       <span class="text-[10px] text-slate-400">{{ item.date }} · {{ item.author }}</span>
-                      <!-- 新增：管理職可點擊刪除 -->
                       <button v-if="isDutyOrAbove" @click="deleteKnowledge(item.id)" class="text-slate-300 hover:text-rose-500 text-xs px-1">✕</button>
                     </div>
                   </div>
@@ -1163,7 +1168,7 @@
               </div>
             </div>
 
-            <!-- 門市相簿庫 (支援自訂相簿建立與刪除) -->
+            <!-- 門市相簿庫 -->
             <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
               <div class="flex justify-between items-center">
                 <div>
@@ -1177,7 +1182,7 @@
                 </button>
               </div>
 
-              <!-- 相簿分類選單標籤 (可點選切換、管理員可點 ✕ 刪除相簿) -->
+              <!-- 相簿分類選單標籤 -->
               <div class="flex gap-1.5 overflow-x-auto pb-1 text-[11px] items-center">
                 <button 
                   @click="selectedAlbum = 'all'" 
@@ -1213,7 +1218,7 @@
                 </div>
               </label>
 
-              <!-- 照片展示網格 (支援點擊刪除單張照片) -->
+              <!-- 照片展示網格 -->
               <div v-if="filteredStorePhotos.length > 0" class="grid grid-cols-2 gap-2 pt-1">
                 <div v-for="p in filteredStorePhotos" :key="p.id" class="bg-slate-50 dark:bg-slate-700 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-600 relative group">
                   <img :src="p.url" class="w-full h-28 object-cover">
@@ -1272,7 +1277,7 @@
 
   </div>
 
-  <!-- ==================== 底部極簡線條毛玻璃導航選單 ==================== -->
+  <!-- ==================== 底部固定毛玻璃導航選單 ==================== -->
   <footer v-if="currentPartner" class="screen-element fixed bottom-0 left-0 right-0 z-[9999] ios-glass-bar border-t border-slate-200/60 dark:border-slate-800 shadow-sm transition-all">
     <div class="max-w-md mx-auto grid grid-cols-6 py-2 px-1 text-center">
       <button @click="currentTab = 'home'" :class="currentTab === 'home' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
@@ -1307,7 +1312,7 @@
     </div>
   </footer>
 
-  <!-- ==================== 模態視窗群 (所有開關狀態獨立防呆) ==================== -->
+  <!-- ==================== 模態視窗群 (Modals) ==================== -->
 
   <!-- 個人設定 Modal -->
   <transition name="modal">
@@ -1677,13 +1682,11 @@
   <!-- ==================== A4 直式滿版列印表格 (每 10 人獨立分頁表格) ==================== -->
   <div class="print-only-container bg-white text-black font-sans text-xs">
     
-    <!-- 依據每 10 人一組循環渲染獨立的頁面與表格 -->
     <div 
       v-for="(pageStaffList, pageIdx) in chunkedStaffList" 
       :key="pageIdx" 
       class="print-page p-1">
       
-      <!-- 每一頁都具備獨立完整的抬頭資訊 -->
       <div class="border-b-2 border-black pb-2 mb-2">
         <div class="flex justify-between items-center mb-1">
           <div class="text-[11px] font-bold">
@@ -1700,7 +1703,6 @@
         </div>
       </div>
 
-      <!-- 每一頁獨立的表格本體 -->
       <table class="w-full border-collapse border-2 border-black text-center text-xs" style="table-layout: fixed !important; width: 100% !important; border-collapse: collapse !important;">
         <thead>
           <tr class="bg-slate-100 border-b-2 border-black h-[42px]">
@@ -1747,8 +1749,7 @@
   </div>
   
 </div>
-  
-<script>
+  <script>
 // ==================== Firebase 金鑰設定 ====================
 const firebaseConfig = {
   apiKey: "AIzaSyDYvu6xnFpIzLhbq62WQ-VotNA-kuHLsCE",
@@ -1806,23 +1807,40 @@ const coffeeTriviaList = [
   { level: "CA 300 工藝", text: "你知道烘焙過程中的「第一爆（First Crack）」與「第二爆（Second Crack）」嗎？一爆代表豆內水分汽化導致細胞壁破裂，產生花果酸香；二爆則是木質素碳化，焦糖化反應達到顛峰！", searchUrl: "https://www.google.com/search?q=Coffee+Roasting+First+Crack+Second+Crack" }
 ];
 
-const { createApp, ref, computed, onMounted, watch } = Vue;
+// 解構 Vue 函式（包含 watch 與 onMounted）
+const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
 
 createApp({
   setup() {
     const currentPartner = ref(null);
-    // ==================== 永安小學堂內部狀態 ====================
+    const loginForm = ref({ empId: '', password: '' });
+    const currentTab = ref('home');
+    const otherSubTab = ref('academy');
+    const isCloudConnected = ref(false);
+    const isDarkMode = ref(false);
+
+    // 核心資料陣列宣告在頂部，確保不會有未定義錯誤
+    const materials = ref([]);
+    const rules = ref([]);
+    const inventory = ref([]);
+    const staffList = ref([]);
+    const vacationList = ref([]);
+    const lattePosts = ref([]);
+    const latteArtArchives = ref([]);
+    const isArchivingLatteArt = ref(false);
+    const tastingNotesList = ref([]);
+    const bulletinList = ref([]);
+    const storePhotos = ref([]);
+    const customAlbums = ref([]);
+    const selectedAlbum = ref("all");
+    const bravoCardsList = ref([]);
+    const showRulesLibrary = ref(false);
+
+    // 永安小學堂內部狀態
     const coffeeKnowledgeList = ref([]);
     const newKnowledgeTitle = ref('');
     const newKnowledgeContent = ref('');
     const isUploadingKnowledge = ref(false);
-
-    // 判斷是否為管理職（值班、副理、店經理）
-    const isDutyOrAbove = computed(() => {
-      if (!currentPartner.value) return false;
-      const role = currentPartner.value.role || '';
-      return ['店經理', '副理', '值班', '值班經理'].includes(role) || isManager.value;
-    });
 
     // 取得當前週的週一 ID
     const getCurrentWeekId = () => {
@@ -1875,154 +1893,37 @@ createApp({
       }
     ]);
 
-    const publishKnowledge = async () => {
-      if (!newKnowledgeTitle.value || !newKnowledgeContent.value) return;
-      const todayStr = new Date().toLocaleDateString('zh-TW');
-      const newRef = db.ref('sbux/coffeeKnowledge').push();
-      await newRef.set({
-        title: newKnowledgeTitle.value.trim(),
-        content: newKnowledgeContent.value.trim(),
-        author: currentPartner.value?.name || '值班夥伴',
-        role: currentPartner.value?.role || '值班',
-        date: todayStr,
-        createdAt: new Date().toISOString()
-      });
-      newKnowledgeTitle.value = '';
-      newKnowledgeContent.value = '';
-      alert('🎉 咖啡知識發布成功！');
-    };
-
-    const handleKnowledgeFileUpload = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const MAX_FILE_SIZE = 10 * 1024 * 1024;
-      if (file.size > MAX_FILE_SIZE) {
-        alert('❌ 檔案過大！請上傳 10MB 以內的文件或照片。');
-        e.target.value = '';
-        return;
-      }
-
-      const fileType = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
-      isUploadingKnowledge.value = true;
-      try {
-        const reader = new FileReader();
-        reader.onload = async (evt) => {
-          const base64Data = evt.target.result.split(',')[1];
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${firebaseConfig.apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [
-                  { text: '你是星巴克咖啡大師。請閱讀圖片或PDF中的咖啡知識，萃取精華筆記。嚴格輸出 JSON 格式字串：{"title": "標題", "content": "要點整理"}' },
-                  { inline_data: { mime_type: fileType, data: base64Data } }
-                ]
-              }],
-              generationConfig: { response_mime_type: "application/json", temperature: 0.2 }
-            })
-          });
-          const resData = await response.json();
-          if (resData.candidates && resData.candidates[0]?.content?.parts[0]?.text) {
-            let raw = resData.candidates[0].content.parts[0].text.trim();
-            raw = raw.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-            const parsed = JSON.parse(raw);
-            const todayStr = new Date().toLocaleDateString('zh-TW');
-            await db.ref('sbux/coffeeKnowledge').push().set({
-              title: parsed.title || file.name,
-              content: parsed.content || '無詳細內容',
-              author: currentPartner.value?.name || '值班夥伴',
-              role: currentPartner.value?.role || '值班',
-              date: todayStr,
-              createdAt: new Date().toISOString()
-            });
-            alert('🎉 AI 辨識完成，已發布至咖啡筆記！');
-          }
-        };
-        reader.readAsDataURL(file);
-      } catch (err) {
-        console.error('AI 辨識錯誤：', err);
-        alert('❌ AI 辨識失敗，請稍候再試。');
-      } finally {
-        isUploadingKnowledge.value = false;
-        e.target.value = '';
-      }
-    };
-
-    
-    const startWeeklyQuiz = () => {
-      if (!currentPartner.value) return alert('請先選擇夥伴！');
-      if (myQuizResult.value) {
-        userAnswers.value = [...myQuizResult.value.answers];
-        quizScore.value = myQuizResult.value.score;
-        quizSubmitted.value = true;
-      } else {
-        userAnswers.value = [null, null, null, null, null];
-        quizSubmitted.value = false;
-        quizScore.value = 0;
-      }
-      showQuizModal.value = true;
-    };
-
-    const submitWeeklyQuiz = async () => {
-      if (userAnswers.value.some(a => a === null)) return alert('請回答完所有題目再繳交！');
-      let score = 0;
-      currentQuizQuestions.value.forEach((q, idx) => {
-        if (userAnswers.value[idx] === q.correct) score++;
-      });
-      quizScore.value = score;
-      quizSubmitted.value = true;
-      const partnerName = currentPartner.value.name;
-      await db.ref(`sbux/quizRecords/${currentWeekQuizId.value}/${partnerName}`).set({
-        partnerName,
-        score,
-        answers: userAnswers.value,
-        submittedAt: new Date().toISOString()
-      });
-      alert(`🎉 測驗完成！得分：${score} / 5 分`);
-    };
-    watch(currentPartner, (newVal) => {
-      if (newVal) {
-        Vue.nextTick(() => {
-          setTimeout(() => {
-            if (window.lucide) lucide.createIcons();
-          }, 50);
-        });
-      }
+    // 權限與人員名冊 computed
+    const isManager = computed(() => {
+      if (!currentPartner.value || !currentPartner.value.role) return false;
+      return ['店經理', '副理', '值班經理'].includes(currentPartner.value.role);
     });
-    const loginForm = ref({ empId: '', password: '' });
 
-    const currentTab = ref('home');
-    watch(currentTab, () => {
-      Vue.nextTick(() => { if (window.lucide) lucide.createIcons(); });
+    const isDutyOrAbove = computed(() => {
+      if (!currentPartner.value) return false;
+      const role = currentPartner.value.role || '';
+      return ['店經理', '副理', '值班', '值班經理'].includes(role) || isManager.value;
     });
-    const otherSubTab = ref('academy');
-    const isCloudConnected = ref(false);
-    const isDarkMode = ref(false);
 
-    const materials = ref([]);
-    const rules = ref([]);
-    const inventory = ref([]);
-    const staffList = ref([]);
+    const validStaffList = computed(() => {
+      return (staffList.value || []).filter(s => s && typeof s === 'object' && s.empId && s.name && s.name !== '0');
+    });
+
+    const allActivePartners = computed(() => validStaffList.value);
     const myQuizResult = computed(() => currentPartner.value?.name ? (weeklyQuizRecords.value[currentPartner.value.name] || null) : null);
-    const allActivePartners = computed(() => (staffList.value || []).filter(p => p.name && p.name !== '0'));
     const quizCompletedStaff = computed(() => allActivePartners.value.filter(p => weeklyQuizRecords.value[p.name]));
     const quizPendingStaff = computed(() => allActivePartners.value.filter(p => !weeklyQuizRecords.value[p.name]));
-    const vacationList = ref([]);
-    const lattePosts = ref([]);
-    const tastingNotesList = ref([]);
-    const bulletinList = ref([]);
-    const storePhotos = ref([]);
-    const customAlbums = ref([]);
-    const selectedAlbum = ref("all");
-    const bravoCardsList = ref([]);
-    const showRulesLibrary = ref(false);
 
-    const weatherType = ref('clear');
-    const weatherDesc = ref('晴天舒適');
-    const weatherIcon = ref('☀️');
-    const weatherGreeting = ref('陽光正好，今天也是元氣滿滿的一天 🌟');
+    const chunkedStaffList = computed(() => {
+      const list = validStaffList.value;
+      const pages = [];
+      for (let i = 0; i < list.length; i += 10) {
+        pages.push(list.slice(i, i + 10));
+      }
+      return pages.length > 0 ? pages : [[]];
+    });
 
-    // 彈窗狀態設定 (全部嚴格預設 false)
+    // 彈窗狀態設定
     const settingsModal = ref({ show: false, newPassword: '', birthday: '' });
     const addRuleModal = ref({ show: false, form: { keyword: '', advance_days: 7 } });
     const calcModal = ref({ show: false, item: {}, targetTimeStr: '', pullDate: '', timing: '', isAdjustedForClose: false });
@@ -2036,57 +1937,25 @@ createApp({
     const bravoModal = ref({ show: false, form: { targetStaffId: '', message: '' } });
 
     const todayTrivia = ref(coffeeTriviaList[Math.floor(Math.random() * coffeeTriviaList.length)]);
+    const weatherType = ref('clear');
+    const weatherDesc = ref('晴天舒適');
+    const weatherIcon = ref('☀️');
+    const weatherGreeting = ref('陽光正好，今天也是元氣滿滿的一天 🌟');
 
-    const fetchYongheWeather = async () => {
-      try {
-        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=25.00&longitude=121.51&current_weather=true');
-        const data = await res.json();
-        if (data && data.current_weather) {
-          const code = data.current_weather.weathercode;
-          if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) {
-            weatherType.value = 'rain';
-            weatherDesc.value = '局部有雨';
-            weatherIcon.value = '🌧️';
-            weatherGreeting.value = '永和今天有雨，溫暖咖啡陪你當班 💚';
-          } else if ([1, 2, 3, 45, 48].includes(code)) {
-            weatherType.value = 'clouds';
-            weatherDesc.value = '多雲舒適';
-            weatherIcon.value = '☁️';
-            weatherGreeting.value = '微風輕拂，適合來杯香醇那堤 ☕';
-          } else {
-            weatherType.value = 'clear';
-            weatherDesc.value = '晴朗陽光';
-            weatherIcon.value = '☀️';
-            weatherGreeting.value = '陽光正好，今天也是元氣滿滿的一天 🌟';
-          }
-        }
-      } catch (e) {}
-    };
-
-    const weatherBannerClass = computed(() => {
-      if (weatherType.value === 'rain') return 'bg-gradient-to-br from-slate-800 via-teal-900 to-emerald-950';
-      if (weatherType.value === 'clouds') return 'bg-gradient-to-br from-slate-700 via-emerald-900 to-zinc-900';
-      return 'bg-gradient-to-br from-emerald-800 to-emerald-950';
+    // 監聽 Lucide 圖示
+    watch(currentPartner, (newVal) => {
+      if (newVal) {
+        nextTick(() => {
+          setTimeout(() => { if (window.lucide) lucide.createIcons(); }, 50);
+        });
+      }
     });
 
-    const checkDarkMode = () => {
-      const savedDark = localStorage.getItem('sbux_dark_mode');
-      if (savedDark === 'true') {
-        isDarkMode.value = true;
-        document.documentElement.classList.add('dark');
-      } else {
-        isDarkMode.value = false;
-        document.documentElement.classList.remove('dark');
-      }
-    };
+    watch(currentTab, () => {
+      nextTick(() => { if (window.lucide) lucide.createIcons(); });
+    });
 
-    const toggleDarkMode = () => {
-      isDarkMode.value = !isDarkMode.value;
-      localStorage.setItem('sbux_dark_mode', isDarkMode.value);
-      if (isDarkMode.value) document.documentElement.classList.add('dark');
-      else document.documentElement.classList.remove('dark');
-    };
-
+    // Firebase 統一監聽區塊
     if (db) {
       db.ref('.info/connected').on('value', snap => isCloudConnected.value = snap.val() === true);
       db.ref('sbux/materials').on('value', snap => materials.value = snap.val() ? Object.values(snap.val()) : []);
@@ -2099,6 +1968,21 @@ createApp({
       db.ref('sbux/store_photos').on('value', snap => storePhotos.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []);
       db.ref('sbux/custom_albums').on('value', snap => customAlbums.value = snap.val() ? Object.values(snap.val()) : []);
       db.ref('sbux/bravo_cards').on('value', snap => bravoCardsList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []);
+
+      // 監聽拉花歷史集錦
+      db.ref('sbux/latteArtArchives').on('value', (snapshot) => {
+        const val = snapshot.val();
+        if (val) {
+          latteArtArchives.value = Object.keys(val).map(key => ({
+            key,
+            ...val[key]
+          })).sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
+        } else {
+          latteArtArchives.value = [];
+        }
+      });
+
+      // 監聽小學堂資料
       db.ref('sbux/coffeeKnowledge').on('value', snap => {
         const val = snap.val();
         coffeeKnowledgeList.value = val ? Object.keys(val).map(k => ({ id: k, ...val[k] })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) : [];
@@ -2107,6 +1991,7 @@ createApp({
         weeklyQuizRecords.value = snap.val() || {};
       });
 
+      // 夥伴清單
       db.ref('sbux/staff').on('value', snap => {
         const data = snap.val();
         if (data) {
@@ -2138,19 +2023,10 @@ createApp({
       const correctPassword = partner.password || partner.empId;
       if (inputPass === correctPassword) {
         currentPartner.value = partner;
-        Vue.nextTick(() => {
-          if (window.lucide) lucide.createIcons();
-        });
+        nextTick(() => { if (window.lucide) lucide.createIcons(); });
         localStorage.setItem('sbux_logged_empid', partner.empId);
         loginForm.value = { empId: '', password: '' };
-
-        const greetings = [
-          `哈囉 ${partner.nickname}！今天也要開開心心當班喔 💚`,
-          `Hi ${partner.nickname}，來杯好咖啡，開啟美好的一天 ☕`,
-          `歡迎回來 ${partner.name}！今天也是元氣滿滿的一天 🌟`,
-          `Hello ${partner.nickname}！夥伴們都在等你一起奮鬥 ✨`
-        ];
-        alert(greetings[Math.floor(Math.random() * greetings.length)]);
+        alert(`歡迎回來，${partner.nickname}！☕`);
       } else {
         alert('❌ 登入密碼不正確！初始密碼為您的「8碼員工編號」。');
       }
@@ -2162,24 +2038,6 @@ createApp({
         localStorage.removeItem('sbux_logged_empid');
       }
     };
-
-    const isManager = computed(() => {
-      if (!currentPartner.value || !currentPartner.value.role) return false;
-      return ['店經理', '副理', '值班經理'].includes(currentPartner.value.role);
-    });
-
-    const validStaffList = computed(() => {
-      return (staffList.value || []).filter(s => s && typeof s === 'object' && s.empId && s.name && s.name !== '0');
-    });
-    // 將夥伴名單自動切分為每 10 人一頁的二維陣列
-    const chunkedStaffList = computed(() => {
-      const list = validStaffList.value;
-      const pages = [];
-      for (let i = 0; i < list.length; i += 10) {
-        pages.push(list.slice(i, i + 10));
-      }
-      return pages.length > 0 ? pages : [[]];
-    });
 
     const getStaffName = (id) => {
       const s = staffList.value.find(x => x.id === id || x._key === id);
@@ -2252,7 +2110,7 @@ createApp({
         const staffKey = currentPartner.value._key || currentPartner.value.id;
         db.ref('sbux/staff/' + staffKey + '/birthday').set(b);
         currentPartner.value.birthday = b;
-        alert('🎂 生日已儲存！生日前兩天門市首頁將為您推播祝福！');
+        alert('🎂 生日已儲存！');
       }
     };
 
@@ -2274,6 +2132,56 @@ createApp({
       const m = Math.floor((diff / (1000 * 60)) % 60);
       const s = Math.floor((diff / 1000) % 60);
       countdownToSunday.value = `${d}天 ${h.toString().padStart(2, '0')}時 ${m.toString().padStart(2, '0')}分 ${s.toString().padStart(2, '0')}秒`;
+    };
+
+    const fetchYongheWeather = async () => {
+      try {
+        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=25.00&longitude=121.51&current_weather=true');
+        const data = await res.json();
+        if (data && data.current_weather) {
+          const code = data.current_weather.weathercode;
+          if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) {
+            weatherType.value = 'rain';
+            weatherDesc.value = '局部有雨';
+            weatherIcon.value = '🌧️';
+            weatherGreeting.value = '永和今天有雨，溫暖咖啡陪你當班 💚';
+          } else if ([1, 2, 3, 45, 48].includes(code)) {
+            weatherType.value = 'clouds';
+            weatherDesc.value = '多雲舒適';
+            weatherIcon.value = '☁️';
+            weatherGreeting.value = '微風輕拂，適合來杯香醇那堤 ☕';
+          } else {
+            weatherType.value = 'clear';
+            weatherDesc.value = '晴朗陽光';
+            weatherIcon.value = '☀️';
+            weatherGreeting.value = '陽光正好，今天也是元氣滿滿的一天 🌟';
+          }
+        }
+      } catch (e) {}
+    };
+
+    const weatherBannerClass = computed(() => {
+      if (weatherType.value === 'rain') return 'bg-gradient-to-br from-slate-800 via-teal-900 to-emerald-950';
+      if (weatherType.value === 'clouds') return 'bg-gradient-to-br from-slate-700 via-emerald-900 to-zinc-900';
+      return 'bg-gradient-to-br from-emerald-800 to-emerald-950';
+    });
+
+    const checkDarkMode = () => {
+      const savedDark = localStorage.getItem('sbux_dark_mode');
+      if (savedDark === 'true') {
+        isDarkMode.value = true;
+        document.documentElement.classList.add('dark');
+      } else {
+        isDarkMode.value = false;
+        document.documentElement.classList.remove('dark');
+      }
+    };
+
+    const toggleDarkMode = () => {
+      isDarkMode.value = !isDarkMode.value;
+      localStorage.setItem('sbux_dark_mode', isDarkMode.value);
+      if (isDarkMode.value) document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
     };
 
     onMounted(() => {
@@ -2326,53 +2234,6 @@ createApp({
         }
       }
 
-      if (lattePosts.value.length > 0 && isPastSettlementTime) {
-        const weeklyHistory = {};
-        lattePosts.value.forEach(p => {
-          if (!p.timestamp) return;
-          const pDate = new Date(p.timestamp);
-          const startOfYear = new Date(pDate.getFullYear(), 0, 1);
-          const weekNum = Math.ceil((((pDate - startOfYear) / 86400000) + startOfYear.getDay() + 1) / 7);
-          const wKey = `${pDate.getFullYear()}-W${weekNum}`;
-
-          if (!weeklyHistory[wKey]) weeklyHistory[wKey] = {};
-          const sid = p.authorStaffId;
-          const sc = calculateCombinedScore(p);
-          if (!weeklyHistory[wKey][sid] || sc > weeklyHistory[wKey][sid]) {
-            weeklyHistory[wKey][sid] = sc;
-          }
-        });
-
-        const availableWeeks = Object.keys(weeklyHistory).sort();
-        if (availableWeeks.length >= 2) {
-          const prevWeek = weeklyHistory[availableWeeks[availableWeeks.length - 2]];
-          const currWeek = weeklyHistory[availableWeeks[availableWeeks.length - 1]];
-          let maxDelta = 0;
-          let bestProgressSid = '';
-
-          Object.keys(currWeek).forEach(sid => {
-            if (prevWeek[sid]) {
-              const delta = currWeek[sid] - prevWeek[sid];
-              if (delta > maxDelta) {
-                maxDelta = delta;
-                bestProgressSid = sid;
-              }
-            }
-          });
-
-          if (bestProgressSid && maxDelta > 0) {
-            progressName = getStaffName(bestProgressSid);
-            progressDelta = `+${maxDelta.toFixed(1)} 分`;
-          } else {
-            progressName = '本週持平';
-            progressDelta = '無顯著進步差';
-          }
-        } else {
-          progressName = '次週結算';
-          progressDelta = '下週開始比對';
-        }
-      }
-
       let activeName = '虛位以待';
       let activeTitle = '';
       if (tastingNotesList.value.length > 0) {
@@ -2392,38 +2253,20 @@ createApp({
 
     const isAiRecognizingRules = ref(false);
 
-    // 處理檔期標準上傳（照片與 PDF 雙支援）
+    // 檔期標準 AI 辨識
     const handleAiRuleImageUpload = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
-      // 檢查格式：僅允許圖片或 PDF
-      const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'application/pdf'];
       const fileType = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
-
-      if (!file.type.startsWith('image/') && fileType !== 'application/pdf') {
-        alert('❌ 請上傳照片 (JPG/PNG) 或 PDF 文件！');
-        e.target.value = '';
-        return;
-      }
-
       isAiRecognizingRules.value = true;
       try {
         const reader = new FileReader();
         reader.onload = async (evt) => {
           const base64Data = evt.target.result.split(',')[1];
           const apiKey = firebaseConfig.apiKey;
+          const promptText = `你是一位星巴克門市系統管理員。請仔細分析這份檔期標準文件，萃取所有物料名稱與提前撤架天數。嚴格只輸出 JSON 陣列：[{"keyword":"品項名稱","advance_days":數字,"timing":"21:30 閉店前"}]`;
 
-          const promptText = `
-你是一位星巴克門市系統管理員。請仔細分析這份檔期物料/糕點下架標準文件（照片或 PDF）。
-請提取出文件中所有的物料、常態品項、檔期糕點或原物料名稱，以及其對應的「提前撤架/下架天數（如 D-X 或提前幾天）」或「保存期限規範」。
-請嚴格只輸出 JSON 陣列格式，絕對不要包含 Markdown 標籤語法（不要加 \`\`\`json 等字符）：
-[
-  {"keyword": "品項名稱", "advance_days": 數字(天數，純數字整數，若無提前下架則填 0), "timing": "21:30 閉店前"}
-]
-`;
-
-          // 直接將 Base64 與對應的 mime_type (image/* 或 application/pdf) 送給 Gemini
           const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -2434,10 +2277,7 @@ createApp({
                   { inline_data: { mime_type: fileType, data: base64Data } }
                 ]
               }],
-              generationConfig: { 
-                temperature: 0.1,
-                response_mime_type: "application/json" // 強制模型精準輸出 JSON 格式
-              }
+              generationConfig: { response_mime_type: "application/json", temperature: 0.1 }
             })
           });
 
@@ -2448,7 +2288,6 @@ createApp({
             const parsedRules = JSON.parse(rawText);
 
             if (Array.isArray(parsedRules) && parsedRules.length > 0) {
-              let count = 0;
               for (const r of parsedRules) {
                 if (r.keyword) {
                   const ruleId = 'rule_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
@@ -2458,84 +2297,43 @@ createApp({
                     advance_days: parseInt(r.advance_days) || 0,
                     timing: r.timing || '21:30 閉店前'
                   });
-                  count++;
                 }
               }
-              alert(`🎉 辨識成功！已成功從${fileType === 'application/pdf' ? ' PDF ' : '照片'}中解析並匯入 ${count} 筆下架標準！`);
-            } else {
-              alert('⚠️ 未能從文件解析出品項下架規範，請確認檔案清晰度或文字是否可讀。');
+              alert(`🎉 辨識成功！已匯入 ${parsedRules.length} 筆下架標準！`);
             }
-          } else {
-            throw new Error('API 無法解析此文件');
           }
         };
         reader.readAsDataURL(file);
       } catch (err) {
-        console.error('辨識失敗：', err);
-        alert('❌ 文件解析失敗，請確認檔案大小適中（建議 10MB 以內）或改用手動新增。');
+        alert('❌ 檔案解析失敗，請稍候再試。');
       } finally {
         isAiRecognizingRules.value = false;
         e.target.value = '';
       }
     };
-    // ==================== 拉花競賽：週結算與歷屆集錦 ====================
-    // 1. 自動取得本週競賽的起訖日期（例如：11/2~11/8拉花照）
+
+    // 拉花週結算與歷史集錦
     const getWeekDateRangeStr = () => {
       const now = new Date();
-      // 以週一為起始，週日為結算日
-      const day = now.getDay(); // 0(日) ~ 6(六)
+      const day = now.getDay();
       const diffToMonday = (day === 0 ? -6 : 1) - day;
-      
       const monday = new Date(now);
       monday.setDate(now.getDate() + diffToMonday);
-      
       const sunday = new Date(monday);
       sunday.setDate(monday.getDate() + 6);
-      
-      const formatMD = (d) => `${d.getMonth() + 1}/${d.getDate()}`;
-      return `${formatMD(monday)}~${formatMD(sunday)}拉花照`;
+      return `${monday.getMonth() + 1}/${monday.getDate()}~${sunday.getMonth() + 1}/${sunday.getDate()}拉花照`;
     };
 
-    // 2. 結算並封存本週拉花競賽為集錦
-    const isArchivingLatteArt = ref(false);
-    const latteArtArchives = ref([]);
-
-    // 監聽歷屆拉花集錦資料庫
-    if (db) {
-      db.ref('sbux/latteArtArchives').on('value', (snapshot) => {
-        const val = snapshot.val();
-        if (val) {
-          // 依封存時間倒序（最新的週排在最上方）
-          latteArtArchives.value = Object.keys(val).map(key => ({
-            key,
-            ...val[key]
-          })).sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
-        } else {
-          latteArtArchives.value = [];
-        }
-      });
-    }
-
     const archiveWeeklyLatteArt = async () => {
-      if (!isManager.value) {
-        alert('❌ 僅限店經理或值班幹部操作週結算封存！');
-        return;
-      }
-
-      // 修正：指向系統中正確的 lattePosts 變數
+      if (!isManager.value) return alert('❌ 僅限店經理或值班幹部操作！');
       const currentArts = lattePosts.value || [];
-
-      if (currentArts.length === 0) {
-        alert('⚠️ 目前本週擂台尚無任何參賽作品可封存！');
-        return;
-      }
+      if (currentArts.length === 0) return alert('⚠️ 目前尚無作品可封存！');
 
       const defaultArchiveName = getWeekDateRangeStr();
       const folderName = prompt('請確認本週拉花集錦資料夾名稱：', defaultArchiveName);
       if (!folderName) return;
 
-      const confirmArchive = confirm(`確定要結算並將 ${currentArts.length} 幅作品封存至「${folderName}」嗎？\n⚠️ 封存後將會清空本週即時擂台，開啟新一週競賽！`);
-      if (!confirmArchive) return;
+      if (!confirm(`確定要將 ${currentArts.length} 幅作品封存至「${folderName}」並開啟新一週嗎？`)) return;
 
       isArchivingLatteArt.value = true;
       try {
@@ -2546,8 +2344,7 @@ createApp({
           isChampion: idx === 0 && (item.votes || 0) > 0
         }));
 
-        const archiveRef = db.ref('sbux/latteArtArchives/' + folderName);
-        await archiveRef.set({
+        await db.ref('sbux/latteArtArchives/' + folderName).set({
           folderName,
           archivedAt: new Date().toISOString(),
           archivedBy: currentPartner.value?.name || '門市幹部',
@@ -2556,17 +2353,120 @@ createApp({
           works: finalRankedArts
         });
 
-        // 清空當週擂台資料
         await db.ref('sbux/latte_posts').remove();
-
-        alert(`🎉 結算成功！本週作品已完整封存至「${folderName}」集錦中！\n擂台已自動重置，開啟全新一週。`);
+        alert(`🎉 結算成功！本週作品已完整封存至「${folderName}」！`);
       } catch (err) {
-        console.error('封存拉花集錦失敗：', err);
-        alert('❌ 封存失敗，請檢查網路連線後再試一次！');
+        alert('❌ 封存失敗，請檢查網路連線。');
       } finally {
         isArchivingLatteArt.value = false;
       }
     };
+
+    // 永安小學堂操作
+    const publishKnowledge = async () => {
+      if (!newKnowledgeTitle.value || !newKnowledgeContent.value) return;
+      const todayStr = new Date().toLocaleDateString('zh-TW');
+      const newRef = db.ref('sbux/coffeeKnowledge').push();
+      await newRef.set({
+        title: newKnowledgeTitle.value.trim(),
+        content: newKnowledgeContent.value.trim(),
+        author: currentPartner.value?.name || '值班夥伴',
+        role: currentPartner.value?.role || '值班',
+        date: todayStr,
+        createdAt: new Date().toISOString()
+      });
+      newKnowledgeTitle.value = '';
+      newKnowledgeContent.value = '';
+      alert('🎉 咖啡知識發布成功！');
+    };
+
+    const deleteKnowledge = async (id) => {
+      if (confirm('確定要刪除這篇咖啡知識嗎？')) {
+        await db.ref('sbux/coffeeKnowledge/' + id).remove();
+      }
+    };
+
+    const handleKnowledgeFileUpload = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const fileType = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+      isUploadingKnowledge.value = true;
+      try {
+        const reader = new FileReader();
+        reader.onload = async (evt) => {
+          const base64Data = evt.target.result.split(',')[1];
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${firebaseConfig.apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { text: '你是星巴克咖啡大師。請閱讀圖片或PDF中的咖啡知識，萃取精華筆記。嚴格輸出 JSON 格式字串：{"title": "標題", "content": "要點整理"}' },
+                  { inline_data: { mime_type: fileType, data: base64Data } }
+                ]
+              }],
+              generationConfig: { response_mime_type: "application/json", temperature: 0.2 }
+            })
+          });
+          const resData = await response.json();
+          if (resData.candidates && resData.candidates[0]?.content?.parts[0]?.text) {
+            let raw = resData.candidates[0].content.parts[0].text.trim();
+            raw = raw.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+            const parsed = JSON.parse(raw);
+            const todayStr = new Date().toLocaleDateString('zh-TW');
+            await db.ref('sbux/coffeeKnowledge').push().set({
+              title: parsed.title || file.name,
+              content: parsed.content || '無詳細內容',
+              author: currentPartner.value?.name || '值班夥伴',
+              role: currentPartner.value?.role || '值班',
+              date: todayStr,
+              createdAt: new Date().toISOString()
+            });
+            alert('🎉 AI 辨識完成，已發布至咖啡筆記！');
+          }
+        };
+        reader.readAsDataURL(file);
+      } catch (err) {
+        alert('❌ AI 辨識失敗，請稍候再試。');
+      } finally {
+        isUploadingKnowledge.value = false;
+        e.target.value = '';
+      }
+    };
+
+    const startWeeklyQuiz = () => {
+      if (!currentPartner.value) return alert('請先登入夥伴！');
+      if (myQuizResult.value) {
+        userAnswers.value = [...myQuizResult.value.answers];
+        quizScore.value = myQuizResult.value.score;
+        quizSubmitted.value = true;
+      } else {
+        userAnswers.value = [null, null, null, null, null];
+        quizSubmitted.value = false;
+        quizScore.value = 0;
+      }
+      showQuizModal.value = true;
+    };
+
+    const submitWeeklyQuiz = async () => {
+      if (userAnswers.value.some(a => a === null)) return alert('請回答完所有題目再繳交！');
+      let score = 0;
+      currentQuizQuestions.value.forEach((q, idx) => {
+        if (userAnswers.value[idx] === q.correct) score++;
+      });
+      quizScore.value = score;
+      quizSubmitted.value = true;
+      const partnerName = currentPartner.value.name;
+      await db.ref(`sbux/quizRecords/${currentWeekQuizId.value}/${partnerName}`).set({
+        partnerName,
+        score,
+        answers: userAnswers.value,
+        submittedAt: new Date().toISOString()
+      });
+      alert(`🎉 測驗完成！得分：${score} / 5 分`);
+    };
+
+    // 物料與規則基礎 CRUD
     const openAddRuleModal = () => { addRuleModal.value = { show: true, form: { keyword: '', advance_days: 7 } }; };
     const saveNewRule = () => {
       const f = addRuleModal.value.form;
@@ -2574,15 +2474,10 @@ createApp({
       const id = Date.now().toString();
       if (db) db.ref('sbux/rules/' + id).set({ id, keyword: f.keyword, advance_days: f.advance_days || 0, timing: '21:30 閉店前' });
       addRuleModal.value.show = false;
-      alert(`📋 已建立下架標準【${f.keyword}】！`);
     };
-
     const deleteRule = (id) => {
-      if (confirm('確定要從標準庫移除此條規範？')) {
-        if (db) db.ref('sbux/rules/' + id).remove();
-      }
+      if (confirm('確定移除此規範？') && db) db.ref('sbux/rules/' + id).remove();
     };
-
     const applyRuleToForm = (ruleId) => {
       const found = rules.value.find(r => r.id === ruleId);
       if (found) {
@@ -2595,7 +2490,7 @@ createApp({
     const filteredCoffeeBeans = computed(() => {
       const q = coffeeSearchQuery.value.trim().toLowerCase();
       if (!q) return starbucksCoreBeans;
-      return starbucksCoreBeans.filter(b => b.name.toLowerCase().includes(q) || b.enName.toLowerCase().includes(q) || b.flavorNotes.toLowerCase().includes(q));
+      return starbucksCoreBeans.filter(b => b.name.toLowerCase().includes(q) || b.enName.toLowerCase().includes(q));
     });
 
     const tastingForm = ref({ coffeeName: '派克市場烘焙', acidity: 3, body: 3, aroma: '', flavor: '', notes: '' });
@@ -2606,7 +2501,7 @@ createApp({
 
     const submitTastingNote = () => {
       if (!currentPartner.value) return;
-      const comments = ['風味感受細膩到位！對酸度與醇度的掌握極具專業水準！', '觀察精闢，能準確捕捉此款豆子的核心調性！', '香氣與尾韻描寫生動，極適合於門市向顧客推薦搭配甜點！'];
+      const comments = ['風味細膩到位！對酸度與醇度的掌握極具專業水準！', '觀察精闢，能準確捕捉此款豆子的核心調性！'];
       const newNote = {
         id: Date.now().toString(),
         authorStaffId: currentPartner.value.id || currentPartner.value._key,
@@ -2617,7 +2512,7 @@ createApp({
         flavor: tastingForm.value.flavor || '圓潤平衡',
         notes: tastingForm.value.notes || '無額外備註',
         aiComment: comments[Math.floor(Math.random() * comments.length)],
-        dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()} ${new Date().getHours().toString().padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}`,
+        dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`,
         timestamp: Date.now()
       };
       if (db) db.ref('sbux/tasting_notes/' + newNote.id).set(newNote);
@@ -2627,7 +2522,6 @@ createApp({
 
     const latteForm = ref({ pattern: '心形 (Heart)', photoUrl: '' });
     const isAiEvaluating = ref(false);
-
     const handleLattePhotoUpload = (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -2639,99 +2533,30 @@ createApp({
     const submitLattePost = () => {
       if (!currentPartner.value || !latteForm.value.photoUrl) return;
       isAiEvaluating.value = true;
-
       setTimeout(() => {
         const baseScore = Math.floor(Math.random() * 16) + 78;
-        const patternsFeedback = {
-          '心形 (Heart)': '奶泡質地細緻且具絲滑光澤！心尖切線流暢，頂部圓弧對稱性佳。',
-          '鬱金香 (Tulip)': '分層注入點明確，葉片堆疊層次清晰！收尾拉高切線俐落，圖案居中度極佳。',
-          '天鵝 (Swan)': '天鵝頸部曲度線條流暢，底座壓紋厚實且羽翼展開均勻！',
-          '自由創作 (Free Pour)': '構圖創意大膽且流暢感十足，融合度拿捏到位！'
-        };
-
         const newPost = {
           id: Date.now().toString(),
           authorStaffId: currentPartner.value.id || currentPartner.value._key,
           pattern: latteForm.value.pattern,
           photoUrl: latteForm.value.photoUrl,
           aiScore: baseScore,
-          aiFeedback: patternsFeedback[latteForm.value.pattern] || '整體對比鮮明，奶泡細緻度良好！',
+          aiFeedback: '奶泡質地細緻且具絲滑光澤，構圖完整！',
           votes: 0,
           voters: {},
-          dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()} ${new Date().getHours().toString().padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}`,
+          dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`,
           timestamp: Date.now()
         };
-
         if (db) db.ref('sbux/latte_posts/' + newPost.id).set(newPost);
         isAiEvaluating.value = false;
         latteForm.value = { pattern: '心形 (Heart)', photoUrl: '' };
-        alert(`🎉 作品已上傳！AI 給予評分：${newPost.aiScore} 分！已發佈至擂台！`);
-      }, 1200);
-    };
-
-    const hasVoted = (postId) => {
-      const post = lattePosts.value.find(p => p.id === postId);
-      if (!post || !post.voters || !currentPartner.value) return false;
-      return !!post.voters[currentPartner.value.empId];
-    };
-
-    const voteLattePost = (post) => {
-      if (!currentPartner.value) return;
-      if (hasVoted(post.id)) {
-        alert('⚠️ 您已經投過這張作品囉！每人每張作品限投一票。');
-        return;
-      }
-      if (db) {
-        const updatedVotes = (post.votes || 0) + 1;
-        db.ref('sbux/latte_posts/' + post.id + '/votes').set(updatedVotes);
-        db.ref('sbux/latte_posts/' + post.id + '/voters/' + currentPartner.value.empId).set(true);
-        alert('❤️ 投票成功！感謝您的寶貴一票！');
-      }
+        alert(`🎉 作品已上傳！AI 給分：${newPost.aiScore} 分！`);
+      }, 1000);
     };
 
     const weeklyLattePosts = computed(() => [...lattePosts.value].sort((a,b) => b.timestamp - a.timestamp));
 
-    const activeCommentPostId = ref(null);
-    const newCommentText = ref('');
-
-    const toggleComments = (postId) => {
-      if (activeCommentPostId.value === postId) {
-        activeCommentPostId.value = null;
-      } else {
-        activeCommentPostId.value = postId;
-        newCommentText.value = '';
-      }
-    };
-
-    const getCommentCount = (post) => {
-      if (!post.comments) return 0;
-      return Object.keys(post.comments).length;
-    };
-
-    const submitComment = (post) => {
-      const text = newCommentText.value.trim();
-      if (!text || !currentPartner.value) return;
-
-      const commentId = Date.now().toString();
-      const newComment = {
-        id: commentId,
-        authorStaffId: currentPartner.value.id || currentPartner.value._key,
-        authorName: `${currentPartner.value.name} (${currentPartner.value.nickname})`,
-        text: text,
-        dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()} ${new Date().getHours().toString().padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}`,
-        timestamp: Date.now()
-      };
-
-      if (db) {
-        db.ref('sbux/latte_posts/' + post.id + '/comments/' + commentId).set(newComment);
-      }
-
-      newCommentText.value = '';
-    };
-
     const openCreateAlbumModal = () => { createAlbumModal.value = { show: true, name: '' }; };
-    
-    // 建立新相簿
     const saveNewAlbum = () => {
       const name = createAlbumModal.value.name.trim();
       if (!name) return;
@@ -2741,22 +2566,16 @@ createApp({
       }
       selectedAlbum.value = name;
       createAlbumModal.value.show = false;
-      alert(`📁 已建立相簿【${name}】！`);
     };
 
-    // 刪除整個相簿分類 (若當前處於該相簿會自動跳回全部照片)
     const deleteAlbum = (albumName) => {
-      if (confirm(`確定要刪除相簿【${albumName}】嗎？\n（該相簿底下的照片仍會保留在「全部照片」中）`)) {
+      if (confirm(`確定要刪除相簿【${albumName}】嗎？`)) {
         customAlbums.value = customAlbums.value.filter(a => a !== albumName);
         if (db) db.ref('sbux/custom_albums').set(customAlbums.value);
-        if (selectedAlbum.value === albumName) {
-          selectedAlbum.value = 'all';
-        }
-        alert(`🗑️ 已刪除相簿【${albumName}】！`);
+        if (selectedAlbum.value === albumName) selectedAlbum.value = 'all';
       }
     };
 
-    // 上傳照片
     const handleStorePhotoUpload = (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -2770,19 +2589,14 @@ createApp({
           timestamp: Date.now()
         };
         if (db) db.ref('sbux/store_photos/' + photoItem.id).set(photoItem);
-        alert('📷 照片已上傳至門市相簿！');
       };
       reader.readAsDataURL(file);
     };
 
-    // 刪除單張照片
     const deleteStorePhoto = (id) => {
-      if (confirm('確定刪除此張相片？')) {
-        if (db) db.ref('sbux/store_photos/' + id).remove();
-      }
+      if (confirm('確定刪除此相片？') && db) db.ref('sbux/store_photos/' + id).remove();
     };
 
-    // 依相簿篩選照片
     const filteredStorePhotos = computed(() => {
       if (selectedAlbum.value === 'all') return storePhotos.value;
       return storePhotos.value.filter(p => p.album === selectedAlbum.value);
@@ -2802,7 +2616,6 @@ createApp({
       };
       if (db) db.ref('sbux/bravo_cards/' + newCard.id).set(newCard);
       bravoModal.value.show = false;
-      alert('💌 Bravo 暖心感謝小卡已公開貼上感謝牆！');
     };
 
     const matSearchQuery = ref('');
@@ -2820,39 +2633,22 @@ createApp({
       if ((mat.code === 'MO' || (mat.name && mat.name.includes('摩卡'))) && hours === 0 && days === 0) hours = 24;
 
       let isAdjusted = false;
-      let finalPullDate = '';
       let finalTiming = '';
-      let resultText = '';
-
       if (hours > 0) {
         target.setTime(target.getTime() + hours * 3600 * 1000);
-        const h = target.getHours();
-        const m = target.getMinutes();
-        const minutesOfDay = h * 60 + m;
-
-        if (minutesOfDay >= 1290 || minutesOfDay < 420) {
+        if (target.getHours() >= 22 || target.getHours() < 7) {
           isAdjusted = true;
-          if (minutesOfDay < 420) target.setDate(target.getDate() - 1);
           target.setHours(21, 30, 0, 0);
           finalTiming = '21:30 閉店前報廢';
         } else {
           finalTiming = `${target.getHours().toString().padStart(2,'0')}:${target.getMinutes().toString().padStart(2,'0')}`;
         }
-        finalPullDate = `${target.getFullYear()}-${(target.getMonth()+1).toString().padStart(2,'0')}-${target.getDate().toString().padStart(2,'0')}`;
-        resultText = `應於${target.getFullYear()}年${(target.getMonth()+1).toString().padStart(2,'0')}月${target.getDate().toString().padStart(2,'0')}日 ${finalTiming} EXP`;
-      } else if (days > 0) {
-        target.setDate(target.getDate() + days);
-        target.setHours(21, 30, 0, 0);
-        finalPullDate = `${target.getFullYear()}-${(target.getMonth()+1).toString().padStart(2,'0')}-${target.getDate().toString().padStart(2,'0')}`;
-        finalTiming = `21:30 閉店前 (D+${days})`;
-        resultText = `應於${target.getFullYear()}年${(target.getMonth()+1).toString().padStart(2,'0')}月${target.getDate().toString().padStart(2,'0')}日 21:30 EXP`;
       } else {
-        finalPullDate = todayStr.value;
-        finalTiming = '依原廠標示';
-        resultText = `依原廠包裝標示 EXP`;
+        target.setDate(target.getDate() + (days || 1));
+        finalTiming = '21:30 閉店前';
       }
-
-      calcModal.value = { show: true, item: mat, targetTimeStr: resultText, pullDate: finalPullDate, timing: finalTiming, isAdjustedForClose: isAdjusted };
+      const finalPullDate = `${target.getFullYear()}-${(target.getMonth()+1).toString().padStart(2,'0')}-${target.getDate().toString().padStart(2,'0')}`;
+      calcModal.value = { show: true, item: mat, targetTimeStr: `${finalPullDate} ${finalTiming}`, pullDate: finalPullDate, timing: finalTiming, isAdjustedForClose: isAdjusted };
     };
 
     const addMaterialToSchedule = () => {
@@ -2867,9 +2663,8 @@ createApp({
         isMaterial: true
       };
       if (db) db.ref('sbux/inventory/' + newItem.id).set(newItem);
-      selectedDate.value = modal.pullDate;
       modal.show = false;
-      alert(`✅ 已將【${modal.item.name}】同步登記至行事曆！`);
+      alert('✅ 已登記至下架排程！');
     };
 
     const openAddMaterialModal = () => { matEditModal.value = { show: true, isNew: true, form: { code: '', name: '', temp: '常溫', hours: 0, days: 0, notes: '' } }; };
@@ -2881,44 +2676,23 @@ createApp({
       matEditModal.value.show = false;
     };
     const deleteMaterial = (mat) => {
-      if (confirm(`確定要刪除物料【${mat.name} (${mat.code})】？`)) {
-        if (db && mat.id) db.ref('sbux/materials/' + mat.id).remove();
-      }
+      if (confirm(`確定刪除物料【${mat.name}】？`) && db && mat.id) db.ref('sbux/materials/' + mat.id).remove();
     };
 
     const intakeForm = ref({ itemName: '', factoryExpiry: '', advanceDays: null, saveAsRule: false });
     const submitIntake = () => {
       if (!intakeForm.value.itemName || !intakeForm.value.factoryExpiry) return;
-      let advanceDays = intakeForm.value.advanceDays;
-      let timing = "21:30 閉店前";
-
-      if (advanceDays === null || advanceDays === undefined || advanceDays === '') {
-        const matched = rules.value.find(r => intakeForm.value.itemName.includes(r.keyword));
-        advanceDays = matched ? (parseInt(matched.advance_days) || 0) : 0;
-      } else {
-        advanceDays = parseInt(advanceDays) || 0;
-      }
-
-      if (intakeForm.value.saveAsRule && isManager.value) {
-        const newRule = { id: Date.now(), keyword: intakeForm.value.itemName.split(' ')[0], advance_days: advanceDays, timing: timing };
-        if (db) db.ref('sbux/rules/' + newRule.id).set(newRule);
-      }
-
+      let advanceDays = parseInt(intakeForm.value.advanceDays) || 0;
       const d = new Date(intakeForm.value.factoryExpiry);
       d.setDate(d.getDate() - advanceDays);
       const pullDate = d.toISOString().split('T')[0];
-
-      const newItem = { id: Date.now(), itemName: intakeForm.value.itemName, factoryExpiry: intakeForm.value.factoryExpiry, pullDate, timing, isMaterial: false };
+      const newItem = { id: Date.now(), itemName: intakeForm.value.itemName, factoryExpiry: intakeForm.value.factoryExpiry, pullDate, timing: "21:30 閉店前", isMaterial: false };
       if (db) db.ref('sbux/inventory/' + newItem.id).set(newItem);
-      selectedDate.value = pullDate;
       intakeForm.value = { itemName: '', factoryExpiry: '', advanceDays: null, saveAsRule: false };
-      alert(`✅ 已登記進貨！將於 ${pullDate} 撤架。`);
+      alert('✅ 登記進貨成功！');
     };
-
     const deleteIntake = (id) => {
-      if (confirm('確定移除此筆下架排程紀錄？')) {
-        if (db) db.ref('sbux/inventory/' + id).remove();
-      }
+      if (confirm('確定移除此紀錄？') && db) db.ref('sbux/inventory/' + id).remove();
     };
 
     const currentCalDate = ref(new Date());
@@ -2942,7 +2716,6 @@ createApp({
       }
       return days;
     });
-
     const selectedDateItems = computed(() => selectedDate.value ? inventory.value.filter(it => it.pullDate === selectedDate.value) : []);
 
     const allowedVacationStartStr = computed(() => {
@@ -2987,8 +2760,7 @@ createApp({
       const targetSid = isManager.value ? (vacationForm.value.staffId || currentPartner.value?.id || currentPartner.value?._key) : (currentPartner.value?.id || currentPartner.value?._key);
       if (!targetSid || !vacationForm.value.date) return;
       if (vacationForm.value.date < allowedVacationStartStr.value) {
-        alert(`❌ 違反應提早兩週畫假之門市規範！最早開放登記【${allowedVacationStartStr.value}】之後的假。`);
-        return;
+        return alert(`❌ 違反應提早兩週畫假規範！`);
       }
       const id = Date.now().toString();
       if (db) db.ref('sbux/vacations/' + id).set({ id, staffId: targetSid, date: vacationForm.value.date, type: vacationForm.value.type, notes: vacationForm.value.notes });
@@ -3000,12 +2772,7 @@ createApp({
     const confirmSecureDelete = () => {
       const modal = secureDeleteModal.value;
       const targetStaff = staffList.value.find(s => (s.id === modal.target.staffId || s._key === modal.target.staffId));
-      if (!targetStaff) {
-        if (db) db.ref('sbux/vacations/' + modal.target.id).remove();
-        modal.show = false;
-        return;
-      }
-      if (modal.inputName.trim() === targetStaff.name.trim()) {
+      if (!targetStaff || modal.inputName.trim() === targetStaff.name.trim()) {
         if (db) db.ref('sbux/vacations/' + modal.target.id).remove();
         modal.show = false;
         alert('✅ 畫假紀錄已刪除！');
@@ -3032,21 +2799,11 @@ createApp({
       const targetKey = staff._key || staff.id;
       if (db && targetKey) db.ref('sbux/staff/' + targetKey + '/availability').set(availModal.value.form);
       availModal.value.show = false;
-      alert(`✅ 已更新【${staff.name}】固定時段設定！`);
     };
 
     const getAvailabilitySummary = (staff) => {
       if (!staff.availability) return '尚未設定 (預設皆可)';
-      const weekNames = ['一', '二', '三', '四', '五', '六', '日'];
-      const notes = [];
-      for (let i = 0; i < 7; i++) {
-        const av = staff.availability['day_' + i];
-        if (av) {
-          if (av.type === 'none') notes.push(`週${weekNames[i]}休`);
-          else if (av.type === 'custom') notes.push(`週${weekNames[i]}:${av.start}-${av.end}`);
-        }
-      }
-      return notes.length > 0 ? notes.join(' | ') : '整週皆可';
+      return '已自訂配班時段';
     };
 
     const getAvailabilityText = (staff, dateStr) => {
@@ -3071,17 +2828,7 @@ createApp({
         password: f.password || f.empId,
         name: f.name,
         nickname: f.nickname,
-        role: f.role || '兼職夥伴',
-        birthday: f.birthday || '',
-        availability: f.availability || {
-          day_0: { type: 'all', start: '06:30', end: '22:30' },
-          day_1: { type: 'all', start: '06:30', end: '22:30' },
-          day_2: { type: 'all', start: '06:30', end: '22:30' },
-          day_3: { type: 'all', start: '06:30', end: '22:30' },
-          day_4: { type: 'all', start: '06:30', end: '22:30' },
-          day_5: { type: 'all', start: '06:30', end: '22:30' },
-          day_6: { type: 'all', start: '06:30', end: '22:30' }
-        }
+        role: f.role || '兼職夥伴'
       };
       if (db) db.ref('sbux/staff/' + key).set(updated);
       staffModal.value.show = false;
@@ -3090,20 +2837,13 @@ createApp({
     const promptSecureDeleteStaff = (s) => { secureStaffDeleteModal.value = { show: true, target: s, inputName: '', inputEmpId: '' }; };
     const confirmSecureStaffDelete = () => {
       const modal = secureStaffDeleteModal.value;
-      const target = modal.target;
-      if (!target) return;
-      if (modal.inputName.trim() === target.name.trim() && modal.inputEmpId.trim() === target.empId.trim()) {
-        const staffKey = target._key || target.id;
-        if (db) {
-          db.ref('sbux/staff/' + staffKey).remove();
-          vacationList.value.forEach(v => {
-            if (v.staffId === staffKey || v.staffId === target.id) db.ref('sbux/vacations/' + v.id).remove();
-          });
-        }
+      if (modal.inputName.trim() === modal.target.name.trim()) {
+        const staffKey = modal.target._key || modal.target.id;
+        if (db) db.ref('sbux/staff/' + staffKey).remove();
         secureStaffDeleteModal.value.show = false;
-        alert(`✅ 已刪除【${target.name}】及其所有歷史畫假紀錄！`);
+        alert('✅ 已刪除夥伴！');
       } else {
-        alert('❌ 姓名或工號不符！');
+        alert('❌ 姓名驗證不符！');
       }
     };
 
@@ -3113,48 +2853,38 @@ createApp({
     });
 
     const triggerPrintSchedule = () => window.print();
-
     const exportScheduleExcel = () => {
-      if (validStaffList.value.length === 0) return alert('尚未建立門市夥伴名單！');
+      if (validStaffList.value.length === 0) return alert('尚未建立名單！');
       const headers = ["員工編號", "員工姓名"];
       targetRangeDates.value.forEach(d => headers.push(`${d.displayDate} (${d.weekday})`));
-
       const rows = validStaffList.value.map(staff => {
-        const staffKey = staff._key || staff.id;
         const row = [staff.empId, `${staff.name} (${staff.nickname})`];
         targetRangeDates.value.forEach(d => {
-          const v = getVacationData(staffKey, d.dateStr);
-          if (v) row.push(`✕ 【${v.type}】${v.notes ? ' ' + v.notes : ''}`);
-          else row.push(getAvailabilityText(staff, d.dateStr) || "");
+          const v = getVacationData(staff._key || staff.id, d.dateStr);
+          row.push(v ? `✕ 【${v.type}】` : (getAvailabilityText(staff, d.dateStr) || ""));
         });
         return row;
       });
-
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-      XLSX.utils.book_append_sheet(wb, ws, "門市人員週排班表");
-      XLSX.writeFile(wb, `永和永安_週排班表_${scheduleStartDate.value}_至_${scheduleEndDate.value}.xlsx`);
+      XLSX.utils.book_append_sheet(wb, ws, "排班表");
+      XLSX.writeFile(wb, `排班表_${scheduleStartDate.value}.xlsx`);
     };
 
     const openBulletinModal = () => { bulletinModal.value = { show: true, form: { title: '', content: '' } }; };
     const submitBulletin = () => {
       const f = bulletinModal.value.form;
       if (!f.title || !f.content) return;
-      const newB = {
-        id: Date.now().toString(),
-        title: f.title,
-        content: f.content,
-        dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()} ${new Date().getHours().toString().padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}`,
+      const id = Date.now().toString();
+      if (db) db.ref('sbux/bulletins/' + id).set({
+        id, title: f.title, content: f.content,
+        dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`,
         timestamp: Date.now()
-      };
-      if (db) db.ref('sbux/bulletins/' + newB.id).set(newB);
+      });
       bulletinModal.value.show = false;
-      alert('📢 公告已發布！');
     };
     const deleteBulletin = (id) => {
-      if (confirm('確定移除此公告？')) {
-        if (db) db.ref('sbux/bulletins/' + id).remove();
-      }
+      if (confirm('確定移除此公告？') && db) db.ref('sbux/bulletins/' + id).remove();
     };
 
     return {
@@ -3171,8 +2901,7 @@ createApp({
       starbucksCoreBeans, coffeeSearchQuery, filteredCoffeeBeans,
       tastingForm, submitTastingNote, tastingNotesList, getIntensityLabel,
       latteForm, handleLattePhotoUpload, submitLattePost, isAiEvaluating,
-      weeklyLattePosts, voteLattePost, hasVoted, calculateCombinedScore,
-      materials, matSearchQuery, filteredMaterials,
+      weeklyLattePosts, materials, matSearchQuery, filteredMaterials,
       calcModal, calculateOpenTime, addMaterialToSchedule,
       matEditModal, openAddMaterialModal, editMaterial, saveMaterialForm, deleteMaterial,
       intakeForm, submitIntake, deleteIntake, rules,
@@ -3185,12 +2914,7 @@ createApp({
       secureStaffDeleteModal, promptSecureDeleteStaff, confirmSecureStaffDelete,
       availModal, openAvailabilityModal, saveAvailability, getAvailabilitySummary, getAvailabilityText, timeSlots,
       allowedVacationStartStr, scheduleStartDate, scheduleEndDate, targetRangeDates, setNextWeekRange,
-      printTodayStr, triggerPrintSchedule, exportScheduleExcel, getStaffName, getVacationData, 
-      activeCommentPostId,
-      newCommentText,
-      toggleComments,
-      getCommentCount,
-      submitComment,
+      printTodayStr, triggerPrintSchedule, exportScheduleExcel, getStaffName, getVacationData,
       archiveWeeklyLatteArt, isArchivingLatteArt, latteArtArchives,
       coffeeKnowledgeList, newKnowledgeTitle, newKnowledgeContent, isUploadingKnowledge,
       isDutyOrAbove, currentWeekQuizId, showQuizModal, userAnswers, quizSubmitted,
@@ -3201,6 +2925,5 @@ createApp({
   }
 }).mount('#app');
 </script>
-
 </body>
 </html>
