@@ -399,11 +399,15 @@
               </button>
             </div>
 
-            <!-- 常用功能快速入口 (極簡線性風格) -->
+            <!-- 常用功能快速入口 (極簡線性風格 - 原生 SVG 免動態加載) -->
             <div class="grid grid-cols-2 gap-3">
               <button @click="currentTab = 'materials'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
                 <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
-                  <i data-lucide="clock" class="w-4 h-4"></i>
+                  <!-- Clock SVG -->
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
                 </div>
                 <div>
                   <div class="text-xs font-bold text-slate-900 dark:text-white">物料打點試算</div>
@@ -413,7 +417,13 @@
 
               <button @click="currentTab = 'intake'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
                 <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
-                  <i data-lucide="package" class="w-4 h-4"></i>
+                  <!-- Package SVG -->
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                  </svg>
                 </div>
                 <div>
                   <div class="text-xs font-bold text-slate-900 dark:text-white">進貨下架月曆</div>
@@ -423,7 +433,13 @@
 
               <button @click="currentTab = 'roster'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
                 <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
-                  <i data-lucide="users" class="w-4 h-4"></i>
+                  <!-- Users SVG -->
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
                 </div>
                 <div>
                   <div class="text-xs font-bold text-slate-900 dark:text-white">兩週後畫假排班</div>
@@ -433,7 +449,14 @@
 
               <button @click="currentTab = 'about'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
                 <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
-                  <i data-lucide="coffee" class="w-4 h-4"></i>
+                  <!-- Coffee SVG -->
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                    <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                    <line x1="6" y1="1" x2="6" y2="4"></line>
+                    <line x1="10" y1="1" x2="10" y2="4"></line>
+                    <line x1="14" y1="1" x2="14" y2="4"></line>
+                  </svg>
                 </div>
                 <div>
                   <div class="text-xs font-bold text-slate-900 dark:text-white">關於永安門市</div>
