@@ -1580,44 +1580,44 @@
     </div>
   </div>
 
-  <!-- ==================== ⚙️ 門市設定 Modal (資安權限乾淨版) ==================== -->
+<!-- ==================== ⚙️ 門市設定 Modal (嚴格權限隔離版) ==================== -->
   <div v-if="showSettingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl relative">
       
       <!-- 標題與關閉按鈕 -->
       <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2.5">
         <h3 class="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
-          <span>⚙️</span> 永安門市系統與資安設定
+          <span>⚙️</span> 永安門市系統偏好與設定
         </h3>
-        <button @click="showSettingsModal = false" class="text-slate-400 hover:text-slate-600">✕</button>
+        <button type="button" @click="showSettingsModal = false" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
       </div>
 
       <div class="space-y-3.5 text-xs">
         
-        <!-- 只有徐爰坦 (10386493) 登入後才看得到此金鑰設定欄位 -->
-        <div v-if="isTanMaster" class="space-y-1.5 p-3 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl">
-          <label class="block text-emerald-900 dark:text-emerald-300 font-bold">
+        <!-- 🔒 情況一：只有徐爰坦本人 (10386493) 登入時才看得到金鑰輸入框 -->
+        <div v-if="isTanMaster" class="space-y-1.5 p-3 bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-700 rounded-2xl">
+          <label class="block text-emerald-950 dark:text-emerald-200 font-bold">
             Gemini API Key (徐爰坦 Tan 專屬雲端同步)
           </label>
           <input 
             v-model="geminiApiKey" 
             type="password" 
-            placeholder="請在此貼上 AIzaSy... API Key" 
-            class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white font-mono focus:outline-none focus:border-emerald-600">
-          <p class="text-[10px] text-slate-400">
-            密鑰儲存於雲端後，全體夥伴皆可共享 AI 辨識功能，且其他夥伴看不到此欄位。
+            placeholder="請貼上 AIzaSy... 金鑰" 
+            class="w-full bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-800 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white font-mono focus:outline-none focus:border-emerald-600">
+          <p class="text-[10px] text-emerald-700 dark:text-emerald-400">
+            僅需輸入儲存一次，系統會自動同步至雲端供全店夥伴背景使用，其他夥伴看不到此設定。
           </p>
         </div>
 
-        <!-- 其他夥伴看到的提示 -->
-        <div v-else class="p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-500 text-[11px]">
-          🔒 系統核心 API 配置由系統管理員維護。全店夥伴可正常直接使用各項 AI 辨識與排班功能。
+        <!-- 情況二：其他夥伴登入時顯示的資訊 -->
+        <div v-else class="p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-500 text-[11px] leading-relaxed">
+          🔒 系統核心 API 配置由管理員維護。全店夥伴可正常直接使用各項基礎管理與 AI 輔助功能。
         </div>
 
         <!-- 深色模式切換 -->
         <div class="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-700">
           <span class="text-slate-600 dark:text-slate-300 font-medium">介面深色模式</span>
-          <button @click="toggleDarkMode" class="px-3 py-1 bg-slate-100 dark:bg-slate-700 rounded-xl text-xs font-mono">
+          <button type="button" @click="toggleDarkMode" class="px-3 py-1 bg-slate-100 dark:bg-slate-700 rounded-xl text-xs font-mono">
             <span v-if="isDarkMode">🌙 深色開</span>
             <span v-else>☀️ 淺色開</span>
           </button>
@@ -1625,10 +1625,13 @@
 
       </div>
 
-      <!-- 儲存設定按鈕 -->
-      <div class="pt-2 flex justify-end gap-2">
-        <button @click="saveSettings" class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition">
+      <!-- 按鈕列 -->
+      <div class="pt-2 flex gap-2">
+        <button type="button" @click="saveSettings" class="flex-1 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition active:scale-95">
           儲存設定
+        </button>
+        <button type="button" @click="showSettingsModal = false" class="px-4 py-2.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold">
+          關閉
         </button>
       </div>
 
@@ -1769,12 +1772,27 @@ createApp({
       return ['SM', 'ASM', 'SSV', '店經理', '副理', '值班經理'].includes(p.role);
     });
 
-    // 🔒 核心專屬權限：僅限 10386493 徐爰坦 (Tan) 本人可見並設定 API Key
+   // 🔒 嚴格判定是否為 10386493 徐爰坦本人登入
     const isTanMaster = computed(() => {
       const p = currentPartner.value;
       if (!p) return false;
-      return String(p.empId).trim() === '10386493' || (p.name && p.name.includes('徐爰坦')) || (p.nickname && p.nickname.toLowerCase() === 'tan');
+      return String(p.empId).trim() === '10386493' || (p.name && p.name.includes('徐爰坦'));
     });
+
+    // 儲存設定 (徐爰坦輸入一次，終身自動儲存至本機與 Firebase 雲端)
+    const saveSettings = () => {
+      if (isTanMaster.value && geminiApiKey.value.trim()) {
+        const key = geminiApiKey.value.trim();
+        // 1. 存入自己手機本機，下次開網頁自動帶出
+        localStorage.setItem('sbux_gemini_key', key);
+        // 2. 存入 Firebase 雲端節點，供其他夥伴背景呼叫
+        if (db) {
+          db.ref('sbux/systemConfig/geminiApiKey').set(key);
+        }
+      }
+      showSettingsModal.value = false;
+      alert('✅ 設定已成功儲存！');
+    };
 
     // 黑圍裙與區域咖啡大師 (DCM) 尊榮識別
     const isSpecialCoffeeMaster = (staff) => {
@@ -2696,6 +2714,18 @@ createApp({
 
     // ==================== 生命週期初始化 ====================
     onMounted(() => {
+      if (db) {
+        // 全時監聽雲端 API Key：全體夥伴在背景自動獲取授權，無需手動輸入
+        db.ref('sbux/systemConfig/geminiApiKey').on('value', snap => {
+          const val = snap.val();
+          if (val) {
+            geminiApiKey.value = val;
+            localStorage.setItem('sbux_gemini_key', val);
+          }
+        });
+        
+        // ... 原有的 staff, materials 監聽保持不變 ...
+      }
       if (isDarkMode.value) document.documentElement.classList.add('dark');
 
       if (db) {
