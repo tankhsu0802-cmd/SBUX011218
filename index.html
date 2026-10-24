@@ -902,7 +902,7 @@
               </button>
             </div>
 
-            <!-- CA 100~300 黑圍裙大師精編講義 -->
+            <!-- CA 100~300 完整黑圍裙大師精編講義 (完整補回) -->
             <div v-if="otherSubTab === 'academy'" class="space-y-3">
               <div class="bg-gradient-to-r from-zinc-950 via-neutral-900 to-zinc-950 text-amber-100 p-4 rounded-2xl shadow-sm space-y-1.5 border border-amber-500/40">
                 <div class="flex items-center justify-between">
@@ -915,6 +915,142 @@
                 <p class="text-[11px] text-zinc-300 leading-relaxed">
                   免連外網。彙整 Coffee Academy 100~300、沖煮原理、產區風味與感官評鑑之標準指南。
                 </p>
+              </div>
+
+              <!-- CA 100：基礎咖啡學 -->
+              <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-xs font-black border border-amber-300 dark:border-amber-800">CA 100</span>
+                    <h4 class="font-black text-slate-900 dark:text-white text-sm">咖啡基礎學與感官入門</h4>
+                  </div>
+                  <span class="text-[10px] font-bold text-slate-400">Coffee Fundamentals</span>
+                </div>
+
+                <div class="space-y-1.5">
+                  <div class="text-xs font-bold text-emerald-900 dark:text-emerald-400 flex items-center gap-1">
+                    <span>👃</span> 核心一：品嚐咖啡四步驟 (Four Steps of Tasting)
+                  </div>
+                  <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+                    <div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700">
+                      <b class="text-slate-800 dark:text-slate-200">1. 聞香 (Smell)：</b>
+                      <p class="text-slate-500 mt-0.5">杯口微罩嗅吸。人體 80% 的風味感受來自嗅覺，先捕捉前調香氣。</p>
+                    </div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700">
+                      <b class="text-slate-800 dark:text-slate-200">2. 啜飲 (Slurp)：</b>
+                      <p class="text-slate-500 mt-0.5">大聲吸入，讓咖啡在口腔呈霧狀均勻散佈於舌面所有味蕾區。</p>
+                    </div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700">
+                      <b class="text-slate-800 dark:text-slate-200">3. 定位 (Locate)：</b>
+                      <p class="text-slate-500 mt-0.5">感知舌頭兩側（酸度）與舌根、上顎（重量醇度）的物理落點。</p>
+                    </div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700">
+                      <b class="text-slate-800 dark:text-slate-200">4. 描述 (Describe)：</b>
+                      <p class="text-slate-500 mt-0.5">以香氣、酸度、醇度、風味字彙具體描繪整體咖啡體驗。</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="space-y-2 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700 leading-relaxed">
+                  <div>
+                    <b class="text-slate-800 dark:text-slate-200">🎯 咖啡四大特徵 (Characteristics)：</b>
+                    <ul class="list-disc pl-4 mt-0.5 text-slate-600 dark:text-slate-300 space-y-0.5">
+                      <li><b>香氣 (Aroma)：</b>乾香與濕香帶出的氣味感受（花香、可可、焦糖、煙燻）。</li>
+                      <li><b>酸度 (Acidity)：</b>非醋酸，為類似水果的明亮清爽感，集中於舌頭兩側。</li>
+                      <li><b>醇度 (Body)：</b>咖啡在口中的重量感與黏稠質地（似脫脂牛奶 vs 全脂牛奶）。</li>
+                      <li><b>風味 (Flavor)：</b>香氣、酸度與醇度在口鼻間融合產生的整體味覺印象。</li>
+                    </ul>
+                  </div>
+                  <div class="border-t border-slate-200 dark:border-slate-700 pt-2">
+                    <b class="text-slate-800 dark:text-slate-200">⚖️ 沖煮四大基本原則 (Fundamentals)：</b>
+                    <ul class="list-disc pl-4 mt-0.5 text-slate-600 dark:text-slate-300 space-y-0.5">
+                      <li><b>比例 (Proportion)：</b>標準手沖粉水比為 1:16（10g 咖啡粉配 160ml 水）。</li>
+                      <li><b>研磨 (Grind)：</b>依器具匹配粗細（濾壓壺粗研磨、手沖中度、義式極細）。</li>
+                      <li><b>水質 (Water)：</b>占咖啡 98% 以上，需使用過濾軟水，水溫 90°C~96°C。</li>
+                      <li><b>新鮮度 (Freshness)：</b>防潮避光常溫保存，開封後於保鮮效期內飲用完畢。</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CA 200：產區風土與永續 -->
+              <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 text-xs font-black border border-emerald-300 dark:border-emerald-800">CA 200</span>
+                    <h4 class="font-black text-slate-900 dark:text-white text-sm">產區風土、處理法與永續採購</h4>
+                  </div>
+                  <span class="text-[10px] font-bold text-slate-400">Origins & Processing</span>
+                </div>
+
+                <div class="space-y-1.5">
+                  <div class="text-xs font-bold text-emerald-900 dark:text-emerald-400 flex items-center gap-1">
+                    <span>🌎</span> 三大核心咖啡產區風味密碼
+                  </div>
+                  <div class="grid grid-cols-3 gap-1.5 text-[11px] text-center">
+                    <div class="p-2 bg-amber-50/70 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-900/50">
+                      <b class="text-amber-950 dark:text-amber-200">拉丁美洲</b>
+                      <div class="text-[10px] text-amber-700 dark:text-amber-400 mt-0.5">爽脆平衡</div>
+                      <p class="text-[10px] text-slate-600 dark:text-slate-300 mt-1 leading-tight">堅果、黑可可、蘋果酸，經典百搭。</p>
+                    </div>
+                    <div class="p-2 bg-rose-50/70 dark:bg-rose-950/30 rounded-xl border border-rose-200 dark:border-rose-900/50">
+                      <b class="text-rose-950 dark:text-rose-200">非洲產區</b>
+                      <div class="text-[10px] text-rose-700 dark:text-rose-400 mt-0.5">明亮多汁</div>
+                      <p class="text-[10px] text-slate-600 dark:text-slate-300 mt-1 leading-tight">柑橘、葡萄柚、黑醋栗與豐富花香。</p>
+                    </div>
+                    <div class="p-2 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                      <b class="text-emerald-950 dark:text-emerald-200">亞太產區</b>
+                      <div class="text-[10px] text-emerald-700 dark:text-emerald-400 mt-0.5">厚重深沉</div>
+                      <p class="text-[10px] text-slate-600 dark:text-slate-300 mt-1 leading-tight">草本、雪松木質、泥土芳香、極低酸度。</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="space-y-2 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700 leading-relaxed">
+                  <div>
+                    <b class="text-slate-800 dark:text-slate-200">🍒 三大主要生豆處理法：</b>
+                    <ul class="list-disc pl-4 mt-0.5 text-slate-600 dark:text-slate-300 space-y-0.5">
+                      <li><b>水洗法 (Washed)：</b>去果肉發酵洗淨後乾燥。風味最純淨、酸度明亮。</li>
+                      <li><b>半水洗/濕刨法 (Semi-Washed / Giling Basah)：</b>印尼蘇門答臘特色。豆體高含水量時去殼，造就醇厚草本質地。</li>
+                      <li><b>日曬法 (Natural)：</b>保留整顆果實曝曬乾燥。果膠完全滲入豆體，發酵水果甜感與莓果香極濃。</li>
+                    </ul>
+                  </div>
+                  <div class="border-t border-slate-200 dark:border-slate-700 pt-2">
+                    <b class="text-slate-800 dark:text-slate-200">🌱 C.A.F.E. Practices (道德採購規範)：</b>
+                    <p class="text-slate-600 dark:text-slate-300 mt-0.5">
+                      四大核心支柱：<b>品質標準</b>、<b>經濟透明度</b>、<b>社會責任</b>、<b>環境領導力</b>。
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CA 300：烘焙工藝與大師品評 -->
+              <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-zinc-950 text-amber-300 text-xs font-black border border-amber-400">CA 300</span>
+                    <h4 class="font-black text-slate-900 dark:text-white text-sm">烘焙熱力學、拼配藝術與黑圍裙使命</h4>
+                  </div>
+                  <span class="text-[10px] font-bold text-amber-500">Roast & Blend Master</span>
+                </div>
+
+                <div class="space-y-2 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700 leading-relaxed">
+                  <div>
+                    <b class="text-slate-800 dark:text-slate-200">🔥 烘焙四階段與梅納反應：</b>
+                    <ul class="list-disc pl-4 mt-0.5 text-slate-600 dark:text-slate-300 space-y-0.5">
+                      <li><b>脫水期：</b>水分逐漸蒸發，豆色由綠轉黃。</li>
+                      <li><b>第一爆 (First Crack)：</b>水氣膨脹破壁，酸質與花果香發展高峰（黃金烘焙 Veranda）。</li>
+                      <li><b>焦糖化與發展期：</b>醣類轉化，醇度提升，酸度漸轉為焦糖甜感（中度烘焙 Pike Place）。</li>
+                      <li><b>第二爆 (Second Crack)：</b>油脂浮出表面，產生烘烤可可與深沉煙燻風味（深度烘焙 Verona / Espresso）。</li>
+                    </ul>
+                  </div>
+                  <div class="border-t border-slate-200 dark:border-slate-700 pt-2">
+                    <b class="text-slate-800 dark:text-slate-200">🎨 經典拼配哲學 (The Art of Blending)：</b>
+                    <p class="text-slate-600 dark:text-slate-300 mt-0.5">
+                      <b>單一產區</b>凸顯風土特色；<b>綜合拼配</b>追求四季穩定的風味平衡。如佛羅娜（Caffè Verona）結合拉丁美洲的可可甜感與印尼的草本厚醇，拼配少許義式烘焙增加層次。
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -949,14 +1085,55 @@
                   </div>
                 </div>
               </div>
+
+              <!-- 豆寶典搜尋與清單 -->
+              <div class="space-y-3">
+                <div class="relative">
+                  <input 
+                    v-model="coffeeSearchQuery" 
+                    type="text" 
+                    placeholder="搜尋豆名、產區、烘焙度..." 
+                    class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white"
+                  >
+                  <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
+                </div>
+
+                <div 
+                  v-for="bean in filteredCoffeeBeans" :key="bean.name" 
+                  class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h3 class="text-base font-bold text-slate-900 dark:text-white">{{ bean.name }}</h3>
+                      <p class="text-[11px] text-slate-400 italic">{{ bean.enName }}</p>
+                    </div>
+                    <span 
+                      :class="{
+                        'bg-amber-100 text-amber-800 border-amber-300': bean.roast === '黃金烘焙',
+                        'bg-orange-100 text-orange-900 border-orange-300': bean.roast === '中度烘焙',
+                        'bg-stone-800 text-stone-100 border-stone-900': bean.roast === '深度烘焙'
+                      }" 
+                      class="px-2 py-0.5 text-xs font-bold rounded-md border">
+                      {{ bean.roast }}
+                    </span>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-2 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
+                    <div><span class="text-slate-400">產區：</span><span class="font-bold text-slate-700 dark:text-slate-300">{{ bean.region }}</span></div>
+                    <div><span class="text-slate-400">處理法：</span><span class="font-bold text-slate-700 dark:text-slate-300">{{ bean.processing }}</span></div>
+                    <div class="col-span-2"><span class="text-slate-400">風味筆記：</span><span class="font-bold text-emerald-800 dark:text-emerald-400">{{ bean.flavorNotes }}</span></div>
+                    <div class="col-span-2"><span class="text-slate-400">建議搭配：</span><span class="text-slate-600 dark:text-slate-300">{{ bean.foodPairing }}</span></div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <!-- Tasting 品評 -->
+            <!-- Tasting 品評 (包含完整橫向拖拉軸滑桿) -->
             <div v-if="otherSubTab === 'tasting'" class="space-y-4">
               <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
                 <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                   <span>☕</span> 今日 Coffee Tasting 心得分享
                 </h3>
+
                 <div class="space-y-2.5 text-xs">
                   <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -965,72 +1142,277 @@
                     </div>
                     <div>
                       <label class="text-[10px] text-slate-500 font-bold block mb-0.5">品評豆款</label>
-                      <input v-model="tastingForm.coffeeName" list="coffeeBeansDatalist" type="text" placeholder="點選或手動輸入品名..." class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white">
+                      <input 
+                        v-model="tastingForm.coffeeName" 
+                        list="coffeeBeansDatalist" 
+                        type="text" 
+                        placeholder="點選或手動輸入品名..." 
+                        class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-700">
+                      
                       <datalist id="coffeeBeansDatalist">
                         <option v-for="b in starbucksCoreBeans" :key="b.name" :value="b.name"></option>
                       </datalist>
                     </div>
                   </div>
-                  <button @click="submitTastingNote" class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition">
-                    發布品評心得並由 AI 評析
+
+                  <!-- 橫向拉桿 1：酸度 -->
+                  <div class="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+                    <div class="flex justify-between items-center text-[11px]">
+                      <span class="font-bold text-slate-700 dark:text-slate-300">🍋 酸度 (Acidity)</span>
+                      <span class="font-bold text-emerald-800 dark:text-emerald-400">{{ getIntensityLabel(tastingForm.acidity) }}</span>
+                    </div>
+                    <input v-model.number="tastingForm.acidity" type="range" min="1" max="5" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-700">
+                  </div>
+
+                  <!-- 橫向拉桿 2：醇度 -->
+                  <div class="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+                    <div class="flex justify-between items-center text-[11px]">
+                      <span class="font-bold text-slate-700 dark:text-slate-300">🧈 醇度 (Body)</span>
+                      <span class="font-bold text-emerald-800 dark:text-emerald-400">{{ getIntensityLabel(tastingForm.body) }}</span>
+                    </div>
+                    <input v-model.number="tastingForm.body" type="range" min="1" max="5" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-700">
+                  </div>
+
+                  <div>
+                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5">香氣 (Aroma)</label>
+                    <input v-model="tastingForm.aroma" type="text" placeholder="例：烤堅果、黑醋栗" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white">
+                  </div>
+                  <div>
+                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5">風味 (Flavor)</label>
+                    <input v-model="tastingForm.flavor" type="text" placeholder="例：入口可可苦甜，尾韻微甘" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white">
+                  </div>
+                  <div>
+                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5">品評心得與搭配 (Experience)</label>
+                    <textarea v-model="tastingForm.notes" rows="2" placeholder="搭配糕點的心得分享..." class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white"></textarea>
+                  </div>
+
+                  <button @click="submitTastingNote" class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 transition flex items-center justify-center gap-1.5">
+                    <span>📝</span> 發布品評心得並由 AI 評析
                   </button>
                 </div>
+              </div>
+              
+              <!-- Tasting 動態牆 -->
+              <div class="space-y-3">
+                <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200">📋 門市 Tasting 品評動態牆</h4>
+                <div v-if="tastingNotesList.length > 0" class="space-y-2.5">
+                  <div 
+                    v-for="item in tastingNotesList" :key="item.id" 
+                    class="rounded-2xl p-3.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm space-y-2 text-xs">
+                    <div class="flex justify-between items-center">
+                      <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span class="px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 rounded text-[10px]">{{ item.coffeeName }}</span>
+                        <span>{{ getStaffName(item.authorStaffId) }}</span>
+                      </div>
+                      <span class="text-[10px] text-slate-400">{{ item.dateStr }}</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-1 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl text-slate-600 dark:text-slate-300">
+                      <div>酸度：<b class="text-slate-800 dark:text-white">{{ getIntensityLabel(item.acidity) }}</b></div>
+                      <div>醇度：<b class="text-slate-800 dark:text-white">{{ getIntensityLabel(item.body) }}</b></div>
+                      <div v-if="item.aroma" class="col-span-2">香氣：{{ item.aroma }}</div>
+                      <div v-if="item.flavor" class="col-span-2">風味：{{ item.flavor }}</div>
+                      <div v-if="item.notes" class="col-span-2 text-emerald-900 dark:text-emerald-300 font-medium">心得：{{ item.notes }}</div>
+                    </div>
+
+                    <div class="bg-emerald-50/80 dark:bg-emerald-950/40 p-2 rounded-xl border border-emerald-200 dark:border-emerald-800 text-[10px] text-emerald-800 dark:text-emerald-300">
+                      🤖 <b>AI 大師回饋：</b>{{ item.aiComment }}
+                    </div>
+                  </div>
+                </div>
+                <p v-else class="text-xs text-slate-400 py-6 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+                  目前尚未有品評心得分享。
+                </p>
               </div>
             </div>
 
             <!-- 拉花擂台賽 -->
             <div v-if="otherSubTab === 'latteArt'" class="space-y-4">
+              
+              <!-- 1. 上傳作品卡片 -->
               <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
                 <div class="flex justify-between items-center">
                   <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <span>📸</span> 上傳拉花作品（AI 評分與週賽）
+                    <span>📸</span> 上傳拉花作品（AI 評分與當週擂台）
                   </h3>
-                  <button v-if="isManager" @click="archiveWeeklyLatteArt" :disabled="isArchivingLatteArt" class="px-2.5 py-1 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-[10px] font-bold">
-                    🏆 結算本週集錦
+                  <!-- 只有管理職在週日能點擊結算封存 -->
+                  <button v-if="isManager" @click="archiveWeeklyLatteArt" :disabled="isArchivingLatteArt" 
+                          class="px-2.5 py-1 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-[10px] font-bold shadow-sm transition active:scale-95">
+                    <span v-if="!isArchivingLatteArt">🏆 結算本週並移入歷史集錦</span>
+                    <span v-else>封存中...</span>
                   </button>
                 </div>
 
                 <div class="space-y-2 text-xs">
-                  <label class="block border-2 border-dashed border-emerald-600 bg-emerald-50/30 dark:bg-emerald-950/20 rounded-xl p-3 text-center cursor-pointer">
-                    <input type="file" accept="image/*" @change="handleLattePhotoUpload" class="hidden">
-                    <span class="text-xs font-bold text-emerald-900 dark:text-emerald-300">拍照或選取拉花照片</span>
-                  </label>
-                  <button @click="submitLattePost" :disabled="isAiEvaluating || !latteForm.photoUrl" class="w-full py-2 bg-emerald-800 text-white rounded-xl text-xs font-bold">
-                    ✨ 提交作品並由 AI 評分
+                  <div class="grid grid-cols-2 gap-2">
+                    <div>
+                      <label class="text-[10px] text-slate-500 font-bold block mb-0.5">參賽夥伴</label>
+                      <input :value="currentPartner?.name || ''" disabled class="w-full px-2 py-1.5 rounded-xl border border-slate-200 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold">
+                    </div>
+                    <div>
+                      <label class="text-[10px] text-slate-500 font-bold block mb-0.5">挑戰圖案</label>
+                      <select v-model="latteForm.pattern" class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white">
+                        <option value="心形 (Heart)">心形 (Heart)</option>
+                        <option value="鬱金香 (Tulip)">鬱金香 (Tulip)</option>
+                        <option value="天鵝 (Swan)">天鵝 (Swan)</option>
+                        <option value="自由創作 (Free Pour)">自由創作 (Free Pour)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block border-2 border-dashed border-emerald-600 bg-emerald-50/30 dark:bg-emerald-950/20 rounded-xl p-4 text-center cursor-pointer active:bg-emerald-100/50">
+                      <input type="file" accept="image/*" @change="handleLattePhotoUpload" class="hidden">
+                      <div v-if="!latteForm.photoUrl" class="space-y-1">
+                        <span class="text-2xl">☕📷</span>
+                        <p class="text-xs font-bold text-emerald-900 dark:text-emerald-300">拍照或選取拉花照片</p>
+                        <p class="text-[10px] text-slate-400">點擊直接開啟相機拍照</p>
+                      </div>
+                      <div v-else class="flex flex-col items-center">
+                        <img :src="latteForm.photoUrl" class="h-28 w-28 object-cover rounded-xl border border-emerald-300 shadow-sm mb-1">
+                        <span class="text-[10px] text-emerald-800 dark:text-emerald-400 font-bold">點擊可更換照片</span>
+                      </div>
+                    </label>
+                  </div>
+
+                  <button 
+                    @click="submitLattePost" 
+                    :disabled="isAiEvaluating || !latteForm.photoUrl" 
+                    class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 disabled:bg-slate-300 transition flex items-center justify-center gap-1.5">
+                    <span v-if="isAiEvaluating" class="animate-spin">🔄</span>
+                    <span>{{ isAiEvaluating ? 'AI 正在分析奶泡細緻度與對稱性...' : '✨ 提交作品並由 AI 評分' }}</span>
                   </button>
                 </div>
               </div>
 
-              <!-- 歷屆拉花歷史集錦資料夾 -->
-              <div v-if="latteArtArchives.length > 0" class="mt-4 space-y-2 pt-2 border-t border-slate-200 dark:border-slate-700">
-                <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                  <span>📁</span> 歷屆拉花集錦相簿 ({{ latteArtArchives.length }} 個展期)
-                </h4>
-                
-                <div v-for="arch in latteArtArchives" :key="arch.key" class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
-                  <div @click="arch.expanded = !arch.expanded" class="p-3 flex justify-between items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-750">
-                    <div class="flex items-center gap-2">
-                      <span class="text-base">📂</span>
-                      <span class="text-xs font-bold text-slate-800 dark:text-white">{{ arch.folderName }}</span>
-                      <span class="text-[10px] px-1.5 py-0.2 bg-amber-100 text-amber-800 rounded font-bold">👑 {{ arch.winner }}</span>
-                    </div>
-                    <span class="text-[10px] text-slate-400">{{ arch.expanded ? '▲ 收合' : '▼ 展開 (' + (arch.totalWorks || 0) + '張)' }}</span>
-                  </div>
-                  
-                  <div v-if="arch.expanded" class="p-2.5 bg-slate-50 dark:bg-slate-900 grid grid-cols-2 gap-2 border-t border-slate-100 dark:border-slate-700">
-                    <div v-for="work in arch.works" :key="work.id" class="rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                      <img :src="work.photoUrl" class="w-full h-24 object-cover">
-                      <div class="p-1.5 text-[10px] flex justify-between">
-                        <span class="font-bold text-slate-800 dark:text-slate-200">{{ work.pattern }}</span>
-                        <span class="text-rose-500 font-bold">❤️ {{ work.votes || 0 }}</span>
+              <!-- 2. 【當週即時擂台區】本週的所有照片直接顯示在頁面上 -->
+              <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                  <h4 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <span>🔥</span> 本週參賽作品展示牆 (共 {{ weeklyLattePosts.length }} 幅)
+                  </h4>
+                  <span class="text-[10px] text-slate-400">本週熱烈競賽中 · 每人限投一票</span>
+                </div>
+
+                <!-- 當週作品列表 (直接大圖平鋪顯示) -->
+                <div v-if="weeklyLattePosts.length > 0" class="space-y-3">
+                  <div 
+                    v-for="post in weeklyLattePosts" :key="post.id" 
+                    class="rounded-2xl p-4 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm space-y-3">
+                    
+                    <!-- 參賽夥伴資訊 -->
+                    <div class="flex justify-between items-center text-xs">
+                      <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold text-[10px]">
+                          {{ getStaffName(post.authorStaffId).slice(0, 1) }}
+                        </div>
+                        <div>
+                          <div class="font-bold text-slate-900 dark:text-white">{{ getStaffName(post.authorStaffId) }}</div>
+                          <span class="text-[10px] text-slate-400">{{ post.dateStr }}</span>
+                        </div>
                       </div>
+                      <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md text-[10px] font-bold">{{ post.pattern }}</span>
+                    </div>
+
+                    <!-- 本週照片直接顯示 -->
+                    <div class="rounded-xl overflow-hidden bg-black/5 border border-slate-100 dark:border-slate-700 max-h-64 flex items-center justify-center">
+                      <img :src="post.photoUrl" class="w-full object-cover">
+                    </div>
+
+                    <!-- AI 評分區 -->
+                    <div class="bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl p-2.5 space-y-1 text-xs">
+                      <div class="flex justify-between items-center">
+                        <span class="font-bold text-emerald-950 dark:text-emerald-300">🤖 AI 技巧評分：{{ post.aiScore }} / 100</span>
+                        <span class="text-amber-500 font-bold">★ {{ (post.aiScore / 20).toFixed(1) }}</span>
+                      </div>
+                      <p class="text-[10px] text-emerald-800 dark:text-emerald-300 leading-relaxed">{{ post.aiFeedback }}</p>
+                    </div>
+
+                    <!-- 投票按鈕 -->
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-700 text-xs">
+                      <span class="text-[11px] text-slate-500">加權總分：<b class="text-emerald-900 dark:text-emerald-400">{{ calculateCombinedScore(post) }} 分</b></span>
+                      <button 
+                        @click="voteLattePost(post)" 
+                        :disabled="hasVoted(post.id)" 
+                        :class="hasVoted(post.id) ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-red-50 hover:bg-red-100 text-red-600 active:scale-95'" 
+                        class="px-3 py-1 rounded-full font-bold border transition flex items-center gap-1">
+                        <span>{{ hasVoted(post.id) ? '✓ 已投' : '❤️' }}</span>
+                        <span>({{ post.votes || 0 }})</span>
+                      </button>
                     </div>
                   </div>
                 </div>
+
+                <div v-else class="text-xs text-slate-400 py-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
+                  本週擂台尚未有夥伴上傳拉花作品，快來當第一個挑戰者！☕
+                </div>
               </div>
+
+              <!-- 3. 【歷屆歷史集錦區】過去週期的照片自動歸檔於下方資料夾中 -->
+              <div class="mt-6 space-y-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <div class="flex justify-between items-center">
+                  <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <span>📁</span> 歷屆拉花歷史集錦 ({{ latteArtArchives.length }} 個展期)
+                  </h4>
+                  <span class="text-[10px] text-slate-400">點擊資料夾可展開過去照片</span>
+                </div>
+
+                <div v-if="latteArtArchives.length === 0" class="text-center py-6 text-xs text-slate-400 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
+                  尚無歷史封存資料，每週日晚上結算後將自動依期間歸檔在此。
+                </div>
+
+                <!-- 過去每一週的資料夾卡片 -->
+                <div v-for="arch in latteArtArchives" :key="arch.key" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                  
+                  <!-- 資料夾橫條 (顯示期間名稱、冠軍、作品數) -->
+                  <div @click="arch.expanded = !arch.expanded" class="p-3.5 flex justify-between items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-750 transition">
+                    <div class="flex items-center gap-2.5">
+                      <span class="text-xl">📂</span>
+                      <div>
+                        <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                          {{ arch.folderName }}
+                          <span class="text-[10px] px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full font-bold">
+                            👑 冠軍：{{ arch.winner }}
+                          </span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-0.5">
+                          共收錄 {{ arch.totalWorks || 0 }} 幅作品 · 結算人：{{ arch.archivedBy }}
+                        </div>
+                      </div>
+                    </div>
+                    <span class="text-xs text-slate-400 font-bold">
+                      {{ arch.expanded ? '▲ 收合' : '▼ 展開照片' }}
+                    </span>
+                  </div>
+
+                  <!-- 點開資料夾後，才展開該週的所有參賽照片牆 -->
+                  <div v-if="arch.expanded" class="p-3 bg-slate-50/70 dark:bg-slate-900/60 grid grid-cols-2 sm:grid-cols-3 gap-2.5 border-t border-slate-100 dark:border-slate-700">
+                    <div v-for="work in arch.works" :key="work.id || work.key" class="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm flex flex-col">
+                      <div class="relative w-full pt-[100%] bg-slate-100">
+                        <img :src="work.photoUrl" class="absolute inset-0 w-full h-full object-cover">
+                        <div v-if="work.rank === 1" class="absolute top-1 left-1 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow">
+                          🥇 冠軍
+                        </div>
+                        <div v-else class="absolute top-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded backdrop-blur-sm">
+                          第 {{ work.rank }} 名
+                        </div>
+                      </div>
+                      <div class="p-2 text-[10px] space-y-0.5">
+                        <div class="font-bold text-slate-800 dark:text-slate-200 truncate">{{ work.pattern }}</div>
+                        <div class="flex justify-between text-slate-500">
+                          <span>{{ work.partnerName || getStaffName(work.authorStaffId) }}</span>
+                          <span class="text-rose-500 font-bold">❤️ {{ work.votes || 0 }} 票</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
             </div>
 
-            <!-- ==================== 永安小學堂 ==================== -->
+            <!-- 永安小學堂 -->
             <div v-if="otherSubTab === 'quiz'" class="space-y-4">
               <div class="bg-gradient-to-r from-emerald-800 to-teal-900 rounded-2xl p-4 text-white shadow-sm space-y-3">
                 <div class="flex justify-between items-center">
@@ -2312,16 +2694,21 @@ createApp({
       }
     };
 
-    // 拉花週結算與歷史集錦
+    // 自動取得本週競賽期間（例如 10/26~11/1拉花照）
     const getWeekDateRangeStr = () => {
       const now = new Date();
-      const day = now.getDay();
+      const day = now.getDay(); // 0 是週日, 1 是週一
+      // 若週日晚上結算，向前推算至週一；其他時間亦以週一為起始
       const diffToMonday = (day === 0 ? -6 : 1) - day;
+      
       const monday = new Date(now);
       monday.setDate(now.getDate() + diffToMonday);
+      
       const sunday = new Date(monday);
       sunday.setDate(monday.getDate() + 6);
-      return `${monday.getMonth() + 1}/${monday.getDate()}~${sunday.getMonth() + 1}/${sunday.getDate()}拉花照`;
+      
+      const formatMD = (d) => `${d.getMonth() + 1}/${d.getDate()}`;
+      return `${formatMD(monday)}~${formatMD(sunday)}拉花照`;
     };
 
     const archiveWeeklyLatteArt = async () => {
