@@ -2558,6 +2558,100 @@ createApp({
         e.target.value = '';
       }
     };
+    // ==================== 拉花競賽：週結算與歷屆集錦 ====================
+    // 1. 自動取得本週競賽的起訖日期（例如：11/2~11/8拉花照）
+    const getWeekDateRangeStr = () => {
+      const now = new Date();
+      // 以週一為起始，週日為結算日
+      const day = now.getDay(); // 0(日) ~ 6(六)
+      const diffToMonday = (day === 0 ? -6 : 1) - day;
+      
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + diffToMonday);
+      
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      
+      const formatMD = (d) => `${d.getMonth() + 1}/${d.getDate()}`;
+      return `${formatMD(monday)}~${formatMD(sunday)}拉花照`;
+    };
+
+    // 2. 結算並封存本週拉花競賽為集錦
+    const isArchivingLatteArt = ref(false);
+    const latteArtArchives = ref([]);
+
+    // 監聽歷屆拉花集錦資料庫
+    if (db) {
+      db.ref('sbux/latteArtArchives').on('value', (snapshot) => {
+        const val = snapshot.val();
+        if (val) {
+          // 依封存時間倒序（最新的週排在最上方）
+          latteArtArchives.value = Object.keys(val).map(key => ({
+            key,
+            ...val[key]
+          })).sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
+        } else {
+          latteArtArchives.value = [];
+        }
+      });
+    }
+
+    const archiveWeeklyLatteArt = async () => {
+      if (!isManager.value) {
+        alert('❌ 僅限店經理或值班幹部操作週結算封存！');
+        return;
+      }
+
+      // 確認本週是否有作品 (兼容陣列或物件格式)
+      const rawArts = latteArts.value || {};
+      const currentArts = Array.isArray(rawArts) 
+        ? rawArts 
+        : Object.entries(rawArts).map(([k, v]) => ({ ...v, key: k }));
+
+      if (currentArts.length === 0) {
+        alert('⚠️ 目前本週擂台尚無任何參賽作品可封存！');
+        return;
+      }
+
+      const defaultArchiveName = getWeekDateRangeStr();
+      const folderName = prompt('請確認本週拉花集錦資料夾名稱：', defaultArchiveName);
+      if (!folderName) return;
+
+      const confirmArchive = confirm(`確定要結算並將 ${currentArts.length} 幅作品封存至「${folderName}」嗎？\n⚠️ 封存後將會清空本週即時擂台，開啟新一週競賽！`);
+      if (!confirmArchive) return;
+
+      isArchivingLatteArt.value = true;
+      try {
+        // 依得票數由高至低排序，並標註名次與冠軍
+        const sortedArts = [...currentArts].sort((a, b) => ((b.votes || 0) - (a.votes || 0)));
+        const finalRankedArts = sortedArts.map((item, idx) => ({
+          ...item,
+          rank: idx + 1,
+          isChampion: idx === 0 && (item.votes || 0) > 0
+        }));
+
+        // 寫入歷史集錦節點：sbux/latteArtArchives/{folderName}
+        const archiveRef = db.ref('sbux/latteArtArchives/' + folderName);
+        await archiveRef.set({
+          folderName,
+          archivedAt: new Date().toISOString(),
+          archivedBy: currentPartner.value?.name || '門市幹部',
+          totalWorks: finalRankedArts.length,
+          winner: finalRankedArts[0]?.partnerName || '無',
+          works: finalRankedArts
+        });
+
+        // 清空當週擂台資料庫：sbux/latteArt/
+        await db.ref('sbux/latteArt').remove();
+
+        alert(`🎉 結算成功！本週作品已完整封存至「${folderName}」集錦中！\n擂台已自動重置，開啟全新一週。`);
+      } catch (err) {
+        console.error('封存拉花集錦失敗：', err);
+        alert('❌ 封存失敗，請檢查網路連線後再試一次！');
+      } finally {
+        isArchivingLatteArt.value = false;
+      }
+    };
     const openAddRuleModal = () => { addRuleModal.value = { show: true, form: { keyword: '', advance_days: 7 } }; };
     const saveNewRule = () => {
       const f = addRuleModal.value.form;
@@ -3181,7 +3275,8 @@ createApp({
       newCommentText,
       toggleComments,
       getCommentCount,
-      submitComment
+      submitComment,
+      archiveWeeklyLatteArt, isArchivingLatteArt, latteArtArchives,
     };
   }
 }).mount('#app');
