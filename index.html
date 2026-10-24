@@ -1577,8 +1577,40 @@
       </div>
 
       <div class="space-y-3 text-xs">
-        <!-- 🔒 核心 API 金鑰欄位：嚴格僅限 10386493 徐爰坦 (Tan) 本人可見 -->
-        <div v-if="isTanMaster" class="space-y-1">
+        <!-- 🔒 API 金鑰設定區塊：已登入徐爰坦 或 未登入時輸入工號解鎖 -->
+        <div v-if="isTanMaster || isUnlockedByAdminPass" class="space-y-1">
+          <label class="block text-slate-600 dark:text-slate-300 font-bold">
+            Gemini API Key (徐爰坦 Tan 專屬配置)
+          </label>
+          <input 
+            v-model="geminiApiKey" 
+            type="password" 
+            placeholder="請在此貼上 AIzaSy... API Key" 
+            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white font-mono focus:outline-none focus:border-emerald-600">
+          <p class="text-[10px] text-slate-400">
+            密鑰安全保存在本機裝置，GitHub 上無明文，其他夥伴無法查看。
+          </p>
+        </div>
+
+        <!-- 尚未驗證的管理員解鎖輸入框 -->
+        <div v-else class="space-y-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+          <span class="font-bold text-slate-700 dark:text-slate-300 block">🔒 管理員安全驗證</span>
+          <p class="text-[10px] text-slate-400">請輸入管理者工號以解鎖 API 設定欄位：</p>
+          <div class="flex gap-2">
+            <input 
+              v-model="adminUnlockInput" 
+              type="password" 
+              maxlength="8" 
+              placeholder="請輸入 8 碼工號" 
+              class="flex-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-2 py-1 text-xs font-mono">
+            <button 
+              type="button" 
+              @click="verifyAdminUnlock" 
+              class="px-3 py-1 bg-emerald-800 text-white rounded-lg font-bold text-xs hover:bg-emerald-700">
+              解鎖
+            </button>
+          </div>
+        </div>
           <label class="block text-slate-600 dark:text-slate-300 font-bold">
             Gemini API Key (徐爰坦 Tan 專屬配置)
           </label>
@@ -1726,6 +1758,18 @@ createApp({
 
     // 🔒 核心專屬權限：僅限 10386493 徐爰坦 (Tan) 本人可見並設定 API Key
     const isTanMaster = computed(() => {
+      const isUnlockedByAdminPass = ref(false);
+    const adminUnlockInput = ref('');
+
+    const verifyAdminUnlock = () => {
+      if (adminUnlockInput.value.trim() === '10386493') {
+        isUnlockedByAdminPass.value = true;
+        adminUnlockInput.value = '';
+        alert('🎉 管理者驗證通過！已解鎖 API 設定欄位。');
+      } else {
+        alert('❌ 驗證失敗，工號不符！');
+      }
+    };
       const p = currentPartner.value;
       if (!p) return false;
       return String(p.empId).trim() === '10386493' || (p.name && p.name.includes('徐爰坦')) || (p.nickname && p.nickname.toLowerCase() === 'tan');
@@ -2730,7 +2774,10 @@ createApp({
       newComments, submitComment,
       coffeeKnowledgeList, weeklyQuizQuestions, quizAnswers, hasSubmittedQuiz, myQuizScore, submitWeeklyQuiz,
       quizCompletedRatio, uncompletedStaffNames, handleKnowledgeFileUpload,
-      albums, openCreateAlbumModal, deleteAlbum, bravoCards, openBravoModal
+      albums, openCreateAlbumModal, deleteAlbum, bravoCards, openBravoModal,
+      isUnlockedByAdminPass,
+      adminUnlockInput,
+      verifyAdminUnlock,
     };
   }
 }).mount('#app');
