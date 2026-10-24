@@ -39,7 +39,7 @@
   <style>
     [v-cloak] { display: none !important; }
     
-    /* iPhone 原生毛玻璃樣式 */
+    /* iPhone 原生半透明毛玻璃樣式 */
     .ios-glass-bar {
       background: rgba(255, 255, 255, 0.85);
       backdrop-filter: blur(20px) saturate(180%);
@@ -141,7 +141,7 @@
           🚪
         </button>
       </template>
-      <button @click="showSettingsModal = true" class="p-1.5 bg-emerald-900/60 hover:bg-emerald-800 text-emerald-200 rounded-lg border border-emerald-700/50 transition" title="門市設定與資安">
+      <button @click="showSettingsModal = true" class="p-1.5 bg-emerald-900/60 hover:bg-emerald-800 text-emerald-200 rounded-lg border border-emerald-700/50 transition" title="門市設定">
         ⚙️
       </button>
     </div>
@@ -150,7 +150,7 @@
   <!-- 頂部防遮擋墊片 -->
   <div class="h-14 no-print"></div>
 
-  <!-- 未登入畫面 -->
+  <!-- ==================== 1. 簡潔登入畫面 (絕無任何 API 輸入框阻擋) ==================== -->
   <div v-if="!currentPartner" class="max-w-sm mx-auto w-full p-4 mt-8 flex-1 flex flex-col justify-center no-print">
     <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-xl space-y-4 text-center">
       <div class="w-16 h-16 rounded-full bg-sbux-green text-white text-2xl flex items-center justify-center mx-auto shadow-md">
@@ -163,21 +163,34 @@
 
       <form @submit.prevent="handleLogin" class="space-y-3 text-left">
         <div>
-          <label class="block text-[11px] font-bold text-slate-500 mb-1">員工編號 (8 碼)</label>
-          <input v-model="loginForm.empId" type="text" maxlength="8" required placeholder="例: 10386493" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white font-mono focus:outline-none focus:border-emerald-600">
+          <label class="block text-[11px] font-bold text-slate-500 mb-1">員工編號 (8 碼工號)</label>
+          <input 
+            v-model="loginForm.empId" 
+            type="text" 
+            maxlength="8" 
+            required 
+            placeholder="請輸入 8 碼員工編號" 
+            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white font-mono focus:outline-none focus:border-emerald-600">
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-slate-500 mb-1">密碼 (預設同工號)</label>
-          <input v-model="loginForm.password" type="password" required placeholder="請輸入密碼" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white font-mono focus:outline-none focus:border-emerald-600">
+          <label class="block text-[11px] font-bold text-slate-500 mb-1">登入密碼 (預設同工號)</label>
+          <input 
+            v-model="loginForm.password" 
+            type="password" 
+            required 
+            placeholder="請輸入密碼" 
+            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white font-mono focus:outline-none focus:border-emerald-600">
         </div>
-        <button type="submit" class="w-full py-2.5 bg-sbux-green hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-md">
-          登入系統
+        <button 
+          type="submit" 
+          class="w-full py-2.5 bg-sbux-green hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-md active:scale-95">
+          登入門市系統
         </button>
       </form>
     </div>
   </div>
 
-  <!-- 登入後的主介面 -->
+  <!-- ==================== 2. 登入後主介面 ==================== -->
   <main v-else class="flex-1 max-w-4xl mx-auto w-full p-3 sm:p-5 space-y-5 screen-only">
     
     <!-- ==================== 頁籤 0：🏠 門市首頁 ==================== -->
@@ -296,7 +309,7 @@
           placeholder="搜尋物料名稱、POS 杯條碼 (如 WM, V, FR, M)..." 
           class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-emerald-600">
 
-        <!-- 物料卡片清單 (支援幽靈資料徹底刪除) -->
+        <!-- 物料卡片清單 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1">
           <div 
             v-for="mat in filteredMaterials" :key="mat._key || mat.id" 
@@ -381,7 +394,8 @@
             <button v-if="isManager" @click="openAddRuleModal" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-[10px] font-bold">
               + 手動新增
             </button>
-            <label v-if="isManager" class="px-2 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold transition cursor-pointer flex items-center gap-1 shadow-sm">
+            <!-- 🌟 所有夥伴皆可點擊執行 AI 辨識 (由背景自動讀取金鑰) -->
+            <label class="px-2 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold transition cursor-pointer flex items-center gap-1 shadow-sm">
               <span>📄</span> AI 辨識 (照片/PDF)
               <input type="file" accept="image/*,application/pdf" @change="handleAiRuleImageUpload" class="hidden" :disabled="isAiRecognizingRules">
             </label>
@@ -415,7 +429,7 @@
           </h3>
           <div class="flex space-x-1">
             <button @click="changeMonth(-1)" class="px-2.5 py-1 text-xs bg-slate-100 dark:bg-slate-700 rounded-lg active:bg-slate-200">‹</button>
-            <button @click="resetToCurrentMonth" class="px-2 py-1 text-xs bg-slate-100 dark:bg-slate-700 rounded-lg active:bg-slate-200">本月</button>
+            <button @click="resetToCurrentMonth" class="px-2.5 py-1 text-xs bg-slate-100 dark:bg-slate-700 rounded-lg active:bg-slate-200">本月</button>
             <button @click="changeMonth(1)" class="px-2.5 py-1 text-xs bg-slate-100 dark:bg-slate-700 rounded-lg active:bg-slate-200">›</button>
           </div>
         </div>
@@ -709,7 +723,7 @@
             </div>
             <h4 class="font-bold text-slate-900 dark:text-white text-sm">Coffee Fundamentals</h4>
             <div class="text-[11px] text-slate-600 dark:text-slate-300 space-y-1.5 bg-slate-50 dark:bg-slate-900 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
-              <div><b>👃 品嚐四步驟：</b>聞香（Smell）、啜飲（Slurp）、定位（Locate）、描述（Describe）。</div>
+              <div><b>👃 品嚐四步驟：</b>聞香（Smell）、啜飲（Slurp）、定位（Locate）、描述（Describe）[cite: 1]。</div>
               <div><b>☕ 咖啡四大特徵：</b>香氣 (Aroma)、酸度 (Acidity)、醇度 (Body)、風味 (Flavor)。</div>
               <div><b>⚖️ 沖煮黃金四原則：</b>比例 (Proportion)、研磨 (Grind)、水質 (Water)、新鮮度 (Freshness)。</div>
               <div><b>🔥 烘焙光譜：</b>黃金烘焙（清爽甘甜）、中度烘焙（圓潤平衡）、深度烘焙（濃郁深沉）。</div>
@@ -826,7 +840,7 @@
           </div>
         </div>
 
-        <!-- 子功能 B：Tasting 品評分享 -->
+        <!-- 子功能 B：Tasting 品評分享 (含橫向拖拉軸滑桿) -->
         <div v-if="otherSubTab === 'tasting'" class="space-y-4">
           <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
             <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -915,7 +929,7 @@
                 :class="isSpecialCoffeeMasterById(item.authorStaffId) ? 'border-amber-400 bg-amber-50/20' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'"
                 class="rounded-2xl p-3.5 border shadow-sm space-y-2 text-xs relative">
                 
-                <!-- 本人自主刪除按鈕 -->
+                <!-- 本人自主刪除按鈕[cite: 1] -->
                 <button 
                   v-if="canDeleteTasting(item)" 
                   @click="deleteTastingNote(item.id)" 
@@ -951,7 +965,7 @@
           </div>
         </div>
 
-        <!-- 子功能 C：拉花擂台賽 -->
+        <!-- 子功能 C：拉花擂台賽 (大圖平鋪牆 + 歷屆集錦)[cite: 1] -->
         <div v-if="otherSubTab === 'latteArt'" class="space-y-4">
           <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
             <h3 class="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
@@ -999,7 +1013,7 @@
             </div>
           </div>
 
-          <!-- 當週作品大圖平鋪展示牆 -->
+          <!-- 當週作品大圖平鋪展示牆[cite: 1] -->
           <div class="space-y-3">
             <h4 class="text-xs font-bold text-slate-800 dark:text-white flex justify-between items-center">
               <span>🖼️ 當週拉花擂台參賽作品牆 (共 {{ weeklyLattePosts.length }} 篇)</span>
@@ -1011,7 +1025,7 @@
                 v-for="post in weeklyLattePosts" :key="post.id"
                 class="bg-white dark:bg-slate-800 rounded-3xl p-4 border border-slate-200 dark:border-slate-700 shadow-md space-y-3 relative">
                 
-                <!-- 本人自主撤銷刪除按鈕 -->
+                <!-- 本人自主撤銷刪除按鈕[cite: 1] -->
                 <button 
                   v-if="canDeleteLatte(post)" 
                   @click="deleteLattePost(post.id)" 
@@ -1033,7 +1047,7 @@
                   </div>
                 </div>
 
-                <!-- 大圖平鋪展示 (清晰無裁切) -->
+                <!-- 大圖平鋪展示 (清晰無裁切)[cite: 1] -->
                 <div class="rounded-2xl overflow-hidden bg-black/5 dark:bg-black/30 border border-slate-100 dark:border-slate-700">
                   <img :src="post.photoUrl" class="w-full max-h-80 object-cover rounded-2xl">
                 </div>
@@ -1082,7 +1096,7 @@
               </div>
             </div>
 
-            <!-- 歷屆拉花歷史集錦相簿資料夾 -->
+            <!-- 歷屆拉花歷史集錦相簿資料夾[cite: 1] -->
             <div v-if="latteArtArchives.length > 0" class="mt-6 space-y-2 pt-4 border-t border-slate-200 dark:border-slate-700">
               <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                 <span>📁</span> 歷屆拉花歷史集錦相簿 ({{ latteArtArchives.length }} 個展期)
@@ -1124,7 +1138,7 @@
             <h3 class="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
               <span>📊</span> 主管看板：小學堂作答進度追蹤
             </h3>
-            <!-- 🛡️ AI 筆記辨識上傳 (具備 10MB 防護攔截) -->
+            <!-- AI 筆記辨識上傳 (具備 10MB 防護攔截)[cite: 4] -->
             <label class="px-2.5 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold cursor-pointer transition flex items-center gap-1 shadow-sm">
               <span>📸</span> AI 辨識筆記 (照片/PDF)
               <input type="file" accept="image/*,application/pdf" @change="handleKnowledgeFileUpload" class="hidden" :disabled="isAiRecognizingNotes">
@@ -1147,14 +1161,14 @@
           </div>
         </div>
 
-        <!-- 夥伴作答介面 (每週隨機抽 5 題測驗) -->
+        <!-- 夥伴作答介面 (每週隨機抽 5 題測驗)[cite: 1] -->
         <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
           <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2.5">
             <div>
               <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                 <span>📝</span> 永安小學堂 · 每週咖啡知識測驗
               </h3>
-              <p class="text-[10px] text-slate-400 mt-0.5">每週一自動依歷屆筆記隨機生成 5 題</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">每週一自動依歷屆筆記隨機生成 5 題[cite: 1]</p>
             </div>
             <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold font-mono">
               第 {{ currentWeekNumber }} 週
@@ -1338,7 +1352,7 @@
     </div>
   </div>
 
-  <!-- 打點試算 Modal (含 21:30 閉店防呆) -->
+  <!-- 打點試算 Modal (含 21:30 閉店防呆)[cite: 1] -->
   <div v-if="calcModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-end justify-center p-4">
     <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
       <div class="flex justify-between items-center">
@@ -1350,7 +1364,7 @@
         <span class="text-[11px] text-emerald-800 dark:text-emerald-300 font-semibold block">標籤打點規範</span>
         <div class="text-sm font-black text-emerald-950 dark:text-emerald-200 leading-relaxed">{{ calcModal.targetTimeStr }}</div>
         <p v-if="calcModal.isAdjustedForClose" class="text-[10px] text-amber-700 dark:text-amber-400 font-medium pt-1">
-          ⚠️ 到期時間落於 21:30~07:00 門市非營業時段，依規範提前至 21:30 閉店前報廢
+          ⚠️ 到期時間落於 21:30~07:00 門市非營業時段，依規範提前至 21:30 閉店前報廢[cite: 1]
         </p>
       </div>
 
@@ -1437,11 +1451,11 @@
         <div>
           <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">職位</label>
           <select v-model="staffModal.form.role" class="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-1.5 bg-slate-50 dark:bg-slate-900">
-            <option value="兼職夥伴">兼職夥伴 (PT)</option>
-            <option value="正職夥伴">正職夥伴 (FT)</option>
-            <option value="值班經理">值班經理 (SSV)</option>
-            <option value="副理">副理 (ASM)</option>
-            <option value="店經理">店經理 (SM)</option>
+            <option value="PT">兼職夥伴 (PT)</option>
+            <option value="FT">正職夥伴 (FT)</option>
+            <option value="SSV">值班經理 (SSV)</option>
+            <option value="ASM">副理 (ASM)</option>
+            <option value="SM">店經理 (SM)</option>
           </select>
         </div>
 
@@ -1453,7 +1467,7 @@
     </div>
   </div>
 
-  <!-- 刪除夥伴安全確認 Modal (姓名 + 工號) -->
+  <!-- 刪除夥伴安全確認 Modal (姓名 + 工號)[cite: 4] -->
   <div v-if="secureStaffDeleteModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-3">
       <div class="flex items-center gap-2 text-rose-600">
@@ -1488,7 +1502,7 @@
     </div>
   </div>
 
-  <!-- 夥伴固定上班時間設定 Modal (06:30 ~ 22:30 每 30 分鐘) -->
+  <!-- 夥伴固定上班時間設定 Modal (06:30 ~ 22:30 每 30 分鐘)[cite: 4] -->
   <div v-if="availModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-center justify-center p-3">
     <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-4 shadow-xl space-y-3 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
@@ -1535,7 +1549,7 @@
     </div>
   </div>
 
-  <!-- 畫假刪除確認 Modal (僅核對中文姓名) -->
+  <!-- 畫假刪除確認 Modal (僅核對中文姓名)[cite: 4] -->
   <div v-if="secureDeleteModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-3">
       <div class="flex items-center gap-2 text-rose-600">
@@ -1566,7 +1580,7 @@
     </div>
   </div>
 
- <!-- ==================== ⚙️ 門市設定 Modal (乾淨修正版) ==================== -->
+  <!-- ==================== ⚙️ 門市設定 Modal (資安權限乾淨版) ==================== -->
   <div v-if="showSettingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl relative">
       
@@ -1580,10 +1594,10 @@
 
       <div class="space-y-3.5 text-xs">
         
-        <!-- 情況 A：已登入徐爰坦本人，或已用工號解鎖 -->
-        <div v-if="isTanMaster || isUnlockedByAdminPass" class="space-y-1.5 p-3 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl">
+        <!-- 只有徐爰坦 (10386493) 登入後才看得到此金鑰設定欄位 -->
+        <div v-if="isTanMaster" class="space-y-1.5 p-3 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl">
           <label class="block text-emerald-900 dark:text-emerald-300 font-bold">
-            Gemini API Key (徐爰坦 Tan 專屬配置)
+            Gemini API Key (徐爰坦 Tan 專屬雲端同步)
           </label>
           <input 
             v-model="geminiApiKey" 
@@ -1591,30 +1605,13 @@
             placeholder="請在此貼上 AIzaSy... API Key" 
             class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white font-mono focus:outline-none focus:border-emerald-600">
           <p class="text-[10px] text-slate-400">
-            密鑰安全保存在本機 localStorage，GitHub 上無明文，其他夥伴無法查看。
+            密鑰儲存於雲端後，全體夥伴皆可共享 AI 辨識功能，且其他夥伴看不到此欄位。
           </p>
         </div>
 
-        <!-- 情況 B：未登入或非本人，提供工號解鎖功能 -->
-        <div v-else class="space-y-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700">
-          <div class="flex items-center gap-1 text-slate-700 dark:text-slate-300 font-bold">
-            <span>🔒</span> 管理員安全驗證
-          </div>
-          <p class="text-[10px] text-slate-400">請輸入管理者工號以解鎖 API 設定欄位：</p>
-          <div class="flex gap-2">
-            <input 
-              v-model="adminUnlockInput" 
-              type="password" 
-              maxlength="8" 
-              placeholder="請輸入 8 碼工號" 
-              class="flex-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl px-2.5 py-1.5 text-xs font-mono">
-            <button 
-              type="button" 
-              @click="verifyAdminUnlock" 
-              class="px-3.5 py-1.5 bg-emerald-800 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 transition">
-              解鎖
-            </button>
-          </div>
+        <!-- 其他夥伴看到的提示 -->
+        <div v-else class="p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-500 text-[11px]">
+          🔒 系統核心 API 配置由系統管理員維護。全店夥伴可正常直接使用各項 AI 辨識與排班功能。
         </div>
 
         <!-- 深色模式切換 -->
@@ -1628,7 +1625,7 @@
 
       </div>
 
-      <!-- 儲存設定按鈕 (排在 Modal 內部底部) -->
+      <!-- 儲存設定按鈕 -->
       <div class="pt-2 flex justify-end gap-2">
         <button @click="saveSettings" class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition">
           儲存設定
@@ -1702,7 +1699,7 @@
 <script>
 // ==================== Firebase 金鑰完全脫鉤 (空字串避免代碼洩漏) ====================
 const firebaseConfig = {
-  apiKey: "", // 已徹底清除明文，由後台或既有環境安全管理
+  apiKey: "", // 已徹底清除明文，杜絕爬蟲盜取
   authDomain: "sbux011218.firebaseapp.com",
   databaseURL: "https://sbux011218-default-rtdb.firebaseio.com",
   projectId: "sbux011218",
@@ -1727,8 +1724,8 @@ createApp({
     const otherSubTab = ref('academy');
     const isDarkMode = ref(localStorage.getItem('sbux_theme') === 'dark');
 
-    // ==================== 🔒 資安升級與專屬權限 ====================
-    // 預設由本機 localStorage 安全讀取，代碼中無任何寫死 Key
+    // ==================== 🔒 API 金鑰雲端共享機制 ====================
+    // 優先從本地快取讀取，若無則在掛載時自動從 Firebase 雲端同步
     const geminiApiKey = ref(localStorage.getItem('sbux_gemini_key') || '');
     const isAiRecognizingRules = ref(false);
     const isAiRecognizingNotes = ref(false);
@@ -1736,7 +1733,32 @@ createApp({
 
     const showSettingsModal = ref(false);
 
-    // 登入狀態 (預設讀取 localStorage 快取)
+    // ==================== 門市基本名冊 (16 位夥伴內建離線備援，絕不卡登入) ====================
+    const default16Staff = [
+      { id: 'staff_1', empId: '10386491', name: '張升豪', nickname: 'Zero', role: 'PT', availability: {} },
+      { id: 'staff_2', empId: '10386492', name: '陳錫玄', nickname: 'David', role: 'PT', availability: {} },
+      { id: 'staff_3', empId: '10386490', name: '沈洺序', nickname: 'Hazel', role: 'PT', availability: {} },
+      { id: 'staff_4', empId: '10386494', name: '蔡孟淳', nickname: 'Lydia', role: 'PT', availability: {} },
+      { id: 'staff_5', empId: '10386493', name: '徐爰坦', nickname: 'Tan', role: 'PT', availability: {} },
+      { id: 'staff_6', empId: '10386495', name: '傅璿家', nickname: 'Oli', role: 'PT', availability: {} },
+      { id: 'staff_7', empId: '10386496', name: '何心妤', nickname: 'Cindy', role: 'PT', availability: {} },
+      { id: 'staff_8', empId: '10386497', name: '林宸戎', nickname: 'Amo', role: 'PT', availability: {} },
+      { id: 'staff_9', empId: '10386498', name: '盧玟卉', nickname: 'Abby', role: 'PT', availability: {} },
+      { id: 'staff_10', empId: '10386499', name: '吳書涵', nickname: 'Winona', role: 'PT', availability: {} },
+      { id: 'staff_11', empId: '10386500', name: '戴翊如', nickname: 'Irene', role: 'PT', availability: {} },
+      { id: 'staff_12', empId: '10386501', name: '何彥融', nickname: 'Ivan', role: 'PT', availability: {} },
+      { id: 'staff_13', empId: '10386502', name: '林皓華', nickname: 'Ken', role: 'PT', availability: {} },
+      { id: 'staff_14', empId: '10386503', name: '蕭椿偉', nickname: 'Hai', role: 'PT', availability: {} },
+      { id: 'staff_15', empId: '10386504', name: '陳玟潔', nickname: 'Jessie', role: 'PT', availability: {} },
+      { id: 'staff_16', empId: '10386505', name: '謝羽捷', nickname: 'Ashley', role: 'PT', availability: {} }
+    ];
+
+    const staffList = ref([...default16Staff]);
+    const validStaffList = computed(() => {
+      return staffList.value.filter(s => s && s.name && s.name !== '0' && s.empId);
+    });
+
+    // 登入狀態 (快取管理)
     const currentPartner = ref(JSON.parse(localStorage.getItem('sbux_login_partner') || 'null'));
     const loginForm = ref({ empId: '', password: '' });
 
@@ -1747,50 +1769,11 @@ createApp({
       return ['SM', 'ASM', 'SSV', '店經理', '副理', '值班經理'].includes(p.role);
     });
 
-    const isDutyOrAbove = computed(() => isManager.value);
-
     // 🔒 核心專屬權限：僅限 10386493 徐爰坦 (Tan) 本人可見並設定 API Key
     const isTanMaster = computed(() => {
-    const isUnlockedByAdminPass = ref(false);
-    const adminUnlockInput = ref('');
-
-    const verifyAdminUnlock = () => {
-      if (adminUnlockInput.value.trim() === '10386493') {
-        isUnlockedByAdminPass.value = true;
-        adminUnlockInput.value = '';
-        alert('🎉 管理者驗證通過！已解鎖 API 設定欄位。');
-      } else {
-        alert('❌ 驗證失敗，工號不符！');
-      }
-    };
       const p = currentPartner.value;
       if (!p) return false;
       return String(p.empId).trim() === '10386493' || (p.name && p.name.includes('徐爰坦')) || (p.nickname && p.nickname.toLowerCase() === 'tan');
-    });
-
-    // ==================== 門市基本資料與 16 位夥伴名冊 ====================
-    const default16Staff = [
-      { empId: '10386491', name: '張升豪', nickname: 'Zero', role: 'PT', availability: {} },
-      { empId: '10386492', name: '陳錫玄', nickname: 'David', role: 'PT', availability: {} },
-      { empId: '10386490', name: '沈洺序', nickname: 'Hazel', role: 'PT', availability: {} },
-      { empId: '10386494', name: '蔡孟淳', nickname: 'Lydia', role: 'PT', availability: {} },
-      { empId: '10386493', name: '徐爰坦', nickname: 'Tan', role: 'PT', availability: {} },
-      { empId: '10386495', name: '傅璿家', nickname: 'Oli', role: 'PT', availability: {} },
-      { empId: '10386496', name: '何心妤', nickname: 'Cindy', role: 'PT', availability: {} },
-      { empId: '10386497', name: '林宸戎', nickname: 'Amo', role: 'PT', availability: {} },
-      { empId: '10386498', name: '盧玟卉', nickname: 'Abby', role: 'PT', availability: {} },
-      { empId: '10386499', name: '吳書涵', nickname: 'Winona', role: 'PT', availability: {} },
-      { empId: '10386500', name: '戴翊如', nickname: 'Irene', role: 'PT', availability: {} },
-      { empId: '10386501', name: '何彥融', nickname: 'Ivan', role: 'PT', availability: {} },
-      { empId: '10386502', name: '林皓華', nickname: 'Ken', role: 'PT', availability: {} },
-      { empId: '10386503', name: '蕭椿偉', nickname: 'Hai', role: 'PT', availability: {} },
-      { empId: '10386504', name: '陳玟潔', nickname: 'Jessie', role: 'PT', availability: {} },
-      { empId: '10386505', name: '謝羽捷', nickname: 'Ashley', role: 'PT', availability: {} }
-    ];
-
-    const staffList = ref([]);
-    const validStaffList = computed(() => {
-      return staffList.value.filter(s => s && s.name && s.name !== '0' && s.empId);
     });
 
     // 黑圍裙與區域咖啡大師 (DCM) 尊榮識別
@@ -1814,15 +1797,23 @@ createApp({
       return s ? s.nickname : '';
     };
 
-    // ==================== 登入 / 登出邏輯 ====================
+    // ==================== 登入 / 登出邏輯 (防死鎖，雙重檢索) ====================
     const handleLogin = () => {
-      const id = loginForm.value.empId.trim();
-      const pwd = loginForm.value.password.trim();
-      
-      const found = validStaffList.value.find(s => String(s.empId).trim() === id);
+      const id = String(loginForm.value.empId || '').trim();
+      const pwd = String(loginForm.value.password || '').trim();
+
+      if (!id) return alert('請輸入 8 碼員工編號！');
+
+      // 優先在當前清單尋找，找不到則從內建備援名單尋找
+      let found = validStaffList.value.find(s => String(s.empId).trim() === id);
+      if (!found) {
+        found = default16Staff.find(s => String(s.empId).trim() === id);
+      }
+
       if (found) {
         // 預設密碼同工號，亦相容自訂密碼
-        if (pwd === found.empId || pwd === (found.customPassword || found.empId)) {
+        const validPwd = found.customPassword || found.empId;
+        if (pwd === found.empId || pwd === validPwd) {
           currentPartner.value = found;
           localStorage.setItem('sbux_login_partner', JSON.stringify(found));
           loginForm.value = { empId: '', password: '' };
@@ -1883,14 +1874,11 @@ createApp({
     const currentTrivia = computed(() => triviaList[triviaIndex.value % triviaList.length]);
     const nextTrivia = () => triviaIndex.value++;
 
-    // 壽星提醒 (生日前 2 天與當天)
+    // 壽星提醒
     const birthdayAlerts = ref([]);
     const checkBirthdays = () => {
       const now = new Date();
-      const currentMonth = now.getMonth() + 1;
-      const currentDate = now.getDate();
       const alerts = [];
-
       validStaffList.value.forEach(s => {
         if (s.birthday) {
           const [m, d] = s.birthday.split('-').map(Number);
@@ -1958,12 +1946,10 @@ createApp({
       const m = target.getMinutes();
       const minutesOfDay = h * 60 + m;
 
-      // 若在 21:30 之後或隔天早上 07:00 之前
       if (minutesOfDay > 21 * 60 + 30 || minutesOfDay < 7 * 60) {
         if (minutesOfDay > 21 * 60 + 30) {
-          target.setHours(21, 30, 0, 0); // 強制提前至當晚 21:30
+          target.setHours(21, 30, 0, 0);
         } else {
-          // 清晨前到期，提前至前一天 21:30 閉店前報廢
           target.setDate(target.getDate() - 1);
           target.setHours(21, 30, 0, 0);
         }
@@ -2001,7 +1987,6 @@ createApp({
       alert(`已將【${item.name}】同步登記至 ${dateStr} 下架行事曆！`);
     };
 
-    // 幽靈物料徹底刪除
     const deleteMaterial = (mat) => {
       const key = mat._key || mat.id;
       if (confirm(`確定要徹底刪除【${mat.name}】物料標準？此操作無法復原。`)) {
@@ -2128,8 +2113,10 @@ createApp({
         return;
       }
 
-      if (!geminiApiKey.value) {
-        alert('請先在設定中輸入 Gemini API Key 才能執行 AI 辨識！');
+      const activeKey = geminiApiKey.value || localStorage.getItem('sbux_gemini_key');
+      if (!activeKey) {
+        alert('系統尚未設定 Gemini API Key，請聯繫主管徐爰坦於門市設定中配置！');
+        e.target.value = '';
         return;
       }
 
@@ -2143,7 +2130,7 @@ createApp({
 [
   { "keyword": "品項名稱", "advance_days": 7 }
 ]`;
-          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey.value}`, {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${activeKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -2254,7 +2241,7 @@ createApp({
       alert('已成功撤銷此請假紀錄！');
     };
 
-    // A4 列印範圍
+    // A4 列印排程範圍
     const scheduleStartDate = ref('');
     const scheduleEndDate = ref('');
     const setNextWeekRange = () => {
@@ -2287,7 +2274,7 @@ createApp({
       return dates;
     });
 
-    // 🌟 每 10 人一頁的二維分頁陣列 (徹底杜絕框線切碎與腰斬)
+    // 每 10 人一頁的二維分頁陣列 (A4 直式滿版列印專用)
     const printStaffPages = computed(() => {
       const list = validStaffList.value;
       const pages = [];
@@ -2346,7 +2333,7 @@ createApp({
       XLSX.writeFile(wb, `星巴克永和永安門市排班表_${scheduleStartDate.value}.xlsx`);
     };
 
-    // 夥伴設定彈窗
+    // 夥伴基本資料增修
     const staffModal = ref({ show: false, isNew: true, form: { empId: '', name: '', nickname: '', role: 'PT' } });
     const openAddStaffModal = () => {
       staffModal.value = { show: true, isNew: true, form: { empId: '', name: '', nickname: '', role: 'PT' } };
@@ -2380,7 +2367,6 @@ createApp({
       const key = t._key || t.id;
       if (db) {
         db.ref('sbux/staff/' + key).remove();
-        // 連帶清除名下假單
         vacationList.value.forEach(v => {
           if (v.staffId === key) db.ref('sbux/vacations/' + v.id).remove();
         });
@@ -2455,10 +2441,11 @@ createApp({
       if (!f.coffeeName) return alert('請輸入品評豆款！');
 
       let aiComment = '這款咖啡的酸醇度平衡得宜，風味捕捉十分精準！';
-      if (geminiApiKey.value) {
+      const activeKey = geminiApiKey.value || localStorage.getItem('sbux_gemini_key');
+      if (activeKey) {
         try {
           const prompt = `咖啡大師點評：豆款【${f.coffeeName}】，酸度${f.acidity}/5，醇度${f.body}/5，香氣【${f.aroma}】，風味【${f.flavor}】。請給予一段溫暖具體的專業讚美與建議。`;
-          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey.value}`, {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${activeKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -2524,11 +2511,12 @@ createApp({
       let aiScore = Math.floor(Math.random() * 15) + 80;
       let aiFeedback = '奶泡光澤柔順，中心度與對稱性極佳，繼續保持！';
 
-      if (geminiApiKey.value) {
+      const activeKey = geminiApiKey.value || localStorage.getItem('sbux_gemini_key');
+      if (activeKey) {
         try {
           const base64 = latteForm.value.photoUrl.split(',')[1];
           const prompt = `你是專業咖啡拉花評審。評估挑戰【${latteForm.value.pattern}】作品。只輸出純JSON：{"score": 88, "feedback": "對比度鮮明..."}`;
-          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey.value}`, {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${activeKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -2682,13 +2670,17 @@ createApp({
       }
     };
 
-    // ==================== ⚙️ 系統設定儲存 ====================
+    // ==================== ⚙️ 系統設定儲存 (同步儲存至 Firebase 雲端供全店共用) ====================
     const saveSettings = () => {
-      if (isTanMaster.value) {
-        localStorage.setItem('sbux_gemini_key', geminiApiKey.value.trim());
+      if (isTanMaster.value && geminiApiKey.value.trim()) {
+        const key = geminiApiKey.value.trim();
+        localStorage.setItem('sbux_gemini_key', key);
+        if (db) {
+          db.ref('sbux/systemConfig/geminiApiKey').set(key);
+        }
       }
       showSettingsModal.value = false;
-      alert('門市系統與資安設定已更新！');
+      alert('門市系統與資安設定已成功儲存！');
     };
 
     const toggleDarkMode = () => {
@@ -2707,29 +2699,47 @@ createApp({
       if (isDarkMode.value) document.documentElement.classList.add('dark');
 
       if (db) {
-        // 同步夥伴
-        db.ref('sbux/staff').on('value', snap => {
+        // 自動從 Firebase 雲端讀取 API Key (讓全店夥伴免輸入即可共享 AI)
+        db.ref('sbux/systemConfig/geminiApiKey').on('value', snap => {
           const val = snap.val();
           if (val) {
+            geminiApiKey.value = val;
+            localStorage.setItem('sbux_gemini_key', val);
+          }
+        });
+
+        // 同步夥伴名冊
+        db.ref('sbux/staff').on('value', snap => {
+          const val = snap.val();
+          if (val && Object.keys(val).length > 0) {
             staffList.value = Object.keys(val).map(k => ({ ...val[k], _key: k }));
           } else {
             staffList.value = [...default16Staff];
           }
         });
-        // 同步物料
+
+        // 同步物料標準
         db.ref('sbux/materials').on('value', snap => {
           const val = snap.val();
           if (val) materials.value = Object.keys(val).map(k => ({ ...val[k], _key: k }));
         });
+
         // 同步排班假單
         db.ref('sbux/vacations').on('value', snap => {
           const val = snap.val();
           vacationList.value = val ? Object.values(val) : [];
         });
-        // 同步拉花
+
+        // 同步拉花貼文
         db.ref('sbux/lattePosts').on('value', snap => {
           const val = snap.val();
           weeklyLattePosts.value = val ? Object.values(val) : [];
+        });
+
+        // 同步公告
+        db.ref('sbux/notices').on('value', snap => {
+          const val = snap.val();
+          notices.value = val ? Object.values(val) : [];
         });
       } else {
         staffList.value = [...default16Staff];
@@ -2745,7 +2755,7 @@ createApp({
       geminiApiKey, isAiRecognizingRules, isAiRecognizingNotes, isAiEvaluating,
       showSettingsModal, saveSettings,
       currentPartner, loginForm, handleLogin, handleLogout,
-      isManager, isDutyOrAbove, isTanMaster,
+      isManager, isTanMaster,
       todayDateString, currentWeekday, notices, bulletinModal, submitBulletin, deleteNotice,
       currentTrivia, nextTrivia, birthdayAlerts, weeklyHonor,
       materials, matSearchQuery, filteredMaterials, calcModal, calcExpiry, addMaterialToSchedule,
@@ -2767,10 +2777,7 @@ createApp({
       newComments, submitComment,
       coffeeKnowledgeList, weeklyQuizQuestions, quizAnswers, hasSubmittedQuiz, myQuizScore, submitWeeklyQuiz,
       quizCompletedRatio, uncompletedStaffNames, handleKnowledgeFileUpload,
-      albums, openCreateAlbumModal, deleteAlbum, bravoCards, openBravoModal,
-      isUnlockedByAdminPass,
-      adminUnlockInput,
-      verifyAdminUnlock,
+      albums, openCreateAlbumModal, deleteAlbum, bravoCards, openBravoModal
     };
   }
 }).mount('#app');
