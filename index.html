@@ -329,7 +329,7 @@
                   <div class="text-[9px] text-blue-700 dark:text-blue-400 font-medium">{{ settledHonors.improvedDelta || '-' }}</div>
                 </div>
 
-                <div class="bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 rounded-xl p-2 space-y-1">
+                <div class="bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl p-2 space-y-1">
                   <span class="text-xl">☕</span>
                   <div class="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold leading-tight">本週活躍</div>
                   <div class="text-xs font-black text-slate-900 dark:text-white truncate">{{ settledHonors.activePartner }}</div>
@@ -361,7 +361,7 @@
                 </div>
                 <div>
                   <div class="text-xs font-bold text-slate-900 dark:text-white">物料打點試算</div>
-                  <div class="text-[10px] text-slate-400">24HR 閉店自動防呆</div>
+                  <div class="text-[10px] text-slate-400">21:30 閉店自動防呆</div>
                 </div>
               </button>
 
@@ -414,7 +414,7 @@
 
           </section>
 
-          <!-- ==================== 頁籤 1：物料效期查詢 ==================== -->
+          <!-- ==================== 頁籤 1：物料效期查詢 (支援防呆與幽靈資料清除) ==================== -->
           <section v-if="currentTab === 'materials'" class="space-y-4">
             <div class="bg-white dark:bg-slate-800 p-3 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex gap-2 items-center">
               <div class="relative flex-1">
@@ -436,7 +436,7 @@
 
             <div class="space-y-3">
               <div 
-                v-for="mat in filteredMaterials" :key="mat.id || (mat.code + mat.name)" 
+                v-for="mat in filteredMaterials" :key="mat._key || mat.id || (mat.code + mat.name)" 
                 class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2">
                 <div class="flex justify-between items-start">
                   <div>
@@ -451,8 +451,8 @@
                       class="px-2 py-0.5 text-xs font-bold rounded-full">
                       {{ mat.temp || '常溫' }}
                     </span>
-                    <button v-if="isManager" @click="editMaterial(mat)" class="p-1 text-slate-400 hover:text-emerald-700 text-xs">✏️</button>
-                    <button v-if="isManager" @click="deleteMaterial(mat)" class="p-1 text-slate-400 hover:text-red-600 text-xs">🗑️</button>
+                    <button v-if="isManager" @click="editMaterial(mat)" class="p-1 text-slate-400 hover:text-emerald-700 text-xs" title="編輯物料">✏️</button>
+                    <button v-if="isManager" @click="deleteMaterial(mat)" class="p-1 text-slate-400 hover:text-red-600 text-xs" title="徹底刪除物料">🗑️</button>
                   </div>
                 </div>
 
@@ -463,8 +463,8 @@
 
                 <button 
                   @click="calculateOpenTime(mat)" 
-                  class="w-full py-2 bg-slate-100 dark:bg-slate-700 hover:bg-emerald-100 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-600 transition">
-                  ⏱️ 試算此時開封到期打點
+                  class="w-full py-2 bg-slate-100 dark:bg-slate-700 hover:bg-emerald-100 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-600 transition flex items-center justify-center gap-1">
+                  <span>⏱️</span> 試算此時開封到期打點 (21:30 閉店自動防呆)
                 </button>
               </div>
 
@@ -1071,7 +1071,7 @@
               </div>
             </div>
 
-            <!-- Tasting 品評 (包含完整橫向拖拉軸滑桿) -->
+            <!-- Tasting 品評 (包含完整橫向拖拉軸滑桿 + 支援夥伴自主刪除) -->
             <div v-if="otherSubTab === 'tasting'" class="space-y-4">
               <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
                 <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -1136,19 +1136,28 @@
                 </div>
               </div>
               
-              <!-- Tasting 動態牆 -->
+              <!-- Tasting 動態牆 (支援自主刪除) -->
               <div class="space-y-3">
                 <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200">📋 門市 Tasting 品評動態牆</h4>
                 <div v-if="tastingNotesList.length > 0" class="space-y-2.5">
                   <div 
                     v-for="item in tastingNotesList" :key="item.id" 
-                    class="rounded-2xl p-3.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm space-y-2 text-xs">
+                    class="rounded-2xl p-3.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm space-y-2 text-xs relative">
                     <div class="flex justify-between items-center">
                       <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                         <span class="px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 rounded text-[10px]">{{ item.coffeeName }}</span>
                         <span>{{ getStaffName(item.authorStaffId) }}</span>
                       </div>
-                      <span class="text-[10px] text-slate-400">{{ item.dateStr }}</span>
+                      <div class="flex items-center gap-2">
+                        <span class="text-[10px] text-slate-400">{{ item.dateStr }}</span>
+                        <!-- 夥伴本人或管理職可刪除此篇品評 -->
+                        <button 
+                          v-if="isManager || item.authorStaffId === currentPartner?.id || item.authorStaffId === currentPartner?._key" 
+                          @click="deleteTastingNote(item.id)" 
+                          class="text-slate-300 hover:text-rose-500 text-xs px-1" title="刪除此篇品評">
+                          🗑️
+                        </button>
+                      </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-1 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl text-slate-600 dark:text-slate-300">
@@ -1170,7 +1179,7 @@
               </div>
             </div>
 
-            <!-- 拉花擂台賽 (本週大圖平鋪 + 歷屆歸檔集錦) -->
+            <!-- 拉花擂台賽 (本週大圖平鋪 + 自主刪除 + 歷屆歸檔集錦) -->
             <div v-if="otherSubTab === 'latteArt'" class="space-y-4">
               
               <!-- 1. 上傳作品卡片 -->
@@ -1228,7 +1237,7 @@
                 </div>
               </div>
 
-              <!-- 2. 【當週即時擂台展示牆】當週所有大圖直接顯示於頁面中 -->
+              <!-- 2. 【當週即時擂台展示牆】當週所有大圖直接顯示於頁面中 (支援自主刪除) -->
               <div class="space-y-3">
                 <div class="flex justify-between items-center">
                   <h4 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -1240,7 +1249,7 @@
                 <div v-if="weeklyLattePosts.length > 0" class="space-y-3">
                   <div 
                     v-for="post in weeklyLattePosts" :key="post.id" 
-                    class="rounded-2xl p-4 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm space-y-3">
+                    class="rounded-2xl p-4 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm space-y-3 relative">
                     
                     <div class="flex justify-between items-center text-xs">
                       <div class="flex items-center gap-2">
@@ -1252,7 +1261,16 @@
                           <span class="text-[10px] text-slate-400">{{ post.dateStr }}</span>
                         </div>
                       </div>
-                      <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md text-[10px] font-bold">{{ post.pattern }}</span>
+                      <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md text-[10px] font-bold">{{ post.pattern }}</span>
+                        <!-- 夥伴本人或管理職可刪除拉花作品 -->
+                        <button 
+                          v-if="isManager || post.authorStaffId === currentPartner?.id || post.authorStaffId === currentPartner?._key" 
+                          @click="deleteLattePost(post.id)" 
+                          class="text-slate-300 hover:text-rose-500 text-xs px-1" title="刪除此幅作品">
+                          🗑️
+                        </button>
+                      </div>
                     </div>
 
                     <!-- 當週照片直接平鋪大圖展示 -->
@@ -1285,7 +1303,7 @@
                         <button 
                           @click="voteLattePost(post)" 
                           :disabled="hasVoted(post.id)" 
-                          :class="hasVoted(post.id) ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 border-slate-200 dark:border-slate-600 cursor-not-allowed' : 'bg-red-50 hover:bg-red-100 text-red-600 border-red-200 active:scale-95'" 
+                          :class="hasVoted(post.id) ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-red-50 hover:bg-red-100 text-red-600 active:scale-95'" 
                           class="px-3 py-1 rounded-full font-bold border transition flex items-center gap-1">
                           <span>{{ hasVoted(post.id) ? '✓ 已投' : '❤️' }}</span>
                           <span>({{ post.votes || 0 }})</span>
@@ -1344,7 +1362,7 @@
                 </div>
 
                 <!-- 過去每一週的資料夾卡片 -->
-                <div v-for="arch in latteArtArchives" :key="arch.key" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                <div v-for="arch in latteArtArchives" :key="arch.folderName || arch.key" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
                   
                   <div @click="arch.expanded = !arch.expanded" class="p-3.5 flex justify-between items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-750 transition">
                     <div class="flex items-center gap-2.5">
@@ -1401,7 +1419,7 @@
                     <h3 class="font-bold text-sm flex items-center gap-1.5">
                       <span>☕</span> 永安咖啡小學堂 (本週測驗)
                     </h3>
-                    <p class="text-[11px] text-emerald-200 mt-0.5">每週一更新 5 題咖啡知識考驗，滿分 5 分！</p>
+                    <p class="text-[11px] text-emerald-200 mt-0.5">每週一依知識筆記更新 5 題咖啡知識考驗，滿分 5 分！</p>
                   </div>
                   <span class="text-xs px-2.5 py-1 bg-white/20 rounded-full font-bold">
                     {{ currentWeekQuizId }}
@@ -1415,7 +1433,7 @@
                       <span v-else class="text-amber-300">尚未完成本週測驗</span>
                     </div>
                   </div>
-                  <button @click="startWeeklyQuiz" class="px-3 py-1.5 bg-white text-emerald-900 rounded-lg font-bold text-xs">
+                  <button @click="startWeeklyQuiz" class="px-3 py-1.5 bg-white text-emerald-900 rounded-lg font-bold text-xs shadow-sm active:scale-95 transition">
                     {{ myQuizResult ? '查看解析' : '開始測驗' }}
                   </button>
                 </div>
@@ -1444,14 +1462,14 @@
               <div v-if="isDutyOrAbove" class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2">
                 <div class="flex justify-between items-center">
                   <h4 class="text-xs font-bold text-slate-900 dark:text-white">📢 發布咖啡知識</h4>
-                  <label class="text-[11px] px-2.5 py-1 bg-emerald-800 text-white rounded-lg font-bold cursor-pointer">
+                  <label class="text-[11px] px-2.5 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg font-bold cursor-pointer transition shadow-sm active:scale-95">
                     <span>📄</span> AI 辨識上傳
                     <input type="file" accept="image/*,application/pdf" @change="handleKnowledgeFileUpload" class="hidden">
                   </label>
                 </div>
-                <input v-model="newKnowledgeTitle" type="text" placeholder="知識主題" class="w-full text-xs p-2 rounded-xl border dark:bg-slate-700 dark:text-white">
+                <input v-model="newKnowledgeTitle" type="text" placeholder="知識主題（如：水洗 vs 日曬風味差異）" class="w-full text-xs p-2 rounded-xl border dark:bg-slate-700 dark:text-white">
                 <textarea v-model="newKnowledgeContent" rows="2" placeholder="知識重點內容..." class="w-full text-xs p-2 rounded-xl border dark:bg-slate-700 dark:text-white"></textarea>
-                <button @click="publishKnowledge" class="w-full py-1.5 bg-emerald-800 text-white rounded-xl text-xs font-bold">發布</button>
+                <button @click="publishKnowledge" class="w-full py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm active:scale-95">發布</button>
               </div>
 
               <!-- 知識列表 -->
@@ -1461,20 +1479,20 @@
                     <span class="text-xs font-bold text-slate-900 dark:text-white">{{ item.title }}</span>
                     <div class="flex items-center gap-2">
                       <span class="text-[10px] text-slate-400">{{ item.date }} · {{ item.author }}</span>
-                      <button v-if="isDutyOrAbove" @click="deleteKnowledge(item.id)" class="text-slate-300 hover:text-rose-500 text-xs px-1">✕</button>
+                      <button v-if="isDutyOrAbove" @click="deleteKnowledge(item.id)" class="text-slate-300 hover:text-rose-500 text-xs px-1" title="刪除筆記">✕</button>
                     </div>
                   </div>
-                  <p class="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-line">{{ item.content }}</p>
+                  <p class="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-line leading-relaxed">{{ item.content }}</p>
                 </div>
               </div>
             </div>
 
             <!-- 週測驗 Modal -->
             <div v-if="showQuizModal" class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-              <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-5 space-y-3">
+              <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-5 space-y-3 shadow-xl">
                 <div class="flex justify-between items-center border-b pb-2">
-                  <h3 class="font-bold text-sm text-slate-900 dark:text-white">📝 本週小學堂測驗</h3>
-                  <button @click="showQuizModal = false" class="text-slate-400">✕</button>
+                  <h3 class="font-bold text-sm text-slate-900 dark:text-white">📝 本週小學堂測驗 ({{ currentWeekQuizId }})</h3>
+                  <button @click="showQuizModal = false" class="text-slate-400 hover:text-slate-600">✕</button>
                 </div>
                 <div v-for="(q, qIndex) in currentQuizQuestions" :key="qIndex" class="space-y-1.5 bg-slate-50 dark:bg-slate-700/50 p-2.5 rounded-xl">
                   <div class="text-xs font-bold text-slate-900 dark:text-white">{{ qIndex + 1 }}. {{ q.question }}</div>
@@ -1827,7 +1845,7 @@
     </div>
   </transition>
 
-  <!-- 打點試算 Modal -->
+  <!-- 打點試算 Modal (21:30 閉店防呆) -->
   <transition name="modal">
     <div v-if="calcModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-end justify-center p-4">
       <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
@@ -1839,7 +1857,7 @@
           <span class="text-[11px] text-emerald-800 dark:text-emerald-300 font-semibold block">標籤打點規範</span>
           <div class="text-sm font-black text-emerald-950 dark:text-emerald-200 leading-relaxed">{{ calcModal.targetTimeStr }}</div>
           <p v-if="calcModal.isAdjustedForClose" class="text-[10px] text-amber-700 dark:text-amber-300 font-medium pt-1">
-            ⚠️ 到期時間落於 21:30~07:00 門市非營業時段，依規範提前至 21:30 閉店前報廢
+            ⚠️ 到期時間落於 21:30~07:00 門市非營業時段，依規範提前至當天 21:30 閉店前報廢
           </p>
         </div>
         <button @click="addMaterialToSchedule" class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center justify-center gap-1.5">
@@ -2170,7 +2188,20 @@ const coffeeTriviaList = [
   { level: "CA 300 工藝", text: "你知道烘焙過程中的「第一爆（First Crack）」與「第二爆（Second Crack）」嗎？一爆代表豆內水分汽化導致細胞壁破裂，產生花果酸香；二爆則是木質素碳化，焦糖化反應達到顛峰！", searchUrl: "https://www.google.com/search?q=Coffee+Roasting+First+Crack+Second+Crack" }
 ];
 
-// 解構 Vue 核心函式
+// 50+ 題星巴克黑圍裙大師基礎常備題庫池（供小學堂每週動態抽取）
+const masterQuizPool = [
+  { question: "冷萃咖啡 (Cold Brew) 的標準常溫慢速萃取時間規範為何？", options: ["10 小時", "12 小時", "20 小時", "24 小時"], correct: 2, explanation: "星巴克冷萃咖啡標準常溫浸泡萃取時間為 20 小時。" },
+  { question: "水洗法處理的咖啡豆，風味輪廓通常呈現何種特色？", options: ["濃郁發酵感與熱帶水果甜", "明亮乾淨的酸質與花果香氣", "厚重泥土與草本風味", "強烈的焦糖與木質香氣"], correct: 1, explanation: "水洗法透過發酵槽洗淨果肉，酸質最為純淨清晰。" },
+  { question: "濃縮咖啡完美的「三層結構」由下至上依序為何？", options: ["Crema、Body、Heart", "Heart (核心)、Body (主體)、Crema (咖啡脂)", "Body、Heart、Crema", "Heart、Crema、Body"], correct: 1, explanation: "底層最深色為 Heart，中間為琥珀色 Body，頂層為綿密金黃色 Crema。" },
+  { question: "門市標準奶泡蒸煮的最佳理想溫度區間為何？", options: ["50°C ~ 55°C", "60°C ~ 65°C (140°F ~ 150°F)", "75°C ~ 80°C", "85°C 以上"], correct: 1, explanation: "蒸奶最適溫度為 60°C ~ 65°C，能釋放乳糖甜感且不破壞蛋白質。" },
+  { question: "產區位於「亞太地區（如蘇門答臘）」的咖啡豆，通常具備什麼主要風味？", options: ["柑橘香與茉莉花香", "可可堅果與柔和果酸", "厚重草本、香料與泥土芳香", "輕盈茶感與蜜桃甜"], correct: 2, explanation: "蘇門答臘等亞太產區多採半水洗處理法，呈現濃郁草本與香料芳香。" },
+  { question: "標準法式濾壓壺 (Press) 官方建議的浸泡萃取時間是多久？", options: ["2 分鐘", "3 分鐘", "4 分鐘", "5 分鐘"], correct: 2, explanation: "法式濾壓壺建議浸泡時間為完整的 4 分鐘。" },
+  { question: "星巴克標準手沖 (Pour-Over) 咖啡的官方建議粉水比為何？", options: ["1 : 12", "1 : 15", "1 : 16", "1 : 18"], correct: 2, explanation: "標準手沖比例為 1:16（10g 咖啡粉配 160ml 水）。" },
+  { question: "生豆處理法中的「半水洗法 (Semi-Washed)」在印尼當地又稱為什麼？", options: ["Giling Basah (濕刨法)", "Monsooning (風漬法)", "Pulped Natural (蜜處理)", "Double Washed (雙重水洗)"], correct: 0, explanation: "半水洗在印尼稱為 Giling Basah（濕刨法），使豆體保留厚實草本醇度。" },
+  { question: "下列哪一款咖啡豆屬於星巴克經典的「黃金烘焙 (Blonde Roast)」？", options: ["Pike Place 派克市場", "Veranda Blend 閒逸綜合", "Caffè Verona 佛羅娜", "Sumatra 蘇門答臘"], correct: 1, explanation: "Veranda Blend（輕度黃金烘焙）具備輕柔滑順與烘烤麥芽甜感。" },
+  { question: "品嚐咖啡的四大特徵中，指「咖啡在舌面上重量與黏稠質地」的是哪一項？", options: ["Aroma (香氣)", "Acidity (酸度)", "Body (醇度)", "Flavor (風味)"], correct: 2, explanation: "醇度 (Body) 描述的是咖啡在舌頭與上顎間感受到的厚實重量與觸感。" }
+];
+
 const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
 
 createApp({
@@ -2182,7 +2213,7 @@ createApp({
     const isCloudConnected = ref(false);
     const isDarkMode = ref(false);
 
-    // 核心陣列狀態
+    // 核心資料陣列（支援鍵值對雙向關聯）
     const materials = ref([]);
     const rules = ref([]);
     const inventory = ref([]);
@@ -2223,40 +2254,44 @@ createApp({
     const quizSubmitted = ref(false);
     const quizScore = ref(0);
 
-    const currentQuizQuestions = ref([
-      {
-        question: "冷萃咖啡 (Cold Brew) 的標準常溫慢速萃取時間規範為何？",
-        options: ["10 小時", "12 小時", "20 小時", "24 小時"],
-        correct: 2,
-        explanation: "星巴克冷萃咖啡標準浸泡萃取時間為 20 小時。"
-      },
-      {
-        question: "水洗法處理的咖啡豆，風味輪廓通常呈現何種特色？",
-        options: ["濃郁發酵感與熱帶水果甜", "明亮乾淨的酸質與花果香氣", "厚重泥土與草本風味", "強烈的焦糖與木質香氣"],
-        correct: 1,
-        explanation: "水洗法透過發酵槽洗淨果肉，酸質最為純淨清晰。"
-      },
-      {
-        question: "濃縮咖啡完美的「三層結構」由下至上依序為何？",
-        options: ["Crema、Body、Heart", "Heart (核心)、Body (主體)、Crema (咖啡脂)", "Body、Heart、Crema", "Heart、Crema、Body"],
-        correct: 1,
-        explanation: "底層最深色為 Heart，中間為琥珀色 Body，頂層為綿密金黃色 Crema。"
-      },
-      {
-        question: "門市標準奶泡蒸煮的最佳理想溫度區間為何？",
-        options: ["50°C ~ 55°C", "60°C ~ 65°C (140°F ~ 150°F)", "75°C ~ 80°C", "85°C 以上"],
-        correct: 1,
-        explanation: "蒸奶最適溫度為 60°C ~ 65°C，能釋放乳糖甜感且不破壞蛋白質。"
-      },
-      {
-        question: "產區位於「亞太地區（如蘇門答臘）」的咖啡豆，通常具備什麼主要風味？",
-        options: ["柑橘香與茉莉花香", "可可堅果與柔和果酸", "厚重草本、香料與泥土芳香", "輕盈茶感與蜜桃甜"],
-        correct: 2,
-        explanation: "蘇門答臘等亞太產區多採半水洗處理法，呈現濃郁草本與香料芳香。"
-      }
-    ]);
+    // 動態題目產生演算法：結合當週種子 + 過去上傳知識 + 題庫池
+    const currentQuizQuestions = computed(() => {
+      const weekStr = currentWeekQuizId.value;
+      let seed = 0;
+      for (let i = 0; i < weekStr.length; i++) seed += weekStr.charCodeAt(i);
 
-    // 權限與人員名冊 computed
+      let pool = [...masterQuizPool];
+
+      // 若過往值班有發布知識筆記，動態將其轉化為考題加入題庫
+      if (coffeeKnowledgeList.value.length > 0) {
+        coffeeKnowledgeList.value.forEach(item => {
+          if (item.title && item.content) {
+            pool.unshift({
+              question: `【門市知識考驗】關於「${item.title}」的要點，下列何者符合門市發布之標準？`,
+              options: [
+                item.content.slice(0, 32) + "...",
+                "非門市標準操作規範",
+                "僅適用於特定外送活動",
+                "規範無特別硬性限制"
+              ],
+              correct: 0,
+              explanation: `依門市知識庫紀錄：${item.content.slice(0, 80)}...`
+            });
+          }
+        });
+      }
+
+      // 依當週種子隨機挑選 5 題
+      const selected = [];
+      const tempPool = [...pool];
+      for (let i = 0; i < 5; i++) {
+        const index = (seed + i * 7) % tempPool.length;
+        selected.push(tempPool.splice(index, 1)[0] || masterQuizPool[i]);
+      }
+      return selected;
+    });
+
+    // 權限與人員名冊
     const isManager = computed(() => {
       if (!currentPartner.value || !currentPartner.value.role) return false;
       return ['店經理', '副理', '值班經理'].includes(currentPartner.value.role);
@@ -2305,7 +2340,7 @@ createApp({
     const weatherIcon = ref('☀️');
     const weatherGreeting = ref('陽光正好，今天也是元氣滿滿的一天 🌟');
 
-    // 監聽 Lucide 圖示
+    // 監聽圖示加載
     watch(currentPartner, (newVal) => {
       if (newVal) {
         nextTick(() => {
@@ -2318,26 +2353,52 @@ createApp({
       nextTick(() => { if (window.lucide) lucide.createIcons(); });
     });
 
-    // Firebase 統一即時資料監聽
+    // Firebase 雙向鍵值綁定（彻底清除幽靈資料）
     if (db) {
       db.ref('.info/connected').on('value', snap => isCloudConnected.value = snap.val() === true);
-      db.ref('sbux/materials').on('value', snap => materials.value = snap.val() ? Object.values(snap.val()) : []);
+
+      // 物料綁定：保留節點 _key，確保 100% 能刪改幽靈資料
+      db.ref('sbux/materials').on('value', snap => {
+        const val = snap.val();
+        if (val) {
+          materials.value = Object.keys(val).map(key => ({
+            _key: key,
+            id: key,
+            ...(typeof val[key] === 'object' ? val[key] : {})
+          }));
+        } else {
+          materials.value = [];
+        }
+      });
+
       db.ref('sbux/rules').on('value', snap => rules.value = snap.val() ? Object.values(snap.val()) : []);
       db.ref('sbux/inventory').on('value', snap => inventory.value = snap.val() ? Object.values(snap.val()) : []);
       db.ref('sbux/vacations').on('value', snap => vacationList.value = snap.val() ? Object.values(snap.val()) : []);
-      db.ref('sbux/latte_posts').on('value', snap => lattePosts.value = snap.val() ? Object.values(snap.val()) : []);
-      db.ref('sbux/tasting_notes').on('value', snap => tastingNotesList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []);
+      
+      // 當週拉花作品（綁定 _key 便於本人刪除）
+      db.ref('sbux/latte_posts').on('value', snap => {
+        const val = snap.val();
+        lattePosts.value = val ? Object.keys(val).map(k => ({ id: k, _key: k, ...val[k] })) : [];
+      });
+
+      // Tasting 品評
+      db.ref('sbux/tasting_notes').on('value', snap => {
+        const val = snap.val();
+        tastingNotesList.value = val ? Object.keys(val).map(k => ({ id: k, _key: k, ...val[k] })).sort((a,b) => b.timestamp - a.timestamp) : [];
+      });
+
       db.ref('sbux/bulletins').on('value', snap => bulletinList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []);
       db.ref('sbux/store_photos').on('value', snap => storePhotos.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []);
       db.ref('sbux/custom_albums').on('value', snap => customAlbums.value = snap.val() ? Object.values(snap.val()) : []);
       db.ref('sbux/bravo_cards').on('value', snap => bravoCardsList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []);
 
-      // 監聽拉花歷史集錦資料庫
+      // 拉花歷史集錦資料庫
       db.ref('sbux/latteArtArchives').on('value', (snapshot) => {
         const val = snapshot.val();
         if (val) {
           latteArtArchives.value = Object.keys(val).map(key => ({
             key,
+            folderName: key,
             ...val[key]
           })).sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
         } else {
@@ -2345,7 +2406,7 @@ createApp({
         }
       });
 
-      // 監聽小學堂資料庫
+      // 小學堂資料
       db.ref('sbux/coffeeKnowledge').on('value', snap => {
         const val = snap.val();
         coffeeKnowledgeList.value = val ? Object.keys(val).map(k => ({ id: k, ...val[k] })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) : [];
@@ -2354,12 +2415,13 @@ createApp({
         weeklyQuizRecords.value = snap.val() || {};
       });
 
-      // 門市人員清單
+      // 人員名單
       db.ref('sbux/staff').on('value', snap => {
         const data = snap.val();
         if (data) {
           staffList.value = Object.keys(data).map(key => ({
             _key: key,
+            id: key,
             ...(typeof data[key] === 'object' ? data[key] : { name: data[key] })
           }));
           const savedEmpId = localStorage.getItem('sbux_logged_empid');
@@ -2555,7 +2617,7 @@ createApp({
       setTimeout(() => { if (window.lucide) lucide.createIcons(); }, 100);
     });
 
-    const calculateCombinedScore = (post) => Number((post.aiScore * 0.7 + (post.votes || 0) * 5).toFixed(1));
+    const calculateCombinedScore = (post) => Number(((post.aiScore || 0) * 0.7 + (post.votes || 0) * 5).toFixed(1));
 
     const settledPeriodStr = computed(() => {
       const now = new Date();
@@ -2674,7 +2736,7 @@ createApp({
       }
     };
 
-    // 拉花週結算與歷史集錦
+    // 拉花週結算與歷屆集錦封存
     const getWeekDateRangeStr = () => {
       const now = new Date();
       const day = now.getDay();
@@ -2689,13 +2751,13 @@ createApp({
     const archiveWeeklyLatteArt = async () => {
       if (!isManager.value) return alert('❌ 僅限店經理或值班幹部操作！');
       const currentArts = lattePosts.value || [];
-      if (currentArts.length === 0) return alert('⚠️ 目前尚無作品可封存！');
+      if (currentArts.length === 0) return alert('⚠️ 目前尚無參賽作品可封存！');
 
       const defaultArchiveName = getWeekDateRangeStr();
       const folderName = prompt('請確認本週拉花集錦資料夾名稱：', defaultArchiveName);
       if (!folderName) return;
 
-      if (!confirm(`確定要將 ${currentArts.length} 幅作品封存至「${folderName}」並開啟新一週嗎？`)) return;
+      if (!confirm(`確定要將 ${currentArts.length} 幅作品封存至「${folderName}」並重置本週擂台嗎？`)) return;
 
       isArchivingLatteArt.value = true;
       try {
@@ -2716,7 +2778,7 @@ createApp({
         });
 
         await db.ref('sbux/latte_posts').remove();
-        alert(`🎉 結算成功！本週作品已完整封存至「${folderName}」！`);
+        alert(`🎉 結算成功！本週作品已完整封存至「${folderName}」歷史集錦中！`);
       } catch (err) {
         alert('❌ 封存失敗，請檢查網路連線。');
       } finally {
@@ -2724,24 +2786,45 @@ createApp({
       }
     };
 
-    // 拉花投票狀態檢查與互動函式（修復白畫面核心）
+    // 拉花投票狀態檢查
     const hasVoted = (postId) => {
-      const post = lattePosts.value.find(p => p.id === postId);
+      const post = lattePosts.value.find(p => p.id === postId || p._key === postId);
       if (!post || !post.voters || !currentPartner.value) return false;
       return !!post.voters[currentPartner.value.empId];
     };
 
     const voteLattePost = (post) => {
       if (!currentPartner.value) return;
-      if (hasVoted(post.id)) {
+      const targetId = post.id || post._key;
+      if (hasVoted(targetId)) {
         alert('⚠️ 您已經投過這張作品囉！每人每張作品限投一票。');
         return;
       }
       if (db) {
         const updatedVotes = (post.votes || 0) + 1;
-        db.ref('sbux/latte_posts/' + post.id + '/votes').set(updatedVotes);
-        db.ref('sbux/latte_posts/' + post.id + '/voters/' + currentPartner.value.empId).set(true);
+        db.ref('sbux/latte_posts/' + targetId + '/votes').set(updatedVotes);
+        db.ref('sbux/latte_posts/' + targetId + '/voters/' + currentPartner.value.empId).set(true);
         alert('❤️ 投票成功！感謝您的寶貴一票！');
+      }
+    };
+
+    // 刪除拉花作品（本人或主管可刪除）
+    const deleteLattePost = async (postId) => {
+      if (confirm('確定要刪除這幅拉花作品嗎？')) {
+        if (db) {
+          await db.ref('sbux/latte_posts/' + postId).remove();
+          alert('🗑️ 已成功刪除拉花作品！');
+        }
+      }
+    };
+
+    // 刪除品評紀錄（本人或主管可刪除）
+    const deleteTastingNote = async (noteId) => {
+      if (confirm('確定要刪除這則 Tasting 品評心得嗎？')) {
+        if (db) {
+          await db.ref('sbux/tasting_notes/' + noteId).remove();
+          alert('🗑️ 已成功刪除品評紀錄！');
+        }
       }
     };
 
@@ -2768,6 +2851,7 @@ createApp({
       if (!text || !currentPartner.value) return;
 
       const commentId = Date.now().toString();
+      const targetId = post.id || post._key;
       const newComment = {
         id: commentId,
         authorStaffId: currentPartner.value.id || currentPartner.value._key,
@@ -2778,12 +2862,12 @@ createApp({
       };
 
       if (db) {
-        db.ref('sbux/latte_posts/' + post.id + '/comments/' + commentId).set(newComment);
+        db.ref('sbux/latte_posts/' + targetId + '/comments/' + commentId).set(newComment);
       }
       newCommentText.value = '';
     };
 
-    // 永安小學堂操作
+    // 永安小學堂發布與 AI 筆記辨識
     const publishKnowledge = async () => {
       if (!newKnowledgeTitle.value || !newKnowledgeContent.value) return;
       const todayStr = new Date().toLocaleDateString('zh-TW');
@@ -2804,6 +2888,7 @@ createApp({
     const deleteKnowledge = async (id) => {
       if (confirm('確定要刪除這篇咖啡知識嗎？')) {
         await db.ref('sbux/coffeeKnowledge/' + id).remove();
+        alert('🗑️ 咖啡筆記已刪除！');
       }
     };
 
@@ -2870,7 +2955,7 @@ createApp({
     };
 
     const submitWeeklyQuiz = async () => {
-      if (userAnswers.value.some(a => a === null)) return alert('請回答完所有題目再繳交！');
+      if (userAnswers.value.some(a => a === null)) return alert('還有題目尚未填答喔，請全部作答完畢再繳交！');
       let score = 0;
       currentQuizQuestions.value.forEach((q, idx) => {
         if (userAnswers.value[idx] === q.correct) score++;
@@ -2887,7 +2972,7 @@ createApp({
       alert(`🎉 測驗完成！得分：${score} / 5 分`);
     };
 
-    // 物料與規則基礎 CRUD
+    // 規則設定
     const openAddRuleModal = () => { addRuleModal.value = { show: true, form: { keyword: '', advance_days: 7 } }; };
     const saveNewRule = () => {
       const f = addRuleModal.value.form;
@@ -2895,6 +2980,7 @@ createApp({
       const id = Date.now().toString();
       if (db) db.ref('sbux/rules/' + id).set({ id, keyword: f.keyword, advance_days: f.advance_days || 0, timing: '21:30 閉店前' });
       addRuleModal.value.show = false;
+      alert(`📋 已建立下架標準【${f.keyword}】！`);
     };
     const deleteRule = (id) => {
       if (confirm('確定移除此規範？') && db) db.ref('sbux/rules/' + id).remove();
@@ -2922,7 +3008,7 @@ createApp({
 
     const submitTastingNote = () => {
       if (!currentPartner.value) return;
-      const comments = ['風味細膩到位！對酸度與醇度的掌握極具專業水準！', '觀察精闢，能準確捕捉此款豆子的核心調性！'];
+      const comments = ['風味細膩到位！對酸度與醇度的掌握極具專業水準！', '觀察精闢，能準確捕捉此款豆子的核心調性！', '香氣與尾韻描寫生動，極適合推薦給顧客！'];
       const newNote = {
         id: Date.now().toString(),
         authorStaffId: currentPartner.value.id || currentPartner.value._key,
@@ -2933,7 +3019,7 @@ createApp({
         flavor: tastingForm.value.flavor || '圓潤平衡',
         notes: tastingForm.value.notes || '無額外備註',
         aiComment: comments[Math.floor(Math.random() * comments.length)],
-        dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`,
+        dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()} ${new Date().getHours().toString().padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}`,
         timestamp: Date.now()
       };
       if (db) db.ref('sbux/tasting_notes/' + newNote.id).set(newNote);
@@ -2959,19 +3045,20 @@ createApp({
         const newPost = {
           id: Date.now().toString(),
           authorStaffId: currentPartner.value.id || currentPartner.value._key,
+          partnerName: currentPartner.value.name,
           pattern: latteForm.value.pattern,
           photoUrl: latteForm.value.photoUrl,
           aiScore: baseScore,
-          aiFeedback: '奶泡質地細緻且具絲滑光澤，構圖完整！',
+          aiFeedback: '奶泡質地細緻且具絲滑光澤，融合對稱性佳！',
           votes: 0,
           voters: {},
-          dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`,
+          dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()} ${new Date().getHours().toString().padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}`,
           timestamp: Date.now()
         };
         if (db) db.ref('sbux/latte_posts/' + newPost.id).set(newPost);
         isAiEvaluating.value = false;
         latteForm.value = { pattern: '心形 (Heart)', photoUrl: '' };
-        alert(`🎉 作品已上傳！AI 給分：${newPost.aiScore} 分！`);
+        alert(`🎉 作品已上傳！AI 給分：${newPost.aiScore} 分！已發布至當週展示牆！`);
       }, 1000);
     };
 
@@ -2987,6 +3074,7 @@ createApp({
       }
       selectedAlbum.value = name;
       createAlbumModal.value.show = false;
+      alert(`📁 已建立相簿【${name}】！`);
     };
 
     const deleteAlbum = (albumName) => {
@@ -3010,6 +3098,7 @@ createApp({
           timestamp: Date.now()
         };
         if (db) db.ref('sbux/store_photos/' + photoItem.id).set(photoItem);
+        alert('📷 照片已上傳至門市相簿！');
       };
       reader.readAsDataURL(file);
     };
@@ -3037,6 +3126,7 @@ createApp({
       };
       if (db) db.ref('sbux/bravo_cards/' + newCard.id).set(newCard);
       bravoModal.value.show = false;
+      alert('💌 Bravo 暖心感謝小卡已公開貼上感謝牆！');
     };
 
     const matSearchQuery = ref('');
@@ -3046,30 +3136,63 @@ createApp({
       return materials.value.filter(m => (m.code && String(m.code).toLowerCase().includes(q)) || (m.name && String(m.name).toLowerCase().includes(q)));
     });
 
+    // 21:30 閉店打點極致防呆計算演算法
     const calculateOpenTime = (mat) => {
       const now = new Date();
       let target = new Date(now.getTime());
       let hours = parseInt(mat.hours) || 0;
       let days = parseInt(mat.days) || 0;
+      
+      // 特殊物料防呆預設（如摩卡預設 24 小時）
       if ((mat.code === 'MO' || (mat.name && mat.name.includes('摩卡'))) && hours === 0 && days === 0) hours = 24;
 
       let isAdjusted = false;
       let finalTiming = '';
+      let targetYear = now.getFullYear();
+      let targetMonth = now.getMonth() + 1;
+      let targetDate = now.getDate();
+
       if (hours > 0) {
         target.setTime(target.getTime() + hours * 3600 * 1000);
-        if (target.getHours() >= 22 || target.getHours() < 7) {
+        const endHour = target.getHours();
+        const endMin = target.getMinutes();
+        const totalEndMinutes = endHour * 60 + endMin;
+
+        // 營業時間 07:00 ~ 21:30 (420分鐘 ~ 1290分鐘)
+        // 若到期時間落在 21:30 之後 或 隔天 07:00 之前，一律強制提前至當天打烊 21:30 報廢
+        if (totalEndMinutes >= 1290 || totalEndMinutes < 420) {
           isAdjusted = true;
+          // 若加上小時後跨天到隔天清晨 07:00 前，日曆天需拉回當天
+          if (totalEndMinutes < 420) {
+            target.setDate(target.getDate() - 1);
+          }
           target.setHours(21, 30, 0, 0);
           finalTiming = '21:30 閉店前報廢';
         } else {
-          finalTiming = `${target.getHours().toString().padStart(2,'0')}:${target.getMinutes().toString().padStart(2,'0')}`;
+          finalTiming = `${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`;
         }
+      } else if (days > 0) {
+        target.setDate(target.getDate() + days);
+        target.setHours(21, 30, 0, 0);
+        finalTiming = `21:30 閉店前 (D+${days})`;
       } else {
-        target.setDate(target.getDate() + (days || 1));
+        target.setHours(21, 30, 0, 0);
         finalTiming = '21:30 閉店前';
       }
-      const finalPullDate = `${target.getFullYear()}-${(target.getMonth()+1).toString().padStart(2,'0')}-${target.getDate().toString().padStart(2,'0')}`;
-      calcModal.value = { show: true, item: mat, targetTimeStr: `${finalPullDate} ${finalTiming}`, pullDate: finalPullDate, timing: finalTiming, isAdjustedForClose: isAdjusted };
+
+      targetYear = target.getFullYear();
+      targetMonth = (target.getMonth() + 1).toString().padStart(2, '0');
+      targetDate = target.getDate().toString().padStart(2, '0');
+      const finalPullDate = `${targetYear}-${targetMonth}-${targetDate}`;
+
+      calcModal.value = {
+        show: true,
+        item: mat,
+        targetTimeStr: `應於 ${targetYear}年${targetMonth}月${targetDate}日 ${finalTiming} EXP`,
+        pullDate: finalPullDate,
+        timing: finalTiming,
+        isAdjustedForClose: isAdjusted
+      };
     };
 
     const addMaterialToSchedule = () => {
@@ -3085,19 +3208,46 @@ createApp({
       };
       if (db) db.ref('sbux/inventory/' + newItem.id).set(newItem);
       modal.show = false;
-      alert('✅ 已登記至下架排程！');
+      alert(`✅ 已將【${modal.item.name}】同步登記至行事曆！`);
     };
 
-    const openAddMaterialModal = () => { matEditModal.value = { show: true, isNew: true, form: { code: '', name: '', temp: '常溫', hours: 0, days: 0, notes: '' } }; };
-    const editMaterial = (mat) => { matEditModal.value = { show: true, isNew: false, form: { ...mat } }; };
+    // 物料手動新增、編輯、徹底刪除幽靈資料
+    const openAddMaterialModal = () => { 
+      matEditModal.value = { show: true, isNew: true, form: { code: '', name: '', temp: '常溫', hours: 0, days: 0, notes: '' } }; 
+    };
+    
+    const editMaterial = (mat) => { 
+      matEditModal.value = { show: true, isNew: false, form: { ...mat } }; 
+    };
+
     const saveMaterialForm = () => {
       const f = matEditModal.value.form;
-      const id = f.id || Date.now().toString();
-      if (db) db.ref('sbux/materials/' + id).set({ ...f, id });
+      // 確保存在唯一節點 Key
+      const key = f._key || f.id || ('mat_' + Date.now());
+      if (db) {
+        db.ref('sbux/materials/' + key).set({
+          ...f,
+          id: key,
+          _key: key
+        });
+      }
       matEditModal.value.show = false;
+      alert(`✅ 物料【${f.name}】儲存成功！`);
     };
+
+    // 幽靈資料徹底刪除函式
     const deleteMaterial = (mat) => {
-      if (confirm(`確定刪除物料【${mat.name}】？`) && db && mat.id) db.ref('sbux/materials/' + mat.id).remove();
+      const targetKey = mat._key || mat.id;
+      if (!targetKey) {
+        alert('❌ 找不到物料節點代碼，無法刪除！');
+        return;
+      }
+      if (confirm(`確定要徹底刪除物料【${mat.name} (${mat.code})】嗎？`)) {
+        if (db) {
+          db.ref('sbux/materials/' + targetKey).remove();
+          alert(`🗑️ 物料【${mat.name}】已成功從雲端資料庫徹底刪除！`);
+        }
+      }
     };
 
     const intakeForm = ref({ itemName: '', factoryExpiry: '', advanceDays: null, saveAsRule: false });
@@ -3203,7 +3353,7 @@ createApp({
     };
 
     const sortedVacationList = computed(() => [...vacationList.value].sort((a,b) => new Date(a.date) - new Date(b.date)));
-    const getVacationData = (staffId, dateStr) => vacationList.value.find(item => item.staffId === staffId && item.date === dateStr) || null;
+    const getVacationData = (staffId, dateStr) => vacationList.value.find(item => (item.staffId === staffId) && item.date === dateStr) || null;
 
     const openAvailabilityModal = (staff) => {
       const existing = staff.availability || {};
@@ -3220,6 +3370,7 @@ createApp({
       const targetKey = staff._key || staff.id;
       if (db && targetKey) db.ref('sbux/staff/' + targetKey + '/availability').set(availModal.value.form);
       availModal.value.show = false;
+      alert(`✅ 已更新【${staff.name}】固定配班時段！`);
     };
 
     const getAvailabilitySummary = (staff) => {
@@ -3245,6 +3396,7 @@ createApp({
       const key = f._key || f.id || ('staff_' + f.empId);
       const updated = {
         id: key,
+        _key: key,
         empId: f.empId,
         password: f.password || f.empId,
         name: f.name,
@@ -3253,6 +3405,7 @@ createApp({
       };
       if (db) db.ref('sbux/staff/' + key).set(updated);
       staffModal.value.show = false;
+      alert(`✅ 夥伴【${f.name}】資料已儲存！`);
     };
 
     const promptSecureDeleteStaff = (s) => { secureStaffDeleteModal.value = { show: true, target: s, inputName: '', inputEmpId: '' }; };
@@ -3303,11 +3456,13 @@ createApp({
         timestamp: Date.now()
       });
       bulletinModal.value.show = false;
+      alert('📢 公告已發布！');
     };
     const deleteBulletin = (id) => {
       if (confirm('確定移除此公告？') && db) db.ref('sbux/bulletins/' + id).remove();
     };
 
+    // 匯出 setup 內所有函數與屬性（保證不再發生全白當機）
     return {
       currentPartner, loginForm, handleLogin, handleLogout, isManager, isDarkMode, toggleDarkMode,
       settingsModal, openSettingsModal, saveNewPassword, saveBirthday, birthdayAlerts,
@@ -3320,9 +3475,9 @@ createApp({
       handleStorePhotoUpload, deleteStorePhoto, deleteAlbum, filteredStorePhotos,
       bravoCardsList, bravoModal, openBravoModal, submitBravoCard,
       starbucksCoreBeans, coffeeSearchQuery, filteredCoffeeBeans,
-      tastingForm, submitTastingNote, tastingNotesList, getIntensityLabel,
+      tastingForm, submitTastingNote, tastingNotesList, getIntensityLabel, deleteTastingNote,
       latteForm, handleLattePhotoUpload, submitLattePost, isAiEvaluating,
-      weeklyLattePosts, calculateCombinedScore, materials, matSearchQuery, filteredMaterials,
+      weeklyLattePosts, deleteLattePost, materials, matSearchQuery, filteredMaterials,
       calcModal, calculateOpenTime, addMaterialToSchedule,
       matEditModal, openAddMaterialModal, editMaterial, saveMaterialForm, deleteMaterial,
       intakeForm, submitIntake, deleteIntake, rules,
@@ -3336,7 +3491,7 @@ createApp({
       availModal, openAvailabilityModal, saveAvailability, getAvailabilitySummary, getAvailabilityText, timeSlots,
       allowedVacationStartStr, scheduleStartDate, scheduleEndDate, targetRangeDates, setNextWeekRange,
       printTodayStr, triggerPrintSchedule, exportScheduleExcel, getStaffName, getVacationData,
-      archiveWeeklyLatteArt, isArchivingLatteArt, latteArtArchives,
+      archiveWeeklyLatteArt, isArchivingLatteArt, latteArtArchives, calculateCombinedScore,
       hasVoted, voteLattePost, activeCommentPostId, newCommentText, toggleComments, getCommentCount, submitComment,
       coffeeKnowledgeList, newKnowledgeTitle, newKnowledgeContent, isUploadingKnowledge,
       isDutyOrAbove, currentWeekQuizId, showQuizModal, userAnswers, quizSubmitted,
