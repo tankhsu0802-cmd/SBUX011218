@@ -1566,9 +1566,11 @@
     </div>
   </div>
 
-  <!-- ==================== ⚙️ 門市設定 Modal (資安嚴格隔離：僅 10386493 徐爰坦 Tan 可見與編輯) ==================== -->
-  <div v-if="showSettingsModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[99999] flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl">
+ <!-- ==================== ⚙️ 門市設定 Modal (乾淨修正版) ==================== -->
+  <div v-if="showSettingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl relative">
+      
+      <!-- 標題與關閉按鈕 -->
       <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2.5">
         <h3 class="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
           <span>⚙️</span> 永安門市系統與資安設定
@@ -1576,25 +1578,28 @@
         <button @click="showSettingsModal = false" class="text-slate-400 hover:text-slate-600">✕</button>
       </div>
 
-      <div class="space-y-3 text-xs">
-        <!-- 🔒 API 金鑰設定區塊：已登入徐爰坦 或 未登入時輸入工號解鎖 -->
-        <div v-if="isTanMaster || isUnlockedByAdminPass" class="space-y-1">
-          <label class="block text-slate-600 dark:text-slate-300 font-bold">
+      <div class="space-y-3.5 text-xs">
+        
+        <!-- 情況 A：已登入徐爰坦本人，或已用工號解鎖 -->
+        <div v-if="isTanMaster || isUnlockedByAdminPass" class="space-y-1.5 p-3 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl">
+          <label class="block text-emerald-900 dark:text-emerald-300 font-bold">
             Gemini API Key (徐爰坦 Tan 專屬配置)
           </label>
           <input 
             v-model="geminiApiKey" 
             type="password" 
             placeholder="請在此貼上 AIzaSy... API Key" 
-            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white font-mono focus:outline-none focus:border-emerald-600">
+            class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-white font-mono focus:outline-none focus:border-emerald-600">
           <p class="text-[10px] text-slate-400">
-            密鑰安全保存在本機裝置，GitHub 上無明文，其他夥伴無法查看。
+            密鑰安全保存在本機 localStorage，GitHub 上無明文，其他夥伴無法查看。
           </p>
         </div>
 
-        <!-- 尚未驗證的管理員解鎖輸入框 -->
-        <div v-else class="space-y-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
-          <span class="font-bold text-slate-700 dark:text-slate-300 block">🔒 管理員安全驗證</span>
+        <!-- 情況 B：未登入或非本人，提供工號解鎖功能 -->
+        <div v-else class="space-y-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700">
+          <div class="flex items-center gap-1 text-slate-700 dark:text-slate-300 font-bold">
+            <span>🔒</span> 管理員安全驗證
+          </div>
           <p class="text-[10px] text-slate-400">請輸入管理者工號以解鎖 API 設定欄位：</p>
           <div class="flex gap-2">
             <input 
@@ -1602,46 +1607,34 @@
               type="password" 
               maxlength="8" 
               placeholder="請輸入 8 碼工號" 
-              class="flex-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-2 py-1 text-xs font-mono">
+              class="flex-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl px-2.5 py-1.5 text-xs font-mono">
             <button 
               type="button" 
               @click="verifyAdminUnlock" 
-              class="px-3 py-1 bg-emerald-800 text-white rounded-lg font-bold text-xs hover:bg-emerald-700">
+              class="px-3.5 py-1.5 bg-emerald-800 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 transition">
               解鎖
             </button>
           </div>
         </div>
-          <label class="block text-slate-600 dark:text-slate-300 font-bold">
-            Gemini API Key (徐爰坦 Tan 專屬配置)
-          </label>
-          <input 
-            v-model="geminiApiKey" 
-            type="password" 
-            placeholder="AIzaSy... (存於本機，不在代碼公開)" 
-            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2 text-slate-800 dark:text-white font-mono focus:outline-none focus:border-emerald-600">
-          <p class="text-[10px] text-slate-400">
-            密鑰安全保存在本機裝置 localStorage，GitHub 原始碼已徹底清空，杜絕被盜刷。
-          </p>
-        </div>
 
-        <!-- 其他全體夥伴（含店長、其他值班與 PT）看到的資訊：無任何輸入框與密鑰字串 -->
-        <div v-else class="p-2.5 bg-slate-50 dark:bg-slate-900 rounded-xl text-[11px] text-slate-500">
-          🔒 系統核心 API 與雲端資安配置僅限系統管理者維護。
-        </div>
-
-        <div class="pt-1 flex items-center justify-between border-t border-slate-100 dark:border-slate-700">
+        <!-- 深色模式切換 -->
+        <div class="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-700">
           <span class="text-slate-600 dark:text-slate-300 font-medium">介面深色模式</span>
-          <button @click="toggleDarkMode" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 rounded-lg text-xs font-mono">
-            {{ isDarkMode ? '🌙 深色開' : '☀️ 淺色開' }}
+          <button @click="toggleDarkMode" class="px-3 py-1 bg-slate-100 dark:bg-slate-700 rounded-xl text-xs font-mono">
+            <span v-if="isDarkMode">🌙 深色開</span>
+            <span v-else>☀️ 淺色開</span>
           </button>
         </div>
+
       </div>
 
-      <div class="flex justify-end pt-2">
-        <button @click="saveSettings" class="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition">
+      <!-- 儲存設定按鈕 (排在 Modal 內部底部) -->
+      <div class="pt-2 flex justify-end gap-2">
+        <button @click="saveSettings" class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition">
           儲存設定
         </button>
       </div>
+
     </div>
   </div>
 
@@ -1758,7 +1751,7 @@ createApp({
 
     // 🔒 核心專屬權限：僅限 10386493 徐爰坦 (Tan) 本人可見並設定 API Key
     const isTanMaster = computed(() => {
-      const isUnlockedByAdminPass = ref(false);
+    const isUnlockedByAdminPass = ref(false);
     const adminUnlockInput = ref('');
 
     const verifyAdminUnlock = () => {
