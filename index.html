@@ -128,11 +128,9 @@
         padding: 0 !important; 
         margin: 0 !important; 
       }
-      .print-page-break {
-        page-break-before: always !important;
-        break-before: page !important;
+      .app-screen, header, footer, .screen-element, .no-print { 
+        display: none !important; 
       }
-      .app-screen, header, footer, .screen-element, .no-print { display: none !important; }
       .print-only-container { 
         display: block !important; 
         width: 100% !important; 
@@ -140,6 +138,22 @@
         padding: 0 !important; 
       }
       
+      /* 每頁獨立頁面容器：第 2 頁、第 3 頁開始強制換頁 */
+      .print-page {
+        width: 100% !important;
+        height: 100vh !important;
+        box-sizing: border-box !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+      }
+      .print-page:last-child {
+        page-break-after: auto !important;
+        break-after: auto !important;
+      }
+
       table { 
         width: 100% !important; 
         table-layout: fixed !important; 
@@ -151,15 +165,18 @@
       tbody { 
         display: table-row-group !important; 
       }
+      /* 10位夥伴的最佳垂直滿版高度為 86px，完全不溢出不切斷 */
       tr { 
         page-break-inside: avoid !important; 
         break-inside: avoid !important; 
-        -webkit-column-break-inside: avoid !important;
-        break-inside: avoid-page !important;
-        height: 110px !important; /* 8 位夥伴均勻垂直填滿 A4 頁面 */
+        height: 86px !important; 
+      }
+      thead tr {
+        height: 42px !important;
       }
       th, td { 
         word-break: break-all !important; 
+        box-sizing: border-box !important;
       }
       @page { 
         size: portrait; 
@@ -1876,74 +1893,80 @@
     </div>
   </transition>
 
-  <!-- ==================== A4 直式滿版列印表格 (垂直滿版＋框線防切斷防移位版) ==================== -->
-  <div class="print-only-container p-2 bg-white text-black font-sans text-xs">
+  <!-- ==================== A4 直式滿版列印表格 (每 10 人獨立分頁表格) ==================== -->
+  <div class="print-only-container bg-white text-black font-sans text-xs">
     
-    <!-- 表頭抬頭 -->
-    <div class="border-b-2 border-black pb-2 mb-2">
-      <div class="flex justify-between items-center mb-1">
-        <div class="text-[11px] font-bold">
-          <div>營業日期：{{ scheduleStartDate ? scheduleStartDate.replace(/-/g, '/') : '' }} - {{ scheduleEndDate ? scheduleEndDate.replace(/-/g, '/') : '' }}</div>
-          <div>門市：永和永安 (011218)</div>
-        </div>
-        <div class="text-center font-black text-2xl tracking-widest leading-none">
-          門市人員週排班表
-        </div>
-        <div class="text-right text-[11px] font-bold">
-          <div>製作日期：{{ printTodayStr }}</div>
-          <div>單位：小時</div>
+    <!-- 依據每 10 人一組循環渲染獨立的頁面與表格 -->
+    <div 
+      v-for="(pageStaffList, pageIdx) in chunkedStaffList" 
+      :key="pageIdx" 
+      class="print-page p-1">
+      
+      <!-- 每一頁都具備獨立完整的抬頭資訊 -->
+      <div class="border-b-2 border-black pb-2 mb-2">
+        <div class="flex justify-between items-center mb-1">
+          <div class="text-[11px] font-bold">
+            <div>營業日期：{{ scheduleStartDate ? scheduleStartDate.replace(/-/g, '/') : '' }} - {{ scheduleEndDate ? scheduleEndDate.replace(/-/g, '/') : '' }}</div>
+            <div>門市：永和永安 (011218)</div>
+          </div>
+          <div class="text-center font-black text-2xl tracking-widest leading-none">
+            門市人員週排班表
+          </div>
+          <div class="text-right text-[11px] font-bold">
+            <div>製作日期：{{ printTodayStr }}</div>
+            <div>單位：小時 (第 {{ pageIdx + 1 }} 頁 / 共 {{ chunkedStaffList.length }} 頁)</div>
+          </div>
         </div>
       </div>
+
+      <!-- 每一頁獨立的表格本體 -->
+      <table class="w-full border-collapse border-2 border-black text-center text-xs" style="table-layout: fixed !important; width: 100% !important; border-collapse: collapse !important;">
+        <thead>
+          <tr class="bg-slate-100 border-b-2 border-black h-[42px]">
+            <th class="border border-black p-1 w-[11%] font-bold text-xs">員工編號</th>
+            <th class="border border-black p-1 w-[12%] font-bold text-xs">員工姓名</th>
+            <th v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-1 w-[11%]">
+              <div class="font-black text-sm">{{ d.displayDate }}</div>
+              <div class="text-xs font-bold">({{ d.weekday }})</div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr 
+            v-for="staff in pageStaffList" 
+            :key="staff._key || staff.id" 
+            class="border-b border-black h-[86px]">
+            <td class="border border-black font-mono text-xs font-black p-0.5 whitespace-nowrap tracking-tighter align-middle">
+              {{ staff?.empId || '' }}
+            </td>
+            <td class="border border-black p-0.5 leading-tight align-middle">
+              <div class="text-base font-black text-slate-900">{{ staff?.name || '' }}</div>
+              <div class="text-xs font-bold text-slate-600">({{ staff?.nickname || '' }})</div>
+            </td>
+            <td v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-1 relative align-middle">
+              <template v-if="getVacationData(staff.id || staff._key, d.dateStr)">
+                <div class="text-black font-black text-3xl leading-none">✕</div>
+                <div class="text-xs font-black text-slate-900 leading-tight mt-0.5">【{{ getVacationData(staff.id || staff._key, d.dateStr).type }}】</div>
+                <div v-if="getVacationData(staff.id || staff._key, d.dateStr).notes" class="text-[11px] font-bold text-slate-600 leading-tight">
+                  ({{ getVacationData(staff.id || staff._key, d.dateStr).notes }})
+                </div>
+              </template>
+              <template v-else-if="getAvailabilityText(staff, d.dateStr)">
+                <div class="text-xs font-bold text-slate-800 leading-snug">
+                  {{ getAvailabilityText(staff, d.dateStr) }}
+                </div>
+              </template>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
     </div>
 
-    <!-- 表格主體 (嚴格鎖定寬度 100%、表格邊框摺疊、儲存格內邊距均勻防裁切) -->
-    <table class="w-full border-collapse border-2 border-black text-center text-xs" style="table-layout: fixed !important; width: 100% !important; border-collapse: collapse !important;">
-      <thead>
-        <tr class="bg-slate-100 border-b-2 border-black h-[42px]">
-          <!-- 嚴格百分比：11% + 12% + (11% * 7 = 77%) = 100% 完美對齊 -->
-          <th class="border border-black p-1 w-[11%] font-bold text-xs" style="box-sizing: border-box !important;">員工編號</th>
-          <th class="border border-black p-1 w-[12%] font-bold text-xs" style="box-sizing: border-box !important;">員工姓名</th>
-          <th v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-1 w-[11%]" style="box-sizing: border-box !important;">
-            <div class="font-black text-sm">{{ d.displayDate }}</div>
-            <div class="text-xs font-bold">({{ d.weekday }})</div>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr 
-          v-for="(staff, sIdx) in validStaffList" 
-          :key="staff._key || staff.id" 
-          :class="[
-            'border-b border-black h-[110px]',
-            sIdx === 8 ? 'print-page-break' : ''
-          ]">
-          <td class="border border-black font-mono text-xs font-black p-0.5 whitespace-nowrap tracking-tighter align-middle" style="box-sizing: border-box !important;">
-            {{ staff?.empId || '' }}
-          </td>
-          <td class="border border-black p-0.5 leading-tight align-middle" style="box-sizing: border-box !important;">
-            <div class="text-base font-black text-slate-900">{{ staff?.name || '' }}</div>
-            <div class="text-xs font-bold text-slate-600">({{ staff?.nickname || '' }})</div>
-          </td>
-          <td v-for="d in targetRangeDates" :key="d.dateStr" class="border border-black p-1 relative align-middle" style="box-sizing: border-box !important;">
-            <template v-if="getVacationData(staff.id || staff._key, d.dateStr)">
-              <div class="text-black font-black text-3xl leading-none">✕</div>
-              <div class="text-xs font-black text-slate-900 leading-tight mt-0.5">【{{ getVacationData(staff.id || staff._key, d.dateStr).type }}】</div>
-              <div v-if="getVacationData(staff.id || staff._key, d.dateStr).notes" class="text-[11px] font-bold text-slate-600 leading-tight">
-                ({{ getVacationData(staff.id || staff._key, d.dateStr).notes }})
-              </div>
-            </template>
-            <template v-else-if="getAvailabilityText(staff, d.dateStr)">
-              <div class="text-xs font-bold text-slate-800 leading-snug">
-                {{ getAvailabilityText(staff, d.dateStr) }}
-              </div>
-            </template>
-          </td>
-        </tr>
-      </tbody>
-    </table>
   </div>
-
+  
 </div>
+  
 <script>
 // ==================== Firebase 金鑰設定 ====================
 const firebaseConfig = {
@@ -2186,6 +2209,15 @@ createApp({
 
     const validStaffList = computed(() => {
       return (staffList.value || []).filter(s => s && typeof s === 'object' && s.empId && s.name && s.name !== '0');
+    });
+    // 將夥伴名單自動切分為每 10 人一頁的二維陣列
+    const chunkedStaffList = computed(() => {
+      const list = validStaffList.value;
+      const pages = [];
+      for (let i = 0; i < list.length; i += 10) {
+        pages.push(list.slice(i, i + 10));
+      }
+      return pages.length > 0 ? pages : [[]];
     });
 
     const getStaffName = (id) => {
@@ -3007,7 +3039,7 @@ createApp({
       matEditModal, openAddMaterialModal, editMaterial, saveMaterialForm, deleteMaterial,
       intakeForm, submitIntake, deleteIntake, rules,
       calYear, calMonth, changeMonth, resetToCurrentMonth, calendarDays, todayStr, selectedDate, selectedDateItems,
-      staffList, validStaffList,
+      staffList, validStaffList, chunkedStaffList,
       isSpecialCoffeeMaster, isSpecialCoffeeMasterById, getStaffNicknameById,
       vacationList, sortedVacationList, vacationForm, submitVacation,
       secureDeleteModal, promptSecureDeleteVacation, confirmSecureDelete,
