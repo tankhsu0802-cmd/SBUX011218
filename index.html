@@ -2942,6 +2942,27 @@ createApp({
     };
 
     const weeklyLattePosts = computed(() => [...lattePosts.value].sort((a,b) => b.timestamp - a.timestamp));
+    // 檢查是否已投過票
+    const hasVoted = (postId) => {
+      const post = lattePosts.value.find(p => p.id === postId);
+      if (!post || !post.voters || !currentPartner.value) return false;
+      return !!post.voters[currentPartner.value.empId];
+    };
+
+    // 進行拉花作品投票
+    const voteLattePost = (post) => {
+      if (!currentPartner.value) return;
+      if (hasVoted(post.id)) {
+        alert('⚠️ 您已經投過這張作品囉！每人每張作品限投一票。');
+        return;
+      }
+      if (db) {
+        const updatedVotes = (post.votes || 0) + 1;
+        db.ref('sbux/latte_posts/' + post.id + '/votes').set(updatedVotes);
+        db.ref('sbux/latte_posts/' + post.id + '/voters/' + currentPartner.value.empId).set(true);
+        alert('❤️ 投票成功！感謝您的寶貴一票！');
+      }
+    };
 
     const openCreateAlbumModal = () => { createAlbumModal.value = { show: true, name: '' }; };
     const saveNewAlbum = () => {
@@ -3308,6 +3329,7 @@ createApp({
       quizScore, currentQuizQuestions, myQuizResult, allActivePartners,
       quizCompletedStaff, quizPendingStaff, publishKnowledge, deleteKnowledge,
       handleKnowledgeFileUpload, startWeeklyQuiz, submitWeeklyQuiz,
+      weeklyLattePosts, hasVoted, voteLattePost,
     };
   }
 }).mount('#app');
