@@ -1109,10 +1109,17 @@
                       <input :value="currentPartner?.name || ''" disabled class="w-full px-2 py-1.5 rounded-xl border border-slate-200 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold">
                     </div>
                     <div>
-                      <label class="text-[10px] text-slate-500 font-bold block mb-0.5">品評豆款</label>
-                      <select v-model="tastingForm.coffeeName" class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white">
-                        <option v-for="b in starbucksCoreBeans" :key="b.name" :value="b.name">{{ b.name }}</option>
-                      </select>
+                      <label class="text-[10px] text-slate-500 font-bold block mb-0.5">品評豆款 (可選取或自行輸入)</label>
+                      <input 
+                        v-model="tastingForm.coffeeName" 
+                        list="coffeeBeansDatalist" 
+                        type="text" 
+                        placeholder="點選或手動輸入品名..." 
+                        class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-700">
+                      
+                      <datalist id="coffeeBeansDatalist">
+                        <option v-for="b in starbucksCoreBeans" :key="b.name" :value="b.name"></option>
+                      </datalist>
                     </div>
                   </div>
 
@@ -1150,7 +1157,7 @@
                   </button>
                 </div>
               </div>
-
+              
               <div class="space-y-3">
                 <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200">📋 門市 Tasting 品評動態牆</h4>
                 <div v-if="tastingNotesList.length > 0" class="space-y-2.5">
