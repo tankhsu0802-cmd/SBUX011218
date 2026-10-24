@@ -28,13 +28,12 @@
       overflow-x: hidden;
     }
     .app-screen {
-      padding-top: 64px; /* 為固定頂部 Header 預留空間 */
-      padding-bottom: 95px; /* 為固定底部 Navigation 預留空間 */
+      padding-top: 64px; /* 預留頂部固定橫幅空間 */
+      padding-bottom: 95px; /* 預留底部導航欄空間 */
       width: 100%;
       overflow-x: hidden;
     }
 
-    /* 修復行動端 input[type="date"] 壓扁塌陷問題 */
     input[type="date"] {
       -webkit-appearance: none;
       -moz-appearance: none;
@@ -70,13 +69,12 @@
 
     /* 固定頂部 Header 毛玻璃效果 */
     .ios-header-glass {
-      background: rgba(6, 78, 59, 0.88) !important; /* 墨綠毛玻璃 */
+      background: rgba(6, 78, 59, 0.88) !important;
       backdrop-filter: blur(20px) saturate(180%) !important;
       -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
       border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
     }
 
-    /* 黑金質感卡片 */
     .black-gold-card {
       background: linear-gradient(135deg, #09090b 0%, #18181b 50%, #27272a 100%) !important;
       border: 1.5px solid #d97706 !important;
@@ -88,7 +86,6 @@
       box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
     }
 
-    /* 動態毛毛雨特效 */
     .rain-container {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -105,90 +102,37 @@
       100% { transform: translateY(220px); opacity: 0.2; }
     }
 
-    /* Vue 平滑過場動畫 */
     .fade-enter-active, .fade-leave-active {
       transition: opacity 0.25s ease, transform 0.25s ease;
     }
-    .fade-enter-from {
-      opacity: 0;
-      transform: translateY(6px);
-    }
-    .fade-leave-to {
-      opacity: 0;
-      transform: translateY(-6px);
-    }
+    .fade-enter-from { opacity: 0; transform: translateY(6px); }
+    .fade-leave-to { opacity: 0; transform: translateY(-6px); }
 
     .modal-enter-active, .modal-leave-active {
       transition: opacity 0.2s ease, transform 0.2s ease;
     }
-    .modal-enter-from, .modal-leave-to {
-      opacity: 0;
-      transform: scale(0.95);
-    }
+    .modal-enter-from, .modal-leave-to { opacity: 0; transform: scale(0.95); }
 
-    /* 嚴格的 A4 直式列印排版 */
     @media screen {
       .print-only-container { display: none !important; }
     }
     @media print {
-      html, body { 
-        background: white !important; 
-        color: black !important; 
-        padding: 0 !important; 
-        margin: 0 !important; 
-      }
-      .app-screen, header, footer, .screen-element, .no-print { 
-        display: none !important; 
-      }
-      .print-only-container { 
-        display: block !important; 
-        width: 100% !important; 
-        margin: 0 !important; 
-        padding: 0 !important; 
-      }
-      
+      html, body { background: white !important; color: black !important; padding: 0 !important; margin: 0 !important; }
+      .app-screen, header, footer, .screen-element, .no-print { display: none !important; }
+      .print-only-container { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
       .print-page {
-        width: 100% !important;
-        height: 100vh !important;
-        box-sizing: border-box !important;
-        page-break-after: always !important;
-        break-after: page !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: flex-start !important;
+        width: 100% !important; height: 100vh !important; box-sizing: border-box !important;
+        page-break-after: always !important; break-after: page !important;
+        display: flex !important; flex-direction: column !important; justify-content: flex-start !important;
       }
-      .print-page:last-child {
-        page-break-after: auto !important;
-        break-after: auto !important;
-      }
-
-      table { 
-        width: 100% !important; 
-        table-layout: fixed !important; 
-        border-collapse: collapse !important; 
-      }
-      thead { 
-        display: table-header-group !important; 
-      }
-      tbody { 
-        display: table-row-group !important; 
-      }
-      tr { 
-        page-break-inside: avoid !important; 
-        break-inside: avoid !important; 
-        height: 86px !important; 
-      }
-      thead tr {
-        height: 42px !important;
-      }
-      th, td { 
-        word-break: break-all !important; 
-        box-sizing: border-box !important; 
-      }
-      @page { 
-        size: portrait; 
-        margin: 0.6cm 0.5cm !important; 
-      }
+      .print-page:last-child { page-break-after: auto !important; break-after: auto !important; }
+      table { width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; }
+      thead { display: table-header-group !important; }
+      tbody { display: table-row-group !important; }
+      tr { page-break-inside: avoid !important; break-inside: avoid !important; height: 86px !important; }
+      thead tr { height: 42px !important; }
+      th, td { word-break: break-all !important; box-sizing: border-box !important; }
+      @page { size: portrait; margin: 0.6cm 0.5cm !important; }
     }
   </style>
 </head>
@@ -235,7 +179,7 @@
   <!-- ==================== 2. 登入後主容器 ==================== -->
   <div v-else class="app-screen max-w-md mx-auto w-full min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col shadow-lg border-x border-slate-200 dark:border-slate-800 relative">
 
-    <!-- 頂部 Header：已全面改為 fixed 固定在頁面最上方 -->
+    <!-- 頂部 Header：固定於螢幕最頂端 -->
     <header class="fixed top-0 left-0 right-0 z-50 ios-header-glass text-white shadow-md">
       <div class="max-w-md mx-auto px-4 py-2.5 flex items-center justify-between">
         <div class="flex items-center space-x-2">
@@ -902,7 +846,7 @@
               </button>
             </div>
 
-            <!-- CA 100~300 完整黑圍裙大師精編講義 (完整補回) -->
+            <!-- CA 100~300 完整黑圍裙大師精編講義 (完整收錄) -->
             <div v-if="otherSubTab === 'academy'" class="space-y-3">
               <div class="bg-gradient-to-r from-zinc-950 via-neutral-900 to-zinc-950 text-amber-100 p-4 rounded-2xl shadow-sm space-y-1.5 border border-amber-500/40">
                 <div class="flex items-center justify-between">
@@ -1226,7 +1170,7 @@
               </div>
             </div>
 
-            <!-- 拉花擂台賽 -->
+            <!-- 拉花擂台賽 (本週大圖平鋪 + 歷屆歸檔集錦) -->
             <div v-if="otherSubTab === 'latteArt'" class="space-y-4">
               
               <!-- 1. 上傳作品卡片 -->
@@ -1235,7 +1179,6 @@
                   <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                     <span>📸</span> 上傳拉花作品（AI 評分與當週擂台）
                   </h3>
-                  <!-- 只有管理職在週日能點擊結算封存 -->
                   <button v-if="isManager" @click="archiveWeeklyLatteArt" :disabled="isArchivingLatteArt" 
                           class="px-2.5 py-1 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-[10px] font-bold shadow-sm transition active:scale-95">
                     <span v-if="!isArchivingLatteArt">🏆 結算本週並移入歷史集錦</span>
@@ -1285,22 +1228,20 @@
                 </div>
               </div>
 
-              <!-- 2. 【當週即時擂台區】本週的所有照片直接顯示在頁面上 -->
+              <!-- 2. 【當週即時擂台展示牆】當週所有大圖直接顯示於頁面中 -->
               <div class="space-y-3">
                 <div class="flex justify-between items-center">
                   <h4 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                     <span>🔥</span> 本週參賽作品展示牆 (共 {{ weeklyLattePosts.length }} 幅)
                   </h4>
-                  <span class="text-[10px] text-slate-400">本週熱烈競賽中 · 每人限投一票</span>
+                  <span class="text-[10px] text-slate-400">當週熱烈競賽中 · 每人每圖限投一票</span>
                 </div>
 
-                <!-- 當週作品列表 (直接大圖平鋪顯示) -->
                 <div v-if="weeklyLattePosts.length > 0" class="space-y-3">
                   <div 
                     v-for="post in weeklyLattePosts" :key="post.id" 
                     class="rounded-2xl p-4 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm space-y-3">
                     
-                    <!-- 參賽夥伴資訊 -->
                     <div class="flex justify-between items-center text-xs">
                       <div class="flex items-center gap-2">
                         <div class="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold text-[10px]">
@@ -1314,12 +1255,11 @@
                       <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md text-[10px] font-bold">{{ post.pattern }}</span>
                     </div>
 
-                    <!-- 本週照片直接顯示 -->
+                    <!-- 當週照片直接平鋪大圖展示 -->
                     <div class="rounded-xl overflow-hidden bg-black/5 border border-slate-100 dark:border-slate-700 max-h-64 flex items-center justify-center">
                       <img :src="post.photoUrl" class="w-full object-cover">
                     </div>
 
-                    <!-- AI 評分區 -->
                     <div class="bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl p-2.5 space-y-1 text-xs">
                       <div class="flex justify-between items-center">
                         <span class="font-bold text-emerald-950 dark:text-emerald-300">🤖 AI 技巧評分：{{ post.aiScore }} / 100</span>
@@ -1328,18 +1268,60 @@
                       <p class="text-[10px] text-emerald-800 dark:text-emerald-300 leading-relaxed">{{ post.aiFeedback }}</p>
                     </div>
 
-                    <!-- 投票按鈕 -->
+                    <!-- 投票與留言互動列 -->
                     <div class="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-700 text-xs">
                       <span class="text-[11px] text-slate-500">加權總分：<b class="text-emerald-900 dark:text-emerald-400">{{ calculateCombinedScore(post) }} 分</b></span>
-                      <button 
-                        @click="voteLattePost(post)" 
-                        :disabled="hasVoted(post.id)" 
-                        :class="hasVoted(post.id) ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-red-50 hover:bg-red-100 text-red-600 active:scale-95'" 
-                        class="px-3 py-1 rounded-full font-bold border transition flex items-center gap-1">
-                        <span>{{ hasVoted(post.id) ? '✓ 已投' : '❤️' }}</span>
-                        <span>({{ post.votes || 0 }})</span>
-                      </button>
+                      
+                      <div class="flex items-center gap-2">
+                        <!-- 留言切換按鈕 -->
+                        <button 
+                          @click="toggleComments(post.id)" 
+                          class="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-full font-bold border border-slate-200 dark:border-slate-600 transition flex items-center gap-1 active:scale-95">
+                          <span>💬</span>
+                          <span>{{ getCommentCount(post) }}</span>
+                        </button>
+
+                        <!-- 投票按鈕 -->
+                        <button 
+                          @click="voteLattePost(post)" 
+                          :disabled="hasVoted(post.id)" 
+                          :class="hasVoted(post.id) ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 border-slate-200 dark:border-slate-600 cursor-not-allowed' : 'bg-red-50 hover:bg-red-100 text-red-600 border-red-200 active:scale-95'" 
+                          class="px-3 py-1 rounded-full font-bold border transition flex items-center gap-1">
+                          <span>{{ hasVoted(post.id) ? '✓ 已投' : '❤️' }}</span>
+                          <span>({{ post.votes || 0 }})</span>
+                        </button>
+                      </div>
                     </div>
+
+                    <!-- 展開之留言區 -->
+                    <div v-if="activeCommentPostId === post.id" class="mt-2.5 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2 text-xs">
+                      <div v-if="post.comments && Object.keys(post.comments).length > 0" class="space-y-1.5 max-h-40 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                        <div v-for="c in Object.values(post.comments)" :key="c.id" class="pt-1.5 first:pt-0">
+                          <div class="flex justify-between items-center text-[10px]">
+                            <span class="font-bold text-slate-800 dark:text-slate-200">{{ c.authorName }}</span>
+                            <span class="text-slate-400">{{ c.dateStr }}</span>
+                          </div>
+                          <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed">{{ c.text }}</p>
+                        </div>
+                      </div>
+                      <p v-else class="text-[10px] text-slate-400 text-center py-2">目前尚無留言，留下第一則給夥伴的回饋吧！</p>
+
+                      <form @submit.prevent="submitComment(post)" class="flex gap-1.5 pt-1">
+                        <input 
+                          v-model="newCommentText" 
+                          type="text" 
+                          required 
+                          placeholder="留下讚賞或拉花技巧回饋..." 
+                          class="flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-700"
+                        >
+                        <button 
+                          type="submit" 
+                          class="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition active:scale-95">
+                          送出
+                        </button>
+                      </form>
+                    </div>
+
                   </div>
                 </div>
 
@@ -1364,7 +1346,6 @@
                 <!-- 過去每一週的資料夾卡片 -->
                 <div v-for="arch in latteArtArchives" :key="arch.key" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
                   
-                  <!-- 資料夾橫條 (顯示期間名稱、冠軍、作品數) -->
                   <div @click="arch.expanded = !arch.expanded" class="p-3.5 flex justify-between items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-750 transition">
                     <div class="flex items-center gap-2.5">
                       <span class="text-xl">📂</span>
@@ -1385,7 +1366,7 @@
                     </span>
                   </div>
 
-                  <!-- 點開資料夾後，才展開該週的所有參賽照片牆 -->
+                  <!-- 展開該歷史週期的所有照片 -->
                   <div v-if="arch.expanded" class="p-3 bg-slate-50/70 dark:bg-slate-900/60 grid grid-cols-2 sm:grid-cols-3 gap-2.5 border-t border-slate-100 dark:border-slate-700">
                     <div v-for="work in arch.works" :key="work.id || work.key" class="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm flex flex-col">
                       <div class="relative w-full pt-[100%] bg-slate-100">
@@ -1412,7 +1393,7 @@
 
             </div>
 
-            <!-- 永安小學堂 -->
+            <!-- ==================== 永安小學堂 ==================== -->
             <div v-if="otherSubTab === 'quiz'" class="space-y-4">
               <div class="bg-gradient-to-r from-emerald-800 to-teal-900 rounded-2xl p-4 text-white shadow-sm space-y-3">
                 <div class="flex justify-between items-center">
@@ -2131,7 +2112,7 @@
   </div>
   
 </div>
-  <script>
+<script>
 // ==================== Firebase 金鑰設定 ====================
 const firebaseConfig = {
   apiKey: "AIzaSyDYvu6xnFpIzLhbq62WQ-VotNA-kuHLsCE",
@@ -2189,7 +2170,7 @@ const coffeeTriviaList = [
   { level: "CA 300 工藝", text: "你知道烘焙過程中的「第一爆（First Crack）」與「第二爆（Second Crack）」嗎？一爆代表豆內水分汽化導致細胞壁破裂，產生花果酸香；二爆則是木質素碳化，焦糖化反應達到顛峰！", searchUrl: "https://www.google.com/search?q=Coffee+Roasting+First+Crack+Second+Crack" }
 ];
 
-// 解構 Vue 函式（包含 watch 與 onMounted）
+// 解構 Vue 核心函式
 const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
 
 createApp({
@@ -2201,7 +2182,7 @@ createApp({
     const isCloudConnected = ref(false);
     const isDarkMode = ref(false);
 
-    // 核心資料陣列宣告在頂部，確保不會有未定義錯誤
+    // 核心陣列狀態
     const materials = ref([]);
     const rules = ref([]);
     const inventory = ref([]);
@@ -2337,7 +2318,7 @@ createApp({
       nextTick(() => { if (window.lucide) lucide.createIcons(); });
     });
 
-    // Firebase 統一監聽區塊
+    // Firebase 統一即時資料監聽
     if (db) {
       db.ref('.info/connected').on('value', snap => isCloudConnected.value = snap.val() === true);
       db.ref('sbux/materials').on('value', snap => materials.value = snap.val() ? Object.values(snap.val()) : []);
@@ -2351,7 +2332,7 @@ createApp({
       db.ref('sbux/custom_albums').on('value', snap => customAlbums.value = snap.val() ? Object.values(snap.val()) : []);
       db.ref('sbux/bravo_cards').on('value', snap => bravoCardsList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []);
 
-      // 監聽拉花歷史集錦
+      // 監聽拉花歷史集錦資料庫
       db.ref('sbux/latteArtArchives').on('value', (snapshot) => {
         const val = snapshot.val();
         if (val) {
@@ -2364,7 +2345,7 @@ createApp({
         }
       });
 
-      // 監聽小學堂資料
+      // 監聽小學堂資料庫
       db.ref('sbux/coffeeKnowledge').on('value', snap => {
         const val = snap.val();
         coffeeKnowledgeList.value = val ? Object.keys(val).map(k => ({ id: k, ...val[k] })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) : [];
@@ -2373,7 +2354,7 @@ createApp({
         weeklyQuizRecords.value = snap.val() || {};
       });
 
-      // 夥伴清單
+      // 門市人員清單
       db.ref('sbux/staff').on('value', snap => {
         const data = snap.val();
         if (data) {
@@ -2586,7 +2567,6 @@ createApp({
       const day = now.getDay();
       const hours = now.getHours();
       const minutes = now.getMinutes();
-
       const isPastSettlementTime = (day === 0 && (hours > 23 || (hours === 23 && minutes >= 30)));
 
       let champName = isPastSettlementTime ? '本週結算無參賽' : '⏳ 評選統計中';
@@ -2694,21 +2674,16 @@ createApp({
       }
     };
 
-    // 自動取得本週競賽期間（例如 10/26~11/1拉花照）
+    // 拉花週結算與歷史集錦
     const getWeekDateRangeStr = () => {
       const now = new Date();
-      const day = now.getDay(); // 0 是週日, 1 是週一
-      // 若週日晚上結算，向前推算至週一；其他時間亦以週一為起始
+      const day = now.getDay();
       const diffToMonday = (day === 0 ? -6 : 1) - day;
-      
       const monday = new Date(now);
       monday.setDate(now.getDate() + diffToMonday);
-      
       const sunday = new Date(monday);
       sunday.setDate(monday.getDate() + 6);
-      
-      const formatMD = (d) => `${d.getMonth() + 1}/${d.getDate()}`;
-      return `${formatMD(monday)}~${formatMD(sunday)}拉花照`;
+      return `${monday.getMonth() + 1}/${monday.getDate()}~${sunday.getMonth() + 1}/${sunday.getDate()}拉花照`;
     };
 
     const archiveWeeklyLatteArt = async () => {
@@ -2747,6 +2722,65 @@ createApp({
       } finally {
         isArchivingLatteArt.value = false;
       }
+    };
+
+    // 拉花投票狀態檢查與互動函式（修復白畫面核心）
+    const hasVoted = (postId) => {
+      const post = lattePosts.value.find(p => p.id === postId);
+      if (!post || !post.voters || !currentPartner.value) return false;
+      return !!post.voters[currentPartner.value.empId];
+    };
+
+    const voteLattePost = (post) => {
+      if (!currentPartner.value) return;
+      if (hasVoted(post.id)) {
+        alert('⚠️ 您已經投過這張作品囉！每人每張作品限投一票。');
+        return;
+      }
+      if (db) {
+        const updatedVotes = (post.votes || 0) + 1;
+        db.ref('sbux/latte_posts/' + post.id + '/votes').set(updatedVotes);
+        db.ref('sbux/latte_posts/' + post.id + '/voters/' + currentPartner.value.empId).set(true);
+        alert('❤️ 投票成功！感謝您的寶貴一票！');
+      }
+    };
+
+    // 拉花留言互動狀態與函式
+    const activeCommentPostId = ref(null);
+    const newCommentText = ref('');
+
+    const toggleComments = (postId) => {
+      if (activeCommentPostId.value === postId) {
+        activeCommentPostId.value = null;
+      } else {
+        activeCommentPostId.value = postId;
+        newCommentText.value = '';
+      }
+    };
+
+    const getCommentCount = (post) => {
+      if (!post.comments) return 0;
+      return Object.keys(post.comments).length;
+    };
+
+    const submitComment = (post) => {
+      const text = newCommentText.value.trim();
+      if (!text || !currentPartner.value) return;
+
+      const commentId = Date.now().toString();
+      const newComment = {
+        id: commentId,
+        authorStaffId: currentPartner.value.id || currentPartner.value._key,
+        authorName: `${currentPartner.value.name} (${currentPartner.value.nickname})`,
+        text: text,
+        dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`,
+        timestamp: Date.now()
+      };
+
+      if (db) {
+        db.ref('sbux/latte_posts/' + post.id + '/comments/' + commentId).set(newComment);
+      }
+      newCommentText.value = '';
     };
 
     // 永安小學堂操作
@@ -2942,27 +2976,6 @@ createApp({
     };
 
     const weeklyLattePosts = computed(() => [...lattePosts.value].sort((a,b) => b.timestamp - a.timestamp));
-    // 檢查是否已投過票
-    const hasVoted = (postId) => {
-      const post = lattePosts.value.find(p => p.id === postId);
-      if (!post || !post.voters || !currentPartner.value) return false;
-      return !!post.voters[currentPartner.value.empId];
-    };
-
-    // 進行拉花作品投票
-    const voteLattePost = (post) => {
-      if (!currentPartner.value) return;
-      if (hasVoted(post.id)) {
-        alert('⚠️ 您已經投過這張作品囉！每人每張作品限投一票。');
-        return;
-      }
-      if (db) {
-        const updatedVotes = (post.votes || 0) + 1;
-        db.ref('sbux/latte_posts/' + post.id + '/votes').set(updatedVotes);
-        db.ref('sbux/latte_posts/' + post.id + '/voters/' + currentPartner.value.empId).set(true);
-        alert('❤️ 投票成功！感謝您的寶貴一票！');
-      }
-    };
 
     const openCreateAlbumModal = () => { createAlbumModal.value = { show: true, name: '' }; };
     const saveNewAlbum = () => {
@@ -3324,12 +3337,12 @@ createApp({
       allowedVacationStartStr, scheduleStartDate, scheduleEndDate, targetRangeDates, setNextWeekRange,
       printTodayStr, triggerPrintSchedule, exportScheduleExcel, getStaffName, getVacationData,
       archiveWeeklyLatteArt, isArchivingLatteArt, latteArtArchives,
+      hasVoted, voteLattePost, activeCommentPostId, newCommentText, toggleComments, getCommentCount, submitComment,
       coffeeKnowledgeList, newKnowledgeTitle, newKnowledgeContent, isUploadingKnowledge,
       isDutyOrAbove, currentWeekQuizId, showQuizModal, userAnswers, quizSubmitted,
       quizScore, currentQuizQuestions, myQuizResult, allActivePartners,
       quizCompletedStaff, quizPendingStaff, publishKnowledge, deleteKnowledge,
       handleKnowledgeFileUpload, startWeeklyQuiz, submitWeeklyQuiz,
-      weeklyLattePosts, hasVoted, voteLattePost,
     };
   }
 }).mount('#app');
