@@ -1806,7 +1806,7 @@ const coffeeTriviaList = [
   { level: "CA 300 工藝", text: "你知道烘焙過程中的「第一爆（First Crack）」與「第二爆（Second Crack）」嗎？一爆代表豆內水分汽化導致細胞壁破裂，產生花果酸香；二爆則是木質素碳化，焦糖化反應達到顛峰！", searchUrl: "https://www.google.com/search?q=Coffee+Roasting+First+Crack+Second+Crack" }
 ];
 
-const { createApp, ref, computed, onMounted } = Vue;
+const { createApp, ref, computed, onMounted, watch } = Vue;
 
 createApp({
   setup() {
@@ -1948,11 +1948,7 @@ createApp({
       }
     };
 
-    const myQuizResult = computed(() => currentPartner.value?.name ? (weeklyQuizRecords.value[currentPartner.value.name] || null) : null);
-    const allActivePartners = computed(() => (staffList.value || []).filter(p => p.name && p.name !== '0'));
-    const quizCompletedStaff = computed(() => allActivePartners.value.filter(p => weeklyQuizRecords.value[p.name]));
-    const quizPendingStaff = computed(() => allActivePartners.value.filter(p => !weeklyQuizRecords.value[p.name]));
-
+    
     const startWeeklyQuiz = () => {
       if (!currentPartner.value) return alert('請先選擇夥伴！');
       if (myQuizResult.value) {
@@ -1984,7 +1980,7 @@ createApp({
       });
       alert(`🎉 測驗完成！得分：${score} / 5 分`);
     };
-    Vue.watch(currentPartner, (newVal) => {
+    watch(currentPartner, (newVal) => {
       if (newVal) {
         Vue.nextTick(() => {
           setTimeout(() => {
@@ -1996,7 +1992,7 @@ createApp({
     const loginForm = ref({ empId: '', password: '' });
 
     const currentTab = ref('home');
-    Vue.watch(currentTab, () => {
+    watch(currentTab, () => {
       Vue.nextTick(() => { if (window.lucide) lucide.createIcons(); });
     });
     const otherSubTab = ref('academy');
@@ -2007,6 +2003,10 @@ createApp({
     const rules = ref([]);
     const inventory = ref([]);
     const staffList = ref([]);
+    const myQuizResult = computed(() => currentPartner.value?.name ? (weeklyQuizRecords.value[currentPartner.value.name] || null) : null);
+    const allActivePartners = computed(() => (staffList.value || []).filter(p => p.name && p.name !== '0'));
+    const quizCompletedStaff = computed(() => allActivePartners.value.filter(p => weeklyQuizRecords.value[p.name]));
+    const quizPendingStaff = computed(() => allActivePartners.value.filter(p => !weeklyQuizRecords.value[p.name]));
     const vacationList = ref([]);
     const lattePosts = ref([]);
     const tastingNotesList = ref([]);
