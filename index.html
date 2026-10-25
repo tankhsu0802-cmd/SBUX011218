@@ -51,7 +51,6 @@
       max-width: 100%;
     }
 
-    /* iOS 毛玻璃效果 */
     .ios-glass-bar {
       background: rgba(255, 255, 255, 0.65) !important;
       backdrop-filter: blur(25px) saturate(190%) !important;
@@ -112,7 +111,7 @@
     }
     .modal-enter-from, .modal-leave-to { opacity: 0; transform: scale(0.95); }
 
-    /* ==================== A4 直式單頁滿版列印 CSS ==================== */
+    /* ==================== A4 直式單頁滿版列印 CSS (文字放大且絕不跳頁) ==================== */
     @media screen {
       .print-only-container { display: none !important; }
     }
@@ -170,11 +169,11 @@
       }
 
       table.print-table thead tr {
-        height: 24px !important;
+        height: 26px !important;
       }
 
       table.print-table th {
-        font-size: 9px !important;
+        font-size: 10.5px !important;
         padding: 1px !important;
         border: 1.5px solid black !important;
         background-color: #f1f5f9 !important;
@@ -185,14 +184,14 @@
         padding: 1px 2px !important;
         word-break: break-all !important;
         overflow: hidden !important;
-        line-height: 1.15 !important;
+        line-height: 1.2 !important;
         vertical-align: middle !important;
         text-align: center !important;
       }
 
       @page {
         size: portrait;
-        margin: 0.35cm 0.35cm !important;
+        margin: 0.3cm 0.3cm !important;
       }
     }
   </style>
@@ -239,7 +238,6 @@
   <!-- ==================== 2. 登入後主容器 ==================== -->
   <div v-else class="app-screen max-w-md mx-auto w-full min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col shadow-lg border-x border-slate-200 dark:border-slate-800 relative">
 
-    <!-- 頂部 Header：永久固定於螢幕最頂端 -->
     <header class="fixed top-0 left-0 right-0 z-50 ios-header-glass text-white shadow-md">
       <div class="max-w-md mx-auto px-4 py-2.5 flex items-center justify-between">
         <div class="flex items-center space-x-2">
@@ -270,7 +268,6 @@
           <!-- ==================== 頁籤 0：首頁主視覺 ==================== -->
           <section v-if="currentTab === 'home'" class="space-y-4">
             
-            <!-- 動態天氣 Banner -->
             <div 
               :class="weatherBannerClass"
               class="text-white rounded-3xl p-5 shadow-sm space-y-3 relative overflow-hidden transition-all duration-700">
@@ -315,7 +312,7 @@
             <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 space-y-2.5">
               <div class="flex justify-between items-center">
                 <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                  <span>📌</span> 門市最新公告
+                  <span>📌</span> 門市公告欄
                 </h3>
                 <button v-if="isManager" @click="openBulletinModal" class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
                   + 發布公告
@@ -747,15 +744,15 @@
                   </div>
                 </div>
 
-                <!-- 本週早晚班值班主管指定選單 (支援多選，未指定則依兩週輪替) -->
+                <!-- 本週早晚班值班主管指定選單 -->
                 <div class="p-2.5 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-600 space-y-2 text-xs">
                   <div class="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
-                    <span>本週指定管理職 (可複選)</span>
-                    <span class="text-[10px] text-slate-400 font-normal">留空則由 AI 自動輪替</span>
+                    <span>本週指定管理職</span>
+                    <span class="text-[10px] text-slate-400 font-normal">未指定由 AI 自動輪替</span>
                   </div>
                   <div class="grid grid-cols-2 gap-2">
                     <div>
-                      <span class="text-[10px] text-amber-700 dark:text-amber-400 font-bold block mb-1">早班值班主管</span>
+                      <span class="text-[10px] text-amber-700 dark:text-amber-400 font-bold block mb-1">早班值班</span>
                       <div class="space-y-1 max-h-24 overflow-y-auto border rounded-lg p-1.5 bg-white dark:bg-slate-800">
                         <label v-for="m in allDutyStaff" :key="'open_'+(m.id||m._key)" class="flex items-center gap-1.5 text-[11px] cursor-pointer">
                           <input type="checkbox" :value="m.id||m._key" v-model="selectedWeeklyOpenManagers" class="rounded text-emerald-800">
@@ -764,7 +761,7 @@
                       </div>
                     </div>
                     <div>
-                      <span class="text-[10px] text-indigo-700 dark:text-indigo-400 font-bold block mb-1">晚班值班主管</span>
+                      <span class="text-[10px] text-indigo-700 dark:text-indigo-400 font-bold block mb-1">晚班值班</span>
                       <div class="space-y-1 max-h-24 overflow-y-auto border rounded-lg p-1.5 bg-white dark:bg-slate-800">
                         <label v-for="m in allDutyStaff" :key="'close_'+(m.id||m._key)" class="flex items-center gap-1.5 text-[11px] cursor-pointer">
                           <input type="checkbox" :value="m.id||m._key" v-model="selectedWeeklyCloseManagers" class="rounded text-emerald-800">
@@ -775,17 +772,23 @@
                   </div>
                 </div>
 
-                <!-- AI 智慧預排按鈕 (去除括號與多餘說明) -->
-                <div class="pt-1">
+                <!-- AI 預排與重新預排按鈕組 -->
+                <div class="grid grid-cols-2 gap-2 pt-1">
                   <button 
                     @click="generateAiRoster" 
                     type="button" 
-                    class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
+                    class="py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
                     <span>🤖</span> 執行 AI 智慧預排
+                  </button>
+                  <button 
+                    @click="generateAiRoster" 
+                    type="button" 
+                    class="py-2.5 bg-teal-700 hover:bg-teal-600 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
+                    <span>🔄</span> 重新預排班表
                   </button>
                 </div>
 
-                <!-- 班表模式切換 (乾淨俐落無雜訊) -->
+                <!-- 班表模式切換 -->
                 <div class="flex items-center justify-center gap-1 p-1 bg-slate-100 dark:bg-slate-900/60 rounded-xl text-xs font-bold mt-2">
                   <button 
                     @click="printViewMode = 'blank'" 
@@ -801,7 +804,7 @@
                   </button>
                 </div>
 
-                <!-- 獨立分開的列印與匯出按鈕 -->
+                <!-- 列印與匯出按鈕 -->
                 <div class="grid grid-cols-2 gap-2 pt-1">
                   <button 
                     @click="triggerPrintSchedule('blank')" 
@@ -838,7 +841,7 @@
                 </h3>
               </div>
 
-              <!-- 登記畫假表單 (PT/FT 僅可幫自己登記，管理職可幫夥伴登記) -->
+              <!-- 登記畫假表單 -->
               <form @submit.prevent="submitVacation" class="space-y-2 p-3 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-600">
                 <div class="flex gap-2 w-full">
                   <div class="flex-1 min-w-0">
@@ -889,7 +892,7 @@
                 </button>
               </form>
 
-              <!-- 畫假行事曆月曆切換列 -->
+              <!-- 行事曆月份切換 -->
               <div class="flex items-center justify-between pt-2">
                 <span class="text-xs font-bold text-slate-900 dark:text-white">
                   🗓️ {{ vacationCalYear }} 年 {{ vacationCalMonth + 1 }} 月
@@ -906,7 +909,7 @@
                 <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
               </div>
 
-              <!-- 畫假月曆格子 (紅標禁休、顯示請假人數) -->
+              <!-- 畫假月曆格子 -->
               <div class="grid grid-cols-7 gap-1">
                 <div 
                   v-for="(day, idx) in vacationCalendarDays" :key="idx" 
@@ -930,7 +933,7 @@
               </div>
             </div>
 
-            <!-- 夥伴名冊（僅管理職可見，去除所有職位箭頭說明） -->
+            <!-- 夥伴名冊（僅管理職可見） -->
             <div v-if="isDutyOrAbove" class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
               <div>
                 <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200">📋 門市夥伴名冊</h3>
@@ -954,8 +957,9 @@
                       <span :class="isSpecialCoffeeMaster(s) ? 'text-amber-200 font-black text-sm' : 'text-slate-900 dark:text-white font-bold'">{{ s.name }}</span>
                       <span :class="isSpecialCoffeeMaster(s) ? 'text-amber-300/80' : 'text-slate-500'">({{ s.nickname }})</span>
                       
-                      <span :class="isSpecialCoffeeMaster(s) ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' : (s.role === '天使夥伴' ? 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800' : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300')" 
-                            class="px-1.5 py-0.5 rounded text-[10px] font-bold">
+                      <span 
+                        :class="isSpecialCoffeeMaster(s) ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' : (s.role === '天使夥伴' ? 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800' : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300')" 
+                        class="px-1.5 py-0.5 rounded text-[10px] font-bold">
                         <span v-if="s.role === '天使夥伴'">👼 </span>{{ s.role }}
                       </span>
                     </div>
@@ -998,7 +1002,7 @@
               </button>
             </div>
 
-            <!-- CA 100~300 完整黑圍裙大師精編講義 -->
+            <!-- CA 100~300 精編講義 -->
             <div v-if="otherSubTab === 'academy'" class="space-y-3">
               <div class="bg-gradient-to-r from-zinc-950 via-neutral-900 to-zinc-950 text-amber-100 p-4 rounded-2xl shadow-sm space-y-1.5 border border-amber-500/40">
                 <div class="flex items-center justify-between">
@@ -1159,7 +1163,7 @@
               </div>
             </div>
 
-            <!-- Tasting 品評 (即時生成) -->
+            <!-- Tasting 品評 -->
             <div v-if="otherSubTab === 'tasting'" class="space-y-4">
               <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
                 <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -1260,9 +1264,8 @@
               </div>
             </div>
 
-            <!-- 拉花擂台賽 (嚴格標準打分) -->
+            <!-- 拉花擂台賽 -->
             <div v-if="otherSubTab === 'latteArt'" class="space-y-4">
-              
               <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
                 <div class="flex justify-between items-center">
                   <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
@@ -1572,7 +1575,6 @@
 
           <!-- ==================== 頁籤 5：【關於】 ==================== -->
           <section v-if="currentTab === 'about'" class="space-y-4">
-            
             <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
               <div class="flex justify-between items-start">
                 <div>
@@ -1707,7 +1709,7 @@
         </div>
 
         <div class="flex-1 overflow-y-auto space-y-3 pr-1 text-xs">
-          <!-- 缺額警訊 (條列精準) -->
+          <!-- 缺額警訊 -->
           <div v-if="aiRosterModal.warnings && aiRosterModal.warnings.length > 0" class="p-3 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 rounded-2xl space-y-1">
             <div class="font-bold text-rose-700 dark:text-rose-300">⚠️ 人力缺額警告：</div>
             <ul class="list-disc pl-4 text-[11px] text-rose-600 dark:text-rose-400 space-y-0.5">
@@ -1746,6 +1748,9 @@
         <div class="pt-2 flex gap-2 border-t dark:border-slate-700 flex-shrink-0">
           <button @click="applyAiRosterToSchedule" class="flex-1 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow transition active:scale-95">
             確認並套用班表
+          </button>
+          <button @click="generateAiRoster" class="px-3 py-2.5 bg-teal-700 hover:bg-teal-600 text-white rounded-xl text-xs font-bold shadow transition active:scale-95">
+            🔄 重新預排
           </button>
           <button @click="aiRosterModal.show = false" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold">
             取消
@@ -1832,7 +1837,7 @@
     </div>
   </transition>
 
-  <!-- 個人設定 Modal -->
+  <!-- 個人設定 Modal (只有徐爰坦可見 API KEY 選填) -->
   <transition name="modal">
     <div v-if="settingsModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
       <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-4 border">
@@ -1849,9 +1854,10 @@
             </button>
           </div>
 
-          <div class="space-y-1 p-2.5 bg-slate-50 dark:bg-slate-700/60 rounded-xl">
-            <label class="font-bold text-slate-800 dark:text-slate-200 block">🤖 Gemini API Key</label>
-            <input v-model="settingsModal.geminiApiKey" type="password" placeholder="貼上 Key" class="w-full px-2 py-1.5 rounded-lg border font-mono text-[11px] dark:bg-slate-800 dark:text-white">
+          <!-- 🌟 專屬隱私隔離：只有「徐爰坦」本人可檢視與設定 API Key 🌟 -->
+          <div v-if="isSuperTan" class="space-y-1 p-2.5 bg-teal-50/70 dark:bg-teal-950/40 rounded-xl border border-teal-200 dark:border-teal-800">
+            <label class="font-bold text-teal-900 dark:text-teal-300 block">🤖 Gemini API Key (系統維護專用)</label>
+            <input v-model="settingsModal.geminiApiKey" type="password" placeholder="貼上 AI Studio Key" class="w-full px-2 py-1.5 rounded-lg border font-mono text-[11px] dark:bg-slate-800 dark:text-white">
             <button @click="saveGeminiApiKey" class="w-full mt-1 py-1.5 bg-teal-700 hover:bg-teal-800 text-white font-bold rounded-lg transition active:scale-95">儲存 Key</button>
           </div>
 
@@ -1976,7 +1982,7 @@
     </div>
   </transition>
 
-  <!-- 打點試算 Modal (21:30 閉店防呆) -->
+  <!-- 打點試算 Modal -->
   <transition name="modal">
     <div v-if="calcModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-end justify-center p-4">
       <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
@@ -2046,7 +2052,7 @@
     </div>
   </transition>
 
-  <!-- 新增夥伴 Modal (支援職位細分：SM, ASM, SSV, PTSSV, FT, PT) -->
+  <!-- 新增夥伴 Modal -->
   <transition name="modal">
     <div v-if="staffModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-center justify-center p-4">
       <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
@@ -2170,40 +2176,39 @@
     </div>
   </transition>
 
-  <!-- ==================== A4 直式單頁滿版列印表格 (100% 絕不換頁，最右側含本週工時欄) ==================== -->
+  <!-- ==================== A4 直式單頁滿版列印表格 (文字放大強化版·絕不跳頁) ==================== -->
   <div class="print-only-container bg-white text-black font-sans">
     
     <div class="print-page-single">
       
-      <!-- 頂部資訊列 (極簡高度) -->
+      <!-- 頂部資訊列 -->
       <div class="print-header border-b-2 border-black pb-1">
         <div class="flex justify-between items-end">
-          <div class="text-[9.5px] font-bold leading-tight">
+          <div class="text-[10px] font-bold leading-tight">
             <div>門市：永和永安 (011218)</div>
             <div>期間：{{ scheduleStartDate ? scheduleStartDate.replace(/-/g, '/') : '' }} - {{ scheduleEndDate ? scheduleEndDate.replace(/-/g, '/') : '' }}</div>
           </div>
-          <div class="text-center font-black text-xl tracking-widest leading-none">
+          <div class="text-center font-black text-2xl tracking-widest leading-none">
             {{ printTargetMode === 'blank' ? '門市週排班表' : '門市人員班表' }}
           </div>
-          <div class="text-right text-[9.5px] font-bold leading-tight">
+          <div class="text-right text-[10px] font-bold leading-tight">
             <div>列印：{{ printTodayStr }}</div>
           </div>
         </div>
       </div>
 
-      <!-- 表格容器：最右側新增「本週工時」獨立欄位 -->
+      <!-- 表格容器：文字大小升級至 10.5px ~ 11.5px -->
       <div class="print-table-wrapper">
         <table class="print-table">
           <thead>
             <tr class="bg-slate-100 border-b-2 border-black">
-              <th class="w-[9%]">員工編號</th>
-              <th class="w-[12%]">員工姓名</th>
+              <th class="w-[9%] text-[10.5px]">員工編號</th>
+              <th class="w-[12%] text-[10.5px]">員工姓名</th>
               <th v-for="d in targetRangeDates" :key="d.dateStr" class="w-[10%]">
-                <div class="font-black text-[10px] leading-tight">{{ d.displayDate }}</div>
-                <div class="text-[8.5px] font-bold leading-tight">({{ d.weekday }})</div>
+                <div class="font-black text-[11px] leading-tight">{{ d.displayDate }}</div>
+                <div class="text-[9.5px] font-bold leading-tight">({{ d.weekday }})</div>
               </th>
-              <!-- 最右側獨立「本週工時」欄 -->
-              <th class="w-[9%]">本週工時</th>
+              <th class="w-[9%] text-[10.5px]">本週工時</th>
             </tr>
           </thead>
           <tbody>
@@ -2212,47 +2217,47 @@
               :key="staff._key || staff.id" 
               :style="{ height: getPrintRowHeight }">
               
-              <td class="font-mono font-black text-[8.5px] tracking-tighter align-middle p-0.5">
+              <td class="font-mono font-black text-[10px] tracking-tighter align-middle p-0.5">
                 {{ staff?.empId || '' }}
               </td>
               <td class="p-0.5 leading-tight align-middle">
-                <div class="text-[9.5px] font-black text-slate-900 truncate">{{ staff?.name || '' }} ({{ staff?.nickname || '' }})</div>
-                <div class="text-[8px] font-bold text-slate-600">{{ staff?.role }}</div>
+                <div class="text-[11px] font-black text-slate-900 truncate">{{ staff?.name || '' }} ({{ staff?.nickname || '' }})</div>
+                <div class="text-[9px] font-bold text-slate-600">{{ staff?.role }}</div>
               </td>
 
               <!-- 7 天日期格 -->
               <td v-for="d in targetRangeDates" :key="d.dateStr" class="relative align-middle p-0.5">
                 
-                <!-- 畫假 (空白模式與 AI 模式皆顯示) -->
+                <!-- 畫假標記 -->
                 <template v-if="getVacationData(staff.id || staff._key, d.dateStr)">
-                  <div class="text-black font-black text-base leading-none">✕</div>
-                  <div class="text-[8px] font-black text-slate-900 leading-tight">【{{ getVacationData(staff.id || staff._key, d.dateStr).type }}】</div>
+                  <div class="text-black font-black text-lg leading-none">✕</div>
+                  <div class="text-[9px] font-black text-slate-900 leading-tight">【{{ getVacationData(staff.id || staff._key, d.dateStr).type }}】</div>
                 </template>
 
                 <!-- 【AI 預排模式】列印 -->
                 <template v-else-if="printTargetMode === 'ai'">
                   <div v-if="getScheduledShiftText(staff, d.dateStr)" class="leading-tight">
-                    <div v-if="isConsecutiveSixthDay(staff, d.dateStr)" class="text-[7.5px] font-black text-amber-800 bg-amber-100 px-0.5 rounded inline-block">
+                    <div v-if="isConsecutiveSixthDay(staff, d.dateStr)" class="text-[8.5px] font-black text-amber-800 bg-amber-100 px-0.5 rounded inline-block">
                       休上班
                     </div>
-                    <div class="text-[8.5px] font-black text-slate-900" :class="isOvertimeShift(staff, d.dateStr) ? 'font-black underline' : ''">
+                    <div class="text-[9.5px] font-black text-slate-900" :class="isOvertimeShift(staff, d.dateStr) ? 'font-black underline' : ''">
                       {{ getScheduledShiftText(staff, d.dateStr) }}
                     </div>
                   </div>
-                  <div v-else class="text-[8px] text-slate-300">-</div>
+                  <div v-else class="text-[9px] text-slate-300">-</div>
                 </template>
 
                 <!-- 【空白班表模式】列印 -->
                 <template v-else>
-                  <div v-if="getAvailabilityText(staff, d.dateStr)" class="text-[7.5px] font-bold text-slate-500 leading-snug">
+                  <div v-if="getAvailabilityText(staff, d.dateStr)" class="text-[8.5px] font-bold text-slate-600 leading-snug">
                     {{ getAvailabilityText(staff, d.dateStr) }}
                   </div>
                 </template>
 
               </td>
 
-              <!-- 最右側：每位夥伴本週累計工作時數 (扣除0.5hr休息之實得工時) -->
-              <td class="font-mono font-black text-[9.5px] align-middle p-0.5 bg-slate-50 text-slate-900">
+              <!-- 最右側：本週累計工時 -->
+              <td class="font-mono font-black text-[11px] align-middle p-0.5 bg-slate-50 text-slate-900">
                 <span v-if="printTargetMode === 'ai'">
                   {{ calculateWeeklyStaffHours(staff) }}h
                 </span>
@@ -2463,7 +2468,7 @@ createApp({
       return selected;
     });
 
-    // 權限判定：店經理、副理、值班經理、時薪值班皆具備管理權限
+    // 權限判定：店經理、副理、值班經理、時薪值班
     const isDutyOrAbove = computed(() => {
       if (!currentPartner.value) return false;
       const role = currentPartner.value.role || '';
@@ -2471,7 +2476,14 @@ createApp({
     });
     const isManager = computed(() => isDutyOrAbove.value);
 
-    // 職位優先權重 (店經理: 1, 副理: 2, 值班經理: 3, 時薪值班: 4, FT: 5, PT: 6)
+    // 🌟 API Key 專屬權限：只有「徐爰坦」本人可檢視並設定
+    const isSuperTan = computed(() => {
+      if (!currentPartner.value) return false;
+      const p = currentPartner.value;
+      return (p.name === '徐爰坦' || p.nickname === 'Tan' || p.empId === '10386493');
+    });
+
+    // 職位優先權重 (店經理: 1, 副理: 2, 值班經理: 3, 時薪值班: 4, FT: 5, PT: 6, 天使夥伴: 7)
     const getRolePriority = (role) => {
       if (!role) return 6;
       if (role.includes('店經理')) return 1;
@@ -2479,6 +2491,7 @@ createApp({
       if (role === '值班經理') return 3;
       if (role.includes('時薪值班') || role.toUpperCase().includes('PTSSV')) return 4;
       if (role.includes('正職') || role.toUpperCase().includes('FT')) return 5;
+      if (role.includes('天使')) return 7;
       return 6;
     };
 
@@ -2486,7 +2499,6 @@ createApp({
       return (staffList.value || []).filter(s => s && typeof s === 'object' && s.empId && s.name && s.name !== '0');
     });
 
-    // 嚴格依職位權重排序之名單
     const sortedValidStaffList = computed(() => {
       return [...validStaffList.value].sort((a, b) => {
         const pA = getRolePriority(a.role);
@@ -2496,7 +2508,6 @@ createApp({
       });
     });
 
-    // 所有具備值班主管資格的名單
     const allDutyStaff = computed(() => {
       return sortedValidStaffList.value.filter(s => ['店經理', '副理', '值班經理', '時薪值班', '值班'].includes(s.role));
     });
@@ -3026,7 +3037,7 @@ createApp({
       }
     };
 
-    // 拉花 AI 視覺評審 (嚴格打分 65~88)
+    // 拉花 AI 視覺評審
     const submitLattePost = async () => {
       if (!currentPartner.value || !latteForm.value.photoUrl) return;
       isAiEvaluating.value = true;
@@ -3077,13 +3088,12 @@ createApp({
       }
     };
 
-    // ==================== 勞基法 AI 預排班表演算法 (含兩週輪替/工時扣除/PT均攤) ====================
+    // ==================== 勞基法 AI 預排班表演算法 ====================
     const timeToMins = (t) => {
       const [h, m] = t.split(':').map(Number);
       return h * 60 + m;
     };
 
-    // 扣除休息計算實得工時
     const calculateShiftNetHours = (start, end) => {
       const rawHours = (timeToMins(end) - timeToMins(start)) / 60;
       return rawHours > 4.5 ? (rawHours - 0.5) : rawHours;
@@ -3091,6 +3101,9 @@ createApp({
 
     const isStaffAvailableForShift = (staff, dateStr, shiftStart, shiftEnd) => {
       const sid = staff.id || staff._key;
+      // 天使夥伴不參與核心班次排班
+      if (staff.role === '天使夥伴' || staff.nickname === 'David') return false;
+
       const onVacation = vacationList.value.some(v => (v.staffId === sid) && v.date === dateStr);
       if (onVacation) return false;
 
@@ -3109,7 +3122,6 @@ createApp({
     const isManagerRole = (role) => ['店經理', '副理', '值班經理', '時薪值班', '值班'].includes(role || '');
     const isFullTimeRole = (role) => ['店經理', '副理', '值班經理', '正職夥伴', 'FT'].includes(role || '');
 
-    // 查詢管理職過去兩週最後主要班別（早班或晚班），用於兩週自動早晚輪替
     const getHistoricalShiftType = (staffId) => {
       const roster = scheduledRoster.value || {};
       const dates = Object.keys(roster).filter(k => k.startsWith(staffId + '_')).map(k => k.split('_')[1]).sort().reverse();
@@ -3119,7 +3131,7 @@ createApp({
         if (sName && sName.includes('早')) return 'open';
         if (sName && sName.includes('晚')) return 'close';
       }
-      return 'open'; // 預設
+      return 'open';
     };
 
     const generateAiRoster = () => {
@@ -3133,12 +3145,13 @@ createApp({
       const schedulePlan = [];
       const warnings = [];
 
-      // 追蹤每位員工本週累計工時、連續上班天數與前日下班時間
+      // 追蹤每位員工在本週期內的累計工時、連續上班天數、累計上班天數與前日下班時間
       const staffWorkTracker = {};
       allStaff.forEach(s => {
         const sid = s.id || s._key;
         staffWorkTracker[sid] = {
           weeklyHours: 0,
+          daysWorked: 0,
           lastEndMins: -9999,
           consecutiveDays: 0
         };
@@ -3150,17 +3163,18 @@ createApp({
         const dayOfWeek = d.getDay();
         const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
 
-        // 班別結構：平日中班 08:30-17:30；假日雙中班 08:00-15:00 與 10:30-17:30
+        // 班別定義
         const dayShiftSlots = [
           { name: "早班(開店1)", start: "06:30", end: "15:00", requiresManager: true },
           { name: "早班(開店2)", start: "06:30", end: "15:00", requiresManager: false }
         ];
 
+        // 支援中班彈性延長（如 Ken 等夥伴可配合至 19:00 或 20:00 銜接晚班）
         if (!isWeekend) {
-          dayShiftSlots.push({ name: "中班", start: "08:30", end: "17:30", requiresManager: false });
+          dayShiftSlots.push({ name: "中班", start: "08:30", end: "17:30", requiresManager: false, flexibleExt: true });
         } else {
           dayShiftSlots.push({ name: "中班1", start: "08:00", end: "15:00", requiresManager: false });
-          dayShiftSlots.push({ name: "中班2", start: "10:30", end: "17:30", requiresManager: false });
+          dayShiftSlots.push({ name: "中班2", start: "10:30", end: "17:30", requiresManager: false, flexibleExt: true });
         }
 
         dayShiftSlots.push(
@@ -3173,37 +3187,47 @@ createApp({
         const assignedShifts = [];
 
         dayShiftSlots.forEach(slot => {
-          const slotStartMins = timeToMins(slot.start);
-          const slotEndMins = timeToMins(slot.end);
-          const netHours = calculateShiftNetHours(slot.start, slot.end);
+          let slotStart = slot.start;
+          let slotEnd = slot.end;
 
-          // 候選人篩選：符合可用時段 + 每日限一班 + 休息大於11小時 + 未滿連7天
+          // 🌟 核心防呆：符合可用時段 + 每日限一班 + 休息大於11小時 + 🌟【全週最多排6天，第7天絕對禁排】
           let candidates = allStaff.filter(staff => {
             const sid = staff.id || staff._key;
-            
-            // 🌟 核心防呆：天使夥伴不參與緊湊的早/中/晚核心班次自動指派
-            if (staff.role === '天使夥伴' || staff.nickname === 'David') return false;
-
             if (assignedToday.has(sid)) return false;
-            if (!isStaffAvailableForShift(staff, dateStr, slot.start, slot.end)) return false;
+            if (!isStaffAvailableForShift(staff, dateStr, slotStart, slotEnd)) return false;
 
             const tracker = staffWorkTracker[sid];
+            
+            // 🛑 勞基法一例一休核心：連續天數達 6 天 OR 本週總上班天數已達 6 天者，絕對禁止排入第 7 天！
+            if (tracker.consecutiveDays >= 6 || tracker.daysWorked >= 6) return false;
+
+            // 🛑 正職工時保護：正職夥伴每週達 40 小時（5天）後，非必要不安排超額加班
+            const isFT = isFullTimeRole(staff.role);
+            if (isFT && tracker.weeklyHours >= 40 && tracker.daysWorked >= 5) {
+              // 除非全店無其他 PT/PTSSV 可排，才允許排第 6 天
+              const otherAvailablePT = allStaff.some(other => {
+                const oSid = other.id || other._key;
+                return !isFullTimeRole(other.role) && !assignedToday.has(oSid) && isStaffAvailableForShift(other, dateStr, slotStart, slotEnd) && staffWorkTracker[oSid].daysWorked < 6;
+              });
+              if (otherAvailablePT) return false;
+            }
+
+            // 🛑 跨日排班休息間隔必須大於 11 小時
             if (tracker.lastEndMins > 0) {
-              const restMins = (24 * 60 - tracker.lastEndMins) + slotStartMins;
+              const restMins = (24 * 60 - tracker.lastEndMins) + timeToMins(slotStart);
               if (restMins < 11 * 60) return false;
             }
 
-            if (tracker.consecutiveDays >= 6) return false;
             return true;
           });
 
           let pickedStaff = null;
 
-          // 若需要管理職
+          // 1. 若需要主管
           if (slot.requiresManager) {
             let managerCandidates = candidates.filter(s => isManagerRole(s.role));
 
-            // 1. 優先匹配主責主管手動勾選清單
+            // 主管指定勾選匹配
             if (slot.name.includes('早') && selectedWeeklyOpenManagers.value.length > 0) {
               const preferred = managerCandidates.find(s => selectedWeeklyOpenManagers.value.includes(s.id || s._key));
               if (preferred) pickedStaff = preferred;
@@ -3212,13 +3236,12 @@ createApp({
               if (preferred) pickedStaff = preferred;
             }
 
-            // 2. 若未手動指定，依歷史兩週早晚班輪替排序
+            // 兩週輪替歷史推薦
             if (!pickedStaff && managerCandidates.length > 0) {
               managerCandidates.sort((a, b) => {
                 const targetType = slot.name.includes('早') ? 'open' : 'close';
                 const histA = getHistoricalShiftType(a.id || a._key);
                 const histB = getHistoricalShiftType(b.id || b._key);
-                // 上週不同者優先輪替
                 const matchA = histA !== targetType ? 1 : 0;
                 const matchB = histB !== targetType ? 1 : 0;
                 if (matchA !== matchB) return matchB - matchA;
@@ -3228,11 +3251,11 @@ createApp({
             }
 
             if (!pickedStaff) {
-              warnings.push(`${dateStr} ${slot.name} 缺少管理職人員 1 名！`);
+              warnings.push(`${dateStr} ${slot.name} 缺少管理職 1 名！`);
             }
           }
 
-          // 一般夥伴指派（FT 優先湊滿 40hr，PT 依累計工時最少者優先以均攤時數）
+          // 2. 一般夥伴指派（正職目標 40hr，PT/PTSSV 平均時數排班）
           if (!pickedStaff && candidates.length > 0) {
             candidates.sort((a, b) => {
               const aIsFT = isFullTimeRole(a.role);
@@ -3240,15 +3263,32 @@ createApp({
               const aHours = staffWorkTracker[a.id || a._key].weeklyHours;
               const bHours = staffWorkTracker[b.id || b._key].weeklyHours;
 
-              // FT 未滿 40 小時者最高優先
+              // 正職優先排滿 40 小時 (5天)
               if (aIsFT && aHours < 40 && (!bIsFT || bHours >= 40)) return -1;
               if (bIsFT && bHours < 40 && (!aIsFT || aHours >= 40)) return 1;
 
-              // PT / PTSSV 累計工時少者優先（均工時機制）
+              // PTSSV / PT 均工時：累計時數少者優先進班，避免過度集中
               return aHours - bHours;
             });
             pickedStaff = candidates[0];
           }
+
+          // 彈性中晚班銜接支援（若中班夥伴可用時間可達 19:00 或 20:00）
+          if (pickedStaff && slot.flexibleExt && pickedStaff.availability) {
+            const dIdx = (d.getDay() + 6) % 7;
+            const av = pickedStaff.availability['day_' + dIdx];
+            if (av && av.type === 'custom') {
+              const avEndMins = timeToMins(av.end);
+              if (avEndMins >= timeToMins('20:00')) {
+                slotEnd = '20:00';
+              } else if (avEndMins >= timeToMins('19:00')) {
+                slotEnd = '19:00';
+              }
+            }
+          }
+
+          const slotEndMins = timeToMins(slotEnd);
+          const netHours = calculateShiftNetHours(slotStart, slotEnd);
 
           if (pickedStaff) {
             const sid = pickedStaff.id || pickedStaff._key;
@@ -3257,14 +3297,15 @@ createApp({
             const tracker = staffWorkTracker[sid];
             tracker.lastEndMins = slotEndMins;
             tracker.consecutiveDays += 1;
+            tracker.daysWorked += 1;
             tracker.weeklyHours += netHours;
 
-            const isSixthDay = (tracker.consecutiveDays === 6);
+            const isSixthDay = (tracker.daysWorked === 6 || tracker.consecutiveDays === 6);
             const isOvertime = netHours > 8;
 
             assignedShifts.push({
               shiftName: slot.name,
-              time: `${slot.start}-${slot.end}`,
+              time: `${slotStart}-${slotEnd}`,
               hours: netHours,
               isOvertime,
               isSixthDay,
@@ -3276,7 +3317,7 @@ createApp({
             warnings.push(`${dateStr} ${slot.name} 缺少夥伴 1 名！`);
             assignedShifts.push({
               shiftName: slot.name,
-              time: `${slot.start}-${slot.end}`,
+              time: `${slotStart}-${slotEnd}`,
               hours: netHours,
               isOvertime: false,
               isSixthDay: false,
@@ -3287,7 +3328,7 @@ createApp({
           }
         });
 
-        // 未上班者連續上班天數歸零
+        // 當天未排班者重置連續上班天數
         allStaff.forEach(s => {
           const sid = s.id || s._key;
           if (!assignedToday.has(sid)) {
@@ -3324,7 +3365,7 @@ createApp({
       if (db) db.ref('sbux/scheduled_roster').set(newRosterMap);
       aiRosterModal.value.show = false;
       printViewMode.value = 'ai';
-      alert('🎉 AI 預排班表已套用！');
+      alert('🎉 預排班表已儲存更新！');
     };
 
     const getScheduledShiftObj = (staff, dateStr) => {
@@ -3349,7 +3390,6 @@ createApp({
       return obj && obj.isSixthDay;
     };
 
-    // 計算夥伴在目前週期內的累計扣除休息後工時
     const calculateWeeklyStaffHours = (staff) => {
       const sid = staff.id || staff._key;
       let total = 0;
@@ -3404,7 +3444,6 @@ createApp({
       XLSX.writeFile(wb, `永和永安門市_${sheetName}_${scheduleStartDate.value}.xlsx`);
     };
 
-    // 拉花歸檔與互動
     const getWeekDateRangeStr = () => {
       const now = new Date();
       const day = now.getDay();
@@ -3715,7 +3754,6 @@ createApp({
       return materials.value.filter(m => (m.code && String(m.code).toLowerCase().includes(q)) || (m.name && String(m.name).toLowerCase().includes(q)));
     });
 
-    // 21:30 閉店防呆
     const calculateOpenTime = (mat) => {
       const now = new Date();
       let target = new Date(now.getTime());
@@ -3976,7 +4014,7 @@ createApp({
     };
 
     return {
-      currentPartner, loginForm, handleLogin, handleLogout, isManager, isDutyOrAbove, isDarkMode, toggleDarkMode,
+      currentPartner, loginForm, handleLogin, handleLogout, isManager, isDutyOrAbove, isSuperTan, isDarkMode, toggleDarkMode,
       settingsModal, openSettingsModal, saveNewPassword, saveBirthday, saveGeminiApiKey, birthdayAlerts,
       currentTab, otherSubTab, isCloudConnected, currentDateTimeDisplay, todayTrivia,
       weatherType, weatherDesc, weatherIcon, weatherGreeting, weatherBannerClass,
