@@ -954,10 +954,9 @@
                       <span :class="isSpecialCoffeeMaster(s) ? 'text-amber-200 font-black text-sm' : 'text-slate-900 dark:text-white font-bold'">{{ s.name }}</span>
                       <span :class="isSpecialCoffeeMaster(s) ? 'text-amber-300/80' : 'text-slate-500'">({{ s.nickname }})</span>
                       
-                      <span 
-                        :class="isSpecialCoffeeMaster(s) ? 'px-1.5 py-0.2 bg-amber-400/20 text-amber-300 border border-amber-400/40' : 'px-1.5 py-0.2 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'" 
-                        class="rounded text-[10px] font-bold">
-                        {{ s.role }}
+                      <span :class="isSpecialCoffeeMaster(s) ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' : (s.role === '天使夥伴' ? 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800' : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300')" 
+                            class="px-1.5 py-0.5 rounded text-[10px] font-bold">
+                        <span v-if="s.role === '天使夥伴'">👼 </span>{{ s.role }}
                       </span>
                     </div>
 
@@ -2077,6 +2076,7 @@
               <option value="時薪值班">時薪值班 (PTSSV)</option>
               <option value="正職夥伴">正職夥伴 (FT)</option>
               <option value="兼職夥伴">兼職夥伴 (PT)</option>
+              <option value="天使夥伴">天使夥伴 (Angel)</option>
             </select>
           </div>
           <div class="pt-2 flex gap-2">
@@ -3180,6 +3180,10 @@ createApp({
           // 候選人篩選：符合可用時段 + 每日限一班 + 休息大於11小時 + 未滿連7天
           let candidates = allStaff.filter(staff => {
             const sid = staff.id || staff._key;
+            
+            // 🌟 核心防呆：天使夥伴不參與緊湊的早/中/晚核心班次自動指派
+            if (staff.role === '天使夥伴' || staff.nickname === 'David') return false;
+
             if (assignedToday.has(sid)) return false;
             if (!isStaffAvailableForShift(staff, dateStr, slot.start, slot.end)) return false;
 
