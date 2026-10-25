@@ -13,7 +13,6 @@
     }
   </script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -111,7 +110,7 @@
     }
     .modal-enter-from, .modal-leave-to { opacity: 0; transform: scale(0.95); }
 
-    /* ==================== A4 直式單頁滿版列印 CSS (文字放大且絕不跳頁) ==================== */
+    /* ==================== A4 直式單頁滿版列印 CSS ==================== */
     @media screen {
       .print-only-container { display: none !important; }
     }
@@ -642,7 +641,7 @@
                 </h3>
                 <div class="flex space-x-1">
                   <button @click="changeMonth(-1)" class="px-2.5 py-1 text-xs bg-slate-100 dark:bg-slate-700 rounded-lg active:bg-slate-200">‹</button>
-                  <button @click="resetToCurrentMonth" class="px-2 py-1 text-xs bg-slate-100 dark:bg-slate-700 rounded-lg active:bg-slate-200">本月</button>
+                  <button @click="resetToCurrentMonth" class="px-2.5 py-1 text-xs bg-slate-100 dark:bg-slate-700 rounded-lg active:bg-slate-200">本月</button>
                   <button @click="changeMonth(1)" class="px-2.5 py-1 text-xs bg-slate-100 dark:bg-slate-700 rounded-lg active:bg-slate-200">›</button>
                 </div>
               </div>
@@ -710,6 +709,9 @@
                   <button @click="openBlackoutModal" class="px-2 py-1 bg-rose-700 hover:bg-rose-600 text-white rounded-lg text-xs font-bold shadow-sm transition active:scale-95">
                     🚫 設定禁休
                   </button>
+                  <button @click="clearScheduledRoster" class="px-2 py-1 bg-slate-200 hover:bg-rose-100 text-slate-700 hover:text-rose-700 dark:bg-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold transition active:scale-95" title="清空已套用的預排班表">
+                    🗑️ 清除預排紀錄
+                  </button>
                 </div>
               </div>
 
@@ -772,39 +774,17 @@
                   </div>
                 </div>
 
-                <!-- AI 預排與重新預排按鈕組 -->
-                <div class="grid grid-cols-2 gap-2 pt-1">
+                <!-- 單一執行 AI 預排按鍵 -->
+                <div class="pt-1">
                   <button 
                     @click="generateAiRoster" 
                     type="button" 
-                    class="py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
+                    class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
                     <span>🤖</span> 執行 AI 智慧預排
                   </button>
-                  <button 
-                    @click="generateAiRoster" 
-                    type="button" 
-                    class="py-2.5 bg-teal-700 hover:bg-teal-600 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
-                    <span>🔄</span> 重新預排班表
-                  </button>
                 </div>
 
-                <!-- 班表模式切換 -->
-                <div class="flex items-center justify-center gap-1 p-1 bg-slate-100 dark:bg-slate-900/60 rounded-xl text-xs font-bold mt-2">
-                  <button 
-                    @click="printViewMode = 'blank'" 
-                    :class="printViewMode === 'blank' ? 'bg-white dark:bg-slate-800 text-emerald-800 dark:text-emerald-400 shadow-sm' : 'text-slate-500'" 
-                    class="flex-1 py-1.5 rounded-lg transition text-center flex items-center justify-center gap-1">
-                    <span>📝</span> 空白班表模式
-                  </button>
-                  <button 
-                    @click="printViewMode = 'ai'" 
-                    :class="printViewMode === 'ai' ? 'bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-400 shadow-sm' : 'text-slate-500'" 
-                    class="flex-1 py-1.5 rounded-lg transition text-center flex items-center justify-center gap-1">
-                    <span>🤖</span> AI 預排班表模式
-                  </button>
-                </div>
-
-                <!-- 列印與匯出按鈕 -->
+                <!-- 純粹的雙列印按鍵 -->
                 <div class="grid grid-cols-2 gap-2 pt-1">
                   <button 
                     @click="triggerPrintSchedule('blank')" 
@@ -816,18 +796,6 @@
                     @click="triggerPrintSchedule('ai')" 
                     class="py-2.5 bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1 active:scale-95">
                     <span>🖨️</span> 列印預排班表
-                  </button>
-
-                  <button 
-                    @click="exportScheduleExcel('blank')" 
-                    class="py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-600 transition flex items-center justify-center gap-1">
-                    <span>📊</span> 匯出空白 Excel
-                  </button>
-
-                  <button 
-                    @click="exportScheduleExcel('ai')" 
-                    class="py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1">
-                    <span>📊</span> 匯出預排 Excel
                   </button>
                 </div>
               </div>
@@ -972,7 +940,7 @@
                   </div>
 
                   <div :class="isSpecialCoffeeMaster(s) ? 'text-amber-400/60' : 'text-slate-400'" class="text-[10px] truncate">
-                    配班時段：{{ getAvailabilitySummary(s) }}
+                    配班時段：{{ s.role === '天使夥伴' ? '每週二/四/五/六/日 08:30-17:30' : getAvailabilitySummary(s) }}
                   </div>
                 </div>
               </div>
@@ -2176,7 +2144,7 @@
     </div>
   </transition>
 
-  <!-- ==================== A4 直式單頁滿版列印表格 (文字放大強化版·絕不跳頁) ==================== -->
+  <!-- ==================== A4 直式單頁滿版列印表格 (David 固定呈現班表·絕不跳頁) ==================== -->
   <div class="print-only-container bg-white text-black font-sans">
     
     <div class="print-page-single">
@@ -2197,7 +2165,7 @@
         </div>
       </div>
 
-      <!-- 表格容器：文字大小升級至 10.5px ~ 11.5px -->
+      <!-- 表格容器 -->
       <div class="print-table-wrapper">
         <table class="print-table">
           <thead>
@@ -2228,8 +2196,16 @@
               <!-- 7 天日期格 -->
               <td v-for="d in targetRangeDates" :key="d.dateStr" class="relative align-middle p-0.5">
                 
-                <!-- 畫假標記 -->
-                <template v-if="getVacationData(staff.id || staff._key, d.dateStr)">
+                <!-- 🌟 小天使 David：每週二、四、五、六、日固定呈現 08:30-17:30，一/三休息 🌟 -->
+                <template v-if="staff.role === '天使夥伴' || staff.nickname === 'David'">
+                  <div v-if="isDavidWorkDay(d.dateStr)" class="leading-tight">
+                    <div class="text-[9.5px] font-black text-slate-900">08:30-17:30</div>
+                  </div>
+                  <div v-else class="text-[9px] text-slate-400 font-medium">不配</div>
+                </template>
+
+                <!-- 一般夥伴畫假標記 -->
+                <template v-else-if="getVacationData(staff.id || staff._key, d.dateStr)">
                   <div class="text-black font-black text-lg leading-none">✕</div>
                   <div class="text-[9px] font-black text-slate-900 leading-tight">【{{ getVacationData(staff.id || staff._key, d.dateStr).type }}】</div>
                 </template>
@@ -2256,7 +2232,7 @@
 
               </td>
 
-              <!-- 最右側：本週累計工時 -->
+              <!-- 最右側：本週累計工時 (David 固定計算 5天*8.5h=42.5h) -->
               <td class="font-mono font-black text-[11px] align-middle p-0.5 bg-slate-50 text-slate-900">
                 <span v-if="printTargetMode === 'ai'">
                   {{ calculateWeeklyStaffHours(staff) }}h
@@ -2356,11 +2332,9 @@ createApp({
     const isCloudConnected = ref(false);
     const isDarkMode = ref(false);
 
-    // 班表列印與檢視模式
-    const printViewMode = ref('blank');
     const printTargetMode = ref('blank');
 
-    // 核心資料陣列
+    // 核心資料庫響應變數
     const materials = ref([]);
     const rules = ref([]);
     const inventory = ref([]);
@@ -2390,7 +2364,6 @@ createApp({
     const isAiEvaluatingTasting = ref(false);
     const isAiRecognizingRules = ref(false);
 
-    // 管理職本週主責早晚班多選綁定
     const selectedWeeklyOpenManagers = ref([]);
     const selectedWeeklyCloseManagers = ref([]);
 
@@ -2440,7 +2413,6 @@ createApp({
       for (let i = 0; i < weekStr.length; i++) seed += weekStr.charCodeAt(i);
 
       let pool = [...masterQuizPool];
-
       if (coffeeKnowledgeList.value.length > 0) {
         coffeeKnowledgeList.value.forEach(item => {
           if (item.title && item.content) {
@@ -2468,7 +2440,7 @@ createApp({
       return selected;
     });
 
-    // 權限判定：店經理、副理、值班經理、時薪值班
+    // 權限判定
     const isDutyOrAbove = computed(() => {
       if (!currentPartner.value) return false;
       const role = currentPartner.value.role || '';
@@ -2476,14 +2448,13 @@ createApp({
     });
     const isManager = computed(() => isDutyOrAbove.value);
 
-    // 🌟 API Key 專屬權限：只有「徐爰坦」本人可檢視並設定
+    // 徐爰坦專屬 API Key 權限隔離
     const isSuperTan = computed(() => {
       if (!currentPartner.value) return false;
       const p = currentPartner.value;
       return (p.name === '徐爰坦' || p.nickname === 'Tan' || p.empId === '10386493');
     });
 
-    // 職位優先權重 (店經理: 1, 副理: 2, 值班經理: 3, 時薪值班: 4, FT: 5, PT: 6, 天使夥伴: 7)
     const getRolePriority = (role) => {
       if (!role) return 6;
       if (role.includes('店經理')) return 1;
@@ -2548,7 +2519,7 @@ createApp({
       nextTick(() => { if (window.lucide) lucide.createIcons(); });
     });
 
-    // Firebase 雙向鍵值綁定
+    // Firebase 即時資料綁定
     if (db) {
       db.ref('.info/connected').on('value', snap => isCloudConnected.value = snap.val() === true);
 
@@ -2578,15 +2549,39 @@ createApp({
       db.ref('sbux/custom_albums').on('value', snap => customAlbums.value = snap.val() ? Object.values(snap.val()) : []);
       db.ref('sbux/bravo_cards').on('value', snap => bravoCardsList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []);
 
+      // 修正：健全的拉花歷史集錦資料庫解析（避免作品陣列丟失）
       db.ref('sbux/latteArtArchives').on('value', (snapshot) => {
         const val = snapshot.val();
-        latteArtArchives.value = val ? Object.keys(val).map(key => ({ key, folderName: key, ...val[key] })).sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt)) : [];
+        if (val) {
+          latteArtArchives.value = Object.keys(val).map(key => {
+            const data = val[key] || {};
+            let worksArr = [];
+            if (Array.isArray(data.works)) {
+              worksArr = data.works;
+            } else if (data.works && typeof data.works === 'object') {
+              worksArr = Object.values(data.works);
+            }
+            return {
+              key,
+              folderName: data.folderName || key,
+              archivedAt: data.archivedAt || '',
+              archivedBy: data.archivedBy || '',
+              totalWorks: data.totalWorks || worksArr.length,
+              winner: data.winner || '無',
+              expanded: false,
+              works: worksArr
+            };
+          }).sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
+        } else {
+          latteArtArchives.value = [];
+        }
       });
 
       db.ref('sbux/coffeeKnowledge').on('value', snap => {
         const val = snap.val();
         coffeeKnowledgeList.value = val ? Object.keys(val).map(k => ({ id: k, ...val[k] })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) : [];
       });
+
       db.ref('sbux/quizRecords/' + currentWeekQuizId.value).on('value', snap => {
         weeklyQuizRecords.value = snap.val() || {};
       });
@@ -2667,7 +2662,6 @@ createApp({
             const bDate = new Date(now.getFullYear(), bMonth - 1, bDay);
             const todayDate = new Date(now.getFullYear(), m - 1, d);
             const diffDays = Math.ceil((bDate - todayDate) / (1000 * 60 * 60 * 24));
-
             if (diffDays >= 0 && diffDays <= 2) {
               alerts.push(`${s.name} (${bMonth}/${bDay})`);
             }
@@ -2796,42 +2790,26 @@ createApp({
     const calculateCombinedScore = (post) => Number(((post.aiScore || 0) * 0.7 + (post.votes || 0) * 5).toFixed(1));
 
     const settledPeriodStr = computed(() => {
+      if (latteArtArchives.value.length > 0) {
+        return `上期冠軍：${latteArtArchives.value[0].winner}`;
+      }
       const now = new Date();
-      return `${now.getMonth() + 1}/${now.getDate()} 當週評選中`;
+      return `${now.getMonth() + 1}/${now.getDate()} 當期評選中`;
     });
 
     const settledHonors = computed(() => {
-      const now = new Date();
-      const day = now.getDay();
-      const hours = now.getHours();
-      const minutes = now.getMinutes();
-      const isPastSettlementTime = (day === 0 && (hours > 23 || (hours === 23 && minutes >= 30)));
-
-      let champName = isPastSettlementTime ? '本週無參賽' : '⏳ 評選中';
-      let champScore = isPastSettlementTime ? '' : '週日揭曉';
+      let champName = '虛位以待';
+      let champScore = '';
       let progressName = '次週結算';
       let progressDelta = '累積兩週成績';
 
-      if (lattePosts.value.length > 0) {
-        if (!isPastSettlementTime) {
-          champName = '⏳ 激戰中';
-          champScore = '週日 23:30 揭曉';
-        } else {
-          const staffBestScoreMap = {};
-          lattePosts.value.forEach(post => {
-            const score = calculateCombinedScore(post);
-            const sid = post.authorStaffId;
-            if (!staffBestScoreMap[sid] || score > staffBestScoreMap[sid]) {
-              staffBestScoreMap[sid] = score;
-            }
-          });
-
-          const rankedStaff = Object.keys(staffBestScoreMap).sort((a, b) => staffBestScoreMap[b] - staffBestScoreMap[a]);
-          if (rankedStaff.length > 0) {
-            champName = getStaffName(rankedStaff[0]);
-            champScore = staffBestScoreMap[rankedStaff[0]].toString();
-          }
-        }
+      // 優先顯示最新一期的冠軍紀錄
+      if (latteArtArchives.value.length > 0) {
+        champName = latteArtArchives.value[0].winner || '上期冠軍';
+        champScore = '前期得主';
+      } else if (lattePosts.value.length > 0) {
+        champName = '⏳ 激戰評選中';
+        champScore = '週日結算';
       }
 
       let activeName = '虛位以待';
@@ -2868,7 +2846,7 @@ createApp({
       }
     };
 
-    // 畫假行事曆月曆視圖
+    // 畫假行事曆
     const currentVacationCalDate = ref(new Date());
     const vacationCalYear = computed(() => currentVacationCalDate.value.getFullYear());
     const vacationCalMonth = computed(() => currentVacationCalDate.value.getMonth());
@@ -3088,7 +3066,7 @@ createApp({
       }
     };
 
-    // ==================== 勞基法 AI 預排班表演算法 ====================
+    // ==================== 門市排班演算法 (支援中晚銜接 / 工作月工時平衡) ====================
     const timeToMins = (t) => {
       const [h, m] = t.split(':').map(Number);
       return h * 60 + m;
@@ -3099,9 +3077,16 @@ createApp({
       return rawHours > 4.5 ? (rawHours - 0.5) : rawHours;
     };
 
+    // 判斷是否為小天使 David 的上班日（固定二、四、五、六、日 8:30-17:30，一/三休息）
+    const isDavidWorkDay = (dateStr) => {
+      const d = new Date(dateStr);
+      const day = d.getDay(); // 0:週日, 1:週一, 2:週二, 3:週三, 4:週四, 5:週五, 6:週六
+      return [0, 2, 4, 5, 6].includes(day);
+    };
+
     const isStaffAvailableForShift = (staff, dateStr, shiftStart, shiftEnd) => {
       const sid = staff.id || staff._key;
-      // 天使夥伴不參與核心班次排班
+      // 小天使 David 永遠不排入常態早中晚班次
       if (staff.role === '天使夥伴' || staff.nickname === 'David') return false;
 
       const onVacation = vacationList.value.some(v => (v.staffId === sid) && v.date === dateStr);
@@ -3121,6 +3106,37 @@ createApp({
 
     const isManagerRole = (role) => ['店經理', '副理', '值班經理', '時薪值班', '值班'].includes(role || '');
     const isFullTimeRole = (role) => ['店經理', '副理', '值班經理', '正職夥伴', 'FT'].includes(role || '');
+
+    // 後台工作月工時累計計算（每月 21 日至次月 20 日為一個週期，標準 50 小時）
+    const getWorkMonthAccumulatedHours = (staffId, targetDateStr) => {
+      const target = new Date(targetDateStr);
+      const y = target.getFullYear();
+      const m = target.getMonth();
+      const day = target.getDate();
+
+      let startDate, endDate;
+      if (day >= 21) {
+        startDate = new Date(y, m, 21);
+        endDate = new Date(y, m + 1, 20);
+      } else {
+        startDate = new Date(y, m - 1, 21);
+        endDate = new Date(y, m, 20);
+      }
+
+      let total = 0;
+      const roster = scheduledRoster.value || {};
+      for (const k in roster) {
+        if (k.startsWith(staffId + '_')) {
+          const dStr = k.split('_')[1];
+          const curr = new Date(dStr);
+          if (curr >= startDate && curr <= endDate) {
+            const item = roster[k];
+            if (typeof item === 'object' && item.hours) total += Number(item.hours);
+          }
+        }
+      }
+      return total;
+    };
 
     const getHistoricalShiftType = (staffId) => {
       const roster = scheduledRoster.value || {};
@@ -3145,7 +3161,7 @@ createApp({
       const schedulePlan = [];
       const warnings = [];
 
-      // 追蹤每位員工在本週期內的累計工時、連續上班天數、累計上班天數與前日下班時間
+      // 追蹤每位夥伴本週排班與工作月累計
       const staffWorkTracker = {};
       allStaff.forEach(s => {
         const sid = s.id || s._key;
@@ -3153,7 +3169,8 @@ createApp({
           weeklyHours: 0,
           daysWorked: 0,
           lastEndMins: -9999,
-          consecutiveDays: 0
+          consecutiveDays: 0,
+          monthlyAccum: getWorkMonthAccumulatedHours(sid, scheduleStartDate.value)
         };
       });
 
@@ -3163,18 +3180,17 @@ createApp({
         const dayOfWeek = d.getDay();
         const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
 
-        // 班別定義
+        // 基本班別
         const dayShiftSlots = [
           { name: "早班(開店1)", start: "06:30", end: "15:00", requiresManager: true },
           { name: "早班(開店2)", start: "06:30", end: "15:00", requiresManager: false }
         ];
 
-        // 支援中班彈性延長（如 Ken 等夥伴可配合至 19:00 或 20:00 銜接晚班）
         if (!isWeekend) {
-          dayShiftSlots.push({ name: "中班", start: "08:30", end: "17:30", requiresManager: false, flexibleExt: true });
+          dayShiftSlots.push({ name: "中班", start: "08:30", end: "17:30", requiresManager: false, isMidShift: true });
         } else {
           dayShiftSlots.push({ name: "中班1", start: "08:00", end: "15:00", requiresManager: false });
-          dayShiftSlots.push({ name: "中班2", start: "10:30", end: "17:30", requiresManager: false, flexibleExt: true });
+          dayShiftSlots.push({ name: "中班2", start: "10:30", end: "17:30", requiresManager: false, isMidShift: true });
         }
 
         dayShiftSlots.push(
@@ -3186,25 +3202,40 @@ createApp({
         const assignedToday = new Set();
         const assignedShifts = [];
 
+        // 🌟 智慧媒合：檢查當天可用於晚班的人員最早能進班的時間，動態決定中班是否需拉長交接
+        let latestEveningArrival = "14:00";
+        allStaff.forEach(st => {
+          if (assignedToday.has(st.id || st._key) || st.role === '天使夥伴' || st.nickname === 'David') return;
+          if (st.availability) {
+            const dIdx = (d.getDay() + 6) % 7;
+            const av = st.availability['day_' + dIdx];
+            if (av && av.type === 'custom') {
+              if (timeToMins(av.start) > timeToMins("14:00") && timeToMins(av.end) >= timeToMins("22:30")) {
+                if (timeToMins(av.start) > timeToMins(latestEveningArrival)) {
+                  latestEveningArrival = av.start;
+                }
+              }
+            }
+          }
+        });
+
         dayShiftSlots.forEach(slot => {
           let slotStart = slot.start;
           let slotEnd = slot.end;
 
-          // 🌟 核心防呆：符合可用時段 + 每日限一班 + 休息大於11小時 + 🌟【全週最多排6天，第7天絕對禁排】
+          // 核心條件篩選
           let candidates = allStaff.filter(staff => {
             const sid = staff.id || staff._key;
             if (assignedToday.has(sid)) return false;
             if (!isStaffAvailableForShift(staff, dateStr, slotStart, slotEnd)) return false;
 
             const tracker = staffWorkTracker[sid];
-            
-            // 🛑 勞基法一例一休核心：連續天數達 6 天 OR 本週總上班天數已達 6 天者，絕對禁止排入第 7 天！
+            // 🛑 每週上限 6 天，第 7 天絕對禁排
             if (tracker.consecutiveDays >= 6 || tracker.daysWorked >= 6) return false;
 
-            // 🛑 正職工時保護：正職夥伴每週達 40 小時（5天）後，非必要不安排超額加班
+            // 🛑 正職工時上限控制
             const isFT = isFullTimeRole(staff.role);
             if (isFT && tracker.weeklyHours >= 40 && tracker.daysWorked >= 5) {
-              // 除非全店無其他 PT/PTSSV 可排，才允許排第 6 天
               const otherAvailablePT = allStaff.some(other => {
                 const oSid = other.id || other._key;
                 return !isFullTimeRole(other.role) && !assignedToday.has(oSid) && isStaffAvailableForShift(other, dateStr, slotStart, slotEnd) && staffWorkTracker[oSid].daysWorked < 6;
@@ -3212,7 +3243,7 @@ createApp({
               if (otherAvailablePT) return false;
             }
 
-            // 🛑 跨日排班休息間隔必須大於 11 小時
+            // 🛑 跨日排班休息間隔須 > 11 小時
             if (tracker.lastEndMins > 0) {
               const restMins = (24 * 60 - tracker.lastEndMins) + timeToMins(slotStart);
               if (restMins < 11 * 60) return false;
@@ -3223,20 +3254,15 @@ createApp({
 
           let pickedStaff = null;
 
-          // 1. 若需要主管
+          // 1. 主管指派
           if (slot.requiresManager) {
             let managerCandidates = candidates.filter(s => isManagerRole(s.role));
-
-            // 主管指定勾選匹配
             if (slot.name.includes('早') && selectedWeeklyOpenManagers.value.length > 0) {
-              const preferred = managerCandidates.find(s => selectedWeeklyOpenManagers.value.includes(s.id || s._key));
-              if (preferred) pickedStaff = preferred;
+              pickedStaff = managerCandidates.find(s => selectedWeeklyOpenManagers.value.includes(s.id || s._key));
             } else if (slot.name.includes('晚') && selectedWeeklyCloseManagers.value.length > 0) {
-              const preferred = managerCandidates.find(s => selectedWeeklyCloseManagers.value.includes(s.id || s._key));
-              if (preferred) pickedStaff = preferred;
+              pickedStaff = managerCandidates.find(s => selectedWeeklyCloseManagers.value.includes(s.id || s._key));
             }
 
-            // 兩週輪替歷史推薦
             if (!pickedStaff && managerCandidates.length > 0) {
               managerCandidates.sort((a, b) => {
                 const targetType = slot.name.includes('早') ? 'open' : 'close';
@@ -3250,12 +3276,10 @@ createApp({
               pickedStaff = managerCandidates[0];
             }
 
-            if (!pickedStaff) {
-              warnings.push(`${dateStr} ${slot.name} 缺少管理職 1 名！`);
-            }
+            if (!pickedStaff) warnings.push(`${dateStr} ${slot.name} 缺少管理職 1 名！`);
           }
 
-          // 2. 一般夥伴指派（正職目標 40hr，PT/PTSSV 平均時數排班）
+          // 2. 一般夥伴指派（工作月 50hr 平衡與均時分攤）
           if (!pickedStaff && candidates.length > 0) {
             candidates.sort((a, b) => {
               const aIsFT = isFullTimeRole(a.role);
@@ -3263,26 +3287,28 @@ createApp({
               const aHours = staffWorkTracker[a.id || a._key].weeklyHours;
               const bHours = staffWorkTracker[b.id || b._key].weeklyHours;
 
-              // 正職優先排滿 40 小時 (5天)
               if (aIsFT && aHours < 40 && (!bIsFT || bHours >= 40)) return -1;
               if (bIsFT && bHours < 40 && (!aIsFT || aHours >= 40)) return 1;
 
-              // PTSSV / PT 均工時：累計時數少者優先進班，避免過度集中
+              // PTSSV / PT 依工作月 21~20 累計與週工時少者優先（平衡時數機制）
+              const aMonth = staffWorkTracker[a.id || a._key].monthlyAccum;
+              const bMonth = staffWorkTracker[b.id || b._key].monthlyAccum;
+              if (Math.abs(aMonth - bMonth) > 5) return aMonth - bMonth;
+
               return aHours - bHours;
             });
             pickedStaff = candidates[0];
           }
 
-          // 彈性中晚班銜接支援（若中班夥伴可用時間可達 19:00 或 20:00）
-          if (pickedStaff && slot.flexibleExt && pickedStaff.availability) {
+          // 🌟 中晚班動態無縫交接：若中班夥伴可配合時間較長，且晚班夥伴較晚到，動態將中班延長交接
+          if (pickedStaff && slot.isMidShift && pickedStaff.availability) {
             const dIdx = (d.getDay() + 6) % 7;
             const av = pickedStaff.availability['day_' + dIdx];
             if (av && av.type === 'custom') {
               const avEndMins = timeToMins(av.end);
-              if (avEndMins >= timeToMins('20:00')) {
-                slotEnd = '20:00';
-              } else if (avEndMins >= timeToMins('19:00')) {
-                slotEnd = '19:00';
+              const targetEndMins = timeToMins(latestEveningArrival);
+              if (targetEndMins > timeToMins(slotEnd) && avEndMins >= targetEndMins) {
+                slotEnd = latestEveningArrival;
               }
             }
           }
@@ -3299,6 +3325,7 @@ createApp({
             tracker.consecutiveDays += 1;
             tracker.daysWorked += 1;
             tracker.weeklyHours += netHours;
+            tracker.monthlyAccum += netHours;
 
             const isSixthDay = (tracker.daysWorked === 6 || tracker.consecutiveDays === 6);
             const isOvertime = netHours > 8;
@@ -3328,7 +3355,6 @@ createApp({
           }
         });
 
-        // 當天未排班者重置連續上班天數
         allStaff.forEach(s => {
           const sid = s.id || s._key;
           if (!assignedToday.has(sid)) {
@@ -3364,8 +3390,17 @@ createApp({
 
       if (db) db.ref('sbux/scheduled_roster').set(newRosterMap);
       aiRosterModal.value.show = false;
-      printViewMode.value = 'ai';
+      printTargetMode.value = 'ai';
       alert('🎉 預排班表已儲存更新！');
+    };
+
+    // 🌟 新增：一鍵清除歷史 AI 預排紀錄
+    const clearScheduledRoster = () => {
+      if (confirm('確定要清空已套用的 AI 預排班表紀錄嗎？\n清空後班表將還原為空白手寫狀態。')) {
+        if (db) db.ref('sbux/scheduled_roster').remove();
+        scheduledRoster.value = {};
+        alert('🗑️ 已成功清除所有預排班表紀錄！');
+      }
     };
 
     const getScheduledShiftObj = (staff, dateStr) => {
@@ -3392,6 +3427,15 @@ createApp({
 
     const calculateWeeklyStaffHours = (staff) => {
       const sid = staff.id || staff._key;
+      // 小天使 David 固定計算
+      if (staff.role === '天使夥伴' || staff.nickname === 'David') {
+        let cnt = 0;
+        targetRangeDates.value.forEach(d => {
+          if (isDavidWorkDay(d.dateStr)) cnt++;
+        });
+        return (cnt * 8.5).toFixed(1);
+      }
+
       let total = 0;
       targetRangeDates.value.forEach(d => {
         const item = (scheduledRoster.value || {})[`${sid}_${d.dateStr}`];
@@ -3408,42 +3452,11 @@ createApp({
     };
 
     const triggerPrintSchedule = (mode) => {
-      printTargetMode.value = mode || printViewMode.value;
+      printTargetMode.value = mode;
       nextTick(() => { window.print(); });
     };
 
-    const exportScheduleExcel = (mode) => {
-      if (sortedValidStaffList.value.length === 0) return alert('尚未建立名單！');
-      const targetMode = mode || printViewMode.value;
-      const headers = ["員工編號", "員工姓名", "職位"];
-      targetRangeDates.value.forEach(d => headers.push(`${d.displayDate} (${d.weekday})`));
-      headers.push("本週工時");
-      
-      const rows = sortedValidStaffList.value.map(staff => {
-        const row = [staff.empId, `${staff.name} (${staff.nickname})`, staff.role];
-        targetRangeDates.value.forEach(d => {
-          const v = getVacationData(staff._key || staff.id, d.dateStr);
-          if (v) {
-            row.push(`✕ 【${v.type}】`);
-          } else if (targetMode === 'ai') {
-            const shiftText = getScheduledShiftText(staff, d.dateStr);
-            const sixthDayTag = isConsecutiveSixthDay(staff, d.dateStr) ? "[休上班] " : "";
-            row.push(shiftText ? (sixthDayTag + shiftText) : "-");
-          } else {
-            row.push(getAvailabilityText(staff, d.dateStr) || "");
-          }
-        });
-        row.push(targetMode === 'ai' ? `${calculateWeeklyStaffHours(staff)}h` : "-");
-        return row;
-      });
-
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-      const sheetName = targetMode === 'ai' ? "預排班表" : "空白班表";
-      XLSX.utils.book_append_sheet(wb, ws, sheetName);
-      XLSX.writeFile(wb, `永和永安門市_${sheetName}_${scheduleStartDate.value}.xlsx`);
-    };
-
+    // ==================== 拉花結算修復與前三名公布門市公告 ====================
     const getWeekDateRangeStr = () => {
       const now = new Date();
       const day = now.getDay();
@@ -3452,7 +3465,7 @@ createApp({
       monday.setDate(now.getDate() + diffToMonday);
       const sunday = new Date(monday);
       sunday.setDate(monday.getDate() + 6);
-      return `${monday.getMonth() + 1}/${monday.getDate()}~${sunday.getMonth() + 1}/${sunday.getDate()}拉花照`;
+      return `${monday.getFullYear()}${String(monday.getMonth() + 1).padStart(2, '0')}${String(monday.getDate()).padStart(2, '0')}_期`;
     };
 
     const archiveWeeklyLatteArt = async () => {
@@ -3461,27 +3474,57 @@ createApp({
       if (currentArts.length === 0) return alert('目前尚無參賽作品！');
 
       const defaultArchiveName = getWeekDateRangeStr();
-      const folderName = prompt('請確認本週歷史集錦資料夾名稱：', defaultArchiveName);
-      if (!folderName) return;
+      const inputName = prompt('請輸入本期歷史集錦代號（請勿使用斜線等特殊符號）：', defaultArchiveName);
+      if (!inputName) return;
+      const safeKey = inputName.replace(/[.#$/[\]]/g, '_').trim();
 
       isArchivingLatteArt.value = true;
       try {
-        const sortedArts = [...currentArts].sort((a, b) => ((b.votes || 0) - (a.votes || 0)));
-        const finalRankedArts = sortedArts.map((item, idx) => ({ ...item, rank: idx + 1 }));
+        // 依加權總分嚴謹計算名次
+        const sortedArts = [...currentArts].sort((a, b) => calculateCombinedScore(b) - calculateCombinedScore(a));
+        const finalRankedArts = sortedArts.map((item, idx) => ({
+          ...item,
+          rank: idx + 1,
+          finalScore: calculateCombinedScore(item),
+          partnerName: item.partnerName || getStaffName(item.authorStaffId)
+        }));
 
-        await db.ref('sbux/latteArtArchives/' + folderName).set({
-          folderName,
+        const top1 = finalRankedArts[0];
+        const top2 = finalRankedArts[1];
+        const top3 = finalRankedArts[2];
+
+        // 1. 寫入歷史集錦資料庫
+        await db.ref('sbux/latteArtArchives/' + safeKey).set({
+          folderName: safeKey,
           archivedAt: new Date().toISOString(),
-          archivedBy: currentPartner.value?.name || '幹部',
+          archivedBy: currentPartner.value?.name || '管理職',
           totalWorks: finalRankedArts.length,
-          winner: finalRankedArts[0]?.partnerName || getStaffName(finalRankedArts[0]?.authorStaffId) || '無',
+          winner: top1?.partnerName || '無',
           works: finalRankedArts
         });
 
+        // 2. 🌟 自動發布前三名得獎名單至「門市公告欄」
+        let announcement = `🎉 【門市拉花擂台賽 · 本期結算榮譽榜】 🎉\n\n`;
+        if (top1) announcement += `🥇 冠軍：${top1.partnerName} (${top1.pattern})\n   ➔ 加權總分：${top1.finalScore} 分 (❤️ ${top1.votes || 0} 票)\n`;
+        if (top2) announcement += `🥈 亞軍：${top2.partnerName} (${top2.pattern})\n   ➔ 加權總分：${top2.finalScore} 分 (❤️ ${top2.votes || 0} 票)\n`;
+        if (top3) announcement += `🥉 季軍：${top3.partnerName} (${top3.pattern})\n   ➔ 加權總分：${top3.finalScore} 分 (❤️ ${top3.votes || 0} 票)\n`;
+        announcement += `\n恭喜以上獲獎夥伴，也感謝全員踴躍參與！新一期擂台已正式開跑，歡迎繼續展現精湛拉花技藝！☕`;
+
+        const bulletinId = 'bulletin_' + Date.now();
+        await db.ref('sbux/bulletins/' + bulletinId).set({
+          id: bulletinId,
+          title: `🏆 門市拉花擂台賽 (${safeKey}) 成果揭曉`,
+          content: announcement,
+          dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`,
+          timestamp: Date.now()
+        });
+
+        // 3. 清空當期作品開啟新一輪
         await db.ref('sbux/latte_posts').remove();
-        alert(`結算成功！本週作品已封存至「${folderName}」！`);
+        alert(`🎉 結算成功！\n已將 ${finalRankedArts.length} 幅作品歸檔至「${safeKey}」，並已同步公布前三名於門市公告欄！`);
       } catch (err) {
-        alert('封存失敗。');
+        console.error('結算錯誤：', err);
+        alert('❌ 結算失敗：' + err.message);
       } finally {
         isArchivingLatteArt.value = false;
       }
@@ -3520,14 +3563,11 @@ createApp({
 
     const activeCommentPostId = ref(null);
     const newCommentText = ref('');
-
     const toggleComments = (postId) => {
       activeCommentPostId.value = activeCommentPostId.value === postId ? null : postId;
       newCommentText.value = '';
     };
-
     const getCommentCount = (post) => post.comments ? Object.keys(post.comments).length : 0;
-
     const submitComment = (post) => {
       const text = newCommentText.value.trim();
       if (!text || !currentPartner.value) return;
@@ -3956,6 +3996,9 @@ createApp({
     const getAvailabilitySummary = (staff) => staff.availability ? '已設定' : '皆可';
 
     const getAvailabilityText = (staff, dateStr) => {
+      if (staff.role === '天使夥伴' || staff.nickname === 'David') {
+        return isDavidWorkDay(dateStr) ? '08:30-17:30' : '不配';
+      }
       if (!staff.availability) return '';
       const d = new Date(dateStr);
       const dayIdx = (d.getDay() + 6) % 7;
@@ -4033,14 +4076,14 @@ createApp({
       intakeForm, submitIntake, deleteIntake, rules,
       calYear, calMonth, changeMonth, resetToCurrentMonth, calendarDays, todayStr, selectedDate, selectedDateItems,
       staffList, validStaffList, sortedValidStaffList, allDutyStaff, selectedWeeklyOpenManagers, selectedWeeklyCloseManagers, getPrintRowHeight,
-      isSpecialCoffeeMaster,
+      isSpecialCoffeeMaster, isDavidWorkDay,
       vacationList, vacationForm, submitVacation,
       secureDeleteModal, promptSecureDeleteVacation, confirmSecureDelete,
       staffModal, openAddStaffModal, editStaff, saveStaffForm,
       secureStaffDeleteModal, promptSecureDeleteStaff, confirmSecureStaffDelete,
       availModal, openAvailabilityModal, saveAvailability, getAvailabilitySummary, getAvailabilityText, timeSlots,
       allowedVacationStartStr, scheduleStartDate, scheduleEndDate, targetRangeDates, setNextWeekRange,
-      printViewMode, printTargetMode, triggerPrintSchedule, exportScheduleExcel,
+      printTargetMode, triggerPrintSchedule, clearScheduledRoster,
       aiRosterModal, generateAiRoster, applyAiRosterToSchedule, getScheduledShiftText, isOvertimeShift, isConsecutiveSixthDay, calculateWeeklyStaffHours,
       blackoutDates, blackoutDatesList, blackoutModal, openBlackoutModal, saveBlackoutDate, deleteBlackoutDate,
       vacationCalYear, vacationCalMonth, changeVacationMonth, resetVacationMonth, vacationCalendarDays,
