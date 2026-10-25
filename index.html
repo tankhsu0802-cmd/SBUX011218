@@ -2358,6 +2358,9 @@ createApp({
     const isAiEvaluatingTasting = ref(false);
     const isAiRecognizingRules = ref(false);
 
+    // 確保 latteForm 存在以供模板綁定
+    const latteForm = ref({ pattern: '心形 (Heart)', photoUrl: '' });
+
     const selectedWeeklyOpenManagers = ref([]);
     const selectedWeeklyCloseManagers = ref([]);
 
@@ -2511,29 +2514,25 @@ createApp({
       nextTick(() => { if (window.lucide) lucide.createIcons(); });
     });
 
-    // 計算作品加權總分
     const calculateCombinedScore = (post) => Number(((post.aiScore || 0) * 0.7 + (post.votes || 0) * 5).toFixed(1));
 
-    // ==================== 🌟 每週日 23:30 自動結算與公告發布引擎 ====================
+    // ==================== 🌟 自動結算與公告發布引擎 ====================
     let isAutoArchivingInProgress = false;
     const checkAndAutoArchiveLatteArt = async () => {
       if (!db || isAutoArchivingInProgress) return;
       const now = new Date();
-      // 週日 (0) 且時間在 23:30 之後，或者週一凌晨且當前還有未歸檔作品
       const isSundayNight = (now.getDay() === 0 && (now.getHours() > 23 || (now.getHours() === 23 && now.getMinutes() >= 30)));
       const isMondayMorning = (now.getDay() === 1 && now.getHours() < 12);
 
-      if ((isSundayNight || isMondayMorning) && lattePosts.value.length > 0) {
+      if ((isSundayNight || isMondayMorning) && lattePosts.value && lattePosts.value.length > 0) {
         isAutoArchivingInProgress = true;
         try {
-          // 算出當期名稱：以該週一為基準
           const day = now.getDay();
           const diffToMonday = (day === 0 ? -6 : 1) - day;
           const monday = new Date(now);
           monday.setDate(now.getDate() + diffToMonday);
           const autoKey = `${monday.getFullYear()}${String(monday.getMonth() + 1).padStart(2, '0')}${String(monday.getDate()).padStart(2, '0')}_期`;
 
-          // 排序得出名次
           const sorted = [...lattePosts.value].sort((a, b) => calculateCombinedScore(b) - calculateCombinedScore(a));
           const finalRanked = sorted.map((item, idx) => ({
             ...item,
@@ -2546,7 +2545,6 @@ createApp({
           const top2 = finalRanked[1];
           const top3 = finalRanked[2];
 
-          // 1. 寫入歷史相簿
           await db.ref('sbux/latteArtArchives/' + autoKey).set({
             folderName: autoKey,
             archivedAt: new Date().toISOString(),
@@ -2556,7 +2554,6 @@ createApp({
             works: finalRanked
           });
 
-          // 2. 🌟 自動發布前三名得獎人姓名至門市公告欄
           let announcement = `🎉 【門市拉花擂台賽 · 本期結算榮譽榜】 🎉\n\n`;
           if (top1) announcement += `🥇 冠軍：${top1.partnerName} (${top1.pattern})\n   ➔ 加權總分：${top1.finalScore} 分 (❤️ ${top1.votes || 0} 票)\n`;
           if (top2) announcement += `🥈 亞軍：${top2.partnerName} (${top2.pattern})\n   ➔ 加權總分：${top2.finalScore} 分 (❤️ ${top2.votes || 0} 票)\n`;
@@ -2572,9 +2569,7 @@ createApp({
             timestamp: Date.now()
           });
 
-          // 3. 自動清除當期展開的拉花照，重置擂台
           await db.ref('sbux/latte_posts').remove();
-          console.log('✅ 每週日 23:30 拉花成果已自動結算並發布至門市公告欄！');
         } catch (e) {
           console.error('自動結算錯誤：', e);
         } finally {
@@ -2616,7 +2611,7 @@ createApp({
 
       db.ref('sbux/store_photos').on('value', snap => storePhotos.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
       db.ref('sbux/custom_albums').on('value', snap => customAlbums.value = snap.val() ? Object.values(snap.val()) : []);
-      db.ref('sbux/bravo_cards').on('value', snap => bravoCardsList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []);
+      db.ref('sbux/bravo_cards').on('value', snap => bravoCardsList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
 
       db.ref('sbux/latteArtArchives').on('value', (snapshot) => {
         const val = snapshot.val();
@@ -2750,7 +2745,7 @@ createApp({
     });
 
     const settledPeriodStr = computed(() => {
-      if (latteArtArchives.value.length > 0) {
+      if (latteArtArchives.value && latteArtArchives.value.length > 0) {
         return `上期冠軍：${latteArtArchives.value[0].winner}`;
       }
       const now = new Date();
@@ -2763,17 +2758,17 @@ createApp({
       let progressName = '次週結算';
       let progressDelta = '累積兩週成績';
 
-      if (latteArtArchives.value.length > 0) {
+      if (latteArtArchives.value && latteArtArchives.value.length > 0) {
         champName = latteArtArchives.value[0].winner || '上期得主';
         champScore = '前期冠軍';
-      } else if (lattePosts.value.length > 0) {
+      } else if (lattePosts.value && lattePosts.value.length > 0) {
         champName = '⏳ 激戰評選中';
         champScore = '週日結算';
       }
 
       let activeName = '虛位以待';
       let activeTitle = '';
-      if (tastingNotesList.value.length > 0) {
+      if (tastingNotesList.value && tastingNotesList.value.length > 0) {
         activeName = getStaffName(tastingNotesList.value[0].authorStaffId);
         activeTitle = '品評分享大師';
       }
@@ -3025,7 +3020,7 @@ createApp({
       }
     };
 
-    // ==================== 排班演算法 (中晚交接/月工時平衡/David固定) ====================
+    // ==================== 排班演算法 ====================
     const timeToMins = (t) => {
       const [h, m] = t.split(':').map(Number);
       return h * 60 + m;
@@ -3036,7 +3031,6 @@ createApp({
       return rawHours > 4.5 ? (rawHours - 0.5) : rawHours;
     };
 
-    // 小天使 David 固定二、四、五、六、日 8:30-17:30
     const isDavidWorkDay = (dateStr) => {
       const d = new Date(dateStr);
       const day = d.getDay();
@@ -3065,7 +3059,6 @@ createApp({
     const isManagerRole = (role) => ['店經理', '副理', '值班經理', '時薪值班', '值班'].includes(role || '');
     const isFullTimeRole = (role) => ['店經理', '副理', '值班經理', '正職夥伴', 'FT'].includes(role || '');
 
-    // 工作月（每月 21 日至次月 20 日）累計工時
     const getWorkMonthAccumulatedHours = (staffId, targetDateStr) => {
       const target = new Date(targetDateStr);
       const y = target.getFullYear();
@@ -3158,7 +3151,6 @@ createApp({
         const assignedToday = new Set();
         const assignedShifts = [];
 
-        // 檢查當日晚班進班時間以動態延長中班銜接交接
         let latestEveningArrival = "14:00";
         allStaff.forEach(st => {
           if (assignedToday.has(st.id || st._key) || st.role === '天使夥伴' || st.nickname === 'David') return;
@@ -3249,7 +3241,6 @@ createApp({
             pickedStaff = candidates[0];
           }
 
-          // 中晚無縫銜接
           if (pickedStaff && slot.isMidShift && pickedStaff.availability) {
             const dIdx = (d.getDay() + 6) % 7;
             const av = pickedStaff.availability['day_' + dIdx];
@@ -3584,7 +3575,6 @@ createApp({
       return labels[val] || '3 (適中)';
     };
 
-    const latteForm = ref({ pattern: '心形 (Heart)', photoUrl: '' });
     const handleLattePhotoUpload = (e) => {
       const file = e.target.files[0];
       if (!file) return;
