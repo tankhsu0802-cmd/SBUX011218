@@ -1623,36 +1623,58 @@
 
   </div>
 
-  <!-- ==================== 底部固定毛玻璃導航選單 ==================== -->
+ <!-- ==================== 底部固定毛玻璃導航選單 (純內嵌 SVG，永不消失) ==================== -->
   <footer v-if="currentPartner" class="screen-element fixed bottom-0 left-0 right-0 z-[9999] ios-glass-bar border-t border-slate-200/60 dark:border-slate-800 shadow-sm transition-all">
     <div class="max-w-md mx-auto grid grid-cols-6 py-2 px-1 text-center">
       <button @click="currentTab = 'home'" :class="currentTab === 'home' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
-        <i data-lucide="home" class="w-5 h-5 stroke-[1.8]"></i>
+        <svg class="w-5 h-5 stroke-[1.8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
         <span class="text-[10px] mt-1 tracking-tight">首頁</span>
       </button>
 
       <button @click="currentTab = 'materials'" :class="currentTab === 'materials' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
-        <i data-lucide="clock" class="w-5 h-5 stroke-[1.8]"></i>
+        <svg class="w-5 h-5 stroke-[1.8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
         <span class="text-[10px] mt-1 tracking-tight">物料</span>
       </button>
 
       <button @click="currentTab = 'intake'" :class="currentTab === 'intake' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
-        <i data-lucide="calendar" class="w-5 h-5 stroke-[1.8]"></i>
+        <svg class="w-5 h-5 stroke-[1.8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+          <line x1="16" x2="16" y1="2" y2="6"></line>
+          <line x1="8" x2="8" y1="2" y2="6"></line>
+          <line x1="3" x2="21" y1="10" y2="10"></line>
+        </svg>
         <span class="text-[10px] mt-1 tracking-tight">下架</span>
       </button>
 
       <button @click="currentTab = 'roster'" :class="currentTab === 'roster' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
-        <i data-lucide="users" class="w-5 h-5 stroke-[1.8]"></i>
+        <svg class="w-5 h-5 stroke-[1.8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
         <span class="text-[10px] mt-1 tracking-tight">排班</span>
       </button>
 
       <button @click="currentTab = 'other'" :class="currentTab === 'other' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
-        <i data-lucide="sparkles" class="w-5 h-5 stroke-[1.8]"></i>
+        <svg class="w-5 h-5 stroke-[1.8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
+        </svg>
         <span class="text-[10px] mt-1 tracking-tight">其他</span>
       </button>
 
       <button @click="currentTab = 'about'" :class="currentTab === 'about' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
-        <i data-lucide="info" class="w-5 h-5 stroke-[1.8]"></i>
+        <svg class="w-5 h-5 stroke-[1.8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 16v-4"></path>
+          <path d="M12 8h.01"></path>
+        </svg>
         <span class="text-[10px] mt-1 tracking-tight">關於</span>
       </button>
     </div>
@@ -3105,6 +3127,7 @@ createApp({
       const schedulePlan = [];
       const warnings = [];
 
+      // 追蹤每位夥伴本週排班與工作月累計
       const staffWorkTracker = {};
       allStaff.forEach(s => {
         const sid = s.id || s._key;
@@ -3123,11 +3146,13 @@ createApp({
         const dayOfWeek = d.getDay();
         const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
 
+        // 1. 早班名額 (維持開店核心雙人)
         const dayShiftSlots = [
           { name: "早班(開店1)", start: "06:30", end: "15:00", requiresManager: true },
           { name: "早班(開店2)", start: "06:30", end: "15:00", requiresManager: false }
         ];
 
+        // 2. 中班初始定義
         if (!isWeekend) {
           dayShiftSlots.push({ name: "中班", start: "08:30", end: "17:30", requiresManager: false, isMidShift: true });
         } else {
@@ -3135,29 +3160,31 @@ createApp({
           dayShiftSlots.push({ name: "中班2", start: "10:30", end: "17:30", requiresManager: false, isMidShift: true });
         }
 
-        // 晚班拆合媒合：支援 14:00 (1人) + 19:00 (2人) 的彈性需求
+        // 3. 晚班進班時間動態判定（若能正常 14:00/15:00 進班則排正常班，只有配合時間受限才延後）
         let eveningStartA = "14:00";
         let eveningStartB = "14:00";
         let eveningStartC = "14:00";
 
-        const availableEveningPT = allStaff.filter(st => {
+        // 檢查當天可能進晚班且可用時間限制在 14:00 之後進班的夥伴
+        const lateEveningPT = allStaff.filter(st => {
           if (st.role === '天使夥伴' || st.nickname === 'David') return false;
           if (st.availability) {
             const dIdx = (d.getDay() + 6) % 7;
             const av = st.availability['day_' + dIdx];
             if (av && av.type === 'custom') {
+              // 只能排晚到收店且起始時間大於 14:00
               return (timeToMins(av.end) >= timeToMins("22:30") && timeToMins(av.start) > timeToMins("14:00"));
             }
           }
           return false;
         });
 
-        if (availableEveningPT.length >= 2) {
-          eveningStartB = "19:00";
-          eveningStartC = "19:00";
-        } else if (availableEveningPT.length === 1) {
-          const dIdx = (d.getDay() + 6) % 7;
-          eveningStartC = availableEveningPT[0].availability['day_' + dIdx].start;
+        // 晚班若有正常可排夥伴，維持 14:00/15:00，其餘依夥伴限制微調
+        if (lateEveningPT.length >= 2) {
+          eveningStartB = lateEveningPT[0].availability['day_' + ((d.getDay() + 6) % 7)].start || "18:00";
+          eveningStartC = lateEveningPT[1].availability['day_' + ((d.getDay() + 6) % 7)].start || "19:00";
+        } else if (lateEveningPT.length === 1) {
+          eveningStartC = lateEveningPT[0].availability['day_' + ((d.getDay() + 6) % 7)].start || "19:00";
         }
 
         dayShiftSlots.push(
@@ -3166,6 +3193,11 @@ createApp({
           { name: "晚班(收店3)", start: eveningStartC, end: "22:30", requiresManager: false }
         );
 
+        // 晚班夥伴最早進班時間
+        const earliestEveningArrival = Math.min(timeToMins(eveningStartA), timeToMins(eveningStartB), timeToMins(eveningStartC));
+        // 晚班整體人力補齊的時間點
+        const fullEveningArrival = Math.max(timeToMins(eveningStartB), timeToMins(eveningStartC));
+
         const assignedToday = new Set();
         const assignedShifts = [];
 
@@ -3173,14 +3205,17 @@ createApp({
           let slotStart = slot.start;
           let slotEnd = slot.end;
 
+          // 核心條件篩選
           let candidates = allStaff.filter(staff => {
             const sid = staff.id || staff._key;
             if (assignedToday.has(sid)) return false;
             if (!isStaffAvailableForShift(staff, dateStr, slotStart, slotEnd)) return false;
 
             const tracker = staffWorkTracker[sid];
+            // 🛑 每週上限 6 天，第 7 天絕對禁排（一例一休硬限制）
             if (tracker.consecutiveDays >= 6 || tracker.daysWorked >= 6) return false;
 
+            // 🛑 正職工時上限控制
             const isFT = isFullTimeRole(staff.role);
             if (isFT && tracker.weeklyHours >= 40 && tracker.daysWorked >= 5) {
               const otherAvailablePT = allStaff.some(other => {
@@ -3190,6 +3225,7 @@ createApp({
               if (otherAvailablePT) return false;
             }
 
+            // 🛑 跨日排班休息間隔須 > 11 小時
             if (tracker.lastEndMins > 0) {
               const restMins = (24 * 60 - tracker.lastEndMins) + timeToMins(slotStart);
               if (restMins < 11 * 60) return false;
@@ -3200,6 +3236,7 @@ createApp({
 
           let pickedStaff = null;
 
+          // 1. 主管指派
           if (slot.requiresManager) {
             let managerCandidates = candidates.filter(s => isManagerRole(s.role));
             if (slot.name.includes('早') && selectedWeeklyOpenManagers.value.length > 0) {
@@ -3224,6 +3261,7 @@ createApp({
             if (!pickedStaff) warnings.push(`${dateStr} ${slot.name} 缺少管理職 1 名！`);
           }
 
+          // 2. 一般夥伴指派（工作月 50hr 平衡與均時分攤）
           if (!pickedStaff && candidates.length > 0) {
             candidates.sort((a, b) => {
               const aIsFT = isFullTimeRole(a.role);
@@ -3243,15 +3281,24 @@ createApp({
             pickedStaff = candidates[0];
           }
 
-          // 中班動態拉長交接：當晚班較晚到，將中班延長至晚班進班，現場隨時維持 3 人
-          if (pickedStaff && slot.isMidShift && pickedStaff.availability) {
-            const dIdx = (d.getDay() + 6) % 7;
-            const av = pickedStaff.availability['day_' + dIdx];
-            if (av && av.type === 'custom') {
-              const avEndMins = timeToMins(av.end);
-              const maxEveningStart = Math.max(timeToMins(eveningStartB), timeToMins(eveningStartC));
-              if (maxEveningStart > timeToMins(slotEnd) && avEndMins >= maxEveningStart) {
-                slotEnd = maxEveningStart >= timeToMins("19:00") ? "19:00" : "18:00";
+          // 🌟 核心升級：中班動態拉長無縫交接（消除 1~1.5h 空窗）
+          // 若有晚班夥伴延至 18:00 或 19:00 進班，中班下班時間自動延後至該夥伴進班，嚴格維持站上人力接力
+          if (pickedStaff && slot.isMidShift) {
+            if (fullEveningArrival > timeToMins(slotEnd)) {
+              // 晚班若延後至 18:00~19:00，檢查該中班夥伴可用時間是否允許銜接
+              let canExtend = true;
+              if (pickedStaff.availability) {
+                const dIdx = (d.getDay() + 6) % 7;
+                const av = pickedStaff.availability['day_' + dIdx];
+                if (av && av.type === 'custom') {
+                  if (timeToMins(av.end) < fullEveningArrival) canExtend = false;
+                }
+              }
+              if (canExtend) {
+                // 將中班下班時間順延至晚班進店時間（例如 18:00、18:30 或 19:00），達成無縫交接
+                const h = Math.floor(fullEveningArrival / 60).toString().padStart(2, '0');
+                const m = (fullEveningArrival % 60).toString().padStart(2, '0');
+                slotEnd = `${h}:${m}`;
               }
             }
           }
