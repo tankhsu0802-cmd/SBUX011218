@@ -2921,77 +2921,100 @@ const app = createApp({
       const file = e.target.files[0];
       if (!file) return;
 
-      const fileType = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
-      if (file.size > 12 * 1024 * 1024) {
-        alert('檔案過大，請上傳 12MB 以內檔案！');
-        e.target.value = '';
-        return;
-      }
-
       isAiRecognizingRules.value = true;
       try {
         const apiKey = getEffectiveGeminiKey();
-        const reader = new FileReader();
-        reader.onload = async (evt) => {
-          try {
-            const base64Data = evt.target.result.split(',')[1];
-            const promptText = `你是一位專業星巴克門市系統管理員。請仔細閱讀圖片或文件中的下架/品項效期規範，提取食品/原物料品名及其「提前下架天數」。
-嚴格輸出 JSON 陣列格式：[{"keyword":"品項名稱","advance_days":天數數字,"timing":"21:30 閉店前"}]`;
+        let base64Data = '';
+        let mimeType = 'image/jpeg';
 
-            let resData = null;
-            const modelsToTry = ['gemini-1.5-flash'];
-            let lastErr = null;
-
-            for (const m of modelsToTry) {
-              try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    contents: [{ parts: [{ text: promptText }, { inline_data: { mime_type: fileType, data: base64Data } }] }],
-                    generationConfig: { temperature: 0.1, response_mime_type: "application/json" }
-                  })
-                });
-                const json = await response.json();
-                if (json.candidates && json.candidates[0]?.content?.parts[0]?.text) {
-                  resData = json;
-                  break;
-                } else if (json.error) {
-                  lastErr = json.error.message;
-                }
-              } catch (retryErr) {
-                lastErr = retryErr.message;
-              }
-            }
-
-            if (resData && resData.candidates) {
-              let rawText = resData.candidates[0].content.parts[0].text.trim().replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
-              const parsedRules = JSON.parse(rawText);
-
-              if (Array.isArray(parsedRules) && parsedRules.length > 0) {
-                for (const r of parsedRules) {
-                  if (r.keyword) {
-                    const ruleId = 'rule_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
-                    await db.ref('sbux/rules/' + ruleId).set({
-                      id: ruleId, keyword: r.keyword.trim(), advance_days: parseInt(r.advance_days) || 0, timing: r.timing || '21:30 閉店前'
-                    });
-                  }
-                }
-                alert(`🎉 辨識成功！已成功匯入 ${parsedRules.length} 筆下架標準！`);
-              } else {
-                alert('未能在圖文中辨識出具體的品項與提前下架天數。');
-              }
-            } else {
-              throw new Error(lastErr || 'AI 伺服器未回傳有效結果，請確認 API Key。');
-            }
-          } catch (innerErr) {
-            console.error('辨識錯誤：', innerErr);
-            alert(`❌ 辨識失敗：${innerErr.message}`);
-          } finally {
+        // 如果是 PDF，直接轉碼；如果是圖片，啟動無感自動壓縮
+        if (file.name.toLowerCase().endsWith('.pdf') || file.type.includes('pdf')) {
+          if (file.size > 5 * 1024 * 1024) {
+            alert('⚠️ PDF 檔案過大，請壓縮至 5MB 內再上傳！');
             isAiRecognizingRules.value = false;
             e.target.value = '';
+            return;
           }
-        };
+          mimeType = 'application/pdf';
+          base64Data = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (evt) => resolve(evt.target.result.split(',')[1]);
+            reader.readAsDataURL(file);
+          });
+        } else {
+          base64Data = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+              const img = new Image();
+              img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                const maxSize = 1600; // 鎖定最大邊長，保留足夠辨識文字的清晰度
+                if (width > height && width > maxSize) {
+                  height *= maxSize / width; width = maxSize;
+                } else if (height > maxSize) {
+                  width *= maxSize / height; height = maxSize;
+                }
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
+              };
+              img.onerror = reject;
+              img.src = evt.target.result;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        }
+
+        const promptText = `你是一位專業星巴克門市系統管理員。請仔細閱讀圖片或文件中的下架/品項效期規範，提取食品/原物料品名及其「提前下架天數」。
+嚴格輸出 JSON 陣列格式：[{"keyword":"品項名稱","advance_days":天數數字,"timing":"21:30 閉店前"}]`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }, { inline_data: { mime_type: mimeType, data: base64Data } }] }],
+            generationConfig: { temperature: 0.1, response_mime_type: "application/json" }
+          })
+        });
+
+        const json = await response.json();
+        if (json.error) throw new Error(json.error.message);
+
+        if (json.candidates && json.candidates[0]?.content?.parts[0]?.text) {
+          let rawText = json.candidates[0].content.parts[0].text.trim().replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
+          const parsedRules = JSON.parse(rawText);
+
+          if (Array.isArray(parsedRules) && parsedRules.length > 0) {
+            for (const r of parsedRules) {
+              if (r.keyword) {
+                const ruleId = 'rule_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+                if (db) await db.ref('sbux/rules/' + ruleId).set({
+                  id: ruleId, keyword: r.keyword.trim(), advance_days: parseInt(r.advance_days) || 0, timing: r.timing || '21:30 閉店前'
+                });
+              }
+            }
+            alert(`🎉 辨識成功！已成功匯入 ${parsedRules.length} 筆下架標準！`);
+          } else {
+            alert('未能在圖文中辨識出具體的品項與提前下架天數。');
+          }
+        } else {
+          throw new Error('AI 伺服器未回傳有效結果。');
+        }
+      } catch (err) {
+        if (err.message === 'SYSTEM_MISSING_API_KEY') {
+          alert('⚠️ 系統提示：請聯絡管理員 徐爰坦 至「個人設定」綁定 API Key！');
+        } else {
+          alert(`❌ 辨識失敗：${err.message}`);
+        }
+      } finally {
+        isAiRecognizingRules.value = false;
+        e.target.value = '';
+      }
+    };
         reader.readAsDataURL(file);
       } catch (err) {
         if (err.message === 'SYSTEM_MISSING_API_KEY') {
@@ -3105,45 +3128,78 @@ const app = createApp({
     const handleKnowledgeFileUpload = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      const fileType = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
       isUploadingKnowledge.value = true;
       try {
         const apiKey = getEffectiveGeminiKey();
-        const reader = new FileReader();
-        reader.onload = async (evt) => {
-          const base64Data = evt.target.result.split(',')[1];
-          try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{ parts: [{ text: '你是星巴克咖啡大師。請閱讀圖片或PDF中的咖啡知識，萃取精華筆記。輸出 JSON: {"title":"標題","content":"要點"}' }, { inline_data: { mime_type: fileType, data: base64Data } }] }],
-                generationConfig: { response_mime_type: "application/json", temperature: 0.2 }
-              })
-            });
-            const resData = await response.json();
-            if (resData.candidates && resData.candidates[0]?.content?.parts[0]?.text) {
-              const parsed = JSON.parse(resData.candidates[0].content.parts[0].text.trim().replace(/^```json\s*/i, '').replace(/\s*```$/, ''));
-              const todayStr = new Date().toLocaleDateString('zh-TW');
-              await db.ref('sbux/coffeeKnowledge').push().set({
-                title: parsed.title || file.name,
-                content: parsed.content || '無詳細內容',
-                author: currentPartner.value?.name || '值班',
-                role: currentPartner.value?.role || '值班',
-                date: todayStr,
-                createdAt: new Date().toISOString()
-              });
-              alert('🎉 知識辨識完成並已發布！');
-            }
-          } catch (err) {
-            alert('AI 辨識失敗。');
-          }
-        };
-        reader.readAsDataURL(file);
+        let base64Data = '';
+        let mimeType = 'image/jpeg';
+
+        if (file.name.toLowerCase().endsWith('.pdf') || file.type.includes('pdf')) {
+          mimeType = 'application/pdf';
+          base64Data = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (evt) => resolve(evt.target.result.split(',')[1]);
+            reader.readAsDataURL(file);
+          });
+        } else {
+          base64Data = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+              const img = new Image();
+              img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                const maxSize = 1600;
+                if (width > height && width > maxSize) {
+                  height *= maxSize / width; width = maxSize;
+                } else if (height > maxSize) {
+                  width *= maxSize / height; height = maxSize;
+                }
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
+              };
+              img.onerror = reject;
+              img.src = evt.target.result;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        }
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: '你是星巴克咖啡大師。請閱讀圖片或PDF中的咖啡知識，萃取精華筆記。輸出 JSON: {"title":"標題","content":"要點"}' }, { inline_data: { mime_type: mimeType, data: base64Data } }] }],
+            generationConfig: { response_mime_type: "application/json", temperature: 0.2 }
+          })
+        });
+        const json = await response.json();
+        if (json.error) throw new Error(json.error.message);
+
+        if (json.candidates && json.candidates[0]?.content?.parts[0]?.text) {
+          const parsed = JSON.parse(json.candidates[0].content.parts[0].text.trim().replace(/^```json\s*/i, '').replace(/\s*```$/, ''));
+          const todayStr = new Date().toLocaleDateString('zh-TW');
+          await db.ref('sbux/coffeeKnowledge').push().set({
+            title: parsed.title || file.name,
+            content: parsed.content || '無詳細內容',
+            author: currentPartner.value?.name || '值班',
+            role: currentPartner.value?.role || '值班',
+            date: todayStr,
+            createdAt: new Date().toISOString()
+          });
+          alert('🎉 知識辨識完成並已發布！');
+        }
       } catch (err) {
         if (err.message === 'SYSTEM_MISSING_API_KEY') {
-          alert('⚠️ 系統提示：請聯絡管理員 徐爰坦 至「個人設定」中綁定專屬的 Gemini API Key，才能啟用 AI 引擎功能！');
+          alert('⚠️ 系統提示：請聯絡管理員 徐爰坦 至「個人設定」中綁定專屬的 Gemini API Key！');
+        } else {
+          alert(`❌ AI 辨識失敗：${err.message}`);
         }
+      } finally {
         isUploadingKnowledge.value = false;
         e.target.value = '';
       }
@@ -3758,7 +3814,25 @@ const app = createApp({
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = (evt) => latteForm.value.photoUrl = evt.target.result;
+      reader.onload = (evt) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxSize = 1200; // 拉花評分不需要超高畫質，1200px 即可精準評分且不當機
+          if (width > height && width > maxSize) {
+            height *= maxSize / width; width = maxSize;
+          } else if (height > maxSize) {
+            width *= maxSize / height; height = maxSize;
+          }
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          latteForm.value.photoUrl = canvas.toDataURL('image/jpeg', 0.8);
+        };
+        img.src = evt.target.result;
+      };
       reader.readAsDataURL(file);
     };
 
