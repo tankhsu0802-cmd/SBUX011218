@@ -3116,7 +3116,49 @@ createApp({
       return 'open';
     };
 
-   const generateAiRoster = () => {
+   // 🌟 1. 跨週歷史出勤追溯函式：計算指定起始日前，該夥伴已連續上了幾天班
+    const getPriorConsecutiveWorkDays = (staffId, startDateStr) => {
+      let count = 0;
+      let curr = new Date(startDateStr);
+      const roster = scheduledRoster.value || {};
+      
+      for (let i = 1; i <= 6; i++) {
+        const prevDate = new Date(curr);
+        prevDate.setDate(curr.getDate() - i);
+        const prevDateStr = prevDate.toISOString().split('T')[0];
+        
+        // 只要前一天在 scheduled_roster 中有班次，連續天數累加
+        if (roster[`${staffId}_${prevDateStr}`]) {
+          count++;
+        } else {
+          break; // 中間只要有一天沒班（休息），連續中斷
+        }
+      }
+      return count;
+    };
+
+    // 🌟 2. 跨週前一日下班時間追溯：確保週一不會因週日晚班而違反 11 小時休息規範
+    const getPriorDayEndMinutes = (staffId, startDateStr) => {
+      const curr = new Date(startDateStr);
+      curr.setDate(curr.getDate() - 1);
+      const prevDateStr = curr.toISOString().split('T')[0];
+      const roster = scheduledRoster.value || {};
+      const shift = roster[`${staffId}_${prevDateStr}`];
+
+      if (shift) {
+        if (typeof shift === 'object' && shift.time) {
+          const match = shift.time.match(/(\d{2}:\d{2})-(\d{2}:\d{2})/);
+          if (match) return timeToMins(match[2]);
+        } else if (typeof shift === 'string') {
+          const match = shift.match(/(\d{2}:\d{2})-(\d{2}:\d{2})/);
+          if (match) return timeToMins(match[2]);
+        }
+      }
+      return -9999;
+    };
+
+    // 🌟 3. AI 智慧預排總邏輯
+    const generateAiRoster = () => {
       if (!scheduleStartDate.value || !scheduleEndDate.value) return alert('請先設定排班範圍！');
       const dates = targetRangeDates.value;
       if (dates.length === 0) return alert('日期範圍無效！');
@@ -3127,15 +3169,17 @@ createApp({
       const schedulePlan = [];
       const warnings = [];
 
-      // 追蹤每位夥伴本週排班與工作月累計
+      // 追蹤每位夥伴本週排班與工作月累計（包含繼承前一週的連續天數與最後下班時間）
       const staffWorkTracker = {};
       allStaff.forEach(s => {
         const sid = s.id || s._key;
         staffWorkTracker[sid] = {
           weeklyHours: 0,
           daysWorked: 0,
-          lastEndMins: -9999,
-          consecutiveDays: 0,
+          // 繼承前一週週日的下班時間（防止週日晚班接週一早班）
+          lastEndMins: getPriorDayEndMinutes(sid, scheduleStartDate.value),
+          // 繼承前一週累積的連續上班天數（徹底防止跨週連上超過 6 天觸法）
+          consecutiveDays: getPriorConsecutiveWorkDays(sid, scheduleStartDate.value),
           monthlyAccum: getWorkMonthAccumulatedHours(sid, scheduleStartDate.value)
         };
       });
@@ -3153,8 +3197,7 @@ createApp({
           { name: "早班(開店2)", start: "06:30", end: "15:00", requiresManager: false }
         ];
 
-        // 2. 中班槽位（平日 1 人，假日 2 人）
-        // 平日標準 08:30-17:30，14:00~17:30 站上自然為 4 人（中班 1 + 晚班 3）
+        // 2. 中班槽位
         let midShiftIndex = -1;
         if (!isWeekend) {
           midShiftIndex = dayShiftSlots.length;
@@ -3165,7 +3208,7 @@ createApp({
           dayShiftSlots.push({ name: "中班2", start: "10:30", end: "17:30", requiresManager: false, isMidShift: true });
         }
 
-        // 3. 晚班槽位（標準一律為 14:00-22:30，絕不預先延後）
+        // 3. 晚班槽位（標準一律為 14:00-22:30，14:00~17:30 現場為 4 人）
         const eveningSlotIndices = [];
         eveningSlotIndices.push(dayShiftSlots.length);
         dayShiftSlots.push({ name: "晚班(收店1)", start: "14:00", end: "22:30", requiresManager: true });
@@ -3177,22 +3220,19 @@ createApp({
         const assignedToday = new Set();
         const assignedShifts = [];
 
-        // 逐一分配各班次
         dayShiftSlots.forEach((slot, sIndex) => {
           let slotStart = slot.start;
           let slotEnd = slot.end;
 
-          // 核心條件篩選候選人
-          // 晚班若該夥伴只能晚到（如 18:00/18:30/19:00），只要能上到 22:30 收店，亦列為候選
           let candidates = allStaff.filter(staff => {
             const sid = staff.id || staff._key;
             if (assignedToday.has(sid)) return false;
 
             const tracker = staffWorkTracker[sid];
-            // 🛑 每週上限 6 天，第 7 天絕對禁排
+            // 🛑 核心跨週防呆：連上達到 6 天時，第 7 天絕對禁排（不論是否跨週）
             if (tracker.consecutiveDays >= 6 || tracker.daysWorked >= 6) return false;
 
-            // 🛑 正職工時上限控制（優先讓給兼職）
+            // 🛑 正職工時上限控制（優先讓出工時給兼職夥伴）
             const isFT = isFullTimeRole(staff.role);
             if (isFT && tracker.weeklyHours >= 40 && tracker.daysWorked >= 5) {
               const otherAvailablePT = allStaff.some(other => {
@@ -3202,9 +3242,9 @@ createApp({
               if (otherAvailablePT) return false;
             }
 
-            // 檢查該夥伴是否能在指定區間上班
+            // 檢查是否符合時段設定
             if (isStaffAvailableForShift(staff, dateStr, slotStart, slotEnd)) {
-              // 跨日排班休息間隔須 > 11 小時
+              // 跨日/跨週 11 小時休息防呆
               if (tracker.lastEndMins > 0) {
                 const restMins = (24 * 60 - tracker.lastEndMins) + timeToMins(slotStart);
                 if (restMins < 11 * 60) return false;
@@ -3212,7 +3252,7 @@ createApp({
               return true;
             }
 
-            // 晚班特殊彈性候選：如果夥伴不能從 14:00 開始，但能在 17:30~19:00 之間進班並工作至 22:30
+            // 晚班彈性候選：若因課業只能 18:00/18:30/19:00 進班至 22:30
             if (eveningSlotIndices.includes(sIndex) && staff.availability) {
               const av = staff.availability['day_' + dayIdx];
               if (av && av.type === 'custom') {
@@ -3233,7 +3273,7 @@ createApp({
 
           let pickedStaff = null;
 
-          // 1. 主管指派
+          // 1. 管理職指派
           if (slot.requiresManager) {
             let managerCandidates = candidates.filter(s => isManagerRole(s.role));
             if (slot.name.includes('早') && selectedWeeklyOpenManagers.value.length > 0) {
@@ -3244,7 +3284,6 @@ createApp({
 
             if (!pickedStaff && managerCandidates.length > 0) {
               managerCandidates.sort((a, b) => {
-                // 優先選擇能在 14:00 正常進班的主管
                 const aCanFull = isStaffAvailableForShift(a, dateStr, slotStart, slotEnd);
                 const bCanFull = isStaffAvailableForShift(b, dateStr, slotStart, slotEnd);
                 if (aCanFull !== bCanFull) return bCanFull - aCanFull;
@@ -3263,10 +3302,10 @@ createApp({
             if (!pickedStaff) warnings.push(`${dateStr} ${slot.name} 缺少管理職 1 名！`);
           }
 
-          // 2. 一般夥伴指派（能正常 14:00 進班者絕對優先！工時少者優先）
+          // 2. 一般夥伴指派（能正常 14:00 進班者優先 + 兼職 50hr 強制保障）
           if (!pickedStaff && candidates.length > 0) {
             candidates.sort((a, b) => {
-              // 🌟 關鍵修正：能 14:00 正常進班者絕對優先指派，絕不無故延後
+              // 條件 A：能正常 14:00 進班者優先，不刻意延後
               const aCanFull = isStaffAvailableForShift(a, dateStr, slotStart, slotEnd);
               const bCanFull = isStaffAvailableForShift(b, dateStr, slotStart, slotEnd);
               if (aCanFull !== bCanFull) return bCanFull - aCanFull;
@@ -3275,25 +3314,29 @@ createApp({
               const bIsFT = isFullTimeRole(b.role);
               const aHours = staffWorkTracker[a.id || a._key].weeklyHours;
               const bHours = staffWorkTracker[b.id || b._key].weeklyHours;
+              const aMonth = staffWorkTracker[a.id || a._key].monthlyAccum;
+              const bMonth = staffWorkTracker[b.id || b._key].monthlyAccum;
+
+              // 條件 B：兼職工作月 50 小時底線硬保證
+              if (!aIsFT && aMonth < 50 && (!bIsFT && bMonth < 50)) {
+                if (Math.abs(aMonth - bMonth) > 3) return aMonth - bMonth;
+              }
+              if (!aIsFT && aMonth < 50 && (bIsFT || bMonth >= 50)) return -1;
+              if (!bIsFT && bMonth < 50 && (aIsFT || aMonth >= 50)) return 1;
 
               // 正職排滿 40 小時
               if (aIsFT && aHours < 40 && (!bIsFT || bHours >= 40)) return -1;
               if (bIsFT && bHours < 40 && (!aIsFT || aHours >= 40)) return 1;
 
-              // 兼職依月工時（50h）平衡
-              const aMonth = staffWorkTracker[a.id || a._key].monthlyAccum;
-              const bMonth = staffWorkTracker[b.id || b._key].monthlyAccum;
+              // 均工時平衡
               if (Math.abs(aMonth - bMonth) > 5) return aMonth - bMonth;
-
               return aHours - bHours;
             });
             pickedStaff = candidates[0];
           }
 
-          // 🌟 判定該選定夥伴的實際進班時間
           let actualStart = slotStart;
           if (pickedStaff && eveningSlotIndices.includes(sIndex)) {
-            // 如果該夥伴不能 14:00 進班，才採用他的可用時間（例如 18:00 或 19:00）
             if (!isStaffAvailableForShift(pickedStaff, dateStr, "14:00", "22:30")) {
               if (pickedStaff.availability && pickedStaff.availability['day_' + dayIdx]) {
                 const customAv = pickedStaff.availability['day_' + dayIdx];
@@ -3350,18 +3393,15 @@ createApp({
           }
         });
 
-        // 🌟 4. 二次精準校準：檢查 17:30 時站上是否有至少 3 位晚班已到店？
-        // 如果有晚班夥伴是 18:00/18:30/19:00 才進班，導致 17:30 只有 1~2 人，自動將中班無縫延長至該晚班進班時間！
+        // 🌟 4. 二次精準校準：徹底消除 17:30～19:00 空缺
+        // 晚班必須滿 3 人在店。只要 17:30 當下已在店晚班不足 3 人，中班無條件順延至最晚晚班進店交接！
         if (midShiftIndex >= 0 && assignedShifts[midShiftIndex] && assignedShifts[midShiftIndex].staffId) {
           const midShiftItem = assignedShifts[midShiftIndex];
           const eveningShifts = assignedShifts.filter((sh, idx) => eveningSlotIndices.includes(idx) && sh.staffId);
           
-          // 計算 17:30 (1050分) 時已經在店的晚班人數
           const presentAt1730 = eveningShifts.filter(sh => sh.startMins <= timeToMins("17:30")).length;
           
-          // 如果 17:30 在店的晚班少於 2 人（代表有晚班延後到 18:00/19:00），需要中班頂替交接
-          if (presentAt1730 < 2) {
-            // 找出最晚進班的那位晚班到店時間
+          if (presentAt1730 < 3 && eveningShifts.length > 0) {
             const lateArrivalMins = Math.max(...eveningShifts.map(sh => sh.startMins));
             if (lateArrivalMins > timeToMins("17:30")) {
               const h = Math.floor(lateArrivalMins / 60).toString().padStart(2, '0');
@@ -3384,7 +3424,6 @@ createApp({
                 midShiftItem.hours = newNet;
                 midShiftItem.endMins = lateArrivalMins;
 
-                // 回補工時追蹤
                 const sid = midShiftItem.staffId;
                 staffWorkTracker[sid].weeklyHours += (newNet - oldHours);
                 staffWorkTracker[sid].monthlyAccum += (newNet - oldHours);
