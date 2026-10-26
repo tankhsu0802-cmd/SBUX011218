@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <script src="https://unpkg.com/lucide@latest"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>永和永安門市管理系統 (011218)</title>
@@ -366,7 +365,7 @@
                   <p class="text-[9px] text-slate-400 mt-0.5">{{ settledPeriodStr }}</p>
                 </div>
                 <span class="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                  週日 23:30 結算
+                  週日 23:30 自動結算
                 </span>
               </div>
 
@@ -375,7 +374,7 @@
                   <span class="text-xl">🥇</span>
                   <div class="text-[10px] text-amber-800 dark:text-amber-300 font-bold leading-tight">當週拉花冠軍</div>
                   <div class="text-xs font-black text-slate-900 dark:text-white truncate">{{ settledHonors.champion }}</div>
-                  <div class="text-[9px] text-amber-700 dark:text-amber-400 font-medium">{{ settledHonors.champScore ? settledHonors.champScore + ' 分' : '-' }}</div>
+                  <div class="text-[9px] text-amber-700 dark:text-amber-400 font-medium">{{ settledHonors.champScore }}</div>
                 </div>
 
                 <div class="bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 rounded-xl p-2 space-y-1">
@@ -425,7 +424,7 @@
                 <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                     <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
                     <line x1="12" y1="22.08" x2="12" y2="12"></line>
                   </svg>
@@ -784,7 +783,7 @@
                   </button>
                 </div>
 
-                <!-- 純粹的雙列印按鍵 -->
+                <!-- 雙列印按鍵 -->
                 <div class="grid grid-cols-2 gap-2 pt-1">
                   <button 
                     @click="triggerPrintSchedule('blank')" 
@@ -948,135 +947,23 @@
 
           </section>
 
-          <!-- ==================== 頁籤 4：【其他】 ==================== -->
+          <!-- ==================== 頁籤 4：【其他】（已徹底移除黑圍裙課程） ==================== -->
           <section v-if="currentTab === 'other'" class="space-y-4">
             
-            <!-- 子頁籤選單 -->
+            <!-- 子頁籤選單（預設直接由「沖煮與豆寶典」開始） -->
             <div class="flex gap-1.5 overflow-x-auto pb-1 text-xs font-bold no-scrollbar">
-              <button @click="otherSubTab = 'academy'" :class="otherSubTab === 'academy' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
-                🎓 黑圍裙課程
-              </button>
-              <button @click="otherSubTab = 'coffee'" :class="otherSubTab === 'coffee' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
+              <button @click="otherSubTab = 'coffee'" :class="otherSubTab === 'coffee' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
                 ☕ 沖煮與豆寶典
               </button>
-              <button @click="otherSubTab = 'tasting'" :class="otherSubTab === 'tasting' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
+              <button @click="otherSubTab = 'tasting'" :class="otherSubTab === 'tasting' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
                 📝 品評 Tasting
               </button>
-              <button @click="otherSubTab = 'latteArt'" :class="otherSubTab === 'latteArt' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
+              <button @click="otherSubTab = 'latteArt'" :class="otherSubTab === 'latteArt' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
                 🎨 拉花擂台賽
               </button>
-              <button @click="otherSubTab = 'quiz'" :class="otherSubTab === 'quiz' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
+              <button @click="otherSubTab = 'quiz'" :class="otherSubTab === 'quiz' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
                 📖 永安小學堂
               </button>
-            </div>
-
-            <!-- CA 100~300 精編講義 -->
-            <div v-if="otherSubTab === 'academy'" class="space-y-3">
-              <div class="bg-gradient-to-r from-zinc-950 via-neutral-900 to-zinc-950 text-amber-100 p-4 rounded-2xl shadow-sm space-y-1.5 border border-amber-500/40">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-xl">🎓</span>
-                    <h3 class="text-xs font-black tracking-wider text-amber-300">星巴克黑圍裙大師認證專用講義</h3>
-                  </div>
-                  <span class="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-bold border border-amber-400/30">核心指南</span>
-                </div>
-              </div>
-
-              <!-- CA 100 -->
-              <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
-                <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
-                  <div class="flex items-center gap-2">
-                    <span class="px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-xs font-black border border-amber-300 dark:border-amber-800">CA 100</span>
-                    <h4 class="font-black text-slate-900 dark:text-white text-sm">咖啡基礎學與感官入門</h4>
-                  </div>
-                  <span class="text-[10px] font-bold text-slate-400">Coffee Fundamentals</span>
-                </div>
-
-                <div class="space-y-1.5">
-                  <div class="text-xs font-bold text-emerald-900 dark:text-emerald-400 flex items-center gap-1">
-                    <span>👃</span> 品嚐咖啡四步驟
-                  </div>
-                  <div class="grid grid-cols-2 gap-1.5 text-[11px]">
-                    <div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700">
-                      <b class="text-slate-800 dark:text-slate-200">1. 聞香 (Smell)：</b>
-                      <p class="text-slate-500 mt-0.5">杯口微罩嗅吸前調香氣。</p>
-                    </div>
-                    <div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700">
-                      <b class="text-slate-800 dark:text-slate-200">2. 啜飲 (Slurp)：</b>
-                      <p class="text-slate-500 mt-0.5">大聲吸入散佈舌面味蕾。</p>
-                    </div>
-                    <div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700">
-                      <b class="text-slate-800 dark:text-slate-200">3. 定位 (Locate)：</b>
-                      <p class="text-slate-500 mt-0.5">感知兩側酸度與上顎醇度。</p>
-                    </div>
-                    <div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700">
-                      <b class="text-slate-800 dark:text-slate-200">4. 描述 (Describe)：</b>
-                      <p class="text-slate-500 mt-0.5">具體描繪整體咖啡體驗。</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="space-y-2 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700 leading-relaxed">
-                  <div>
-                    <b class="text-slate-800 dark:text-slate-200">🎯 咖啡四大特徵：</b>
-                    <ul class="list-disc pl-4 mt-0.5 text-slate-600 dark:text-slate-300 space-y-0.5">
-                      <li><b>香氣 (Aroma)：</b>乾香與濕香帶出的氣味感受。</li>
-                      <li><b>酸度 (Acidity)：</b>類似柑橘水果的明亮清爽感。</li>
-                      <li><b>醇度 (Body)：</b>咖啡在口中的重量感與觸感。</li>
-                      <li><b>風味 (Flavor)：</b>口鼻間融合產生的整體味覺印象。</li>
-                    </ul>
-                  </div>
-                  <div class="border-t border-slate-200 dark:border-slate-700 pt-2">
-                    <b class="text-slate-800 dark:text-slate-200">⚖️ 沖煮四大基本原則：</b>
-                    <ul class="list-disc pl-4 mt-0.5 text-slate-600 dark:text-slate-300 space-y-0.5">
-                      <li><b>比例 (Proportion)：</b>標準手沖粉水比為 1:16。</li>
-                      <li><b>研磨 (Grind)：</b>依器具粗細匹配（手沖中度、濾壓壺粗）。</li>
-                      <li><b>水質 (Water)：</b>過濾軟水，水溫 90°C~96°C。</li>
-                      <li><b>新鮮度 (Freshness)：</b>防潮避光常溫保存。</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              <!-- CA 200 -->
-              <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
-                <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
-                  <div class="flex items-center gap-2">
-                    <span class="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 text-xs font-black border border-emerald-300 dark:border-emerald-800">CA 200</span>
-                    <h4 class="font-black text-slate-900 dark:text-white text-sm">產區風土與永續採購</h4>
-                  </div>
-                  <span class="text-[10px] font-bold text-slate-400">Origins</span>
-                </div>
-
-                <div class="grid grid-cols-3 gap-1.5 text-[11px] text-center">
-                  <div class="p-2 bg-amber-50/70 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-900/50">
-                    <b class="text-amber-950 dark:text-amber-200">拉丁美洲</b>
-                    <p class="text-[10px] text-slate-600 dark:text-slate-300 mt-1">堅果、黑可可、平衡酸質。</p>
-                  </div>
-                  <div class="p-2 bg-rose-50/70 dark:bg-rose-950/30 rounded-xl border border-rose-200 dark:border-rose-900/50">
-                    <b class="text-rose-950 dark:text-rose-200">非洲產區</b>
-                    <p class="text-[10px] text-slate-600 dark:text-slate-300 mt-1">柑橘、莓果與明亮果酸。</p>
-                  </div>
-                  <div class="p-2 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800">
-                    <b class="text-emerald-950 dark:text-emerald-200">亞太產區</b>
-                    <p class="text-[10px] text-slate-600 dark:text-slate-300 mt-1">草本、泥土芳香、厚重醇度。</p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- CA 300 -->
-              <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
-                <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
-                  <div class="flex items-center gap-2">
-                    <span class="px-2 py-0.5 rounded bg-zinc-950 text-amber-300 text-xs font-black border border-amber-400">CA 300</span>
-                    <h4 class="font-black text-slate-900 dark:text-white text-sm">烘焙工藝與拼配藝術</h4>
-                  </div>
-                  <span class="text-[10px] font-bold text-amber-500">Roast</span>
-                </div>
-                <div class="text-[11px] text-slate-600 dark:text-slate-300 space-y-1">
-                  <p>一爆發展花果酸香（黃金烘焙）；焦糖化帶出可可圓潤（中度烘焙）；二爆油脂浮出產生厚實煙燻感（深度烘焙）。</p>
-                </div>
-              </div>
             </div>
 
             <!-- 沖煮秘笈與常態豆寶典 -->
@@ -1194,7 +1081,7 @@
                 </div>
               </div>
               
-              <!-- Tasting 動態牆 -->
+              <!-- Tasting 動態牆（🌟 具備獨立酸醇度數值標籤） -->
               <div class="space-y-3">
                 <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200">📋 品評動態牆</h4>
                 <div v-if="tastingNotesList.length > 0" class="space-y-2.5">
@@ -1217,8 +1104,18 @@
                       </div>
                     </div>
 
-                    <div class="text-[11px] bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl text-slate-600 dark:text-slate-300">
-                      心得：{{ item.notes || item.flavor }}
+                    <!-- 🌟 清楚顯示酸度與醇度數值標籤 -->
+                    <div class="flex gap-2">
+                      <span class="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 rounded-lg text-[10px] font-bold border border-amber-200 dark:border-amber-900/40">
+                        🍋 酸度：{{ getIntensityLabel(item.acidity) }}
+                      </span>
+                      <span class="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 rounded-lg text-[10px] font-bold border border-indigo-200 dark:border-indigo-900/40">
+                        🧈 醇度：{{ getIntensityLabel(item.body) }}
+                      </span>
+                    </div>
+
+                    <div class="text-[11px] bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl text-slate-600 dark:text-slate-300 leading-relaxed">
+                      心得：{{ getCleanNotesText(item.notes || item.flavor) }}
                     </div>
 
                     <div class="bg-emerald-50/80 dark:bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 text-[10px] text-emerald-800 dark:text-emerald-300 leading-relaxed whitespace-pre-line">
@@ -1387,7 +1284,7 @@
                 </div>
               </div>
 
-              <!-- 歷屆集錦區 -->
+              <!-- 歷屆集錦區（保留作品與冠軍姓名） -->
               <div class="mt-6 space-y-2 pt-4 border-t border-slate-200 dark:border-slate-700">
                 <div class="flex justify-between items-center">
                   <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
@@ -1623,7 +1520,7 @@
 
   </div>
 
- <!-- ==================== 底部固定毛玻璃導航選單 (純內嵌 SVG，永不消失) ==================== -->
+  <!-- ==================== 底部固定毛玻璃導航選單 (純內嵌 SVG，永不消失) ==================== -->
   <footer v-if="currentPartner" class="screen-element fixed bottom-0 left-0 right-0 z-[9999] ios-glass-bar border-t border-slate-200/60 dark:border-slate-800 shadow-sm transition-all">
     <div class="max-w-md mx-auto grid grid-cols-6 py-2 px-1 text-center">
       <button @click="currentTab = 'home'" :class="currentTab === 'home' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
@@ -1645,8 +1542,8 @@
       <button @click="currentTab = 'intake'" :class="currentTab === 'intake' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
         <svg class="w-5 h-5 stroke-[1.8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
           <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
-          <line x1="16" x2="16" y1="2" y2="6"></line>
-          <line x1="8" x2="8" y1="2" y2="6"></line>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
           <line x1="3" x2="21" y1="10" y2="10"></line>
         </svg>
         <span class="text-[10px] mt-1 tracking-tight">下架</span>
@@ -1822,7 +1719,7 @@
     </div>
   </transition>
 
-  <!-- 個人設定 Modal (只有徐爰坦可見 API KEY 選填) -->
+  <!-- 個人設定 Modal (徐爰坦專屬 API Key 欄位) -->
   <transition name="modal">
     <div v-if="settingsModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
       <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-4 border">
@@ -1915,7 +1812,7 @@
     <div v-if="bravoModal.show" class="fixed inset-0 bg-black/40 z-[99999] flex items-center justify-center p-4">
       <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
         <div class="flex justify-between items-center">
-          <h3 class="font-bold text-sm text-amber-950 dark:text-amber-300 flex items-center gap-1">
+          <h3 class="font-bold text-sm text-amber-950 dark:text-amber-300 flex items-center gap-1.5">
             <span>💌</span> Bravo 小卡
           </h3>
           <button @click="bravoModal.show = false" class="text-slate-400 text-sm">✕</button>
@@ -2249,7 +2146,7 @@
 
               </td>
 
-              <!-- 最右側：本週累計工時 (David 固定計算 5天*8.5h=42.5h) -->
+              <!-- 最右側：本週累計工時 -->
               <td class="font-mono font-black text-[11px] align-middle p-0.5 bg-slate-50 text-slate-900">
                 <span v-if="printTargetMode === 'ai'">
                   {{ calculateWeeklyStaffHours(staff) }}h
@@ -2340,13 +2237,12 @@ const masterQuizPool = [
 
 const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
 
-createApp({
+const app = createApp({
   setup() {
     const currentPartner = ref(null);
     const loginForm = ref({ empId: '', password: '' });
     const currentTab = ref('home');
-    // 預設直接定位在「沖煮與豆寶典」
-    const otherSubTab = ref('coffee');
+    const otherSubTab = ref('coffee'); // 預設為沖煮與豆寶典
     const isCloudConnected = ref(false);
     const isDarkMode = ref(false);
 
@@ -2427,17 +2323,10 @@ createApp({
       return localStorage.getItem('sbux_custom_gemini_key') || firebaseConfig.apiKey;
     };
 
-    // 徹底將黑圍裙課程從 HTML DOM 中移除
-    const purgeAcademyContent = () => {
-      nextTick(() => {
-        document.querySelectorAll('button').forEach(btn => {
-          if (btn.textContent.includes('黑圍裙') || btn.textContent.includes('黑圍裙課程')) {
-            btn.remove();
-          }
-        });
-        const academyBox = document.querySelector('div[v-if*="academy"]');
-        if (academyBox) academyBox.remove();
-      });
+    // 清洗 Tasting 心得備註顯示
+    const getCleanNotesText = (text) => {
+      if (!text) return '無額外備註';
+      return text.replace(/^\[🍋.*?\]\s*/, '').replace(/^心得：/, '').trim() || '無額外備註';
     };
 
     const currentQuizQuestions = computed(() => {
@@ -2487,8 +2376,7 @@ createApp({
       return (p.name === '徐爰坦' || p.nickname === 'Tan' || p.empId === '10386493');
     });
 
-    // 🌟 嚴格區分「全職正職」與「時薪/兼職」
-    // 正職：店經理、副理、值班經理（絕對不含時薪值班 PTSSV）
+    // 🌟 全職正職定義：店經理、副理、值班經理（嚴格排除時薪值班 PTSSV）
     const isTrueFullTime = (role) => {
       if (!role) return false;
       if (role.includes('時薪') || role.toUpperCase().includes('PT')) return false;
@@ -2550,16 +2438,6 @@ createApp({
     const weatherDesc = ref('晴天舒適');
     const weatherIcon = ref('☀️');
     const weatherGreeting = ref('陽光正好，今天也是元氣滿滿的一天 🌟');
-
-    watch(currentPartner, (newVal) => {
-      if (newVal) nextTick(() => { setTimeout(() => { if (window.lucide) lucide.createIcons(); }, 50); });
-      purgeAcademyContent();
-    });
-
-    watch(currentTab, () => {
-      nextTick(() => { if (window.lucide) lucide.createIcons(); });
-      purgeAcademyContent();
-    });
 
     const calculateCombinedScore = (post) => Number(((post.aiScore || 0) * 0.7 + (post.votes || 0) * 5).toFixed(1));
 
@@ -2646,28 +2524,12 @@ createApp({
         checkAndAutoArchiveLatteArt();
       });
 
-      // 🌟 核心修復：在品評動態牆資料綁定中，強制帶出真實的酸度與醇度數值標籤
       db.ref('sbux/tasting_notes').on('value', snap => {
         const val = snap.val();
-        tastingNotesList.value = val ? Object.keys(val).map(k => {
-          const item = val[k];
-          const acidityNum = item.acidity || 3;
-          const bodyNum = item.body || 3;
-          const acidityStr = getIntensityLabel(acidityNum);
-          const bodyStr = getIntensityLabel(bodyNum);
-          const cleanNotes = (item.notes || item.flavor || '無額外備註').replace(/^\[🍋.*?\]\s*/, '');
-          return {
-            id: k,
-            _key: k,
-            ...item,
-            acidity: acidityNum,
-            body: bodyNum,
-            notes: `[🍋 酸度:${acidityStr} ｜ 🧈 醇度:${bodyStr}]\n心得：${cleanNotes}`
-          };
-        }).sort((a,b) => b.timestamp - a.timestamp) : [];
+        tastingNotesList.value = val ? Object.keys(val).map(k => ({ id: k, _key: k, ...val[k] })).sort((a,b) => b.timestamp - a.timestamp) : [];
       });
 
-      db.ref('sbux/bulletins').on('value', snap => bulletinList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []);
+      db.ref('sbux/bulletins').on('value', snap => bulletinList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
       db.ref('sbux/store_photos').on('value', snap => storePhotos.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
       db.ref('sbux/custom_albums').on('value', snap => customAlbums.value = snap.val() ? Object.values(snap.val()) : []);
       db.ref('sbux/bravo_cards').on('value', snap => bravoCardsList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
@@ -2800,8 +2662,6 @@ createApp({
       fetchYongheWeather();
       updateCountdown();
       setInterval(updateCountdown, 1000);
-      purgeAcademyContent();
-      setTimeout(() => { if (window.lucide) lucide.createIcons(); }, 100);
     });
 
     const settledPeriodStr = computed(() => {
@@ -2928,7 +2788,7 @@ createApp({
       alert('✅ 畫假成功！');
     };
 
-    // 🌟 AI 辨識全面升級：支援多模型重試 + 完整錯誤提示 + 本機智能正則解析備援
+    // 🌟 AI 辨識標準提升：支援多模型容錯與錯誤報告
     const handleAiRuleImageUpload = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -2950,7 +2810,6 @@ createApp({
             const promptText = `你是一位專業星巴克門市系統管理員。請仔細閱讀圖片或文件中的下架/品項效期規範，提取食品/原物料品名及其「提前下架天數」。
 嚴格輸出 JSON 陣列格式：[{"keyword":"品項名稱","advance_days":天數數字,"timing":"21:30 閉店前"}]`;
 
-            // 支援 gemini-1.5-flash 與 2.0-flash 自動容錯
             let resData = null;
             const modelsToTry = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
             let lastErr = null;
@@ -3012,7 +2871,7 @@ createApp({
       }
     };
 
-    // Tasting 品評即時發布
+    // Tasting 品評發布
     const submitTastingNote = async () => {
       if (!currentPartner.value) return;
       isAiEvaluatingTasting.value = true;
@@ -3054,7 +2913,7 @@ createApp({
       }
     };
 
-    // 拉花 AI 視覺評審
+    // 拉花 AI 評審
     const submitLattePost = async () => {
       if (!currentPartner.value || !latteForm.value.photoUrl) return;
       isAiEvaluating.value = true;
@@ -3106,7 +2965,7 @@ createApp({
       }
     };
 
-    // ==================== 排班輔助計算 ====================
+    // ==================== 排班演算法輔助計算 ====================
     const timeToMins = (t) => {
       const [h, m] = t.split(':').map(Number);
       return h * 60 + m;
@@ -3144,7 +3003,7 @@ createApp({
 
     const isManagerRole = (role) => ['店經理', '副理', '值班經理', '時薪值班', '值班'].includes(role || '');
 
-    // 跨週連續出勤天數回推
+    // 🌟 跨週追溯：計算指定日期前連續出勤天數（最多追溯 6 天）
     const getPriorConsecutiveWorkDays = (staffId, startDateStr) => {
       let count = 0;
       let curr = new Date(startDateStr);
@@ -3159,7 +3018,7 @@ createApp({
       return count;
     };
 
-    // 跨週前一天下班時間回推（確保 11 小時休息）
+    // 🌟 跨週追溯：獲取前一日最後下班時間（確保跨週間隔 11 小時）
     const getPriorDayEndMinutes = (staffId, startDateStr) => {
       const curr = new Date(startDateStr);
       curr.setDate(curr.getDate() - 1);
@@ -3217,7 +3076,7 @@ createApp({
       return 'open';
     };
 
-    // ==================== 🌟 智慧預排總演算法（徹底解決正職滿40h與兼職底線50h） ====================
+    // ==================== 🌟 智慧預排總演算法 ====================
     const generateAiRoster = () => {
       if (!scheduleStartDate.value || !scheduleEndDate.value) return alert('請先設定排班範圍！');
       const dates = targetRangeDates.value;
@@ -3229,6 +3088,7 @@ createApp({
       const schedulePlan = [];
       const warnings = [];
 
+      // 追蹤每位夥伴本週排班與工作月累計（繼承歷史連續出勤與下班時間）
       const staffWorkTracker = {};
       allStaff.forEach(s => {
         const sid = s.id || s._key;
@@ -3289,12 +3149,19 @@ createApp({
             // 🛑 連續 6 天絕對休第 7 天（符合一例一休跨週防呆）
             if (tracker.consecutiveDays >= 6 || tracker.daysWorked >= 6) return false;
 
-            // 🛑 正職已排滿 5 天且達到 40 小時，不再超額排班
+            // 🛑 正職工時 40h +- 3h 彈性控管（達到 40h 或 5天且滿 37h 則讓位兼職）
             const isFT = isTrueFullTime(staff.role);
-            if (isFT && tracker.daysWorked >= 5 && tracker.weeklyHours >= 40) return false;
+            if (isFT && (tracker.weeklyHours >= 40 || (tracker.daysWorked >= 5 && tracker.weeklyHours >= 37))) {
+              const otherAvailablePT = allStaff.some(other => {
+                const oSid = other.id || other._key;
+                return !isTrueFullTime(other.role) && !assignedToday.has(oSid) && isStaffAvailableForShift(other, dateStr, slotStart, slotEnd) && staffWorkTracker[oSid].daysWorked < 6;
+              });
+              if (otherAvailablePT) return false;
+            }
 
             // 檢查可用時段
             if (isStaffAvailableForShift(staff, dateStr, slotStart, slotEnd)) {
+              // 跨日/跨週 11 小時休息防呆
               if (tracker.lastEndMins > 0) {
                 const restMins = (24 * 60 - tracker.lastEndMins) + timeToMins(slotStart);
                 if (restMins < 11 * 60) return false;
@@ -3334,14 +3201,16 @@ createApp({
 
             if (!pickedStaff && managerCandidates.length > 0) {
               managerCandidates.sort((a, b) => {
-                // 🌟 正職（店經理、副理、值班經理）時數不滿 40h 者擁有最高指派優先權！
+                // 🌟 正職（店經理、副理、值班經理）時數不滿 37h 或不滿 5 天者擁有最高優先權！
                 const aIsFT = isTrueFullTime(a.role);
                 const bIsFT = isTrueFullTime(b.role);
                 const aHours = staffWorkTracker[a.id || a._key].weeklyHours;
                 const bHours = staffWorkTracker[b.id || b._key].weeklyHours;
+                const aDays = staffWorkTracker[a.id || a._key].daysWorked;
+                const bDays = staffWorkTracker[b.id || b._key].daysWorked;
 
-                if (aIsFT && aHours < 40 && (!bIsFT || bHours >= 40)) return -1;
-                if (bIsFT && bHours < 40 && (!aIsFT || aHours >= 40)) return 1;
+                if (aIsFT && (aHours < 37 || aDays < 5) && (!bIsFT || (bHours >= 37 && bDays >= 5))) return -1;
+                if (bIsFT && (bHours < 37 || bDays < 5) && (!aIsFT || (aHours >= 37 && aDays >= 5))) return 1;
 
                 const aCanFull = isStaffAvailableForShift(a, dateStr, slotStart, slotEnd);
                 const bCanFull = isStaffAvailableForShift(b, dateStr, slotStart, slotEnd);
@@ -3355,7 +3224,7 @@ createApp({
             if (!pickedStaff) warnings.push(`${dateStr} ${slot.name} 缺少管理職 1 名！`);
           }
 
-          // 2. 一般夥伴槽位指派（🌟 徹底保證：正職滿 40h + 兼職底線 50h 拉抬）
+          // 2. 一般夥伴槽位指派（正職 37h~43h 彈性 + 兼職工作月 50h 底線拉抬）
           if (!pickedStaff && candidates.length > 0) {
             candidates.sort((a, b) => {
               const aIsFT = isTrueFullTime(a.role);
@@ -3367,17 +3236,15 @@ createApp({
               const aMonth = staffWorkTracker[a.id || a._key].monthlyAccum;
               const bMonth = staffWorkTracker[b.id || b._key].monthlyAccum;
 
-              // 🥇 核心規則 1：正職未滿 5 天或未滿 40 小時者，絕對優先排班！
-              if (aIsFT && (aHours < 40 || aDays < 5) && (!bIsFT || (bHours >= 40 && bDays >= 5))) return -1;
-              if (bIsFT && (bHours < 40 || bDays < 5) && (!aIsFT || (aHours >= 40 && aDays >= 5))) return 1;
+              // 🥇 正職未滿 5 天或未滿 37 小時者，絕對優先排班！
+              if (aIsFT && (aHours < 37 || aDays < 5) && (!bIsFT || (bHours >= 37 && bDays >= 5))) return -1;
+              if (bIsFT && (bHours < 37 || bDays < 5) && (!aIsFT || (aHours >= 37 && aDays >= 5))) return 1;
 
-              // 🥈 核心規則 2：兼職夥伴工時底線保證（凡本週工作天數少於 2 天，或月累積嚴重落後 50h 者優先拉抬！）
+              // 🥈 兼職夥伴工時底線保證（凡本週工作天數少於 2 天，或月累積嚴重落後 50h 者優先拯救！）
               if (!aIsFT && !bIsFT) {
-                // 本週時數嚴重過低者（如只有 8h 或 0h）優先拯救
                 if (aHours < 16 && bHours >= 16) return -1;
                 if (bHours < 16 && aHours >= 16) return 1;
 
-                // 工作月未達 50 小時者，落後越多越優先排
                 if (aMonth < 50 && bMonth < 50) {
                   if (Math.abs(aMonth - bMonth) > 3) return aMonth - bMonth;
                 }
@@ -3385,7 +3252,7 @@ createApp({
                 if (bMonth < 50 && aMonth >= 50) return 1;
               }
 
-              // 🥉 核心規則 3：能正常 14:00 進班者優先
+              // 🥉 能正常 14:00 進班者優先
               const aCanFull = isStaffAvailableForShift(a, dateStr, slotStart, slotEnd);
               const bCanFull = isStaffAvailableForShift(b, dateStr, slotStart, slotEnd);
               if (aCanFull !== bCanFull) return bCanFull - aCanFull;
@@ -3454,7 +3321,7 @@ createApp({
         });
 
         // 🌟 核心校準：徹底消除 17:30～19:00 人力空缺
-        // 晚班應有 3 人在店，只要 17:30 當下已在店晚班少於 3 人，中班無條件自動順延交接！
+        // 晚班應有 3 人在店，只要 17:30 當下已在店晚班少於 3 人，中班無條件自動順延至最晚晚班進店交接！
         if (midShiftIndex >= 0 && assignedShifts[midShiftIndex] && assignedShifts[midShiftIndex].staffId) {
           const midShiftItem = assignedShifts[midShiftIndex];
           const eveningShifts = assignedShifts.filter((sh, idx) => eveningSlotIndices.includes(idx) && sh.staffId);
@@ -4233,7 +4100,7 @@ createApp({
       handleStorePhotoUpload, deleteStorePhoto, deleteAlbum, filteredStorePhotos,
       bravoCardsList, bravoModal, openBravoModal, submitBravoCard,
       starbucksCoreBeans, coffeeSearchQuery, filteredCoffeeBeans,
-      tastingForm, submitTastingNote, tastingNotesList, getIntensityLabel, deleteTastingNote, isAiEvaluatingTasting,
+      tastingForm, submitTastingNote, tastingNotesList, getIntensityLabel, getCleanNotesText, deleteTastingNote, isAiEvaluatingTasting,
       latteForm, handleLattePhotoUpload, submitLattePost, isAiEvaluating, isArchivingLatteArt,
       weeklyLattePosts, deleteLattePost, materials, matSearchQuery, filteredMaterials,
       calcModal, calculateOpenTime, addMaterialToSchedule,
@@ -4263,7 +4130,19 @@ createApp({
       handleKnowledgeFileUpload, startWeeklyQuiz, submitWeeklyQuiz,
     };
   }
-}).mount('#app');
+});
+
+// 安全掛載 Vue 實例
+try {
+  app.mount('#app');
+} catch (mountErr) {
+  console.error("Vue 掛載失敗：", mountErr);
+  const appEl = document.getElementById('app');
+  if (appEl) {
+    appEl.removeAttribute('v-cloak');
+    appEl.innerHTML = `<div style="padding:24px;color:#dc2626;font-weight:bold;background:#fff;margin:16px;border-radius:16px;border:1px solid #fee2e2;">系統啟動異常，請嘗試重新整理畫面。<br><span style="font-size:11px;color:#6b7280;font-weight:normal;">${mountErr.message}</span></div>`;
+  }
+}
 </script>
 </body>
 </html>
