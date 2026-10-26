@@ -424,7 +424,7 @@
                 <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                     <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
                     <line x1="12" y1="22.08" x2="12" y2="12"></line>
                   </svg>
@@ -1081,7 +1081,7 @@
                 </div>
               </div>
               
-              <!-- Tasting 動態牆（🌟 具備獨立酸醇度數值標籤） -->
+              <!-- Tasting 動態牆（獨立酸醇度數值標籤） -->
               <div class="space-y-3">
                 <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200">📋 品評動態牆</h4>
                 <div v-if="tastingNotesList.length > 0" class="space-y-2.5">
@@ -1104,7 +1104,7 @@
                       </div>
                     </div>
 
-                    <!-- 🌟 清楚顯示酸度與醇度數值標籤 -->
+                    <!-- 清楚顯示酸度與醇度數值標籤 -->
                     <div class="flex gap-2">
                       <span class="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 rounded-lg text-[10px] font-bold border border-amber-200 dark:border-amber-900/40">
                         🍋 酸度：{{ getIntensityLabel(item.acidity) }}
