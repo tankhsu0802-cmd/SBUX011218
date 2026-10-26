@@ -2165,7 +2165,15 @@
   
 </div>
 <script>
-// ==================== Firebase 金鑰設定 ====================
+window.addEventListener('error', function(e) {
+  var el = document.getElementById('app');
+  if (el) {
+    el.removeAttribute('v-cloak');
+    el.innerHTML = '<div style="margin:20px;padding:20px;background:#fff;border:2px solid red;color:red;border-radius:12px;font-weight:bold;">' +
+      '系統載入錯誤：' + e.message + '<br><span style="font-size:12px;color:#666;">錯誤行號：' + e.lineno + '</span></div>';
+  }
+});
+
 const firebaseConfig = {
   apiKey: "AIzaSyDYvu6xnFpIzLhbq62WQ-VotNA-kuHLsCE",
   authDomain: "sbux011218.firebaseapp.com",
@@ -2242,13 +2250,12 @@ const app = createApp({
     const currentPartner = ref(null);
     const loginForm = ref({ empId: '', password: '' });
     const currentTab = ref('home');
-    const otherSubTab = ref('coffee'); // 預設為沖煮與豆寶典
+    const otherSubTab = ref('coffee');
     const isCloudConnected = ref(false);
     const isDarkMode = ref(false);
 
     const printTargetMode = ref('blank');
 
-    // 核心資料庫響應變數
     const materials = ref([]);
     const rules = ref([]);
     const inventory = ref([]);
@@ -2267,13 +2274,11 @@ const app = createApp({
     const bravoCardsList = ref([]);
     const showRulesLibrary = ref(false);
 
-    // 永安小學堂
     const coffeeKnowledgeList = ref([]);
     const newKnowledgeTitle = ref('');
     const newKnowledgeContent = ref('');
     const isUploadingKnowledge = ref(false);
 
-    // AI 狀態與 Modal
     const isAiEvaluating = ref(false);
     const isAiEvaluatingTasting = ref(false);
     const isAiRecognizingRules = ref(false);
@@ -2323,7 +2328,6 @@ const app = createApp({
       return localStorage.getItem('sbux_custom_gemini_key') || firebaseConfig.apiKey;
     };
 
-    // 清洗 Tasting 心得備註顯示
     const getCleanNotesText = (text) => {
       if (!text) return '無額外備註';
       return text.replace(/^\[🍋.*?\]\s*/, '').replace(/^心得：/, '').trim() || '無額外備註';
@@ -2369,14 +2373,12 @@ const app = createApp({
     });
     const isManager = computed(() => isDutyOrAbove.value);
 
-    // 徐爰坦專屬 API Key 權限隔離
     const isSuperTan = computed(() => {
       if (!currentPartner.value) return false;
       const p = currentPartner.value;
       return (p.name === '徐爰坦' || p.nickname === 'Tan' || p.empId === '10386493');
     });
 
-    // 🌟 全職正職定義：店經理、副理、值班經理（嚴格排除時薪值班 PTSSV）
     const isTrueFullTime = (role) => {
       if (!role) return false;
       if (role.includes('時薪') || role.toUpperCase().includes('PT')) return false;
@@ -2441,7 +2443,6 @@ const app = createApp({
 
     const calculateCombinedScore = (post) => Number(((post.aiScore || 0) * 0.7 + (post.votes || 0) * 5).toFixed(1));
 
-    // ==================== 🌟 拉花自動結算引擎 ====================
     let isAutoArchivingInProgress = false;
     const checkAndAutoArchiveLatteArt = async () => {
       if (!db || isAutoArchivingInProgress) return;
@@ -2503,7 +2504,6 @@ const app = createApp({
       }
     };
 
-    // Firebase 即時資料綁定
     if (db) {
       db.ref('.info/connected').on('value', snap => isCloudConnected.value = snap.val() === true);
 
@@ -2696,7 +2696,6 @@ const app = createApp({
       return { champion: champName, champScore, mostImproved: progressName, improvedDelta: progressDelta, activePartner: activeName, activeTitle };
     });
 
-    // 禁休管理
     const blackoutDatesList = computed(() => {
       const data = blackoutDates.value || {};
       return Object.keys(data).map(d => ({ date: d, reason: data[d] })).sort((a,b) => new Date(a.date) - new Date(b.date));
@@ -2720,7 +2719,6 @@ const app = createApp({
       }
     };
 
-    // 畫假月曆
     const currentVacationCalDate = ref(new Date());
     const vacationCalYear = computed(() => currentVacationCalDate.value.getFullYear());
     const vacationCalMonth = computed(() => currentVacationCalDate.value.getMonth());
@@ -2788,7 +2786,6 @@ const app = createApp({
       alert('✅ 畫假成功！');
     };
 
-    // 🌟 AI 辨識標準提升：支援多模型容錯與錯誤報告
     const handleAiRuleImageUpload = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -2854,7 +2851,7 @@ const app = createApp({
                 alert('未能在圖文中辨識出具體的品項與提前下架天數。');
               }
             } else {
-              throw new Error(lastErr || 'AI 伺服器未回傳有效結果，請檢查 API Key 是否具有 Generative Language API 權限！');
+              throw new Error(lastErr || 'AI 伺服器未回傳有效結果，請至個人設定確認 API Key 是否填妥！');
             }
           } catch (innerErr) {
             console.error('辨識錯誤：', innerErr);
@@ -2871,7 +2868,6 @@ const app = createApp({
       }
     };
 
-    // Tasting 品評發布
     const submitTastingNote = async () => {
       if (!currentPartner.value) return;
       isAiEvaluatingTasting.value = true;
@@ -2913,7 +2909,6 @@ const app = createApp({
       }
     };
 
-    // 拉花 AI 評審
     const submitLattePost = async () => {
       if (!currentPartner.value || !latteForm.value.photoUrl) return;
       isAiEvaluating.value = true;
@@ -2965,7 +2960,6 @@ const app = createApp({
       }
     };
 
-    // ==================== 排班演算法輔助計算 ====================
     const timeToMins = (t) => {
       const [h, m] = t.split(':').map(Number);
       return h * 60 + m;
@@ -3003,7 +2997,6 @@ const app = createApp({
 
     const isManagerRole = (role) => ['店經理', '副理', '值班經理', '時薪值班', '值班'].includes(role || '');
 
-    // 🌟 跨週追溯：計算指定日期前連續出勤天數（最多追溯 6 天）
     const getPriorConsecutiveWorkDays = (staffId, startDateStr) => {
       let count = 0;
       let curr = new Date(startDateStr);
@@ -3018,7 +3011,6 @@ const app = createApp({
       return count;
     };
 
-    // 🌟 跨週追溯：獲取前一日最後下班時間（確保跨週間隔 11 小時）
     const getPriorDayEndMinutes = (staffId, startDateStr) => {
       const curr = new Date(startDateStr);
       curr.setDate(curr.getDate() - 1);
@@ -3033,7 +3025,6 @@ const app = createApp({
       return -9999;
     };
 
-    // 工作月（每月 21 日至次月 20 日）累計工時
     const getWorkMonthAccumulatedHours = (staffId, targetDateStr) => {
       const target = new Date(targetDateStr);
       const y = target.getFullYear();
@@ -3076,7 +3067,6 @@ const app = createApp({
       return 'open';
     };
 
-    // ==================== 🌟 智慧預排總演算法 ====================
     const generateAiRoster = () => {
       if (!scheduleStartDate.value || !scheduleEndDate.value) return alert('請先設定排班範圍！');
       const dates = targetRangeDates.value;
@@ -3088,7 +3078,6 @@ const app = createApp({
       const schedulePlan = [];
       const warnings = [];
 
-      // 追蹤每位夥伴本週排班與工作月累計（繼承歷史連續出勤與下班時間）
       const staffWorkTracker = {};
       allStaff.forEach(s => {
         const sid = s.id || s._key;
@@ -3108,13 +3097,11 @@ const app = createApp({
         const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
         const dayIdx = (d.getDay() + 6) % 7;
 
-        // 1. 早班槽位
         const dayShiftSlots = [
           { name: "早班(開店1)", start: "06:30", end: "15:00", requiresManager: true },
           { name: "早班(開店2)", start: "06:30", end: "15:00", requiresManager: false }
         ];
 
-        // 2. 中班槽位
         let midShiftIndex = -1;
         if (!isWeekend) {
           midShiftIndex = dayShiftSlots.length;
@@ -3125,7 +3112,6 @@ const app = createApp({
           dayShiftSlots.push({ name: "中班2", start: "10:30", end: "17:30", requiresManager: false, isMidShift: true });
         }
 
-        // 3. 晚班槽位（標準一律為 14:00-22:30，14:00~17:30 現場自然為 4 人）
         const eveningSlotIndices = [];
         eveningSlotIndices.push(dayShiftSlots.length);
         dayShiftSlots.push({ name: "晚班(收店1)", start: "14:00", end: "22:30", requiresManager: true });
@@ -3146,10 +3132,8 @@ const app = createApp({
             if (assignedToday.has(sid)) return false;
 
             const tracker = staffWorkTracker[sid];
-            // 🛑 連續 6 天絕對休第 7 天（符合一例一休跨週防呆）
             if (tracker.consecutiveDays >= 6 || tracker.daysWorked >= 6) return false;
 
-            // 🛑 正職工時 40h +- 3h 彈性控管（達到 40h 或 5天且滿 37h 則讓位兼職）
             const isFT = isTrueFullTime(staff.role);
             if (isFT && (tracker.weeklyHours >= 40 || (tracker.daysWorked >= 5 && tracker.weeklyHours >= 37))) {
               const otherAvailablePT = allStaff.some(other => {
@@ -3159,9 +3143,7 @@ const app = createApp({
               if (otherAvailablePT) return false;
             }
 
-            // 檢查可用時段
             if (isStaffAvailableForShift(staff, dateStr, slotStart, slotEnd)) {
-              // 跨日/跨週 11 小時休息防呆
               if (tracker.lastEndMins > 0) {
                 const restMins = (24 * 60 - tracker.lastEndMins) + timeToMins(slotStart);
                 if (restMins < 11 * 60) return false;
@@ -3169,7 +3151,6 @@ const app = createApp({
               return true;
             }
 
-            // 晚班特殊彈性候選：若只能 18:00/19:00 進班
             if (eveningSlotIndices.includes(sIndex) && staff.availability) {
               const av = staff.availability['day_' + dayIdx];
               if (av && av.type === 'custom') {
@@ -3190,7 +3171,6 @@ const app = createApp({
 
           let pickedStaff = null;
 
-          // 1. 管理職槽位優先指派
           if (slot.requiresManager) {
             let managerCandidates = candidates.filter(s => isManagerRole(s.role));
             if (slot.name.includes('早') && selectedWeeklyOpenManagers.value.length > 0) {
@@ -3201,7 +3181,6 @@ const app = createApp({
 
             if (!pickedStaff && managerCandidates.length > 0) {
               managerCandidates.sort((a, b) => {
-                // 🌟 正職（店經理、副理、值班經理）時數不滿 37h 或不滿 5 天者擁有最高優先權！
                 const aIsFT = isTrueFullTime(a.role);
                 const bIsFT = isTrueFullTime(b.role);
                 const aHours = staffWorkTracker[a.id || a._key].weeklyHours;
@@ -3224,7 +3203,6 @@ const app = createApp({
             if (!pickedStaff) warnings.push(`${dateStr} ${slot.name} 缺少管理職 1 名！`);
           }
 
-          // 2. 一般夥伴槽位指派（正職 37h~43h 彈性 + 兼職工作月 50h 底線拉抬）
           if (!pickedStaff && candidates.length > 0) {
             candidates.sort((a, b) => {
               const aIsFT = isTrueFullTime(a.role);
@@ -3236,11 +3214,9 @@ const app = createApp({
               const aMonth = staffWorkTracker[a.id || a._key].monthlyAccum;
               const bMonth = staffWorkTracker[b.id || b._key].monthlyAccum;
 
-              // 🥇 正職未滿 5 天或未滿 37 小時者，絕對優先排班！
               if (aIsFT && (aHours < 37 || aDays < 5) && (!bIsFT || (bHours >= 37 && bDays >= 5))) return -1;
               if (bIsFT && (bHours < 37 || bDays < 5) && (!aIsFT || (aHours >= 37 && aDays >= 5))) return 1;
 
-              // 🥈 兼職夥伴工時底線保證（凡本週工作天數少於 2 天，或月累積嚴重落後 50h 者優先拯救！）
               if (!aIsFT && !bIsFT) {
                 if (aHours < 16 && bHours >= 16) return -1;
                 if (bHours < 16 && aHours >= 16) return 1;
@@ -3252,7 +3228,6 @@ const app = createApp({
                 if (bMonth < 50 && aMonth >= 50) return 1;
               }
 
-              // 🥉 能正常 14:00 進班者優先
               const aCanFull = isStaffAvailableForShift(a, dateStr, slotStart, slotEnd);
               const bCanFull = isStaffAvailableForShift(b, dateStr, slotStart, slotEnd);
               if (aCanFull !== bCanFull) return bCanFull - aCanFull;
@@ -3320,8 +3295,6 @@ const app = createApp({
           }
         });
 
-        // 🌟 核心校準：徹底消除 17:30～19:00 人力空缺
-        // 晚班應有 3 人在店，只要 17:30 當下已在店晚班少於 3 人，中班無條件自動順延至最晚晚班進店交接！
         if (midShiftIndex >= 0 && assignedShifts[midShiftIndex] && assignedShifts[midShiftIndex].staffId) {
           const midShiftItem = assignedShifts[midShiftIndex];
           const eveningShifts = assignedShifts.filter((sh, idx) => eveningSlotIndices.includes(idx) && sh.staffId);
@@ -3999,7 +3972,6 @@ const app = createApp({
       const correctPassword = partner.password || partner.empId;
       if (inputPass === correctPassword) {
         currentPartner.value = partner;
-        nextTick(() => { if (window.lucide) lucide.createIcons(); });
         localStorage.setItem('sbux_logged_empid', partner.empId);
         loginForm.value = { empId: '', password: '' };
         alert(`歡迎回來，${partner.nickname}！☕`);
@@ -4132,7 +4104,6 @@ const app = createApp({
   }
 });
 
-// 安全掛載 Vue 實例
 try {
   app.mount('#app');
 } catch (mountErr) {
@@ -4140,7 +4111,7 @@ try {
   const appEl = document.getElementById('app');
   if (appEl) {
     appEl.removeAttribute('v-cloak');
-    appEl.innerHTML = `<div style="padding:24px;color:#dc2626;font-weight:bold;background:#fff;margin:16px;border-radius:16px;border:1px solid #fee2e2;">系統啟動異常，請嘗試重新整理畫面。<br><span style="font-size:11px;color:#6b7280;font-weight:normal;">${mountErr.message}</span></div>`;
+    appEl.innerHTML = '<div style="padding:24px;color:#dc2626;font-weight:bold;background:#fff;margin:16px;border-radius:16px;border:1px solid #fee2e2;">系統啟動異常，請嘗試重新整理畫面。<br><span style="font-size:11px;color:#6b7280;font-weight:normal;">' + mountErr.message + '</span></div>';
   }
 }
 </script>
