@@ -18,7 +18,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
-    [v-cloak] { display: none !important; }
     *, ::before, ::after { box-sizing: border-box; }
     html, body {
       -webkit-tap-highlight-color: transparent;
@@ -196,7 +195,7 @@
 </head>
 <body :class="isDarkMode ? 'dark bg-slate-900 text-slate-100' : 'bg-slate-100 text-slate-800'" class="font-sans antialiased transition-colors duration-300">
 
-<div id="app" v-cloak class="min-h-screen flex flex-col justify-between">
+<div id="app" class="min-h-screen flex flex-col justify-between">
 
   <!-- ==================== 1. 門市工號登入畫面 ==================== -->
   <div v-if="!currentPartner" class="min-h-screen flex items-center justify-center p-4 bg-slate-900">
@@ -2168,7 +2167,6 @@
 window.addEventListener('error', function(e) {
   var el = document.getElementById('app');
   if (el) {
-    el.removeAttribute('v-cloak');
     el.innerHTML = '<div style="margin:20px;padding:20px;background:#fff;border:2px solid red;color:red;border-radius:12px;font-weight:bold;">' +
       '系統載入錯誤：' + e.message + '<br><span style="font-size:12px;color:#666;">錯誤行號：' + e.lineno + '</span></div>';
   }
@@ -2529,7 +2527,7 @@ const app = createApp({
         tastingNotesList.value = val ? Object.keys(val).map(k => ({ id: k, _key: k, ...val[k] })).sort((a,b) => b.timestamp - a.timestamp) : [];
       });
 
-      db.ref('sbux/bulletins').on('value', snap => bulletinList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
+      db.ref('sbux/bulletins').on('value', snap => bulletinList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []);
       db.ref('sbux/store_photos').on('value', snap => storePhotos.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
       db.ref('sbux/custom_albums').on('value', snap => customAlbums.value = snap.val() ? Object.values(snap.val()) : []);
       db.ref('sbux/bravo_cards').on('value', snap => bravoCardsList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
@@ -4110,7 +4108,6 @@ try {
   console.error("Vue 掛載失敗：", mountErr);
   const appEl = document.getElementById('app');
   if (appEl) {
-    appEl.removeAttribute('v-cloak');
     appEl.innerHTML = '<div style="padding:24px;color:#dc2626;font-weight:bold;background:#fff;margin:16px;border-radius:16px;border:1px solid #fee2e2;">系統啟動異常，請嘗試重新整理畫面。<br><span style="font-size:11px;color:#6b7280;font-weight:normal;">' + mountErr.message + '</span></div>';
   }
 }
