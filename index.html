@@ -333,7 +333,7 @@
               </p>
             </div>
 
-            <!-- 每日隨機小知識 (更新版) -->
+            <!-- 每日隨機小知識 (套用防重複演算法) -->
             <a 
               :href="todayTrivia.searchUrl" 
               target="_blank" 
@@ -454,11 +454,9 @@
               <button @click="currentTab = 'about'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
                 <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-                    <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-                    <line x1="6" y1="1" x2="6" y2="4"></line>
-                    <line x1="10" y1="1" x2="10" y2="4"></line>
-                    <line x1="14" y1="1" x2="14" y2="4"></line>
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 16v-4"></path>
+                    <path d="M12 8h.01"></path>
                   </svg>
                 </div>
                 <div>
@@ -598,7 +596,6 @@
                 </div>
               </form>
             </div>
-
             <!-- 標準庫檢視 -->
             <div v-if="showRulesLibrary" class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-emerald-300 dark:border-emerald-700 space-y-3">
               <div class="flex justify-between items-center">
@@ -781,7 +778,7 @@
                     @click="generateAiRoster" 
                     type="button" 
                     class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
-                    <span>🤖</span> 執行自動智慧預排 (嚴格遵守勞基法)
+                    <span>🤖</span> 執行自動智慧預排
                   </button>
                 </div>
 
@@ -1224,7 +1221,7 @@
                 </div>
               </div>
               
-              <!-- Tasting 動態牆 -->
+              <!-- Tasting 動態牆（獨立酸醇度數值標籤） -->
               <div class="space-y-3">
                 <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200">📋 品評動態牆</h4>
                 <div v-if="tastingNotesList.length > 0" class="space-y-2.5">
@@ -1247,6 +1244,7 @@
                       </div>
                     </div>
 
+                    <!-- 清楚顯示獨立酸度與醇度標籤 -->
                     <div class="flex gap-2">
                       <span class="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 rounded-lg text-[10px] font-bold border border-amber-200 dark:border-amber-900/40">
                         🍋 酸度：{{ getIntensityLabel(item.acidity) }}
@@ -1256,13 +1254,12 @@
                       </span>
                     </div>
 
-                    <div class="text-[11px] bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl text-slate-600 dark:text-slate-300 leading-relaxed border border-slate-100 dark:border-slate-700">
+                    <div class="text-[11px] bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl text-slate-600 dark:text-slate-300 leading-relaxed">
                       心得：{{ getCleanNotesText(item.notes || item.flavor) }}
                     </div>
 
-                    <div class="bg-emerald-50/80 dark:bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-900 dark:text-emerald-300 leading-relaxed whitespace-pre-line">
-                      🤖 <b>大師專業回饋：</b><br>
-                      <span class="font-bold text-emerald-800 dark:text-emerald-400">{{ item.aiComment }}</span>
+                    <div class="bg-emerald-50/80 dark:bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 text-[10px] text-emerald-800 dark:text-emerald-300 leading-relaxed whitespace-pre-line">
+                      🤖 <b>AI 風味評析：</b>{{ item.aiComment }}
                     </div>
                   </div>
                 </div>
@@ -1724,13 +1721,107 @@
 
 </div>
 
+<!-- 列印排版結構 -->
+<div class="print-only-container bg-white text-black font-sans">
+  <div class="print-page-single">
+    <!-- 頂部資訊列 -->
+    <div class="print-header border-b-2 border-black pb-1">
+      <div class="flex justify-between items-end">
+        <div class="text-[10px] font-bold leading-tight">
+          <div>門市：永和永安 (011218)</div>
+          <div>期間：{{ scheduleStartDate ? scheduleStartDate.replace(/-/g, '/') : '' }} - {{ scheduleEndDate ? scheduleEndDate.replace(/-/g, '/') : '' }}</div>
+        </div>
+        <div class="text-center font-black text-2xl tracking-widest leading-none">
+          {{ printTargetMode === 'blank' ? '門市週排班表' : '門市人員班表' }}
+        </div>
+        <div class="text-right text-[10px] font-bold leading-tight">
+          <div>列印：{{ printTodayStr }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 表格容器 -->
+    <div class="print-table-wrapper">
+      <table class="print-table">
+        <thead>
+          <tr class="bg-slate-100 border-b-2 border-black">
+            <th class="w-[9%] text-[10.5px]">員工編號</th>
+            <th class="w-[12%] text-[10.5px]">員工姓名</th>
+            <th v-for="d in targetRangeDates" :key="d.dateStr" class="w-[10%]">
+              <div class="font-black text-[11px] leading-tight">{{ d.displayDate }}</div>
+              <div class="text-[9.5px] font-bold leading-tight">({{ d.weekday }})</div>
+            </th>
+            <th class="w-[9%] text-[10.5px]">本週工時</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="staff in sortedValidStaffList" :key="staff._key || staff.id" :style="{ height: getPrintRowHeight }">
+            <td class="font-mono font-black text-[10px] tracking-tighter align-middle p-0.5">
+              {{ staff?.empId || '' }}
+            </td>
+            <td class="p-0.5 leading-tight align-middle">
+              <div class="text-[11px] font-black text-slate-900 truncate">{{ staff?.name || '' }} ({{ staff?.nickname || '' }})</div>
+              <div class="text-[9px] font-bold text-slate-600">{{ staff?.role }}</div>
+            </td>
+
+            <!-- 7 天日期格 -->
+            <td v-for="d in targetRangeDates" :key="d.dateStr" class="relative align-middle p-0.5">
+              
+              <!-- 🌟 小天使 David：每週二、四、五、六、日固定呈現 08:30-17:30，一/三休息 🌟 -->
+              <template v-if="staff.role === '天使夥伴' || staff.nickname === 'David'">
+                <div v-if="isDavidWorkDay(d.dateStr)" class="leading-tight">
+                  <div class="text-[9.5px] font-black text-slate-900">08:30-17:30</div>
+                </div>
+                <div v-else class="text-[9px] text-slate-400 font-medium">不配</div>
+              </template>
+
+              <!-- 一般夥伴畫假標記 -->
+              <template v-else-if="getVacationData(staff.id || staff._key, d.dateStr)">
+                <div class="text-black font-black text-lg leading-none">✕</div>
+                <div class="text-[9px] font-black text-slate-900 leading-tight">【{{ getVacationData(staff.id || staff._key, d.dateStr).type }}】</div>
+              </template>
+
+              <!-- 【AI 預排模式】列印 -->
+              <template v-else-if="printTargetMode === 'ai'">
+                <div v-if="getScheduledShiftText(staff, d.dateStr)" class="leading-tight">
+                  <div v-if="isConsecutiveSixthDay(staff, d.dateStr)" class="text-[8.5px] font-black text-amber-800 bg-amber-100 px-0.5 rounded inline-block">
+                    休上班
+                  </div>
+                  <div class="text-[9.5px] font-black text-slate-900" :class="isOvertimeShift(staff, d.dateStr) ? 'font-black underline' : ''">
+                    {{ getScheduledShiftText(staff, d.dateStr) }}
+                  </div>
+                </div>
+                <div v-else class="text-[9px] text-slate-300">-</div>
+              </template>
+
+              <!-- 【空白班表模式】列印 -->
+              <template v-else>
+                <div v-if="getAvailabilityText(staff, d.dateStr)" class="text-[8.5px] font-bold text-slate-600 leading-snug">
+                  {{ getAvailabilityText(staff, d.dateStr) }}
+                </div>
+              </template>
+
+            </td>
+
+            <!-- 最右側：本週累計工時 -->
+            <td class="font-mono font-black text-[11px] align-middle p-0.5 bg-slate-50 text-slate-900">
+              <span v-if="printTargetMode === 'ai'">
+                {{ calculateWeeklyStaffHours(staff) }}h
+              </span>
+              <span v-else class="text-slate-300">-</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 <script>
-// ==================== 系統錯誤攔截 ====================
 window.onerror = function(msg, url, line) {
   var el = document.getElementById('app');
   if (el) {
     el.removeAttribute('v-cloak');
-    el.innerHTML = '<div style="padding:20px;color:red;font-weight:bold;background:#fff;border:2px solid red;margin:20px;border-radius:12px;">系統腳本執行錯誤：' + msg + '<br>錯誤行號：' + line + '</div>';
+    el.innerHTML = '<div style="padding:20px;color:red;font-weight:bold;background:#fff;border:2px solid red;margin:20px;border-radius:12px;z-index:99999;position:relative;">系統腳本執行錯誤：' + msg + '<br>錯誤行號：' + line + '</div>';
   }
   return false;
 };
@@ -1755,7 +1846,6 @@ try {
   console.error("Firebase 初始化失敗：", e);
 }
 
-// ==================== 時間產生器 ====================
 const generateTimeSlots = () => {
   const slots = [];
   for (let h = 6; h <= 22; h++) {
@@ -1773,27 +1863,27 @@ const timeSlots = generateTimeSlots();
 
 // ==================== 咖啡豆資料庫 (擴展官網完整版) ====================
 const starbucksCoreBeans = [
-  { name: "派克市場烘焙", enName: "Pike Place® Roast", roast: "中度烘焙", region: "拉丁美洲", processing: "水洗法", acidity: "適中", body: "適中", flavorNotes: "巧克力、烤堅果、平衡圓潤", foodPairing: "巧克力餅乾、肉桂捲、堅果", url: "https://www.starbucks.com.tw/products/coffee/beans.jspx", description: "紀念星巴克 1971 年西雅圖第一家門市。口感滑順平滑，為全門市滴濾咖啡的經典靈魂。" },
-  { name: "黃金烘焙綜合", enName: "Veranda Blend®", roast: "黃金烘焙", region: "拉丁美洲", processing: "水洗法", acidity: "明亮", body: "輕盈", flavorNotes: "烘烤麥芽、牛奶巧克力、溫和清爽", foodPairing: "檸檬塔、輕食三明治、牛奶巧克力", url: "https://www.starbucks.com.tw/products/coffee/beans.jspx", description: "輕度烘焙保留純淨柔和感，酸度輕盈，入口帶有烘烤甘甜。" },
-  { name: "哥倫比亞", enName: "Colombia", roast: "中度烘焙", region: "拉丁美洲", processing: "水洗法", acidity: "適中", body: "適中", flavorNotes: "堅果味與花香，餘韻有著核桃般的清香", foodPairing: "核桃、牛奶巧克力", url: "https://www.starbucks.com.tw/products/coffee/beans.jspx", description: "優雅清爽，帶著拉丁美洲特有的堅果可可基調，平衡且純淨。" },
-  { name: "肯亞", enName: "Kenya", roast: "中度烘焙", region: "非洲", processing: "水洗法", acidity: "高", body: "飽滿", flavorNotes: "葡萄柚、黑醋栗、明亮多汁的果酸", foodPairing: "莓果塔、新鮮水果、柑橘類", url: "https://www.starbucks.com.tw/products/coffee/beans.jspx", description: "具備鮮明活潑的高品質果酸與醇厚質地，冰鎮手沖時風味尤為突出。" },
-  { name: "蘇門答臘", enName: "Sumatra", roast: "深度烘焙", region: "亞太產區", processing: "半水洗法 (濕刨法)", acidity: "低", body: "厚重", flavorNotes: "泥土芬芳、草本香氣、濃郁厚重醇度", foodPairing: "鹹派、起司、肉桂", url: "https://www.starbucks.com.tw/products/coffee/beans.jspx", description: "傳統濕刨法賦予其極具辨識度的草本與木質氣息，酸度極低、醇度厚實。" },
-  { name: "佛羅娜綜合", enName: "Caffè Verona®", roast: "深度烘焙", region: "綜合產區", processing: "水洗與半水洗", acidity: "低", body: "厚重", flavorNotes: "黑可可、焦糖甜感、深沉濃郁", foodPairing: "黑森林蛋糕、焦糖、黑巧克力", url: "https://www.starbucks.com.tw/products/coffee/beans.jspx", description: "原本是西雅圖餐廳搭配巧克力甜點的專屬調配豆，醇厚甘美。" },
-  { name: "義式濃縮烘焙", enName: "Espresso Roast", roast: "深度烘焙", region: "綜合產區", processing: "水洗與半水洗", acidity: "適中", body: "厚重", flavorNotes: "糖蜜、濃郁焦糖香、持久餘韻", foodPairing: "焦糖、香料、提拉米蘇", url: "https://www.starbucks.com.tw/products/coffee/beans.jspx", description: "門市吧台所有經典義式濃縮咖啡的心臟基底，油脂豐厚完美。" },
+  { name: "派克市場烘焙", enName: "Pike Place® Roast", roast: "中度烘焙", region: "拉丁美洲", processing: "水洗法", acidity: "適中", body: "適中", flavorNotes: "巧克力、烤堅果、平衡圓潤", foodPairing: "巧克力餅乾、可頌、肉桂捲", url: "https://www.starbucks.com.tw/products/coffee/beans.jspx", description: "紀念星巴克 1971 年西雅圖第一家門市。口感滑順平滑，為全門市滴濾咖啡的經典靈魂。" },
+  { name: "黃金烘焙綜合", enName: "Veranda Blend®", roast: "黃金烘焙", region: "拉丁美洲", processing: "水洗法", acidity: "明亮", body: "輕盈", flavorNotes: "烘烤麥芽、牛奶巧克力、溫和清爽", foodPairing: "檸檬塔、輕食三明治、鬆餅", url: "https://www.starbucks.com.tw/products/coffee/beans.jspx", description: "輕度烘焙保留純淨柔和感，酸度輕盈，入口帶有烘烤甘甜。" },
+  { name: "哥倫比亞", enName: "Colombia", roast: "中度烘焙", region: "拉丁美洲", processing: "水洗法", acidity: "適中", body: "適中", flavorNotes: "堅果味與花香，餘韻有著核桃般的清香", foodPairing: "牛奶巧克力、核桃", url: "https://www.starbucks.com.tw/products/coffee/beans.jspx", description: "優雅清爽，帶著拉丁美洲特有的堅果可可基調，平衡且純淨。" },
+  { name: "肯亞", enName: "Kenya", roast: "中度烘焙", region: "非洲", processing: "水洗法", acidity: "高", body: "飽滿", flavorNotes: "葡萄柚、黑醋栗、明亮多汁的果酸", foodPairing: "莓果塔、新鮮水果", url: "https://www.starbucks.com.tw/products/coffee/beans.jspx", description: "具備鮮明活潑的高品質果酸與醇厚質地，冰鎮手沖時風味尤為突出。" },
+  { name: "蘇門答臘", enName: "Sumatra", roast: "深度烘焙", region: "亞太產區", processing: "半水洗法 (濕刨法)", acidity: "低", body: "厚重", flavorNotes: "泥土芬芳、草本香氣、濃郁厚重醇度", foodPairing: "鹹派、香腸起司可頌", url: "https://www.starbucks.com.tw/products/coffee/beans.jspx", description: "傳統濕刨法賦予其極具辨識度的草本與木質氣息，酸度極低、醇度厚實。" },
+  { name: "佛羅娜綜合", enName: "Caffè Verona®", roast: "深度烘焙", region: "綜合產區", processing: "水洗與半水洗", acidity: "低", body: "厚重", flavorNotes: "黑可可、焦糖甜感、深沉濃郁", foodPairing: "黑森林蛋糕、摩卡千層", url: "https://www.starbucks.com.tw/products/coffee/beans.jspx", description: "原本是西雅圖餐廳搭配巧克力甜點的專屬調配豆，醇厚甘美。" },
+  { name: "義式濃縮烘焙", enName: "Espresso Roast", roast: "深度烘焙", region: "綜合產區", processing: "水洗與半水洗", acidity: "適中", body: "厚重", flavorNotes: "糖蜜、濃郁焦糖香、持久餘韻", foodPairing: "提拉米蘇、焦糖瑪奇朵", url: "https://www.starbucks.com.tw/products/coffee/beans.jspx", description: "門市吧台所有經典義式濃縮咖啡的心臟基底。" },
   { name: "低因熱情派克", enName: "Decaf Pike Place® Roast", roast: "中度烘焙", region: "拉丁美洲", processing: "天然脫因", acidity: "適中", body: "適中", flavorNotes: "烤堅果、可可、溫順圓滑", foodPairing: "司康、燕麥軟餅乾", url: "https://www.starbucks.com.tw/products/coffee/beans.jspx", description: "保留經典派克香氣，透過安全工藝去除咖啡因。" },
   { name: "秋季綜合 (季節限定)", enName: "Autumn Blend", roast: "中度烘焙", region: "綜合產區", processing: "水洗與半水洗", acidity: "適中", body: "飽滿", flavorNotes: "細緻香料味、糖漿般滑順、草本尾韻", foodPairing: "烤百根、香料南瓜", url: "https://www.starbucks.com.tw/products/coffee/beans.jspx", description: "專為秋季設計的溫暖拼配，完美結合三大產區豆款。" }
 ];
 
 // ==================== 每日隨機不重複小知識題庫 ====================
 const coffeeTriviaList = [
-  { level: "CA 100 基礎", text: "你知道星巴克品嚐咖啡的四步驟是什麼嗎？順序為：聞香、啜飲、定位與描述！啜飲能將咖啡霧化噴灑在舌頭味蕾上，充分感受風味與醇度。", searchUrl: "https://pinnacle.starbucks.com.tw/" },
+  { level: "CA 100 基礎", text: "你知道星巴克品嚐咖啡的四步驟是什麼嗎？順序為：聞香、啜飲、定位與描述！啜飲能將咖啡霧化噴灑在舌尖，充分感受風味與醇度。", searchUrl: "https://pinnacle.starbucks.com.tw/" },
   { level: "CA 100 基礎", text: "你知道沖煮咖啡的黃金四大原則是：比例、研磨、水質、新鮮度嗎？官方標準手沖粉水比為 1:16，法式濾壓壺則為 1:15！", searchUrl: "https://pinnacle.starbucks.com.tw/" },
-  { level: "CA 100 歷史", text: "你知道星巴克第一家創始門市於 1971 年開在西雅圖著名的「派克市場」嗎？最初星巴克只專注於銷售高品質烘焙咖啡豆與香料，完全不賣現煮拿鐵！", searchUrl: "https://pinnacle.starbucks.com.tw/" },
-  { level: "CA 200 產區", text: "你知道為什麼印尼蘇門答臘咖啡帶有獨特的泥土芬芳與厚實草本醇度嗎？這源自當地特殊的「半水洗濕刨法」，造就其極低酸度與深厚餘韻！", searchUrl: "https://pinnacle.starbucks.com.tw/" },
-  { level: "CA 200 產區", text: "你知道肯亞咖啡為何總是帶有宛如葡萄柚與黑醋栗的明亮果汁感嗎？肯亞採用特殊的雙重發酵水洗法，且多種植在肥沃高海拔火山土壤，使高濃度的果酸達到極致平衡。", searchUrl: "https://pinnacle.starbucks.com.tw/" },
-  { level: "CA 200 採購", text: "你知道星巴克 99% 的咖啡豆皆符合「C.A.F.E. Practices」嗎？這是星巴克與保護國際基金會共同制定的道德採購準則。", searchUrl: "https://pinnacle.starbucks.com.tw/" },
-  { level: "CA 300 工藝", text: "你知道烘焙過程中的「第一爆」與「第二爆」嗎？一爆代表豆內水分汽化導致細胞壁破裂，產生花果酸香；二爆則是木質素碳化，焦糖化反應達到顛峰！", searchUrl: "https://pinnacle.starbucks.com.tw/" },
-  { level: "門市營運", text: "冷萃咖啡 (Cold Brew) 的標準常溫慢速萃取時間規範為 20 小時。", searchUrl: "https://pinnacle.starbucks.com.tw/" }
+  { level: "CA 100 歷史", text: "星巴克第一家創始門市於 1971 年開在西雅圖著名的「派克市場」。最初只專注於銷售高品質烘焙咖啡豆，完全不賣現煮拿鐵！", searchUrl: "https://pinnacle.starbucks.com.tw/" },
+  { level: "CA 200 產區", text: "印尼蘇門答臘咖啡獨特的泥土芬芳與厚實草本醇度，源自當地特殊的「半水洗濕刨法」，造就其極低酸度與深厚餘韻！", searchUrl: "https://pinnacle.starbucks.com.tw/" },
+  { level: "CA 200 產區", text: "肯亞咖啡為何總是帶有宛如葡萄柚的明亮果汁感？因為肯亞多採用特殊的雙重發酵水洗法，且種植在肥沃高海拔火山土壤。", searchUrl: "https://pinnacle.starbucks.com.tw/" },
+  { level: "CA 200 採購", text: "星巴克 99% 的咖啡豆皆符合「C.A.F.E. Practices」規範，這是星巴克與保護國際基金會共同制定的道德採購與永續準則。", searchUrl: "https://pinnacle.starbucks.com.tw/" },
+  { level: "CA 300 工藝", text: "烘焙過程中的「第一爆」代表豆內水分汽化導致細胞壁破裂，產生花果酸香；「第二爆」則是木質素碳化，焦糖化反應達到顛峰！", searchUrl: "https://pinnacle.starbucks.com.tw/" },
+  { level: "門市營運", text: "冷萃咖啡 (Cold Brew) 的標準常溫慢速萃取時間規範為嚴格的 20 小時，藉由長時間低溫浸泡釋放純淨的甘甜風味。", searchUrl: "https://pinnacle.starbucks.com.tw/" }
 ];
 
 const masterQuizPool = [
@@ -1801,7 +1891,10 @@ const masterQuizPool = [
   { question: "水洗法處理的咖啡豆，風味輪廓通常呈現何種特色？", options: ["濃郁發酵感與熱帶水果甜", "明亮乾淨的酸質與花果香氣", "厚重泥土與草本風味", "強烈的焦糖與木質香氣"], correct: 1, explanation: "水洗法透過發酵槽洗淨果肉，酸質最為純淨清晰。" },
   { question: "濃縮咖啡完美的「三層結構」由下至上依序為何？", options: ["Crema、Body、Heart", "Heart (核心)、Body (主體)、Crema (咖啡脂)", "Body、Heart、Crema", "Heart、Crema、Body"], correct: 1, explanation: "底層最深色為 Heart，中間為琥珀色 Body，頂層為綿密金黃色 Crema。" },
   { question: "門市標準奶泡蒸煮的最佳理想溫度區間為何？", options: ["50°C ~ 55°C", "60°C ~ 65°C", "75°C ~ 80°C", "85°C 以上"], correct: 1, explanation: "蒸奶最適溫度為 60°C ~ 65°C，能釋放乳糖甜感且不破壞蛋白質。" },
-  { question: "產區位於「亞太地區（如蘇門答臘）」的咖啡豆，通常具備什麼主要風味？", options: ["柑橘香與茉莉花香", "可可堅果與柔和果酸", "厚重草本、香料與泥土芳香", "輕盈茶感與蜜桃甜"], correct: 2, explanation: "蘇門答臘等亞太產區多採半水洗處理法，呈現濃郁草本與香料芳香。" }
+  { question: "產區位於「亞太地區（如蘇門答臘）」的咖啡豆，通常具備什麼主要風味？", options: ["柑橘香與茉莉花香", "可可堅果與柔和果酸", "厚重草本、香料與泥土芳香", "輕盈茶感與蜜桃甜"], correct: 2, explanation: "蘇門答臘等亞太產區多採半水洗處理法，呈現濃郁草本與香料芳香。" },
+  { question: "標準法式濾壓壺官方建議的浸泡萃取時間是多久？", options: ["2 分鐘", "3 分鐘", "4 分鐘", "5 分鐘"], correct: 2, explanation: "法式濾壓壺建議浸泡時間為完整的 4 分鐘。" },
+  { question: "星巴克標準手沖咖啡的官方建議粉水比為何？", options: ["1 : 12", "1 : 15", "1 : 16", "1 : 18"], correct: 2, explanation: "標準手沖比例為 1:16（10g 咖啡粉配 160ml 水）。" },
+  { question: "生豆處理法中的「半水洗法」在印尼當地又稱為什麼？", options: ["Giling Basah", "Monsooning", "Pulped Natural", "Double Washed"], correct: 0, explanation: "半水洗在印尼稱為 Giling Basah（濕刨法），使豆體保留厚實草本醇度。" }
 ];
 
 const { createApp, ref, computed, onMounted, nextTick } = Vue;
@@ -1956,7 +2049,7 @@ const app = createApp({
     const quizCompletedStaff = computed(() => allActivePartners.value.filter(p => weeklyQuizRecords.value[p.name]));
     const quizPendingStaff = computed(() => allActivePartners.value.filter(p => !weeklyQuizRecords.value[p.name]));
 
-    const settingsModal = ref({ show: false, newPassword: '', birthday: '', geminiApiKey: '' });
+    const settingsModal = ref({ show: false, newPassword: '', birthday: '', geminiApiKey: localStorage.getItem('sbux_custom_gemini_key') || '' });
     const addRuleModal = ref({ show: false, form: { keyword: '', advance_days: 7 } });
     const calcModal = ref({ show: false, item: {}, targetTimeStr: '', pullDate: '', timing: '', isAdjustedForClose: false });
     const matEditModal = ref({ show: false, isNew: true, form: {} });
@@ -1996,13 +2089,30 @@ const app = createApp({
             ...item, rank: idx + 1, finalScore: calculateCombinedScore(item), partnerName: item.partnerName || getStaffName(item.authorStaffId)
           }));
 
+          const top1 = finalRanked[0];
+          const top2 = finalRanked[1];
+          const top3 = finalRanked[2];
+
           await db.ref('sbux/latteArtArchives/' + autoKey).set({
             folderName: autoKey, archivedAt: new Date().toISOString(), archivedBy: '系統自動結算',
-            totalWorks: finalRanked.length, winner: finalRanked[0]?.partnerName || '無', works: finalRanked
+            totalWorks: finalRanked.length, winner: top1?.partnerName || '無', works: finalRanked
+          });
+
+          let announcement = `🎉 【門市拉花擂台賽 · 本期結算榮譽榜】 🎉\n\n`;
+          if (top1) announcement += `🥇 冠軍：${top1.partnerName} (${top1.pattern})\n   ➔ 加權總分：${top1.finalScore} 分 (❤️ ${top1.votes || 0} 票)\n`;
+          if (top2) announcement += `🥈 亞軍：${top2.partnerName} (${top2.pattern})\n   ➔ 加權總分：${top2.finalScore} 分 (❤️ ${top2.votes || 0} 票)\n`;
+          if (top3) announcement += `🥉 季軍：${top3.partnerName} (${top3.pattern})\n   ➔ 加權總分：${top3.finalScore} 分 (❤️ ${top3.votes || 0} 票)\n`;
+          announcement += `\n恭喜以上獲獎夥伴！當期作品已歸檔至下方歷史集錦，新一期擂台已正式開跑，歡迎夥伴踴躍上傳！☕`;
+
+          const bulletinId = 'bulletin_' + Date.now();
+          await db.ref('sbux/bulletins/' + bulletinId).set({
+            id: bulletinId, title: `🏆 門市拉花擂台賽 (${autoKey}) 成果揭曉`, content: announcement,
+            dateStr: `${now.getMonth() + 1}/${now.getDate()}`, timestamp: Date.now()
           });
 
           await db.ref('sbux/latte_posts').remove();
         } catch (e) {
+          console.error('自動結算錯誤：', e);
         } finally {
           isAutoArchivingInProgress = false;
         }
@@ -2033,23 +2143,26 @@ const app = createApp({
       db.ref('sbux/store_photos').on('value', snap => { storePhotos.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []; });
       db.ref('sbux/custom_albums').on('value', snap => { customAlbums.value = snap.val() ? Object.values(snap.val()) : []; });
       db.ref('sbux/bravo_cards').on('value', snap => { bravoCardsList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []; });
+      
       db.ref('sbux/latteArtArchives').on('value', (snapshot) => {
         const val = snapshot.val();
         if (val) {
           latteArtArchives.value = Object.keys(val).map(key => {
             const data = val[key] || {};
-            let worksArr = Array.isArray(data.works) ? data.works : (data.works ? Object.values(data.works) : []);
+            let worksArr = Array.isArray(data.works) ? data.works : (data.works && typeof data.works === 'object' ? Object.values(data.works) : []);
             return { key, folderName: data.folderName || key, archivedAt: data.archivedAt || '', winner: data.winner || '無', expanded: false, works: worksArr };
           }).sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
         } else {
           latteArtArchives.value = [];
         }
       });
+
       db.ref('sbux/coffeeKnowledge').on('value', snap => {
         const val = snap.val();
         coffeeKnowledgeList.value = val ? Object.keys(val).map(k => ({ id: k, ...val[k] })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) : [];
       });
       db.ref('sbux/quizRecords/' + currentWeekQuizId.value).on('value', snap => { weeklyQuizRecords.value = snap.val() || {}; });
+      
       db.ref('sbux/staff').on('value', snap => {
         const data = snap.val();
         if (data) {
@@ -2073,8 +2186,12 @@ const app = createApp({
       const targetSunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysUntilSunday, 23, 30, 0, 0);
       if (now > targetSunday) targetSunday.setDate(targetSunday.getDate() + 7);
       const diff = targetSunday - now;
-      if (diff <= 0) { countdownToSunday.value = '結算完成'; return; }
-      countdownToSunday.value = `${Math.floor(diff / (1000 * 60 * 60 * 24))}天 ${Math.floor((diff / (1000 * 60 * 60)) % 24).toString().padStart(2, '0')}時 ${Math.floor((diff / (1000 * 60)) % 60).toString().padStart(2, '0')}分 ${Math.floor((diff / 1000) % 60).toString().padStart(2, '0')}秒`;
+      if (diff <= 0) { countdownToSunday.value = '結算完成'; checkAndAutoArchiveLatteArt(); return; }
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const m = Math.floor((diff / (1000 * 60)) % 60);
+      const s = Math.floor((diff / 1000) % 60);
+      countdownToSunday.value = `${d}天 ${h.toString().padStart(2, '0')}時 ${m.toString().padStart(2, '0')}分 ${s.toString().padStart(2, '0')}秒`;
     };
 
     const fetchYongheWeather = async () => {
@@ -2085,6 +2202,7 @@ const app = createApp({
           const code = data.current_weather.weathercode;
           if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) { weatherType.value = 'rain'; weatherDesc.value = '局部有雨'; weatherIcon.value = '🌧️'; weatherGreeting.value = '永和今天有雨，溫暖咖啡陪你當班 💚'; }
           else if ([1, 2, 3, 45, 48].includes(code)) { weatherType.value = 'clouds'; weatherDesc.value = '多雲舒適'; weatherIcon.value = '☁️'; weatherGreeting.value = '微風輕拂，適合來杯香醇那堤 ☕'; }
+          else { weatherType.value = 'clear'; weatherDesc.value = '晴朗陽光'; weatherIcon.value = '☀️'; weatherGreeting.value = '陽光正好，今天也是元氣滿滿的一天 🌟'; }
         }
       } catch (e) {}
     };
@@ -2095,340 +2213,55 @@ const app = createApp({
       return 'bg-gradient-to-br from-emerald-800 to-emerald-950';
     });
 
+    const checkDarkMode = () => {
+      const savedDark = localStorage.getItem('sbux_dark_mode');
+      if (savedDark === 'true') { isDarkMode.value = true; document.documentElement.classList.add('dark'); }
+      else { isDarkMode.value = false; document.documentElement.classList.remove('dark'); }
+    };
+
     const toggleDarkMode = () => {
       isDarkMode.value = !isDarkMode.value;
       localStorage.setItem('sbux_dark_mode', isDarkMode.value);
-      if (isDarkMode.value) document.documentElement.classList.add('dark');
-      else document.documentElement.classList.remove('dark');
+      if (isDarkMode.value) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark');
     };
 
     onMounted(() => {
-      if (localStorage.getItem('sbux_dark_mode') === 'true') { isDarkMode.value = true; document.documentElement.classList.add('dark'); }
+      checkDarkMode();
       fetchYongheWeather();
       updateCountdown();
       setInterval(updateCountdown, 1000);
       nextTick(() => { if (window.lucide) lucide.createIcons(); });
     });
 
-    const settledPeriodStr = computed(() => latteArtArchives.value.length > 0 ? `上期冠軍：${latteArtArchives.value[0].winner}` : `當期評選中`);
-    const settledHonors = computed(() => {
-      let champName = '虛位以待', champScore = '';
-      if (latteArtArchives.value.length > 0) { champName = latteArtArchives.value[0].winner; champScore = '前期得主'; }
-      else if (lattePosts.value.length > 0) { champName = '⏳ 激戰評選中'; champScore = '週日結算'; }
-      let activeName = '虛位以待', activeTitle = '';
-      if (tastingNotesList.value.length > 0) { activeName = getStaffName(tastingNotesList.value[0].authorStaffId); activeTitle = '品評分享大師'; }
-      return { champion: champName, champScore, mostImproved: '次週結算', improvedDelta: '累積兩週成績', activePartner: activeName, activeTitle };
+    const settledPeriodStr = computed(() => {
+      if (latteArtArchives.value && latteArtArchives.value.length > 0) return `上期冠軍：${latteArtArchives.value[0].winner}`;
+      return `${new Date().getMonth() + 1}/${new Date().getDate()} 當期評選中`;
     });
 
-    // ==================== AI 引擎功能區塊 (含無感壓縮與新提示詞) ====================
-    const handleAiRuleImageUpload = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      isAiRecognizingRules.value = true;
-      try {
-        const apiKey = getEffectiveGeminiKey();
-        let base64Data = '';
-        let mimeType = 'image/jpeg';
-
-        if (file.name.toLowerCase().endsWith('.pdf') || file.type.includes('pdf')) {
-          if (file.size > 5 * 1024 * 1024) {
-            alert('⚠️ PDF 檔案過大，請壓縮至 5MB 內再上傳！');
-            isAiRecognizingRules.value = false;
-            e.target.value = '';
-            return;
-          }
-          mimeType = 'application/pdf';
-          base64Data = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (evt) => resolve(evt.target.result.split(',')[1]);
-            reader.readAsDataURL(file);
-          });
-        } else {
-          base64Data = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-              const img = new Image();
-              img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width, height = img.height;
-                const maxSize = 1600;
-                if (width > height && width > maxSize) { height *= maxSize / width; width = maxSize; } 
-                else if (height > maxSize) { width *= maxSize / height; height = maxSize; }
-                canvas.width = width; canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
-              };
-              img.onerror = reject;
-              img.src = evt.target.result;
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-        }
-
-        const promptText = `你是一位專業星巴克門市系統管理員。請仔細閱讀圖片或文件中的下架/品項效期規範，提取食品/原物料品名及其「提前下架天數」。嚴格輸出 JSON 陣列格式：[{"keyword":"品項名稱","advance_days":天數數字,"timing":"21:30 閉店前"}]`;
-
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: promptText }, { inline_data: { mime_type: mimeType, data: base64Data } }] }],
-            generationConfig: { temperature: 0.1, response_mime_type: "application/json" }
-          })
-        });
-
-        const json = await response.json();
-        if (json.error) throw new Error(json.error.message);
-
-        if (json.candidates && json.candidates[0]?.content?.parts[0]?.text) {
-          let rawText = json.candidates[0].content.parts[0].text.trim().replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
-          const parsedRules = JSON.parse(rawText);
-          if (Array.isArray(parsedRules) && parsedRules.length > 0) {
-            for (const r of parsedRules) {
-              if (r.keyword) {
-                const ruleId = 'rule_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
-                if (db) await db.ref('sbux/rules/' + ruleId).set({ id: ruleId, keyword: r.keyword.trim(), advance_days: parseInt(r.advance_days) || 0, timing: r.timing || '21:30 閉店前' });
-              }
-            }
-            alert(`🎉 辨識成功！已成功匯入 ${parsedRules.length} 筆下架標準！`);
-          } else {
-            alert('未能在圖文中辨識出具體的品項與提前下架天數。');
-          }
-        } else {
-          throw new Error('AI 伺服器未回傳有效結果。');
-        }
-      } catch (err) {
-        if (err.message === 'SYSTEM_MISSING_API_KEY') alert('⚠️ 系統提示：請聯絡管理員 徐爰坦 至「個人設定」綁定 API Key！');
-        else alert(`❌ 辨識失敗：${err.message}`);
-      } finally {
-        isAiRecognizingRules.value = false;
-        e.target.value = '';
+    const settledHonors = computed(() => {
+      let champName = '虛位以待', champScore = '', progressName = '次週結算', progressDelta = '累積兩週成績';
+      if (latteArtArchives.value && latteArtArchives.value.length > 0) {
+        champName = latteArtArchives.value[0].winner || '上期冠軍'; champScore = '前期得主';
+      } else if (lattePosts.value && lattePosts.value.length > 0) {
+        champName = '⏳ 激戰評選中'; champScore = '週日結算';
       }
-    };
-
-    const handleLattePhotoUpload = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          let width = img.width, height = img.height;
-          const maxSize = 1200;
-          if (width > height && width > maxSize) { height *= maxSize / width; width = maxSize; } 
-          else if (height > maxSize) { width *= maxSize / height; height = maxSize; }
-          canvas.width = width; canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          latteForm.value.photoUrl = canvas.toDataURL('image/jpeg', 0.8);
-        };
-        img.src = evt.target.result;
-      };
-      reader.readAsDataURL(file);
-    };
-
-    const submitLattePost = async () => {
-      if (!currentPartner.value || !latteForm.value.photoUrl) return;
-      isAiEvaluating.value = true;
-      try {
-        const apiKey = getEffectiveGeminiKey();
-        const base64Data = latteForm.value.photoUrl.split(',')[1];
-        const mimeType = 'image/jpeg';
-        
-        // 【優化】更專業具體的 AI 拉花評審 Prompt
-        const prompt = `你是星巴克世界盃拉花大賽評審。請針對【${latteForm.value.pattern}】作品圖片進行專業評鑑。必須具體指出：1. 優點與肯定（如奶泡細緻度、對稱性） 2. 具體的改進機會點（如收尾切線、流速控制、對比反差）。給分範圍65~88分。輸出JSON: {"score": 整數, "feedback": "評語文字"}`;
-
-        let evalScore = 74;
-        let evalFeedback = '奶泡質地細緻，收尾切線流速可更穩定。';
-        
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }],
-            generationConfig: { response_mime_type: "application/json", temperature: 0.2 }
-          })
-        });
-        const resData = await response.json();
-        if (resData.candidates && resData.candidates[0]?.content?.parts[0]?.text) {
-          const parsed = JSON.parse(resData.candidates[0].content.parts[0].text.trim().replace(/^```json\s*/i, '').replace(/\s*```$/, ''));
-          evalScore = parseInt(parsed.score) || 74;
-          evalFeedback = parsed.feedback || evalFeedback;
-        }
-
-        const newPost = {
-          id: Date.now().toString(),
-          authorStaffId: currentPartner.value.id || currentPartner.value._key,
-          partnerName: currentPartner.value.name,
-          pattern: latteForm.value.pattern,
-          photoUrl: latteForm.value.photoUrl,
-          aiScore: evalScore,
-          aiFeedback: evalFeedback,
-          votes: 0,
-          dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`,
-          timestamp: Date.now()
-        };
-        if (db) await db.ref('sbux/latte_posts/' + newPost.id).set(newPost);
-        latteForm.value = { pattern: '心形 (Heart)', photoUrl: '' };
-        alert(`🎉 作品已上傳！AI 評分：${newPost.aiScore} 分！`);
-      } catch (err) {
-        if (err.message === 'SYSTEM_MISSING_API_KEY') alert('⚠️ 系統提示：請聯絡管理員 徐爰坦 至「個人設定」中綁定專屬的 Gemini API Key！');
-        else alert('上傳失敗。');
-      } finally {
-        isAiEvaluating.value = false;
+      let activeName = '虛位以待', activeTitle = '';
+      if (tastingNotesList.value && tastingNotesList.value.length > 0) {
+        activeName = getStaffName(tastingNotesList.value[0].authorStaffId); activeTitle = '品評分享大師';
       }
-    };
+      return { champion: champName, champScore, mostImproved: progressName, improvedDelta: progressDelta, activePartner: activeName, activeTitle };
+    });
 
-    const submitTastingNote = async () => {
-      if (!currentPartner.value) return;
-      isAiEvaluatingTasting.value = true;
-      try {
-        const apiKey = getEffectiveGeminiKey();
-        
-        // 【優化】更具體具建設性的 AI 咖啡大師指導 Prompt
-        const prompt = `你是星巴克資深黑圍裙咖啡大師。夥伴品評了【${tastingForm.value.coffeeName}】，酸度:${getIntensityLabel(tastingForm.value.acidity)}，醇度:${getIntensityLabel(tastingForm.value.body)}，香氣:${tastingForm.value.aroma||'無'}，心得:${tastingForm.value.notes||'無'}。請根據產區風土與處理法進行專業評析，必須具體指出：1. 夥伴風味描述的優點與肯定。2. 能進一步探索或改進的機會點（如沖煮變因）。最後推薦一款星巴克糕點。字數80字內。`;
+    const blackoutDatesList = computed(() => {
+      const data = blackoutDates.value || {};
+      return Object.keys(data).map(d => ({ date: d, reason: data[d] })).sort((a,b) => new Date(a.date) - new Date(b.date));
+    });
 
-        let aiComment = '觀察細膩，能準確掌握該款咖啡的核心酸質與醇度平衡！';
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
-        const resData = await response.json();
-        if (resData.candidates && resData.candidates[0]?.content?.parts[0]?.text) {
-          aiComment = resData.candidates[0].content.parts[0].text.trim();
-        }
-
-        const newNote = {
-          id: Date.now().toString(),
-          authorStaffId: currentPartner.value.id || currentPartner.value._key,
-          coffeeName: tastingForm.value.coffeeName,
-          acidity: tastingForm.value.acidity,
-          body: tastingForm.value.body,
-          aroma: tastingForm.value.aroma || '無特殊標記',
-          notes: tastingForm.value.notes || '無額外備註',
-          aiComment,
-          dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`,
-          timestamp: Date.now()
-        };
-        if (db) await db.ref('sbux/tasting_notes/' + newNote.id).set(newNote);
-        tastingForm.value = { coffeeName: '派克市場烘焙', acidity: 3, body: 3, aroma: '', flavor: '', notes: '' };
-        alert('🎉 Tasting 品評已發布！');
-      } catch (err) {
-        if (err.message === 'SYSTEM_MISSING_API_KEY') alert('⚠️ 系統提示：請聯絡管理員 徐爰坦 至「個人設定」中綁定專屬的 Gemini API Key！');
-        else alert('品評發布失敗，請稍後再試。');
-      } finally {
-        isAiEvaluatingTasting.value = false;
-      }
-    };
-
-    const handleKnowledgeFileUpload = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      isUploadingKnowledge.value = true;
-      try {
-        const apiKey = getEffectiveGeminiKey();
-        let base64Data = '';
-        let mimeType = 'image/jpeg';
-
-        if (file.name.toLowerCase().endsWith('.pdf') || file.type.includes('pdf')) {
-          mimeType = 'application/pdf';
-          base64Data = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (evt) => resolve(evt.target.result.split(',')[1]);
-            reader.readAsDataURL(file);
-          });
-        } else {
-          base64Data = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-              const img = new Image();
-              img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width, height = img.height;
-                const maxSize = 1600;
-                if (width > height && width > maxSize) { height *= maxSize / width; width = maxSize; } 
-                else if (height > maxSize) { width *= maxSize / height; height = maxSize; }
-                canvas.width = width; canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
-              };
-              img.onerror = reject;
-              img.src = evt.target.result;
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-        }
-
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: '你是星巴克咖啡大師。請閱讀圖片或PDF中的咖啡知識，萃取精華筆記。輸出 JSON: {"title":"標題","content":"要點"}' }, { inline_data: { mime_type: mimeType, data: base64Data } }] }],
-            generationConfig: { response_mime_type: "application/json", temperature: 0.2 }
-          })
-        });
-        const json = await response.json();
-        if (json.error) throw new Error(json.error.message);
-
-        if (json.candidates && json.candidates[0]?.content?.parts[0]?.text) {
-          const parsed = JSON.parse(json.candidates[0].content.parts[0].text.trim().replace(/^```json\s*/i, '').replace(/\s*```$/, ''));
-          const todayStr = new Date().toLocaleDateString('zh-TW');
-          await db.ref('sbux/coffeeKnowledge').push().set({
-            title: parsed.title || file.name,
-            content: parsed.content || '無詳細內容',
-            author: currentPartner.value?.name || '值班',
-            role: currentPartner.value?.role || '值班',
-            date: todayStr,
-            createdAt: new Date().toISOString()
-          });
-          alert('🎉 知識辨識完成並已發布！');
-        }
-      } catch (err) {
-        if (err.message === 'SYSTEM_MISSING_API_KEY') alert('⚠️ 系統提示：請聯絡管理員 徐爰坦 至「個人設定」中綁定專屬的 Gemini API Key！');
-        else alert(`❌ AI 辨識失敗：${err.message}`);
-      } finally {
-        isUploadingKnowledge.value = false;
-        e.target.value = '';
-      }
-    };
-
-    const openSettingsModal = () => {
-      settingsModal.value = { show: true, newPassword: '', birthday: currentPartner.value?.birthday || '', geminiApiKey: localStorage.getItem('sbux_custom_gemini_key') || '' };
-    };
-    const saveGeminiApiKey = () => {
-      localStorage.setItem('sbux_custom_gemini_key', settingsModal.value.geminiApiKey.trim());
-      alert('🤖 已儲存 Gemini API Key！');
-    };
-    const saveNewPassword = () => {
-      const p = settingsModal.value.newPassword.trim();
-      if (!p) return alert('請輸入新密碼！');
-      if (db && currentPartner.value) {
-        db.ref('sbux/staff/' + (currentPartner.value._key || currentPartner.value.id) + '/password').set(p);
-        currentPartner.value.password = p;
-        settingsModal.value.newPassword = '';
-        alert('🔑 密碼已修改！');
-      }
-    };
-    const saveBirthday = () => {
-      const b = settingsModal.value.birthday.trim();
-      if (!b) return;
-      if (db && currentPartner.value) {
-        db.ref('sbux/staff/' + (currentPartner.value._key || currentPartner.value.id) + '/birthday').set(b);
-        currentPartner.value.birthday = b;
-        alert('🎂 生日已儲存！');
-      }
-    };
-
-    const blackoutDatesList = computed(() => Object.keys(blackoutDates.value || {}).map(d => ({ date: d, reason: blackoutDates.value[d] })).sort((a,b) => new Date(a.date) - new Date(b.date)));
     const openBlackoutModal = () => { blackoutModal.value = { show: true, form: { date: '', reason: '' } }; };
     const saveBlackoutDate = () => {
       const f = blackoutModal.value.form;
-      if (db && f.date) db.ref('sbux/blackout_dates/' + f.date).set(f.reason || '禁休');
+      if (!f.date) return;
+      if (db) db.ref('sbux/blackout_dates/' + f.date).set(f.reason || '禁休');
       blackoutModal.value.form = { date: '', reason: '' };
       alert(`已將 ${f.date} 設定為禁休日！`);
     };
@@ -2447,29 +2280,205 @@ const app = createApp({
       for (let i = 0; i < firstDay; i++) days.push({ dayNum: '', isCurrentMonth: false, dateStr: '', vacations: [], isBlackout: false, blackoutReason: '' });
       for (let d = 1; d <= totalDays; d++) {
         const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
-        days.push({ dayNum: d, isCurrentMonth: true, dateStr, vacations: vacationList.value.filter(it => it.date === dateStr), isBlackout: !!bMap[dateStr], blackoutReason: bMap[dateStr] || '' });
+        days.push({
+          dayNum: d, isCurrentMonth: true, dateStr, vacations: vacationList.value.filter(it => it.date === dateStr),
+          isBlackout: !!bMap[dateStr], blackoutReason: bMap[dateStr] || ''
+        });
       }
       return days;
     });
 
     const openVacationDetailModal = (day) => {
-      if (day.dateStr) vacationDetailModal.value = { show: true, dateStr: day.dateStr, isBlackout: day.isBlackout, blackoutReason: day.blackoutReason, vacations: day.vacations };
+      if (!day.dateStr) return;
+      vacationDetailModal.value = { show: true, dateStr: day.dateStr, isBlackout: day.isBlackout, blackoutReason: day.blackoutReason, vacations: day.vacations };
     };
+
     const submitVacation = () => {
       const targetSid = isDutyOrAbove.value ? (vacationForm.value.staffId || currentPartner.value?.id || currentPartner.value?._key) : (currentPartner.value?.id || currentPartner.value?._key);
       if (!targetSid || !vacationForm.value.date) return;
       if (blackoutDates.value && blackoutDates.value[vacationForm.value.date]) return alert(`❌ ${vacationForm.value.date} 為門市禁休日！\n原因：${blackoutDates.value[vacationForm.value.date]}`);
       if (vacationForm.value.date < allowedVacationStartStr.value) return alert(`❌ 違反應提早兩週畫假規範！`);
+      
       const id = Date.now().toString();
       if (db) db.ref('sbux/vacations/' + id).set({ id, staffId: targetSid, date: vacationForm.value.date, type: vacationForm.value.type, notes: vacationForm.value.notes });
       vacationForm.value = { staffId: '', date: '', type: '無法排班', notes: '' };
       alert('✅ 畫假成功！');
     };
 
-    // ==================== 【優化版】排班演算法 (嚴格勞基法防呆) ====================
+    // ==================== 🤖 AI 處理模組 ====================
+    const handleAiRuleImageUpload = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      isAiRecognizingRules.value = true;
+      try {
+        const apiKey = getEffectiveGeminiKey();
+        const base64Data = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (evt) => resolve(evt.target.result.split(',')[1]);
+          reader.onerror = (err) => reject(new Error('檔案讀取失敗'));
+          reader.readAsDataURL(file);
+        });
+        
+        const fileType = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+        const promptText = `你是一位專業星巴克門市系統管理員。請仔細閱讀圖片或文件中的下架/品項效期規範，提取食品/原物料品名及其「提前下架天數」。\n嚴格輸出 JSON 陣列格式：[{"keyword":"品項名稱","advance_days":天數數字,"timing":"21:30 閉店前"}]`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }, { inline_data: { mime_type: fileType, data: base64Data } }] }],
+            generationConfig: { temperature: 0.1, response_mime_type: "application/json" }
+          })
+        });
+
+        const json = await response.json();
+        if (json.error) throw new Error(json.error.message);
+
+        if (json.candidates && json.candidates[0]?.content?.parts[0]?.text) {
+          let rawText = json.candidates[0].content.parts[0].text.trim().replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
+          const parsedRules = JSON.parse(rawText);
+
+          if (Array.isArray(parsedRules) && parsedRules.length > 0) {
+            for (const r of parsedRules) {
+              if (r.keyword) {
+                const ruleId = 'rule_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+                if (db) await db.ref('sbux/rules/' + ruleId).set({ id: ruleId, keyword: r.keyword.trim(), advance_days: parseInt(r.advance_days) || 0, timing: r.timing || '21:30 閉店前' });
+              }
+            }
+            alert(`🎉 辨識成功！已成功匯入 ${parsedRules.length} 筆下架標準！`);
+          } else {
+            alert('未能在圖文中辨識出具體的品項與提前下架天數。');
+          }
+        } else {
+          throw new Error('AI 伺服器未回傳有效結果，請確認 API Key。');
+        }
+      } catch (err) {
+        if (err.message === 'SYSTEM_MISSING_API_KEY') alert('⚠️ 請聯絡管理員 徐爰坦 至「個人設定」中綁定專屬的 Gemini API Key！');
+        else alert(`❌ 辨識失敗：${err.message}`);
+      } finally {
+        isAiRecognizingRules.value = false;
+        e.target.value = '';
+      }
+    };
+
+    const submitTastingNote = async () => {
+      if (!currentPartner.value) return;
+      isAiEvaluatingTasting.value = true;
+      try {
+        const apiKey = getEffectiveGeminiKey();
+        const prompt = `你是星巴克咖啡大師。夥伴品評了【${tastingForm.value.coffeeName}】，酸度:${getIntensityLabel(tastingForm.value.acidity)}，醇度:${getIntensityLabel(tastingForm.value.body)}，香氣:${tastingForm.value.aroma||'無'}，心得:${tastingForm.value.notes||'無'}。請根據產區風土與處理法，必須具體指出：1. 優點與肯定 2. 能進一步改進的機會點(如沖煮變因)。最後推薦一款星巴克糕點。字數80字內。`;
+        let aiComment = '觀察細膩，能準確掌握該款咖啡的核心酸質與醇度平衡！';
+        try {
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          });
+          const resData = await response.json();
+          if (resData.candidates && resData.candidates[0]?.content?.parts[0]?.text) aiComment = resData.candidates[0].content.parts[0].text.trim();
+        } catch (e) {}
+
+        const newNote = {
+          id: Date.now().toString(),
+          authorStaffId: currentPartner.value.id || currentPartner.value._key,
+          coffeeName: tastingForm.value.coffeeName, acidity: tastingForm.value.acidity, body: tastingForm.value.body,
+          aroma: tastingForm.value.aroma || '無特殊標記', notes: tastingForm.value.notes || '無額外備註',
+          aiComment, dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`, timestamp: Date.now()
+        };
+        if (db) await db.ref('sbux/tasting_notes/' + newNote.id).set(newNote);
+        tastingForm.value = { coffeeName: '派克市場烘焙', acidity: 3, body: 3, aroma: '', flavor: '', notes: '' };
+        alert('🎉 Tasting 品評已發布！');
+      } catch (err) {
+        if (err.message === 'SYSTEM_MISSING_API_KEY') alert('⚠️ 請綁定 Gemini API Key！');
+        else alert('發布失敗，請稍後再試。');
+      } finally {
+        isAiEvaluatingTasting.value = false;
+      }
+    };
+
+    const submitLattePost = async () => {
+      if (!currentPartner.value || !latteForm.value.photoUrl) return;
+      isAiEvaluating.value = true;
+      try {
+        const apiKey = getEffectiveGeminiKey();
+        const base64Data = latteForm.value.photoUrl.split(',')[1];
+        const mimeType = latteForm.value.photoUrl.split(';')[0].split(':')[1] || 'image/jpeg';
+        const prompt = `你是星巴克世界盃拉花大賽評審。請針對【${latteForm.value.pattern}】作品圖片進行嚴格評鑑。必須具體指出：1. 優點與肯定（如奶泡細緻度） 2. 具體的改進機會點（如收尾切線、流速控制）。給分範圍65~88分。輸出JSON: {"score": 整數, "feedback": "文字"}`;
+
+        let evalScore = 74, evalFeedback = '奶泡質地細緻，收尾切線流速可更穩定。';
+        try {
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }], generationConfig: { response_mime_type: "application/json", temperature: 0.2 } })
+          });
+          const resData = await response.json();
+          if (resData.candidates && resData.candidates[0]?.content?.parts[0]?.text) {
+            const parsed = JSON.parse(resData.candidates[0].content.parts[0].text.trim().replace(/^```json\s*/i, '').replace(/\s*```$/, ''));
+            evalScore = parseInt(parsed.score) || 74; evalFeedback = parsed.feedback || evalFeedback;
+          }
+        } catch (e) {}
+
+        const newPost = {
+          id: Date.now().toString(), authorStaffId: currentPartner.value.id || currentPartner.value._key,
+          partnerName: currentPartner.value.name, pattern: latteForm.value.pattern, photoUrl: latteForm.value.photoUrl,
+          aiScore: evalScore, aiFeedback: evalFeedback, votes: 0, voters: {}, dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`, timestamp: Date.now()
+        };
+        if (db) await db.ref('sbux/latte_posts/' + newPost.id).set(newPost);
+        latteForm.value = { pattern: '心形 (Heart)', photoUrl: '' };
+        alert(`🎉 作品已上傳！AI 評分：${newPost.aiScore} 分！`);
+      } catch (err) {
+        if (err.message === 'SYSTEM_MISSING_API_KEY') alert('⚠️ 請綁定 Gemini API Key！');
+        else alert('上傳失敗。');
+      } finally {
+        isAiEvaluating.value = false;
+      }
+    };
+
+    const handleKnowledgeFileUpload = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      isUploadingKnowledge.value = true;
+      try {
+        const apiKey = getEffectiveGeminiKey();
+        const base64Data = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (evt) => resolve(evt.target.result.split(',')[1]);
+          reader.onerror = (err) => reject(new Error('讀取失敗'));
+          reader.readAsDataURL(file);
+        });
+        const fileType = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: '你是星巴克咖啡大師。請閱讀圖片或PDF中的咖啡知識，萃取精華筆記。輸出 JSON: {"title":"標題","content":"要點"}' }, { inline_data: { mime_type: fileType, data: base64Data } }] }], generationConfig: { response_mime_type: "application/json", temperature: 0.2 } })
+        });
+        const json = await response.json();
+        if (json.error) throw new Error(json.error.message);
+
+        if (json.candidates && json.candidates[0]?.content?.parts[0]?.text) {
+          const parsed = JSON.parse(json.candidates[0].content.parts[0].text.trim().replace(/^```json\s*/i, '').replace(/\s*```$/, ''));
+          const todayStr = new Date().toLocaleDateString('zh-TW');
+          await db.ref('sbux/coffeeKnowledge').push().set({
+            title: parsed.title || file.name, content: parsed.content || '無詳細內容', author: currentPartner.value?.name || '值班',
+            role: currentPartner.value?.role || '值班', date: todayStr, createdAt: new Date().toISOString()
+          });
+          alert('🎉 知識辨識完成並已發布！');
+        }
+      } catch (err) {
+        if (err.message === 'SYSTEM_MISSING_API_KEY') alert('⚠️ 請綁定 Gemini API Key！');
+        else alert(`❌ AI 辨識失敗：${err.message}`);
+      } finally {
+        isUploadingKnowledge.value = false;
+        e.target.value = '';
+      }
+    };
+
+    // ==================== 排班演算法輔助計算 ====================
     const timeToMins = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
     const calculateShiftNetHours = (start, end) => { const rawHours = (timeToMins(end) - timeToMins(start)) / 60; return rawHours > 4.5 ? (rawHours - 0.5) : rawHours; };
     const isDavidWorkDay = (dateStr) => [0, 2, 4, 5, 6].includes(new Date(dateStr).getDay());
+    
     const isStaffAvailableForShift = (staff, dateStr, shiftStart, shiftEnd) => {
       const sid = staff.id || staff._key;
       if (staff.role === '天使夥伴' || staff.nickname === 'David') return false;
@@ -2483,10 +2492,8 @@ const app = createApp({
     };
     const isManagerRole = (role) => ['店經理', '副理', '值班經理', '時薪值班', '值班'].includes(role || '');
 
-    // 跨週 11小時/連六 防呆資料獲取
     const getPriorDayEndMinutes = (staffId, startDateStr) => {
-      const curr = new Date(startDateStr);
-      curr.setDate(curr.getDate() - 1);
+      const curr = new Date(startDateStr); curr.setDate(curr.getDate() - 1);
       const prevDateStr = curr.toISOString().split('T')[0];
       const shift = (scheduledRoster.value || {})[`${staffId}_${prevDateStr}`];
       if (shift) {
@@ -2497,11 +2504,10 @@ const app = createApp({
       return -9999;
     };
     const getPriorConsecutiveWorkDays = (staffId, startDateStr) => {
-      let count = 0;
-      let curr = new Date(startDateStr);
+      let count = 0; let curr = new Date(startDateStr);
       for (let i = 1; i <= 6; i++) {
-        const prev = new Date(curr); prev.setDate(curr.getDate() - i);
-        if ((scheduledRoster.value || {})[`${staffId}_${prev.toISOString().split('T')[0]}`]) count++; else break;
+        const prevDate = new Date(curr); prevDate.setDate(curr.getDate() - i);
+        if ((scheduledRoster.value || {})[`${staffId}_${prevDate.toISOString().split('T')[0]}`]) count++; else break;
       }
       return count;
     };
@@ -2512,7 +2518,7 @@ const app = createApp({
       let total = 0;
       for (const k in (scheduledRoster.value || {})) {
         if (k.startsWith(staffId + '_')) {
-          const dStr = k.split('_')[1], curr = new Date(dStr);
+          const dStr = k.split('_')[1]; const curr = new Date(dStr);
           if (curr >= startDate && curr <= endDate) {
             const item = scheduledRoster.value[k];
             if (typeof item === 'object' && item.hours) total += Number(item.hours);
@@ -2522,6 +2528,7 @@ const app = createApp({
       return total;
     };
 
+    // 🌟 智慧預排總演算法
     const generateAiRoster = () => {
       if (!scheduleStartDate.value || !scheduleEndDate.value) return alert('請先設定排班範圍！');
       const dates = targetRangeDates.value;
@@ -2532,125 +2539,200 @@ const app = createApp({
       const schedulePlan = [], warnings = [], staffWorkTracker = {};
       allStaff.forEach(s => {
         const sid = s.id || s._key;
-        staffWorkTracker[sid] = { 
-          weeklyHours: 0, daysWorked: 0, 
-          lastEndMins: getPriorDayEndMinutes(sid, scheduleStartDate.value), 
-          consecutiveDays: getPriorConsecutiveWorkDays(sid, scheduleStartDate.value), 
-          monthlyAccum: getWorkMonthAccumulatedHours(sid, scheduleStartDate.value) 
+        staffWorkTracker[sid] = {
+          weeklyHours: 0, daysWorked: 0,
+          lastEndMins: getPriorDayEndMinutes(sid, scheduleStartDate.value),
+          consecutiveDays: getPriorConsecutiveWorkDays(sid, scheduleStartDate.value),
+          monthlyAccum: getWorkMonthAccumulatedHours(sid, scheduleStartDate.value)
         };
       });
 
       dates.forEach(dObj => {
         const dateStr = dObj.dateStr, d = new Date(dateStr), dayOfWeek = d.getDay();
         const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6), dayIdx = (d.getDay() + 6) % 7;
-        const dayShiftSlots = [ { name: "早班(開店1)", start: "06:30", end: "15:00", requiresManager: true }, { name: "早班(開店2)", start: "06:30", end: "15:00", requiresManager: false } ];
+
+        const dayShiftSlots = [
+          { name: "早班(開店1)", start: "06:30", end: "15:00", requiresManager: true },
+          { name: "早班(開店2)", start: "06:30", end: "15:00", requiresManager: false }
+        ];
+
         let midShiftIndex = -1;
-        if (!isWeekend) { midShiftIndex = dayShiftSlots.length; dayShiftSlots.push({ name: "中班", start: "08:30", end: "17:30", requiresManager: false, isMidShift: true }); } 
-        else { dayShiftSlots.push({ name: "中班1", start: "08:00", end: "15:00", requiresManager: false }); midShiftIndex = dayShiftSlots.length; dayShiftSlots.push({ name: "中班2", start: "10:30", end: "17:30", requiresManager: false, isMidShift: true }); }
-        
+        if (!isWeekend) {
+          midShiftIndex = dayShiftSlots.length;
+          dayShiftSlots.push({ name: "中班", start: "08:30", end: "17:30", requiresManager: false, isMidShift: true });
+        } else {
+          dayShiftSlots.push({ name: "中班1", start: "08:00", end: "15:00", requiresManager: false });
+          midShiftIndex = dayShiftSlots.length;
+          dayShiftSlots.push({ name: "中班2", start: "10:30", end: "17:30", requiresManager: false, isMidShift: true });
+        }
+
         const eveningSlotIndices = [];
         eveningSlotIndices.push(dayShiftSlots.length); dayShiftSlots.push({ name: "晚班(收店1)", start: "14:00", end: "22:30", requiresManager: true });
         eveningSlotIndices.push(dayShiftSlots.length); dayShiftSlots.push({ name: "晚班(收店2)", start: "14:00", end: "22:30", requiresManager: false });
         eveningSlotIndices.push(dayShiftSlots.length); dayShiftSlots.push({ name: "晚班(收店3)", start: "14:00", end: "22:30", requiresManager: false });
 
-        const assignedToday = new Set(), assignedShifts = [];
+        const assignedToday = new Set();
+        const assignedShifts = [];
 
         dayShiftSlots.forEach((slot, sIndex) => {
           let slotStart = slot.start, slotEnd = slot.end;
+
           let candidates = allStaff.filter(staff => {
             const sid = staff.id || staff._key;
             if (assignedToday.has(sid)) return false;
             const tracker = staffWorkTracker[sid];
             if (tracker.consecutiveDays >= 6 || tracker.daysWorked >= 6) return false;
-            
+
             const isFT = isTrueFullTime(staff.role);
             if (isFT && (tracker.weeklyHours >= 40 || (tracker.daysWorked >= 5 && tracker.weeklyHours >= 37))) {
-              if (allStaff.some(o => !isTrueFullTime(o.role) && !assignedToday.has(o.id || o._key) && isStaffAvailableForShift(o, dateStr, slotStart, slotEnd) && staffWorkTracker[o.id||o._key].daysWorked < 6)) return false;
+              const otherAvailablePT = allStaff.some(other => {
+                const oSid = other.id || other._key;
+                return !isTrueFullTime(other.role) && !assignedToday.has(oSid) && isStaffAvailableForShift(other, dateStr, slotStart, slotEnd) && staffWorkTracker[oSid].daysWorked < 6;
+              });
+              if (otherAvailablePT) return false;
             }
+
             if (isStaffAvailableForShift(staff, dateStr, slotStart, slotEnd)) {
-              if (tracker.lastEndMins > 0 && ((24 * 60 - tracker.lastEndMins) + timeToMins(slotStart)) < 11 * 60) return false;
+              if (tracker.lastEndMins > 0) {
+                const restMins = (24 * 60 - tracker.lastEndMins) + timeToMins(slotStart);
+                if (restMins < 11 * 60) return false;
+              }
               return true;
             }
+
             if (eveningSlotIndices.includes(sIndex) && staff.availability) {
               const av = staff.availability['day_' + dayIdx];
-              if (av && av.type === 'custom' && timeToMins(av.start) <= timeToMins("19:00") && timeToMins(av.end) >= timeToMins("22:30")) {
-                if (tracker.lastEndMins > 0 && ((24 * 60 - tracker.lastEndMins) + timeToMins(av.start)) < 11 * 60) return false;
-                return true;
+              if (av && av.type === 'custom') {
+                const avStartMins = timeToMins(av.start), avEndMins = timeToMins(av.end);
+                if (avStartMins <= timeToMins("19:00") && avEndMins >= timeToMins("22:30")) {
+                  if (tracker.lastEndMins > 0) {
+                    const restMins = (24 * 60 - tracker.lastEndMins) + avStartMins;
+                    if (restMins < 11 * 60) return false;
+                  }
+                  return true;
+                }
               }
             }
             return false;
           });
 
           let pickedStaff = null;
+
           if (slot.requiresManager) {
             let managerCandidates = candidates.filter(s => isManagerRole(s.role));
-            if (slot.name.includes('早') && selectedWeeklyOpenManagers.value.length > 0) pickedStaff = managerCandidates.find(s => selectedWeeklyOpenManagers.value.includes(s.id || s._key));
-            else if (slot.name.includes('晚') && selectedWeeklyCloseManagers.value.length > 0) pickedStaff = managerCandidates.find(s => selectedWeeklyCloseManagers.value.includes(s.id || s._key));
-            
+            if (slot.name.includes('早') && selectedWeeklyOpenManagers.value.length > 0) {
+              pickedStaff = managerCandidates.find(s => selectedWeeklyOpenManagers.value.includes(s.id || s._key));
+            } else if (slot.name.includes('晚') && selectedWeeklyCloseManagers.value.length > 0) {
+              pickedStaff = managerCandidates.find(s => selectedWeeklyCloseManagers.value.includes(s.id || s._key));
+            }
+
             if (!pickedStaff && managerCandidates.length > 0) {
               managerCandidates.sort((a, b) => {
-                const aFT = isTrueFullTime(a.role), bFT = isTrueFullTime(b.role);
-                const aH = staffWorkTracker[a.id || a._key].weeklyHours, bH = staffWorkTracker[b.id || b._key].weeklyHours;
-                if (aFT && aH < 37 && (!bFT || bH >= 37)) return -1;
-                if (bFT && bH < 37 && (!aFT || aH >= 37)) return 1;
-                return aH - bH;
+                const aIsFT = isTrueFullTime(a.role), bIsFT = isTrueFullTime(b.role);
+                const aHours = staffWorkTracker[a.id || a._key].weeklyHours, bHours = staffWorkTracker[b.id || b._key].weeklyHours;
+                const aDays = staffWorkTracker[a.id || a._key].daysWorked, bDays = staffWorkTracker[b.id || b._key].daysWorked;
+                if (aIsFT && (aHours < 37 || aDays < 5) && (!bIsFT || (bHours >= 37 && bDays >= 5))) return -1;
+                if (bIsFT && (bHours < 37 || bDays < 5) && (!aIsFT || (aHours >= 37 && aDays >= 5))) return 1;
+                const aCanFull = isStaffAvailableForShift(a, dateStr, slotStart, slotEnd), bCanFull = isStaffAvailableForShift(b, dateStr, slotStart, slotEnd);
+                if (aCanFull !== bCanFull) return bCanFull - aCanFull;
+                return aHours - bHours;
               });
               pickedStaff = managerCandidates[0];
             }
-            if (!pickedStaff) warnings.push(`${dateStr} ${slot.name} 缺少管理職！`);
+            if (!pickedStaff) warnings.push(`${dateStr} ${slot.name} 缺少管理職 1 名！`);
           }
 
           if (!pickedStaff && candidates.length > 0) {
             candidates.sort((a, b) => {
-              const aFT = isTrueFullTime(a.role), bFT = isTrueFullTime(b.role);
-              const aH = staffWorkTracker[a.id || a._key].weeklyHours, bH = staffWorkTracker[b.id || b._key].weeklyHours;
-              const aM = staffWorkTracker[a.id || a._key].monthlyAccum, bM = staffWorkTracker[b.id || b._key].monthlyAccum;
-              
-              if (aFT && aH < 37 && (!bFT || bH >= 37)) return -1;
-              if (bFT && bH < 37 && (!aFT || aH >= 37)) return 1;
-              
-              // PT優先順序：保底50小時
-              if (!aFT && !bFT) {
-                if (aH < 16 && bH >= 16) return -1;
-                if (bH < 16 && aH >= 16) return 1;
-                if (aM < 50 && bM >= 50) return -1;
-                if (bM < 50 && aM >= 50) return 1;
-                if (aM < 50 && bM < 50) return aM - bM;
+              const aIsFT = isTrueFullTime(a.role), bIsFT = isTrueFullTime(b.role);
+              const aHours = staffWorkTracker[a.id || a._key].weeklyHours, bHours = staffWorkTracker[b.id || b._key].weeklyHours;
+              const aDays = staffWorkTracker[a.id || a._key].daysWorked, bDays = staffWorkTracker[b.id || b._key].daysWorked;
+              const aMonth = staffWorkTracker[a.id || a._key].monthlyAccum, bMonth = staffWorkTracker[b.id || b._key].monthlyAccum;
+
+              if (aIsFT && (aHours < 37 || aDays < 5) && (!bIsFT || (bHours >= 37 && bDays >= 5))) return -1;
+              if (bIsFT && (bHours < 37 || bDays < 5) && (!aIsFT || (aHours >= 37 && aDays >= 5))) return 1;
+
+              if (!aIsFT && !bIsFT) {
+                if (aHours < 16 && bHours >= 16) return -1;
+                if (bHours < 16 && aHours >= 16) return 1;
+                if (aMonth < 50 && bMonth < 50) {
+                  if (Math.abs(aMonth - bMonth) > 3) return aMonth - bMonth;
+                }
+                if (aMonth < 50 && bMonth >= 50) return -1;
+                if (bMonth < 50 && aMonth >= 50) return 1;
               }
-              
-              const aCan = isStaffAvailableForShift(a, dateStr, slotStart, slotEnd), bCan = isStaffAvailableForShift(b, dateStr, slotStart, slotEnd);
-              if (aCan !== bCan) return bCan - aCan;
-              return aH - bH;
+
+              const aCanFull = isStaffAvailableForShift(a, dateStr, slotStart, slotEnd), bCanFull = isStaffAvailableForShift(b, dateStr, slotStart, slotEnd);
+              if (aCanFull !== bCanFull) return bCanFull - aCanFull;
+              return aHours - bHours;
             });
             pickedStaff = candidates[0];
           }
 
           let actualStart = slotStart;
-          if (pickedStaff && eveningSlotIndices.includes(sIndex) && !isStaffAvailableForShift(pickedStaff, dateStr, "14:00", "22:30")) {
-            const customAv = pickedStaff.availability?.['day_' + dayIdx];
-            if (customAv && customAv.type === 'custom' && timeToMins(customAv.start) > timeToMins("14:00")) actualStart = customAv.start;
+          if (pickedStaff && eveningSlotIndices.includes(sIndex)) {
+            if (!isStaffAvailableForShift(pickedStaff, dateStr, "14:00", "22:30")) {
+              if (pickedStaff.availability && pickedStaff.availability['day_' + dayIdx]) {
+                const customAv = pickedStaff.availability['day_' + dayIdx];
+                if (customAv.type === 'custom' && timeToMins(customAv.start) > timeToMins("14:00")) {
+                  actualStart = customAv.start;
+                }
+              }
+            }
           }
 
           const slotEndMins = timeToMins(slotEnd), netHours = calculateShiftNetHours(actualStart, slotEnd);
+
           if (pickedStaff) {
             const sid = pickedStaff.id || pickedStaff._key;
             assignedToday.add(sid);
-            staffWorkTracker[sid].lastEndMins = slotEndMins;
-            staffWorkTracker[sid].consecutiveDays += 1;
-            staffWorkTracker[sid].daysWorked += 1;
-            staffWorkTracker[sid].weeklyHours += netHours;
-            staffWorkTracker[sid].monthlyAccum += netHours;
+            const tracker = staffWorkTracker[sid];
+            tracker.lastEndMins = slotEndMins; tracker.consecutiveDays += 1; tracker.daysWorked += 1;
+            tracker.weeklyHours += netHours; tracker.monthlyAccum += netHours;
 
             assignedShifts.push({
               shiftName: slot.name, time: `${actualStart}-${slotEnd}`, startMins: timeToMins(actualStart), endMins: slotEndMins,
-              hours: netHours, isOvertime: netHours > 8, isSixthDay: (staffWorkTracker[sid].daysWorked === 6),
+              hours: netHours, isOvertime: netHours > 8, isSixthDay: (tracker.daysWorked === 6 || tracker.consecutiveDays === 6),
               staffId: sid, staffName: `${pickedStaff.name} (${pickedStaff.nickname})`, role: pickedStaff.role
             });
           } else {
-            warnings.push(`${dateStr} ${slot.name} 缺額！`);
-            assignedShifts.push({ shiftName: slot.name, time: `${slotStart}-${slotEnd}`, hours: netHours, staffId: null, staffName: "缺額", role: "缺額" });
+            warnings.push(`${dateStr} ${slot.name} 缺少夥伴 1 名！`);
+            assignedShifts.push({
+              shiftName: slot.name, time: `${slotStart}-${slotEnd}`, startMins: timeToMins(slotStart), endMins: slotEndMins,
+              hours: netHours, isOvertime: false, isSixthDay: false, staffId: null, staffName: "人力缺額", role: "缺額"
+            });
           }
         });
+
+        if (midShiftIndex >= 0 && assignedShifts[midShiftIndex] && assignedShifts[midShiftIndex].staffId) {
+          const midShiftItem = assignedShifts[midShiftIndex];
+          const eveningShifts = assignedShifts.filter((sh, idx) => eveningSlotIndices.includes(idx) && sh.staffId);
+          const presentAt1730 = eveningShifts.filter(sh => sh.startMins <= timeToMins("17:30")).length;
+          
+          if (presentAt1730 < 3 && eveningShifts.length > 0) {
+            const lateArrivalMins = Math.max(...eveningShifts.map(sh => sh.startMins));
+            if (lateArrivalMins > timeToMins("17:30")) {
+              const h = Math.floor(lateArrivalMins / 60).toString().padStart(2, '0');
+              const m = (lateArrivalMins % 60).toString().padStart(2, '0');
+              const newMidEnd = `${h}:${m}`;
+              
+              const mStaff = allStaff.find(s => (s.id || s._key) === midShiftItem.staffId);
+              let midCanExtend = true;
+              if (mStaff && mStaff.availability) {
+                const av = mStaff.availability['day_' + dayIdx];
+                if (av && av.type === 'custom' && timeToMins(av.end) < lateArrivalMins) midCanExtend = false;
+              }
+              if (midCanExtend) {
+                const oldHours = midShiftItem.hours, newNet = calculateShiftNetHours("08:30", newMidEnd);
+                midShiftItem.time = `08:30-${newMidEnd}`; midShiftItem.hours = newNet; midShiftItem.endMins = lateArrivalMins;
+                const sid = midShiftItem.staffId;
+                staffWorkTracker[sid].weeklyHours += (newNet - oldHours);
+                staffWorkTracker[sid].monthlyAccum += (newNet - oldHours);
+                staffWorkTracker[sid].lastEndMins = lateArrivalMins;
+              }
+            }
+          }
+        }
 
         allStaff.forEach(s => {
           const sid = s.id || s._key;
@@ -2658,36 +2740,60 @@ const app = createApp({
         });
         schedulePlan.push({ dateStr, weekday: dObj.weekday, isWeekend, shifts: assignedShifts });
       });
-
       aiRosterModal.value = { show: true, result: schedulePlan, warnings };
     };
 
     const applyAiRosterToSchedule = () => {
+      const plan = aiRosterModal.value.result;
       const newRosterMap = { ...(scheduledRoster.value || {}) };
-      aiRosterModal.value.result.forEach(day => {
+      plan.forEach(day => {
         day.shifts.forEach(shift => {
-          if (shift.staffId) newRosterMap[`${shift.staffId}_${day.dateStr}`] = { shiftName: shift.shiftName, time: shift.time, hours: shift.hours, isOvertime: shift.isOvertime, isSixthDay: shift.isSixthDay };
+          if (shift.staffId) {
+            newRosterMap[`${shift.staffId}_${day.dateStr}`] = {
+              shiftName: shift.shiftName, time: shift.time, hours: shift.hours, isOvertime: shift.isOvertime, isSixthDay: shift.isSixthDay
+            };
+          }
         });
       });
       if (db) db.ref('sbux/scheduled_roster').set(newRosterMap);
-      aiRosterModal.value.show = false; printTargetMode.value = 'ai'; alert('🎉 預排班表已套用！');
+      aiRosterModal.value.show = false; printTargetMode.value = 'ai'; alert('🎉 預排班表已套用更新！');
     };
 
     const clearScheduledRoster = () => {
-      if (confirm('確定要清空預排班表紀錄嗎？') && db) { db.ref('sbux/scheduled_roster').remove(); scheduledRoster.value = {}; alert('🗑️ 已清除！'); }
+      if (confirm('確定要清空已套用的預排班表紀錄嗎？\n清空後班表將還原為空白手寫狀態。')) {
+        if (db) db.ref('sbux/scheduled_roster').remove();
+        scheduledRoster.value = {}; alert('🗑️ 已成功清除所有預排班表紀錄！');
+      }
     };
 
-    const getScheduledShiftObj = (staff, dateStr) => (scheduledRoster.value || {})[`${staff.id || staff._key}_${dateStr}`] || null;
-    const getScheduledShiftText = (staff, dateStr) => { const obj = getScheduledShiftObj(staff, dateStr); return obj ? (typeof obj === 'string' ? obj : `${obj.shiftName} ${obj.time}`) : ''; };
-    const isOvertimeShift = (staff, dateStr) => getScheduledShiftObj(staff, dateStr)?.isOvertime;
-    const isConsecutiveSixthDay = (staff, dateStr) => getScheduledShiftObj(staff, dateStr)?.isSixthDay;
+    const getScheduledShiftObj = (staff, dateStr) => {
+      const sid = staff.id || staff._key;
+      return (scheduledRoster.value || {})[`${sid}_${dateStr}`] || null;
+    };
+    const getScheduledShiftText = (staff, dateStr) => {
+      const obj = getScheduledShiftObj(staff, dateStr);
+      if (!obj) return ''; if (typeof obj === 'string') return obj; return `${obj.shiftName} ${obj.time}`;
+    };
+    const isOvertimeShift = (staff, dateStr) => {
+      const obj = getScheduledShiftObj(staff, dateStr); return obj && obj.isOvertime;
+    };
+    const isConsecutiveSixthDay = (staff, dateStr) => {
+      const obj = getScheduledShiftObj(staff, dateStr); return obj && obj.isSixthDay;
+    };
 
     const calculateWeeklyStaffHours = (staff) => {
-      if (staff.role === '天使夥伴' || staff.nickname === 'David') return (targetRangeDates.value.filter(d => isDavidWorkDay(d.dateStr)).length * 8.5).toFixed(1);
+      const sid = staff.id || staff._key;
+      if (staff.role === '天使夥伴' || staff.nickname === 'David') {
+        let cnt = 0; targetRangeDates.value.forEach(d => { if (isDavidWorkDay(d.dateStr)) cnt++; });
+        return (cnt * 8.5).toFixed(1);
+      }
       let total = 0;
       targetRangeDates.value.forEach(d => {
-        const item = (scheduledRoster.value || {})[`${staff.id || staff._key}_${d.dateStr}`];
-        if (item) { if (item.hours) total += Number(item.hours); else if (typeof item === 'string') { const match = item.match(/(\d{2}:\d{2})-(\d{2}:\d{2})/); if (match) total += calculateShiftNetHours(match[1], match[2]); } }
+        const item = (scheduledRoster.value || {})[`${sid}_${d.dateStr}`];
+        if (item) {
+          if (typeof item === 'object' && item.hours) total += Number(item.hours);
+          else if (typeof item === 'string') { const match = item.match(/(\d{2}:\d{2})-(\d{2}:\d{2})/); if (match) total += calculateShiftNetHours(match[1], match[2]); }
+        }
       });
       return total.toFixed(1);
     };
@@ -2696,18 +2802,21 @@ const app = createApp({
 
     const hasVoted = (postId) => {
       const post = lattePosts.value.find(p => p.id === postId || p._key === postId);
-      return !!(post && post.voters && currentPartner.value && post.voters[currentPartner.value.empId]);
+      if (!post || !post.voters || !currentPartner.value) return false;
+      return !!post.voters[currentPartner.value.empId];
     };
     const voteLattePost = (post) => {
-      if (!currentPartner.value || hasVoted(post.id || post._key)) return;
+      if (!currentPartner.value) return;
+      const targetId = post.id || post._key;
+      if (hasVoted(targetId)) return alert('您已經投過這張作品囉！');
       if (db) {
-        db.ref('sbux/latte_posts/' + (post.id || post._key) + '/votes').set((post.votes || 0) + 1);
-        db.ref('sbux/latte_posts/' + (post.id || post._key) + '/voters/' + currentPartner.value.empId).set(true);
+        db.ref('sbux/latte_posts/' + targetId + '/votes').set((post.votes || 0) + 1);
+        db.ref('sbux/latte_posts/' + targetId + '/voters/' + currentPartner.value.empId).set(true);
         alert('❤️ 投票成功！');
       }
     };
-    const deleteLattePost = async (postId) => { if (confirm('確定刪除拉花作品？') && db) await db.ref('sbux/latte_posts/' + postId).remove(); };
-    const deleteTastingNote = async (noteId) => { if (confirm('確定刪除品評心得？') && db) await db.ref('sbux/tasting_notes/' + noteId).remove(); };
+    const deleteLattePost = async (postId) => { if (confirm('確定要刪除這幅拉花作品嗎？') && db) { await db.ref('sbux/latte_posts/' + postId).remove(); alert('🗑️ 已刪除！'); } };
+    const deleteTastingNote = async (noteId) => { if (confirm('確定要刪除此品評心得嗎？') && db) { await db.ref('sbux/tasting_notes/' + noteId).remove(); alert('🗑️ 已刪除！'); } };
 
     const activeCommentPostId = ref(null), newCommentText = ref('');
     const toggleComments = (postId) => { activeCommentPostId.value = activeCommentPostId.value === postId ? null : postId; newCommentText.value = ''; };
@@ -2715,36 +2824,42 @@ const app = createApp({
     const submitComment = (post) => {
       const text = newCommentText.value.trim();
       if (!text || !currentPartner.value) return;
-      const commentId = Date.now().toString();
-      if (db) db.ref('sbux/latte_posts/' + (post.id || post._key) + '/comments/' + commentId).set({
-        id: commentId, authorStaffId: currentPartner.value.id || currentPartner.value._key, authorName: `${currentPartner.value.name} (${currentPartner.value.nickname})`,
-        text: text, dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`, timestamp: Date.now()
-      });
+      const commentId = Date.now().toString(), targetId = post.id || post._key;
+      const newComment = { id: commentId, authorStaffId: currentPartner.value.id || currentPartner.value._key, authorName: `${currentPartner.value.name} (${currentPartner.value.nickname})`, text: text, dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`, timestamp: Date.now() };
+      if (db) db.ref('sbux/latte_posts/' + targetId + '/comments/' + commentId).set(newComment);
       newCommentText.value = '';
     };
 
     const publishKnowledge = async () => {
       if (!newKnowledgeTitle.value || !newKnowledgeContent.value) return;
-      if (db) await db.ref('sbux/coffeeKnowledge').push().set({
+      const todayStr = new Date().toLocaleDateString('zh-TW');
+      await db.ref('sbux/coffeeKnowledge').push().set({
         title: newKnowledgeTitle.value.trim(), content: newKnowledgeContent.value.trim(),
-        author: currentPartner.value?.name || '值班', role: currentPartner.value?.role || '值班',
-        date: new Date().toLocaleDateString('zh-TW'), createdAt: new Date().toISOString()
+        author: currentPartner.value?.name || '值班', role: currentPartner.value?.role || '值班', date: todayStr, createdAt: new Date().toISOString()
       });
-      newKnowledgeTitle.value = ''; newKnowledgeContent.value = ''; alert('🎉 知識發布成功！');
+      newKnowledgeTitle.value = ''; newKnowledgeContent.value = ''; alert('🎉 知識已發布！');
     };
-    const deleteKnowledge = async (id) => { if (confirm('確定刪除知識？') && db) await db.ref('sbux/coffeeKnowledge/' + id).remove(); };
+    const deleteKnowledge = async (id) => { if (confirm('確定刪除這篇咖啡知識嗎？') && db) await db.ref('sbux/coffeeKnowledge/' + id).remove(); };
 
     const startWeeklyQuiz = () => {
       if (!currentPartner.value) return alert('請先登入！');
-      if (myQuizResult.value) { userAnswers.value = [...myQuizResult.value.answers]; quizScore.value = myQuizResult.value.score; quizSubmitted.value = true; } 
-      else { userAnswers.value = [null, null, null, null, null]; quizSubmitted.value = false; quizScore.value = 0; }
+      if (myQuizResult.value) {
+        userAnswers.value = [...myQuizResult.value.answers]; quizScore.value = myQuizResult.value.score; quizSubmitted.value = true;
+      } else {
+        userAnswers.value = [null, null, null, null, null]; quizSubmitted.value = false; quizScore.value = 0;
+      }
       showQuizModal.value = true;
     };
+
     const submitWeeklyQuiz = async () => {
       if (userAnswers.value.some(a => a === null)) return alert('還有題目尚未作答！');
-      let score = 0; currentQuizQuestions.value.forEach((q, idx) => { if (userAnswers.value[idx] === q.correct) score++; });
+      let score = 0;
+      currentQuizQuestions.value.forEach((q, idx) => { if (userAnswers.value[idx] === q.correct) score++; });
       quizScore.value = score; quizSubmitted.value = true;
-      if (db) await db.ref(`sbux/quizRecords/${currentWeekQuizId.value}/${currentPartner.value.name}`).set({ partnerName: currentPartner.value.name, score, answers: userAnswers.value, submittedAt: new Date().toISOString() });
+      const partnerName = currentPartner.value.name;
+      await db.ref(`sbux/quizRecords/${currentWeekQuizId.value}/${partnerName}`).set({
+        partnerName, score, answers: userAnswers.value, submittedAt: new Date().toISOString()
+      });
       alert(`🎉 測驗完成！得分：${score} / 5 分`);
     };
 
@@ -2757,7 +2872,10 @@ const app = createApp({
       addRuleModal.value.show = false; alert(`已建立【${f.keyword}】！`);
     };
     const deleteRule = (id) => { if (confirm('確定移除？') && db) db.ref('sbux/rules/' + id).remove(); };
-    const applyRuleToForm = (ruleId) => { const found = rules.value.find(r => r.id === ruleId); if (found) { intakeForm.value.itemName = found.keyword; intakeForm.value.advanceDays = found.advance_days; } };
+    const applyRuleToForm = (ruleId) => {
+      const found = rules.value.find(r => r.id === ruleId);
+      if (found) { intakeForm.value.itemName = found.keyword; intakeForm.value.advanceDays = found.advance_days; }
+    };
 
     const coffeeSearchQuery = ref('');
     const filteredCoffeeBeans = computed(() => {
@@ -2767,7 +2885,11 @@ const app = createApp({
     });
 
     const tastingForm = ref({ coffeeName: '派克市場烘焙', acidity: 3, body: 3, aroma: '', flavor: '', notes: '' });
-    const getIntensityLabel = (val) => ({ 1: '1 (極輕)', 2: '2 (輕柔)', 3: '3 (適中)', 4: '4 (明亮)', 5: '5 (飽滿)' }[val] || '3 (適中)');
+    const getIntensityLabel = (val) => {
+      const labels = { 1: '1 (極輕)', 2: '2 (輕柔)', 3: '3 (適中)', 4: '4 (明亮)', 5: '5 (飽滿)' };
+      return labels[val] || '3 (適中)';
+    };
+
     const weeklyLattePosts = computed(() => [...lattePosts.value].sort((a,b) => b.timestamp - a.timestamp));
 
     const openCreateAlbumModal = () => { createAlbumModal.value = { show: true, name: '' }; };
@@ -2778,26 +2900,44 @@ const app = createApp({
       selectedAlbum.value = name; createAlbumModal.value.show = false;
     };
     const deleteAlbum = (albumName) => {
-      if (confirm(`確定刪除相簿【${albumName}】？`)) { customAlbums.value = customAlbums.value.filter(a => a !== albumName); if (db) db.ref('sbux/custom_albums').set(customAlbums.value); if (selectedAlbum.value === albumName) selectedAlbum.value = 'all'; }
+      if (confirm(`確定刪除相簿【${albumName}】？`)) {
+        customAlbums.value = customAlbums.value.filter(a => a !== albumName);
+        if (db) db.ref('sbux/custom_albums').set(customAlbums.value);
+        if (selectedAlbum.value === albumName) selectedAlbum.value = 'all';
+      }
     };
+
     const handleStorePhotoUpload = (e) => {
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (evt) => {
-        if (db) db.ref('sbux/store_photos/' + Date.now().toString()).set({ id: Date.now().toString(), album: selectedAlbum.value === 'all' ? '一般門市相簿' : selectedAlbum.value, url: evt.target.result, dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`, timestamp: Date.now() });
+        const photoItem = {
+          id: Date.now().toString(), album: selectedAlbum.value === 'all' ? '一般門市相簿' : selectedAlbum.value,
+          url: evt.target.result, dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`, timestamp: Date.now()
+        };
+        if (db) db.ref('sbux/store_photos/' + photoItem.id).set(photoItem);
         alert('照片已上傳！');
       };
       reader.readAsDataURL(file);
     };
+
     const deleteStorePhoto = (id) => { if (confirm('確定刪除？') && db) db.ref('sbux/store_photos/' + id).remove(); };
-    const filteredStorePhotos = computed(() => selectedAlbum.value === 'all' ? storePhotos.value : storePhotos.value.filter(p => p.album === selectedAlbum.value));
+
+    const filteredStorePhotos = computed(() => {
+      if (selectedAlbum.value === 'all') return storePhotos.value;
+      return storePhotos.value.filter(p => p.album === selectedAlbum.value);
+    });
 
     const openBravoModal = () => { bravoModal.value = { show: true, form: { targetStaffId: '', message: '' } }; };
     const submitBravoCard = () => {
       const f = bravoModal.value.form;
       if (!currentPartner.value || !f.targetStaffId || !f.message) return;
-      if (db) db.ref('sbux/bravo_cards/' + Date.now().toString()).set({ id: Date.now().toString(), senderStaffId: currentPartner.value.id || currentPartner.value._key, targetStaffId: f.targetStaffId, message: f.message, dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`, timestamp: Date.now() });
+      const newCard = {
+        id: Date.now().toString(), senderStaffId: currentPartner.value.id || currentPartner.value._key,
+        targetStaffId: f.targetStaffId, message: f.message, dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`, timestamp: Date.now()
+      };
+      if (db) db.ref('sbux/bravo_cards/' + newCard.id).set(newCard);
       bravoModal.value.show = false; alert('Bravo 感謝小卡已貼上！');
     };
 
@@ -2807,27 +2947,48 @@ const app = createApp({
       if (!q) return materials.value;
       return materials.value.filter(m => (m.code && String(m.code).toLowerCase().includes(q)) || (m.name && String(m.name).toLowerCase().includes(q)));
     });
+
     const calculateOpenTime = (mat) => {
-      const now = new Date(); let target = new Date(now.getTime()), hours = parseInt(mat.hours) || 0, days = parseInt(mat.days) || 0;
+      const now = new Date();
+      let target = new Date(now.getTime());
+      let hours = parseInt(mat.hours) || 0;
+      let days = parseInt(mat.days) || 0;
       if ((mat.code === 'MO' || (mat.name && mat.name.includes('摩卡'))) && hours === 0 && days === 0) hours = 24;
+
       let isAdjusted = false, finalTiming = '';
       if (hours > 0) {
         target.setTime(target.getTime() + hours * 3600 * 1000);
-        const totalEndMinutes = target.getHours() * 60 + target.getMinutes();
+        const endHour = target.getHours(), endMin = target.getMinutes();
+        const totalEndMinutes = endHour * 60 + endMin;
+
         if (totalEndMinutes >= 1290 || totalEndMinutes < 420) {
-          isAdjusted = true; if (totalEndMinutes < 420) target.setDate(target.getDate() - 1);
+          isAdjusted = true;
+          if (totalEndMinutes < 420) target.setDate(target.getDate() - 1);
           target.setHours(21, 30, 0, 0); finalTiming = '21:30 閉店前報廢';
-        } else finalTiming = `${target.getHours().toString().padStart(2, '0')}:${target.getMinutes().toString().padStart(2, '0')}`;
-      } else if (days > 0) { target.setDate(target.getDate() + days); target.setHours(21, 30, 0, 0); finalTiming = `21:30 閉店前 (D+${days})`; } 
-      else { target.setHours(21, 30, 0, 0); finalTiming = '21:30 閉店前'; }
-      calcModal.value = { show: true, item: mat, targetTimeStr: `應於 ${target.getFullYear()}年${(target.getMonth() + 1).toString().padStart(2, '0')}月${target.getDate().toString().padStart(2, '0')}日 ${finalTiming} EXP`, pullDate: `${target.getFullYear()}-${(target.getMonth() + 1).toString().padStart(2, '0')}-${target.getDate().toString().padStart(2, '0')}`, timing: finalTiming, isAdjustedForClose: isAdjusted };
+        } else {
+          finalTiming = `${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`;
+        }
+      } else if (days > 0) {
+        target.setDate(target.getDate() + days); target.setHours(21, 30, 0, 0); finalTiming = `21:30 閉店前 (D+${days})`;
+      } else {
+        target.setHours(21, 30, 0, 0); finalTiming = '21:30 閉店前';
+      }
+
+      const targetYear = target.getFullYear(), targetMonth = (target.getMonth() + 1).toString().padStart(2, '0'), targetDate = target.getDate().toString().padStart(2, '0');
+      calcModal.value = {
+        show: true, item: mat, targetTimeStr: `應於 ${targetYear}年${targetMonth}月${targetDate}日 ${finalTiming} EXP`,
+        pullDate: `${targetYear}-${targetMonth}-${targetDate}`, timing: finalTiming, isAdjustedForClose: isAdjusted
+      };
     };
+
     const addMaterialToSchedule = () => {
       const modal = calcModal.value;
       if (!modal.pullDate) return;
-      if (db) db.ref('sbux/inventory/' + Date.now()).set({ id: Date.now(), itemName: `${modal.item.name} (${modal.item.code})`, factoryExpiry: '開封打點', pullDate: modal.pullDate, timing: modal.timing, isMaterial: true });
+      const newItem = { id: Date.now(), itemName: `${modal.item.name} (${modal.item.code})`, factoryExpiry: '開封打點', pullDate: modal.pullDate, timing: modal.timing, isMaterial: true };
+      if (db) db.ref('sbux/inventory/' + newItem.id).set(newItem);
       modal.show = false; alert(`已將【${modal.item.name}】登記至行事曆！`);
     };
+
     const openAddMaterialModal = () => { matEditModal.value = { show: true, isNew: true, form: { code: '', name: '', temp: '常溫', hours: 0, days: 0, notes: '' } }; };
     const editMaterial = (mat) => { matEditModal.value = { show: true, isNew: false, form: { ...mat } }; };
     const saveMaterialForm = () => {
@@ -2835,13 +2996,19 @@ const app = createApp({
       if (db) db.ref('sbux/materials/' + key).set({ ...f, id: key, _key: key });
       matEditModal.value.show = false;
     };
-    const deleteMaterial = (mat) => { if (confirm(`確定刪除【${mat.name}】？`) && db && (mat._key || mat.id)) db.ref('sbux/materials/' + (mat._key || mat.id)).remove(); };
+    const deleteMaterial = (mat) => {
+      const targetKey = mat._key || mat.id; if (!targetKey) return;
+      if (confirm(`確定刪除【${mat.name}】？`) && db) db.ref('sbux/materials/' + targetKey).remove();
+    };
 
     const intakeForm = ref({ itemName: '', factoryExpiry: '', advanceDays: null, saveAsRule: false });
     const submitIntake = () => {
       if (!intakeForm.value.itemName || !intakeForm.value.factoryExpiry) return;
-      const d = new Date(intakeForm.value.factoryExpiry); d.setDate(d.getDate() - (parseInt(intakeForm.value.advanceDays) || 0));
-      if (db) db.ref('sbux/inventory/' + Date.now()).set({ id: Date.now(), itemName: intakeForm.value.itemName, factoryExpiry: intakeForm.value.factoryExpiry, pullDate: d.toISOString().split('T')[0], timing: "21:30 閉店前", isMaterial: false });
+      let advanceDays = parseInt(intakeForm.value.advanceDays) || 0;
+      const d = new Date(intakeForm.value.factoryExpiry); d.setDate(d.getDate() - advanceDays);
+      const pullDate = d.toISOString().split('T')[0];
+      const newItem = { id: Date.now(), itemName: intakeForm.value.itemName, factoryExpiry: intakeForm.value.factoryExpiry, pullDate, timing: "21:30 閉店前", isMaterial: false };
+      if (db) db.ref('sbux/inventory/' + newItem.id).set(newItem);
       intakeForm.value = { itemName: '', factoryExpiry: '', advanceDays: null, saveAsRule: false }; alert('進貨登記成功！');
     };
     const deleteIntake = (id) => { if (confirm('確定移除？') && db) db.ref('sbux/inventory/' + id).remove(); };
@@ -2853,6 +3020,7 @@ const app = createApp({
     const resetToCurrentMonth = () => currentCalDate.value = new Date();
     const todayStr = computed(() => new Date().toISOString().split('T')[0]);
     const selectedDate = ref(todayStr.value);
+
     const calendarDays = computed(() => {
       const year = calYear.value, month = calMonth.value;
       const firstDay = new Date(year, month, 1).getDay(), totalDays = new Date(year, month + 1, 0).getDate();
@@ -2867,10 +3035,12 @@ const app = createApp({
     const selectedDateItems = computed(() => selectedDate.value ? inventory.value.filter(it => it.pullDate === selectedDate.value) : []);
 
     const allowedVacationStartStr = computed(() => {
-      const now = new Date(), day = now.getDay();
-      const targetMonday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + ((day === 0 ? -6 : 1) - day) + 14);
+      const now = new Date(), day = now.getDay(), diffToMonday = (day === 0 ? -6 : 1) - day;
+      const thisMonday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday);
+      const targetMonday = new Date(thisMonday.getFullYear(), thisMonday.getMonth(), thisMonday.getDate() + 14);
       return `${targetMonday.getFullYear()}-${(targetMonday.getMonth() + 1).toString().padStart(2, '0')}-${targetMonday.getDate().toString().padStart(2, '0')}`;
     });
+
     const scheduleStartDate = ref(''), scheduleEndDate = ref('');
     const setNextWeekRange = () => {
       const start = allowedVacationStartStr.value; scheduleStartDate.value = start;
@@ -2883,7 +3053,11 @@ const app = createApp({
       if (!scheduleStartDate.value || !scheduleEndDate.value) return [];
       const dates = [], current = new Date(scheduleStartDate.value), end = new Date(scheduleEndDate.value), weekNames = ['日', '一', '二', '三', '四', '五', '六'];
       while (current <= end) {
-        dates.push({ dateStr: current.toISOString().split('T')[0], displayDate: `${(current.getMonth() + 1).toString().padStart(2, '0')}/${current.getDate().toString().padStart(2, '0')}`, weekday: weekNames[current.getDay()] });
+        dates.push({
+          dateStr: current.toISOString().split('T')[0],
+          displayDate: `${(current.getMonth() + 1).toString().padStart(2, '0')}/${current.getDate().toString().padStart(2, '0')}`,
+          weekday: weekNames[current.getDay()]
+        });
         current.setDate(current.getDate() + 1);
       }
       return dates;
@@ -2892,92 +3066,187 @@ const app = createApp({
     const vacationForm = ref({ staffId: '', date: '', type: '無法排班', notes: '' });
     const promptSecureDeleteVacation = (v) => { secureDeleteModal.value = { show: true, target: v, inputName: '' }; };
     const confirmSecureDelete = () => {
-      const modal = secureDeleteModal.value, targetStaff = staffList.value.find(s => (s.id === modal.target.staffId || s._key === modal.target.staffId));
+      const modal = secureDeleteModal.value;
+      const targetStaff = staffList.value.find(s => (s.id === modal.target.staffId || s._key === modal.target.staffId));
       if (!targetStaff || modal.inputName.trim() === targetStaff.name.trim()) {
         if (db) db.ref('sbux/vacations/' + modal.target.id).remove();
         modal.show = false; alert('畫假已刪除！');
       } else alert('姓名不符！');
     };
+
     const getVacationData = (staffId, dateStr) => vacationList.value.find(item => (item.staffId === staffId) && item.date === dateStr) || null;
+
     const openAvailabilityModal = (staff) => {
       const existing = staff.availability || {}, form = {};
-      for (let i = 0; i < 7; i++) form['day_' + i] = existing['day_' + i] ? { ...existing['day_' + i] } : { type: 'all', start: '06:30', end: '22:30' };
+      for (let i = 0; i < 7; i++) {
+        const key = 'day_' + i;
+        form[key] = existing[key] ? { ...existing[key] } : { type: 'all', start: '06:30', end: '22:30' };
+      }
       availModal.value = { show: true, staff: staff, form: form };
     };
-    const saveAvailability = () => { if (db && (availModal.value.staff._key || availModal.value.staff.id)) db.ref('sbux/staff/' + (availModal.value.staff._key || availModal.value.staff.id) + '/availability').set(availModal.value.form); availModal.value.show = false; };
+
+    const saveAvailability = () => {
+      const staff = availModal.value.staff, targetKey = staff._key || staff.id;
+      if (db && targetKey) db.ref('sbux/staff/' + targetKey + '/availability').set(availModal.value.form);
+      availModal.value.show = false;
+    };
+
     const getAvailabilitySummary = (staff) => staff.availability ? '已設定' : '皆可';
     const getAvailabilityText = (staff, dateStr) => {
       if (staff.role === '天使夥伴' || staff.nickname === 'David') return isDavidWorkDay(dateStr) ? '08:30-17:30' : '不配';
       if (!staff.availability) return '';
-      const av = staff.availability['day_' + ((new Date(dateStr).getDay() + 6) % 7)];
-      if (!av) return ''; if (av.type === 'none') return '不配'; if (av.type === 'custom') return `${av.start}-${av.end}`; return '';
+      const d = new Date(dateStr), dayIdx = (d.getDay() + 6) % 7, av = staff.availability['day_' + dayIdx];
+      if (!av) return '';
+      if (av.type === 'none') return '不配';
+      if (av.type === 'custom') return `${av.start}-${av.end}`;
+      return '';
     };
 
     const openAddStaffModal = () => { staffModal.value = { show: true, isNew: true, form: { empId: '', name: '', nickname: '', role: '兼職夥伴' } }; };
     const editStaff = (s) => { staffModal.value = { show: true, isNew: false, form: { ...s } }; };
     const saveStaffForm = () => {
       const f = staffModal.value.form, key = f._key || f.id || ('staff_' + f.empId);
-      if (db) db.ref('sbux/staff/' + key).set({ id: key, _key: key, empId: f.empId, password: f.password || f.empId, name: f.name, nickname: f.nickname, role: f.role || '兼職夥伴' });
+      const updated = { id: key, _key: key, empId: f.empId, password: f.password || f.empId, name: f.name, nickname: f.nickname, role: f.role || '兼職夥伴' };
+      if (db) db.ref('sbux/staff/' + key).set(updated);
       staffModal.value.show = false; alert(`已儲存！`);
     };
+
     const promptSecureDeleteStaff = (s) => { secureStaffDeleteModal.value = { show: true, target: s, inputName: '' }; };
     const confirmSecureStaffDelete = () => {
-      if (secureStaffDeleteModal.value.inputName.trim() === secureStaffDeleteModal.value.target.name.trim()) {
-        if (db) db.ref('sbux/staff/' + (secureStaffDeleteModal.value.target._key || secureStaffDeleteModal.value.target.id)).remove();
+      const modal = secureStaffDeleteModal.value;
+      if (modal.inputName.trim() === modal.target.name.trim()) {
+        const staffKey = modal.target._key || modal.target.id;
+        if (db) db.ref('sbux/staff/' + staffKey).remove();
         secureStaffDeleteModal.value.show = false; alert('已刪除夥伴！');
       } else alert('姓名不符！');
     };
 
-    const printTodayStr = computed(() => `${new Date().getFullYear()}/${(new Date().getMonth()+1).toString().padStart(2,'0')}/${new Date().getDate().toString().padStart(2,'0')}`);
+    const printTodayStr = computed(() => {
+      const d = new Date(); return `${d.getFullYear()}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`;
+    });
+
     const openBulletinModal = () => { bulletinModal.value = { show: true, form: { title: '', content: '' } }; };
     const submitBulletin = () => {
-      const f = bulletinModal.value.form; if (!f.title || !f.content) return;
-      if (db) db.ref('sbux/bulletins/' + Date.now().toString()).set({ id: Date.now().toString(), title: f.title, content: f.content, dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`, timestamp: Date.now() });
+      const f = bulletinModal.value.form;
+      if (!f.title || !f.content) return;
+      const id = Date.now().toString();
+      if (db) db.ref('sbux/bulletins/' + id).set({ id, title: f.title, content: f.content, dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`, timestamp: Date.now() });
       bulletinModal.value.show = false;
     };
     const deleteBulletin = (id) => { if (confirm('確定移除？') && db) db.ref('sbux/bulletins/' + id).remove(); };
-
     const isSpecialCoffeeMaster = (staff) => staff && ['Zero', 'Hazel', 'Winona'].includes(staff.nickname);
+
     const handleLogin = () => {
-      const partner = staffList.value.find(s => s.empId === loginForm.value.empId.trim());
+      const inputEmp = loginForm.value.empId.trim(), inputPass = loginForm.value.password.trim();
+      const partner = staffList.value.find(s => s.empId === inputEmp);
       if (!partner) return alert('❌ 查無此員工編號！');
-      if (loginForm.value.password.trim() === (partner.password || partner.empId)) {
-        currentPartner.value = partner; localStorage.setItem('sbux_logged_empid', partner.empId);
-        loginForm.value = { empId: '', password: '' }; alert(`歡迎回來，${partner.nickname}！☕`);
+      const correctPassword = partner.password || partner.empId;
+      if (inputPass === correctPassword) {
+        currentPartner.value = partner;
+        nextTick(() => { if (window.lucide) lucide.createIcons(); });
+        localStorage.setItem('sbux_logged_empid', partner.empId);
+        loginForm.value = { empId: '', password: '' };
+        alert(`歡迎回來，${partner.nickname}！☕`);
       } else alert('❌ 登入密碼不正確！');
     };
     const handleLogout = () => { if (confirm('確定要登出嗎？')) { currentPartner.value = null; localStorage.removeItem('sbux_logged_empid'); } };
     const getStaffName = (id) => { const s = staffList.value.find(x => x.id === id || x._key === id); return s ? `${s.name} (${s.nickname})` : '未知夥伴'; };
     
+    const currentDateTimeDisplay = computed(() => {
+      const d = new Date(), weekdays = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
+      return `${d.getMonth() + 1}月${d.getDate()}日 (${weekdays[d.getDay()]})`;
+    });
+
+    const birthdayAlerts = computed(() => {
+      const alerts = [], now = new Date(), m = now.getMonth() + 1, d = now.getDate();
+      staffList.value.forEach(s => {
+        if (s.birthday) {
+          const cleanBday = s.birthday.replace(/[^0-9]/g, '');
+          if (cleanBday.length >= 4) {
+            const bMonth = parseInt(cleanBday.slice(0, 2)), bDay = parseInt(cleanBday.slice(2, 4));
+            const bDate = new Date(now.getFullYear(), bMonth - 1, bDay), todayDate = new Date(now.getFullYear(), m - 1, d);
+            const diffDays = Math.ceil((bDate - todayDate) / (1000 * 60 * 60 * 24));
+            if (diffDays >= 0 && diffDays <= 2) alerts.push(`${s.name} (${bMonth}/${bDay})`);
+          }
+        }
+      });
+      return alerts;
+    });
+
+    const openSettingsModal = () => {
+      settingsModal.value = { show: true, newPassword: '', birthday: currentPartner.value?.birthday || '', geminiApiKey: localStorage.getItem('sbux_custom_gemini_key') || '' };
+    };
+
+    const saveGeminiApiKey = () => {
+      const k = settingsModal.value.geminiApiKey.trim();
+      localStorage.setItem('sbux_custom_gemini_key', k);
+      alert('🤖 已儲存 Gemini API Key！');
+    };
+
+    const saveNewPassword = () => {
+      const p = settingsModal.value.newPassword.trim();
+      if (!p) return alert('請輸入新密碼！');
+      if (db && currentPartner.value) {
+        const staffKey = currentPartner.value._key || currentPartner.value.id;
+        db.ref('sbux/staff/' + staffKey + '/password').set(p);
+        currentPartner.value.password = p; settingsModal.value.newPassword = ''; alert('🔑 密碼已修改！');
+      }
+    };
+
+    const saveBirthday = () => {
+      const b = settingsModal.value.birthday.trim();
+      if (!b) return;
+      if (db && currentPartner.value) {
+        const staffKey = currentPartner.value._key || currentPartner.value.id;
+        db.ref('sbux/staff/' + staffKey + '/birthday').set(b);
+        currentPartner.value.birthday = b; alert('🎂 生日已儲存！');
+      }
+    };
+
     return {
       currentPartner, loginForm, handleLogin, handleLogout, isManager, isDutyOrAbove, isSuperTan, isDarkMode, toggleDarkMode,
       settingsModal, openSettingsModal, saveNewPassword, saveBirthday, saveGeminiApiKey, birthdayAlerts,
       currentTab, otherSubTab, isCloudConnected, currentDateTimeDisplay, todayTrivia,
       weatherType, weatherDesc, weatherIcon, weatherGreeting, weatherBannerClass,
-      countdownToSunday, settledPeriodStr, settledHonors, showRulesLibrary, addRuleModal, openAddRuleModal, isAiRecognizingRules, 
-      handleAiRuleImageUpload, saveNewRule, deleteRule, applyRuleToForm, bulletinList, bulletinModal, openBulletinModal, submitBulletin, deleteBulletin,
-      storePhotos, customAlbums, selectedAlbum, createAlbumModal, openCreateAlbumModal, saveNewAlbum, handleStorePhotoUpload, deleteStorePhoto, deleteAlbum, filteredStorePhotos,
-      bravoCardsList, bravoModal, openBravoModal, submitBravoCard, starbucksCoreBeans, coffeeSearchQuery, filteredCoffeeBeans,
+      countdownToSunday, settledPeriodStr, settledHonors,
+      showRulesLibrary, addRuleModal, openAddRuleModal, isAiRecognizingRules, handleAiRuleImageUpload, saveNewRule, deleteRule, applyRuleToForm,
+      bulletinList, bulletinModal, openBulletinModal, submitBulletin, deleteBulletin,
+      storePhotos, customAlbums, selectedAlbum, createAlbumModal, openCreateAlbumModal, saveNewAlbum,
+      handleStorePhotoUpload, deleteStorePhoto, deleteAlbum, filteredStorePhotos,
+      bravoCardsList, bravoModal, openBravoModal, submitBravoCard,
+      starbucksCoreBeans, coffeeSearchQuery, filteredCoffeeBeans,
       tastingForm, submitTastingNote, tastingNotesList, getIntensityLabel, getCleanNotesText, deleteTastingNote, isAiEvaluatingTasting,
-      latteForm, handleLattePhotoUpload, submitLattePost, isAiEvaluating, isArchivingLatteArt, weeklyLattePosts, deleteLattePost, materials, matSearchQuery, filteredMaterials,
-      calcModal, calculateOpenTime, addMaterialToSchedule, matEditModal, openAddMaterialModal, editMaterial, saveMaterialForm, deleteMaterial,
-      intakeForm, submitIntake, deleteIntake, rules, calYear, calMonth, changeMonth, resetToCurrentMonth, calendarDays, todayStr, selectedDate, selectedDateItems,
+      latteForm, handleLattePhotoUpload, submitLattePost, isAiEvaluating, isArchivingLatteArt,
+      weeklyLattePosts, deleteLattePost, materials, matSearchQuery, filteredMaterials,
+      calcModal, calculateOpenTime, addMaterialToSchedule,
+      matEditModal, openAddMaterialModal, editMaterial, saveMaterialForm, deleteMaterial,
+      intakeForm, submitIntake, deleteIntake, rules,
+      calYear, calMonth, changeMonth, resetToCurrentMonth, calendarDays, todayStr, selectedDate, selectedDateItems,
       staffList, validStaffList, sortedValidStaffList, allDutyStaff, selectedWeeklyOpenManagers, selectedWeeklyCloseManagers, getPrintRowHeight,
-      isSpecialCoffeeMaster, isDavidWorkDay, vacationList, vacationForm, submitVacation, secureDeleteModal, promptSecureDeleteVacation, confirmSecureDelete,
-      staffModal, openAddStaffModal, editStaff, saveStaffForm, secureStaffDeleteModal, promptSecureDeleteStaff, confirmSecureStaffDelete,
+      isSpecialCoffeeMaster, isDavidWorkDay,
+      vacationList, vacationForm, submitVacation,
+      secureDeleteModal, promptSecureDeleteVacation, confirmSecureDelete,
+      staffModal, openAddStaffModal, editStaff, saveStaffForm,
+      secureStaffDeleteModal, promptSecureDeleteStaff, confirmSecureStaffDelete,
       availModal, openAvailabilityModal, saveAvailability, getAvailabilitySummary, getAvailabilityText, timeSlots,
-      allowedVacationStartStr, scheduleStartDate, scheduleEndDate, targetRangeDates, setNextWeekRange, printTargetMode, triggerPrintSchedule, clearScheduledRoster,
+      allowedVacationStartStr, scheduleStartDate, scheduleEndDate, targetRangeDates, setNextWeekRange,
+      printTargetMode, triggerPrintSchedule, clearScheduledRoster,
       aiRosterModal, generateAiRoster, applyAiRosterToSchedule, getScheduledShiftText, isOvertimeShift, isConsecutiveSixthDay, calculateWeeklyStaffHours,
       blackoutDates, blackoutDatesList, blackoutModal, openBlackoutModal, saveBlackoutDate, deleteBlackoutDate,
-      vacationCalYear, vacationCalMonth, changeVacationMonth, resetVacationMonth, vacationCalendarDays, vacationDetailModal, openVacationDetailModal,
-      printTodayStr, getStaffName, getVacationData, latteArtArchives, calculateCombinedScore,
+      vacationCalYear, vacationCalMonth, changeVacationMonth, resetVacationMonth, vacationCalendarDays,
+      vacationDetailModal, openVacationDetailModal,
+      printTodayStr, getStaffName, getVacationData,
+      latteArtArchives, calculateCombinedScore,
       hasVoted, voteLattePost, activeCommentPostId, newCommentText, toggleComments, getCommentCount, submitComment,
-      coffeeKnowledgeList, newKnowledgeTitle, newKnowledgeContent, isUploadingKnowledge, currentWeekQuizId, showQuizModal, userAnswers, quizSubmitted,
-      quizScore, currentQuizQuestions, myQuizResult, allActivePartners, quizCompletedStaff, quizPendingStaff, publishKnowledge, deleteKnowledge,
+      coffeeKnowledgeList, newKnowledgeTitle, newKnowledgeContent, isUploadingKnowledge,
+      currentWeekQuizId, showQuizModal, userAnswers, quizSubmitted,
+      quizScore, currentQuizQuestions, myQuizResult, allActivePartners,
+      quizCompletedStaff, quizPendingStaff, publishKnowledge, deleteKnowledge,
       handleKnowledgeFileUpload, startWeeklyQuiz, submitWeeklyQuiz,
     };
   }
 });
+
 app.mount('#app');
 </script>
 </body>
