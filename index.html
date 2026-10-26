@@ -195,7 +195,7 @@
     }
   </style>
 </head>
-<body :class="isDarkMode ? 'dark bg-slate-900 text-slate-100' : 'bg-slate-100 text-slate-800'" class="font-sans antialiased transition-colors duration-300">
+<body class="bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
 
 <div id="app" v-cloak class="min-h-screen flex flex-col justify-between">
 
@@ -693,7 +693,6 @@
             </div>
 
           </section>
-
           <!-- ==================== 頁籤 3：門市排班出勤中心 ==================== -->
           <section v-if="currentTab === 'roster'" class="space-y-4">
             
@@ -775,13 +774,13 @@
                   </div>
                 </div>
 
-                <!-- 單一執行 AI 預排按鍵 -->
+                <!-- 單一執行自動預排按鍵 (保留強大的本地端演算法防呆) -->
                 <div class="pt-1">
                   <button 
                     @click="generateAiRoster" 
                     type="button" 
                     class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
-                    <span>🤖</span> 執行 AI 智慧預排
+                    <span>🤖</span> 執行自動智慧預排
                   </button>
                 </div>
 
@@ -801,6 +800,7 @@
                 </div>
               </div>
             </div>
+
             <!-- 【全體夥伴皆可使用】：畫假登記與畫假行事曆 -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
               <div class="flex justify-between items-center">
@@ -1728,7 +1728,7 @@
                 </div>
                 <div class="text-right">
                   <span class="px-2 py-0.5 rounded text-[10px] font-bold"
-                        :class="shift.shiftName.includes('早') ? 'bg-amber-100 text-amber-800' : (shift.shiftName.includes('晚') ? 'bg-indigo-100 text-indigo-800' : 'bg-teal-100 text-teal-800')">
+                      :class="shift.shiftName.includes('早') ? 'bg-amber-100 text-amber-800' : (shift.shiftName.includes('晚') ? 'bg-indigo-100 text-indigo-800' : 'bg-teal-100 text-teal-800')">
                     {{ shift.shiftName }}
                   </span>
                   <span class="text-[9px] font-mono text-slate-500 block mt-0.5" :class="shift.isOvertime ? 'font-black text-amber-600' : ''">
@@ -1832,7 +1832,7 @@
     </div>
   </transition>
 
-  <!-- 個人設定 Modal (只有徐爰坦可見 API KEY 選填) -->
+  <!-- 個人設定 Modal (⭐ 嚴格隔離，只有徐爰坦可見 API KEY ⭐) -->
   <transition name="modal">
     <div v-if="settingsModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
       <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-4 border">
@@ -1873,7 +1873,6 @@
       </div>
     </div>
   </transition>
-
   <!-- 手動新增下架標準 Modal -->
   <transition name="modal">
     <div v-if="addRuleModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
@@ -2259,7 +2258,7 @@
 
               </td>
 
-              <!-- 最右側：本週累計工時 (David 固定計算 5天*8.5h=42.5h) -->
+              <!-- 最右側：本週累計工時 -->
               <td class="font-mono font-black text-[11px] align-middle p-0.5 bg-slate-50 text-slate-900">
                 <span v-if="printTargetMode === 'ai'">
                   {{ calculateWeeklyStaffHours(staff) }}h
@@ -2277,6 +2276,7 @@
   </div>
   
 </div>
+
 <script>
 window.onerror = function(msg, url, line) {
   var el = document.getElementById('app');
@@ -2441,8 +2441,13 @@ const app = createApp({
     const quizSubmitted = ref(false);
     const quizScore = ref(0);
 
+    // ==================== 🌟 核心防呆：AI 金鑰取得機制 ====================
     const getEffectiveGeminiKey = () => {
-      return localStorage.getItem('sbux_custom_gemini_key') || firebaseConfig.apiKey;
+      const key = localStorage.getItem('sbux_custom_gemini_key');
+      if (!key || key.trim() === '') {
+        throw new Error('SYSTEM_MISSING_API_KEY');
+      }
+      return key.trim();
     };
 
     const getCleanNotesText = (text) => {
@@ -2633,11 +2638,11 @@ const app = createApp({
         materials.value = val ? Object.keys(val).map(key => ({ _key: key, id: key, ...(typeof val[key] === 'object' ? val[key] : {}) })) : [];
       });
 
-      db.ref('sbux/rules').on('value', snap => rules.value = snap.val() ? Object.values(snap.val()) : []);
-      db.ref('sbux/inventory').on('value', snap => inventory.value = snap.val() ? Object.values(snap.val()) : []);
-      db.ref('sbux/vacations').on('value', snap => vacationList.value = snap.val() ? Object.values(snap.val()) : []);
-      db.ref('sbux/blackout_dates').on('value', snap => blackoutDates.value = snap.val() || {});
-      db.ref('sbux/scheduled_roster').on('value', snap => scheduledRoster.value = snap.val() || {});
+      db.ref('sbux/rules').on('value', snap => { rules.value = snap.val() ? Object.values(snap.val()) : []; });
+      db.ref('sbux/inventory').on('value', snap => { inventory.value = snap.val() ? Object.values(snap.val()) : []; });
+      db.ref('sbux/vacations').on('value', snap => { vacationList.value = snap.val() ? Object.values(snap.val()) : []; });
+      db.ref('sbux/blackout_dates').on('value', snap => { blackoutDates.value = snap.val() || {}; });
+      db.ref('sbux/scheduled_roster').on('value', snap => { scheduledRoster.value = snap.val() || {}; });
       
       db.ref('sbux/latte_posts').on('value', snap => {
         const val = snap.val();
@@ -2650,10 +2655,11 @@ const app = createApp({
         tastingNotesList.value = val ? Object.keys(val).map(k => ({ id: k, _key: k, ...val[k] })).sort((a,b) => b.timestamp - a.timestamp) : [];
       });
 
-      db.ref('sbux/bulletins').on('value', snap => bulletinList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
-      db.ref('sbux/store_photos').on('value', snap => storePhotos.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
-      db.ref('sbux/custom_albums').on('value', snap => customAlbums.value = snap.val() ? Object.values(snap.val()) : []);
-      db.ref('sbux/bravo_cards').on('value', snap => bravoCardsList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
+      // 🌟 [修正] 修補遺漏的右括號
+      db.ref('sbux/bulletins').on('value', snap => { bulletinList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []; });
+      db.ref('sbux/store_photos').on('value', snap => { storePhotos.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []; });
+      db.ref('sbux/custom_albums').on('value', snap => { customAlbums.value = snap.val() ? Object.values(snap.val()) : []; });
+      db.ref('sbux/bravo_cards').on('value', snap => { bravoCardsList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []; });
 
       db.ref('sbux/latteArtArchives').on('value', (snapshot) => {
         const val = snapshot.val();
@@ -2910,7 +2916,7 @@ const app = createApp({
       alert('✅ 畫假成功！');
     };
 
-    // AI 辨識下架規範
+    // ==================== 🤖 AI 處理模組 ====================
     const handleAiRuleImageUpload = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -2924,11 +2930,11 @@ const app = createApp({
 
       isAiRecognizingRules.value = true;
       try {
+        const apiKey = getEffectiveGeminiKey();
         const reader = new FileReader();
         reader.onload = async (evt) => {
           try {
             const base64Data = evt.target.result.split(',')[1];
-            const apiKey = getEffectiveGeminiKey();
             const promptText = `你是一位專業星巴克門市系統管理員。請仔細閱讀圖片或文件中的下架/品項效期規範，提取食品/原物料品名及其「提前下架天數」。
 嚴格輸出 JSON 陣列格式：[{"keyword":"品項名稱","advance_days":天數數字,"timing":"21:30 閉店前"}]`;
 
@@ -2976,11 +2982,11 @@ const app = createApp({
                 alert('未能在圖文中辨識出具體的品項與提前下架天數。');
               }
             } else {
-              throw new Error(lastErr || 'AI 伺服器未回傳有效結果，請至個人設定確認 API Key 是否填妥！');
+              throw new Error(lastErr || 'AI 伺服器未回傳有效結果，請確認 API Key。');
             }
           } catch (innerErr) {
             console.error('辨識錯誤：', innerErr);
-            alert(`❌ 辨識失敗：${innerErr.message}\n提示：請至個人設定貼上您專屬的 Gemini API Key。`);
+            alert(`❌ 辨識失敗：${innerErr.message}`);
           } finally {
             isAiRecognizingRules.value = false;
             e.target.value = '';
@@ -2988,12 +2994,14 @@ const app = createApp({
         };
         reader.readAsDataURL(file);
       } catch (err) {
+        if (err.message === 'SYSTEM_MISSING_API_KEY') {
+          alert('⚠️ 系統提示：請聯絡管理員 徐爰坦 至「個人設定」中綁定專屬的 Gemini API Key，才能啟用 AI 引擎功能！');
+        }
         isAiRecognizingRules.value = false;
         e.target.value = '';
       }
     };
 
-    // Tasting 品評發布
     const submitTastingNote = async () => {
       if (!currentPartner.value) return;
       isAiEvaluatingTasting.value = true;
@@ -3029,13 +3037,16 @@ const app = createApp({
         tastingForm.value = { coffeeName: '派克市場烘焙', acidity: 3, body: 3, aroma: '', flavor: '', notes: '' };
         alert('🎉 Tasting 品評已發布！');
       } catch (err) {
-        alert('品評發布成功！');
+        if (err.message === 'SYSTEM_MISSING_API_KEY') {
+          alert('⚠️ 系統提示：請聯絡管理員 徐爰坦 至「個人設定」中綁定專屬的 Gemini API Key，才能啟用 AI 引擎功能！');
+        } else {
+          alert('品評發布失敗，請稍後再試。');
+        }
       } finally {
         isAiEvaluatingTasting.value = false;
       }
     };
 
-    // 拉花 AI 評審
     const submitLattePost = async () => {
       if (!currentPartner.value || !latteForm.value.photoUrl) return;
       isAiEvaluating.value = true;
@@ -3081,11 +3092,63 @@ const app = createApp({
         latteForm.value = { pattern: '心形 (Heart)', photoUrl: '' };
         alert(`🎉 作品已上傳！AI 評分：${newPost.aiScore} 分！`);
       } catch (err) {
-        alert('作品已上傳成功！');
+        if (err.message === 'SYSTEM_MISSING_API_KEY') {
+          alert('⚠️ 系統提示：請聯絡管理員 徐爰坦 至「個人設定」中綁定專屬的 Gemini API Key，才能啟用 AI 引擎功能！');
+        } else {
+          alert('上傳失敗。');
+        }
       } finally {
         isAiEvaluating.value = false;
       }
     };
+
+    const handleKnowledgeFileUpload = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const fileType = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+      isUploadingKnowledge.value = true;
+      try {
+        const apiKey = getEffectiveGeminiKey();
+        const reader = new FileReader();
+        reader.onload = async (evt) => {
+          const base64Data = evt.target.result.split(',')[1];
+          try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: '你是星巴克咖啡大師。請閱讀圖片或PDF中的咖啡知識，萃取精華筆記。輸出 JSON: {"title":"標題","content":"要點"}' }, { inline_data: { mime_type: fileType, data: base64Data } }] }],
+                generationConfig: { response_mime_type: "application/json", temperature: 0.2 }
+              })
+            });
+            const resData = await response.json();
+            if (resData.candidates && resData.candidates[0]?.content?.parts[0]?.text) {
+              const parsed = JSON.parse(resData.candidates[0].content.parts[0].text.trim().replace(/^```json\s*/i, '').replace(/\s*```$/, ''));
+              const todayStr = new Date().toLocaleDateString('zh-TW');
+              await db.ref('sbux/coffeeKnowledge').push().set({
+                title: parsed.title || file.name,
+                content: parsed.content || '無詳細內容',
+                author: currentPartner.value?.name || '值班',
+                role: currentPartner.value?.role || '值班',
+                date: todayStr,
+                createdAt: new Date().toISOString()
+              });
+              alert('🎉 知識辨識完成並已發布！');
+            }
+          } catch (err) {
+            alert('AI 辨識失敗。');
+          }
+        };
+        reader.readAsDataURL(file);
+      } catch (err) {
+        if (err.message === 'SYSTEM_MISSING_API_KEY') {
+          alert('⚠️ 系統提示：請聯絡管理員 徐爰坦 至「個人設定」中綁定專屬的 Gemini API Key，才能啟用 AI 引擎功能！');
+        }
+        isUploadingKnowledge.value = false;
+        e.target.value = '';
+      }
+    };
+    // ==================== AI 處理模組結束 ====================
 
     // ==================== 排班演算法輔助計算 ====================
     const timeToMins = (t) => {
@@ -3186,19 +3249,7 @@ const app = createApp({
       return total;
     };
 
-    const getHistoricalShiftType = (staffId) => {
-      const roster = scheduledRoster.value || {};
-      const dates = Object.keys(roster).filter(k => k.startsWith(staffId + '_')).map(k => k.split('_')[1]).sort().reverse();
-      for (const d of dates) {
-        const item = roster[`${staffId}_${d}`];
-        const sName = typeof item === 'object' ? item.shiftName : item;
-        if (sName && sName.includes('早')) return 'open';
-        if (sName && sName.includes('晚')) return 'close';
-      }
-      return 'open';
-    };
-
-    // ==================== 🌟 智慧預排總演算法 ====================
+    // ==================== 🌟 智慧預排總演算法 (保留本地演算法確保防呆) ====================
     const generateAiRoster = () => {
       if (!scheduleStartDate.value || !scheduleEndDate.value) return alert('請先設定排班範圍！');
       const dates = targetRangeDates.value;
@@ -3210,7 +3261,6 @@ const app = createApp({
       const schedulePlan = [];
       const warnings = [];
 
-      // 追蹤每位夥伴本週排班與工作月累計（繼承歷史出勤與下班時間）
       const staffWorkTracker = {};
       allStaff.forEach(s => {
         const sid = s.id || s._key;
@@ -3230,13 +3280,11 @@ const app = createApp({
         const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
         const dayIdx = (d.getDay() + 6) % 7;
 
-        // 1. 早班槽位
         const dayShiftSlots = [
           { name: "早班(開店1)", start: "06:30", end: "15:00", requiresManager: true },
           { name: "早班(開店2)", start: "06:30", end: "15:00", requiresManager: false }
         ];
 
-        // 2. 中班槽位
         let midShiftIndex = -1;
         if (!isWeekend) {
           midShiftIndex = dayShiftSlots.length;
@@ -3247,7 +3295,6 @@ const app = createApp({
           dayShiftSlots.push({ name: "中班2", start: "10:30", end: "17:30", requiresManager: false, isMidShift: true });
         }
 
-        // 3. 晚班槽位（標準一律為 14:00-22:30，14:00~17:30 現場自然為 4 人）
         const eveningSlotIndices = [];
         eveningSlotIndices.push(dayShiftSlots.length);
         dayShiftSlots.push({ name: "晚班(收店1)", start: "14:00", end: "22:30", requiresManager: true });
@@ -3268,10 +3315,8 @@ const app = createApp({
             if (assignedToday.has(sid)) return false;
 
             const tracker = staffWorkTracker[sid];
-            // 🛑 連續 6 天絕對休第 7 天（跨週嚴格防呆）
             if (tracker.consecutiveDays >= 6 || tracker.daysWorked >= 6) return false;
 
-            // 🛑 正職工時 40h +- 3h 彈性控管（達到 40h 或 5天且滿 37h 則讓位兼職）
             const isFT = isTrueFullTime(staff.role);
             if (isFT && (tracker.weeklyHours >= 40 || (tracker.daysWorked >= 5 && tracker.weeklyHours >= 37))) {
               const otherAvailablePT = allStaff.some(other => {
@@ -3281,9 +3326,7 @@ const app = createApp({
               if (otherAvailablePT) return false;
             }
 
-            // 檢查可用時段
             if (isStaffAvailableForShift(staff, dateStr, slotStart, slotEnd)) {
-              // 跨日/跨週 11 小時休息防呆
               if (tracker.lastEndMins > 0) {
                 const restMins = (24 * 60 - tracker.lastEndMins) + timeToMins(slotStart);
                 if (restMins < 11 * 60) return false;
@@ -3291,7 +3334,6 @@ const app = createApp({
               return true;
             }
 
-            // 晚班特殊彈性候選：若只能 18:00/19:00 進班
             if (eveningSlotIndices.includes(sIndex) && staff.availability) {
               const av = staff.availability['day_' + dayIdx];
               if (av && av.type === 'custom') {
@@ -3306,13 +3348,11 @@ const app = createApp({
                 }
               }
             }
-
             return false;
           });
 
           let pickedStaff = null;
 
-          // 1. 管理職槽位優先指派
           if (slot.requiresManager) {
             let managerCandidates = candidates.filter(s => isManagerRole(s.role));
             if (slot.name.includes('早') && selectedWeeklyOpenManagers.value.length > 0) {
@@ -3323,7 +3363,6 @@ const app = createApp({
 
             if (!pickedStaff && managerCandidates.length > 0) {
               managerCandidates.sort((a, b) => {
-                // 正職（店經理、副理、值班經理）時數不滿 37h 或不滿 5 天者擁有最高優先權！
                 const aIsFT = isTrueFullTime(a.role);
                 const bIsFT = isTrueFullTime(b.role);
                 const aHours = staffWorkTracker[a.id || a._key].weeklyHours;
@@ -3346,7 +3385,6 @@ const app = createApp({
             if (!pickedStaff) warnings.push(`${dateStr} ${slot.name} 缺少管理職 1 名！`);
           }
 
-          // 2. 一般夥伴槽位指派（正職 37h~43h 彈性 + 兼職工作月 50h 底線拉抬）
           if (!pickedStaff && candidates.length > 0) {
             candidates.sort((a, b) => {
               const aIsFT = isTrueFullTime(a.role);
@@ -3358,11 +3396,9 @@ const app = createApp({
               const aMonth = staffWorkTracker[a.id || a._key].monthlyAccum;
               const bMonth = staffWorkTracker[b.id || b._key].monthlyAccum;
 
-              // 🥇 正職未滿 5 天或未滿 37 小時者，絕對優先排班！
               if (aIsFT && (aHours < 37 || aDays < 5) && (!bIsFT || (bHours >= 37 && bDays >= 5))) return -1;
               if (bIsFT && (bHours < 37 || bDays < 5) && (!aIsFT || (aHours >= 37 && aDays >= 5))) return 1;
 
-              // 🥈 兼職夥伴工時底線保證（凡本週工作天數少於 2 天，或月累積嚴重落後 50h 者優先拯救！）
               if (!aIsFT && !bIsFT) {
                 if (aHours < 16 && bHours >= 16) return -1;
                 if (bHours < 16 && aHours >= 16) return 1;
@@ -3374,7 +3410,6 @@ const app = createApp({
                 if (bMonth < 50 && aMonth >= 50) return 1;
               }
 
-              // 🥉 能正常 14:00 進班者優先
               const aCanFull = isStaffAvailableForShift(a, dateStr, slotStart, slotEnd);
               const bCanFull = isStaffAvailableForShift(b, dateStr, slotStart, slotEnd);
               if (aCanFull !== bCanFull) return bCanFull - aCanFull;
@@ -3442,8 +3477,6 @@ const app = createApp({
           }
         });
 
-        // 🌟 核心校準：徹底消除 17:30～19:00 人力空缺
-        // 晚班應有 3 人在店，只要 17:30 當下已在店晚班少於 3 人，中班無條件自動順延至最晚晚班進店交接！
         if (midShiftIndex >= 0 && assignedShifts[midShiftIndex] && assignedShifts[midShiftIndex].staffId) {
           const midShiftItem = assignedShifts[midShiftIndex];
           const eveningShifts = assignedShifts.filter((sh, idx) => eveningSlotIndices.includes(idx) && sh.staffId);
@@ -3522,7 +3555,7 @@ const app = createApp({
     };
 
     const clearScheduledRoster = () => {
-      if (confirm('確定要清空已套用的 AI 預排班表紀錄嗎？\n清空後班表將還原為空白手寫狀態。')) {
+      if (confirm('確定要清空已套用的預排班表紀錄嗎？\n清空後班表將還原為空白手寫狀態。')) {
         if (db) db.ref('sbux/scheduled_roster').remove();
         scheduledRoster.value = {};
         alert('🗑️ 已成功清除所有預排班表紀錄！');
@@ -3656,48 +3689,6 @@ const app = createApp({
     const deleteKnowledge = async (id) => {
       if (confirm('確定刪除這篇咖啡知識嗎？') && db) {
         await db.ref('sbux/coffeeKnowledge/' + id).remove();
-      }
-    };
-
-    const handleKnowledgeFileUpload = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const fileType = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
-      isUploadingKnowledge.value = true;
-      try {
-        const reader = new FileReader();
-        reader.onload = async (evt) => {
-          const base64Data = evt.target.result.split(',')[1];
-          const apiKey = getEffectiveGeminiKey();
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: '你是星巴克咖啡大師。請閱讀圖片或PDF中的咖啡知識，萃取精華筆記。輸出 JSON: {"title":"標題","content":"要點"}' }, { inline_data: { mime_type: fileType, data: base64Data } }] }],
-              generationConfig: { response_mime_type: "application/json", temperature: 0.2 }
-            })
-          });
-          const resData = await response.json();
-          if (resData.candidates && resData.candidates[0]?.content?.parts[0]?.text) {
-            const parsed = JSON.parse(resData.candidates[0].content.parts[0].text.trim().replace(/^```json\s*/, '').replace(/\s*```$/, ''));
-            const todayStr = new Date().toLocaleDateString('zh-TW');
-            await db.ref('sbux/coffeeKnowledge').push().set({
-              title: parsed.title || file.name,
-              content: parsed.content || '無詳細內容',
-              author: currentPartner.value?.name || '值班',
-              role: currentPartner.value?.role || '值班',
-              date: todayStr,
-              createdAt: new Date().toISOString()
-            });
-            alert('🎉 辨識完成並已發布！');
-          }
-        };
-        reader.readAsDataURL(file);
-      } catch (err) {
-        alert('辨識失敗。');
-      } finally {
-        isUploadingKnowledge.value = false;
-        e.target.value = '';
       }
     };
 
