@@ -2345,7 +2345,8 @@ createApp({
     const currentPartner = ref(null);
     const loginForm = ref({ empId: '', password: '' });
     const currentTab = ref('home');
-    const otherSubTab = ref('academy');
+    // 移除黑圍裙課程，預設直接進入「沖煮與豆寶典」
+    const otherSubTab = ref('coffee');
     const isCloudConnected = ref(false);
     const isDarkMode = ref(false);
 
@@ -2529,14 +2530,32 @@ createApp({
     const weatherIcon = ref('☀️');
     const weatherGreeting = ref('陽光正好，今天也是元氣滿滿的一天 🌟');
 
+    // 移除黑圍裙課程按鈕（動態清除舊 HTML 殘留）
+    const hideAcademyFromHtml = () => {
+      nextTick(() => {
+        document.querySelectorAll('button').forEach(btn => {
+          if (btn.textContent.includes('黑圍裙課程')) btn.style.display = 'none';
+        });
+      });
+    };
+
+    watch(currentPartner, (newVal) => {
+      if (newVal) nextTick(() => { setTimeout(() => { if (window.lucide) lucide.createIcons(); }, 50); });
+      hideAcademyFromHtml();
+    });
+
+    watch(currentTab, () => {
+      nextTick(() => { if (window.lucide) lucide.createIcons(); });
+      hideAcademyFromHtml();
+    });
+
     const calculateCombinedScore = (post) => Number(((post.aiScore || 0) * 0.7 + (post.votes || 0) * 5).toFixed(1));
 
-    // ==================== 🌟 自動結算與封存引擎 (自動發布前三名至公告欄) ====================
+    // ==================== 🌟 拉花自動結算與歸檔引擎 ====================
     let isAutoArchivingInProgress = false;
     const checkAndAutoArchiveLatteArt = async () => {
       if (!db || isAutoArchivingInProgress) return;
       const now = new Date();
-      // 週日 23:30 之後或週一早晨開機時執行結算
       const isSundayNight = (now.getDay() === 0 && (now.getHours() > 23 || (now.getHours() === 23 && now.getMinutes() >= 30)));
       const isMondayMorning = (now.getDay() === 1 && now.getHours() < 12);
 
@@ -2587,7 +2606,7 @@ createApp({
             timestamp: Date.now()
           });
 
-          // 3. 清空當週參賽作品，開啟新一輪
+          // 3. 清空當週參賽作品
           await db.ref('sbux/latte_posts').remove();
         } catch (e) {
           console.error('自動結算錯誤：', e);
@@ -2620,7 +2639,19 @@ createApp({
 
       db.ref('sbux/tasting_notes').on('value', snap => {
         const val = snap.val();
-        tastingNotesList.value = val ? Object.keys(val).map(k => ({ id: k, _key: k, ...val[k] })).sort((a,b) => b.timestamp - a.timestamp) : [];
+        tastingNotesList.value = val ? Object.keys(val).map(k => {
+          const item = val[k];
+          // 🌟 修正：確保在心得文字中自動拼接酸度與醇度值，完美解決動態牆數值缺失問題
+          const acidityLabel = getIntensityLabel(item.acidity || 3);
+          const bodyLabel = getIntensityLabel(item.body || 3);
+          const customNote = item.notes || item.flavor || '無額外備註';
+          return {
+            id: k,
+            _key: k,
+            ...item,
+            notes: `[🍋 酸度:${acidityLabel} ｜ 🧈 醇度:${bodyLabel}] ${customNote}`
+          };
+        }).sort((a,b) => b.timestamp - a.timestamp) : [];
       });
 
       db.ref('sbux/bulletins').on('value', snap => bulletinList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []);
@@ -2756,7 +2787,8 @@ createApp({
       fetchYongheWeather();
       updateCountdown();
       setInterval(updateCountdown, 1000);
-      nextTick(() => { if (window.lucide) lucide.createIcons(); });
+      hideAcademyFromHtml();
+      setTimeout(() => { if (window.lucide) lucide.createIcons(); }, 100);
     });
 
     const settledPeriodStr = computed(() => {
@@ -2774,7 +2806,7 @@ createApp({
       let progressDelta = '累積兩週成績';
 
       if (latteArtArchives.value && latteArtArchives.value.length > 0) {
-        champName = latteArtArchives.value[0].winner || '上期得主';
+        champName = latteArtArchives.value[0].winner || '上期冠軍';
         champScore = '前期得主';
       } else if (lattePosts.value && lattePosts.value.length > 0) {
         champName = '⏳ 激戰評選中';
@@ -2944,7 +2976,6 @@ createApp({
       }
     };
 
-    // Tasting 品評即時生成
     const submitTastingNote = async () => {
       if (!currentPartner.value) return;
       isAiEvaluatingTasting.value = true;
@@ -2984,7 +3015,6 @@ createApp({
       }
     };
 
-    // 拉花 AI 視覺評審
     const submitLattePost = async () => {
       if (!currentPartner.value || !latteForm.value.photoUrl) return;
       isAiEvaluating.value = true;
@@ -3035,7 +3065,7 @@ createApp({
       }
     };
 
-    // ==================== 門市排班演算法 (支援中晚動態銜接與月工時平衡) ====================
+    // ==================== 🌟 門市排班演算法 (徹底修正 17:30~19:00 接力與兼職 50hr 保障) ====================
     const timeToMins = (t) => {
       const [h, m] = t.split(':').map(Number);
       return h * 60 + m;
@@ -3116,7 +3146,7 @@ createApp({
       return 'open';
     };
 
-   // 🌟 1. 跨週歷史出勤追溯函式：計算指定起始日前，該夥伴已連續上了幾天班
+    // 🌟 1. 跨週歷史出勤追溯函式：計算指定起始日前，該夥伴已連續上了幾天班
     const getPriorConsecutiveWorkDays = (staffId, startDateStr) => {
       let count = 0;
       let curr = new Date(startDateStr);
@@ -3516,8 +3546,9 @@ createApp({
       targetRangeDates.value.forEach(d => {
         const item = (scheduledRoster.value || {})[`${sid}_${d.dateStr}`];
         if (item) {
-          if (typeof item === 'object' && item.hours) total += Number(item.hours);
-          else if (typeof item === 'string') {
+          if (typeof item === 'object' && item.hours) {
+            total += Number(item.hours);
+          } else if (typeof item === 'string') {
             const match = item.match(/(\d{2}:\d{2})-(\d{2}:\d{2})/);
             if (match) total += calculateShiftNetHours(match[1], match[2]);
           }
@@ -4173,7 +4204,7 @@ createApp({
       bravoCardsList, bravoModal, openBravoModal, submitBravoCard,
       starbucksCoreBeans, coffeeSearchQuery, filteredCoffeeBeans,
       tastingForm, submitTastingNote, tastingNotesList, getIntensityLabel, deleteTastingNote, isAiEvaluatingTasting,
-      latteForm, handleLattePhotoUpload, submitLattePost, isAiEvaluating,
+      latteForm, handleLattePhotoUpload, submitLattePost, isAiEvaluating, isArchivingLatteArt,
       weeklyLattePosts, deleteLattePost, materials, matSearchQuery, filteredMaterials,
       calcModal, calculateOpenTime, addMaterialToSchedule,
       matEditModal, openAddMaterialModal, editMaterial, saveMaterialForm, deleteMaterial,
