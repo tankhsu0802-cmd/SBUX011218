@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>永和永安門市管理系統 (011218)</title>
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -19,46 +20,198 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
-    [v-cloak] { display: none !important; }
-    *, ::before, ::after { box-sizing: border-box; }
-    html, body { -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; overflow-x: hidden; }
-    .app-screen { padding-top: 64px; padding-bottom: 95px; width: 100%; overflow-x: hidden; }
-    input[type="date"] { -webkit-appearance: none; appearance: none; min-height: 38px !important; display: flex; align-items: center; }
-    input[type="text"], input[type="number"], select, textarea, input[type="password"] { -webkit-appearance: none; appearance: none; min-width: 0; max-width: 100%; }
-    .ios-glass-bar { background: rgba(255, 255, 255, 0.65) !important; backdrop-filter: blur(25px) saturate(190%) !important; box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04) !important; border-top: 1px solid rgba(255, 255, 255, 0.6) !important; }
-    .dark .ios-glass-bar { background: rgba(15, 23, 42, 0.75) !important; backdrop-filter: blur(25px) saturate(190%) !important; box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3) !important; border-top: 1px solid rgba(255, 255, 255, 0.08) !important; }
-    .ios-header-glass { background: rgba(6, 78, 59, 0.88) !important; backdrop-filter: blur(20px) saturate(180%) !important; border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important; }
-    .black-gold-card { background: linear-gradient(135deg, #09090b 0%, #18181b 50%, #27272a 100%) !important; border: 1.5px solid #d97706 !important; box-shadow: 0 4px 15px rgba(217, 119, 6, 0.15) !important; }
-    .dcm-corner-badge { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
-    .rain-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 1; }
-    .rain-drop { position: absolute; bottom: 100%; width: 1.5px; height: 18px; background: linear-gradient(transparent, rgba(255, 255, 255, 0.6)); animation: rainDrop 1.2s linear infinite; }
-    @keyframes rainDrop { 0% { transform: translateY(0); opacity: 0; } 50% { opacity: 0.8; } 100% { transform: translateY(220px); opacity: 0.2; } }
-    .fade-enter-active, .fade-leave-active { transition: opacity 0.25s ease, transform 0.25s ease; }
-    .fade-enter-from { opacity: 0; transform: translateY(6px); }
-    .fade-leave-to { opacity: 0; transform: translateY(-6px); }
-    .modal-enter-active, .modal-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
-    .modal-enter-from, .modal-leave-to { opacity: 0; transform: scale(0.95); }
-    
-    @media screen { .print-only-container { display: none !important; } }
+    [v-cloak] { 
+      display: none !important; 
+    }
+    *, ::before, ::after { 
+      box-sizing: border-box; 
+    }
+    html, body {
+      -webkit-tap-highlight-color: transparent;
+      margin: 0; 
+      padding: 0;
+      overflow-x: hidden;
+    }
+    .app-screen {
+      padding-top: 64px;
+      padding-bottom: 95px;
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    input[type="date"] {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      min-height: 38px !important;
+      line-height: normal;
+      display: flex;
+      align-items: center;
+    }
+    input[type="text"], input[type="number"], select, textarea, input[type="password"] {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .ios-glass-bar {
+      background: rgba(255, 255, 255, 0.65) !important;
+      backdrop-filter: blur(25px) saturate(190%) !important;
+      -webkit-backdrop-filter: blur(25px) saturate(190%) !important;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04) !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.6) !important;
+    }
+    .dark .ios-glass-bar {
+      background: rgba(15, 23, 42, 0.75) !important;
+      backdrop-filter: blur(25px) saturate(190%) !important;
+      -webkit-backdrop-filter: blur(25px) saturate(190%) !important;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3) !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+
+    .ios-header-glass {
+      background: rgba(6, 78, 59, 0.88) !important;
+      backdrop-filter: blur(20px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+
+    .black-gold-card {
+      background: linear-gradient(135deg, #09090b 0%, #18181b 50%, #27272a 100%) !important;
+      border: 1.5px solid #d97706 !important;
+      box-shadow: 0 4px 15px rgba(217, 119, 6, 0.15) !important;
+    }
+    .dcm-corner-badge {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #000;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+    }
+
+    .rain-container {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; overflow: hidden; z-index: 1;
+    }
+    .rain-drop {
+      position: absolute; bottom: 100%; width: 1.5px; height: 18px;
+      background: linear-gradient(transparent, rgba(255, 255, 255, 0.6));
+      animation: rainDrop 1.2s linear infinite;
+    }
+    @keyframes rainDrop {
+      0% { transform: translateY(0); opacity: 0; }
+      50% { opacity: 0.8; }
+      100% { transform: translateY(220px); opacity: 0.2; }
+    }
+
+    .fade-enter-active, .fade-leave-active {
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .fade-enter-from {
+      opacity: 0; transform: translateY(6px);
+    }
+    .fade-leave-to {
+      opacity: 0; transform: translateY(-6px);
+    }
+
+    .modal-enter-active, .modal-leave-active {
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .modal-enter-from, .modal-leave-to {
+      opacity: 0; transform: scale(0.95);
+    }
+
+    /* ==================== A4 直式單頁滿版列印 CSS ==================== */
+    @media screen {
+      .print-only-container { display: none !important; }
+    }
     @media print {
-      html, body { background: white !important; color: black !important; padding: 0 !important; margin: 0 !important; width: 100% !important; height: 100% !important; overflow: hidden !important; }
-      .app-screen, header, footer, .screen-element, .no-print { display: none !important; }
-      .print-only-container { display: flex !important; flex-direction: column !important; width: 100% !important; height: 98vh !important; margin: 0 !important; padding: 0 !important; box-sizing: border-box !important; }
-      .print-page-single { width: 100% !important; height: 100% !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; page-break-inside: avoid !important; break-inside: avoid !important; }
-      .print-header { flex-shrink: 0 !important; margin-bottom: 2px !important; }
-      .print-table-wrapper { flex: 1 1 auto !important; display: flex !important; flex-direction: column !important; height: 100% !important; overflow: hidden !important; }
-      table.print-table { width: 100% !important; height: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; }
-      table.print-table thead tr { height: 26px !important; }
-      table.print-table th { font-size: 10.5px !important; padding: 1px !important; border: 1.5px solid black !important; background-color: #f1f5f9 !important; }
-      table.print-table td { border: 1px solid black !important; padding: 1px 2px !important; word-break: break-all !important; overflow: hidden !important; line-height: 1.2 !important; vertical-align: middle !important; text-align: center !important; }
-      @page { size: portrait; margin: 0.3cm 0.3cm !important; }
+      html, body {
+        background: white !important;
+        color: black !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow: hidden !important;
+      }
+      .app-screen, header, footer, .screen-element, .no-print {
+        display: none !important;
+      }
+      .print-only-container {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        height: 98vh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+      }
+      
+      .print-page-single {
+        width: 100% !important;
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      .print-header {
+        flex-shrink: 0 !important;
+        margin-bottom: 2px !important;
+      }
+
+      .print-table-wrapper {
+        flex: 1 1 auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        overflow: hidden !important;
+      }
+
+      table.print-table {
+        width: 100% !important;
+        height: 100% !important;
+        table-layout: fixed !important;
+        border-collapse: collapse !important;
+      }
+
+      table.print-table thead tr {
+        height: 26px !important;
+      }
+
+      table.print-table th {
+        font-size: 10.5px !important;
+        padding: 1px !important;
+        border: 1.5px solid black !important;
+        background-color: #f1f5f9 !important;
+      }
+
+      table.print-table td {
+        border: 1px solid black !important;
+        padding: 1px 2px !important;
+        word-break: break-all !important;
+        overflow: hidden !important;
+        line-height: 1.2 !important;
+        vertical-align: middle !important;
+        text-align: center !important;
+      }
+
+      @page {
+        size: portrait;
+        margin: 0.3cm 0.3cm !important;
+      }
     }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
 
 <div id="app" v-cloak class="min-h-screen flex flex-col justify-between">
-  <!-- 門市工號登入畫面 -->
+
+  <!-- ==================== 1. 門市工號登入畫面 ==================== -->
   <div v-if="!currentPartner" class="min-h-screen flex items-center justify-center p-4 bg-slate-900">
     <div class="w-full max-w-sm bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-2xl space-y-4 border border-slate-200 dark:border-slate-700 transition-all">
       <div class="text-center space-y-1">
@@ -66,16 +219,30 @@
         <h2 class="text-lg font-black text-slate-900 dark:text-white">永和永安門市 (011218)</h2>
         <p class="text-xs text-emerald-600 dark:text-emerald-400 font-bold">夥伴登入系統</p>
       </div>
+
       <form @submit.prevent="handleLogin" class="space-y-3 text-xs">
         <div>
           <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">員工編號</label>
-          <input v-model="loginForm.empId" required placeholder="請輸入8碼員工編號" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 font-mono text-sm dark:text-white focus:ring-2 focus:ring-emerald-700">
+          <input 
+            v-model="loginForm.empId" 
+            required 
+            placeholder="請輸入8碼員工編號" 
+            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 font-mono text-sm dark:text-white focus:ring-2 focus:ring-emerald-700">
         </div>
         <div>
           <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">登入密碼</label>
-          <input v-model="loginForm.password" type="password" required placeholder="請輸入密碼" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm dark:text-white focus:ring-2 focus:ring-emerald-700">
+          <input 
+            v-model="loginForm.password" 
+            type="password" 
+            required 
+            placeholder="請輸入密碼" 
+            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm dark:text-white focus:ring-2 focus:ring-emerald-700">
         </div>
-        <button type="submit" class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl shadow transition text-sm active:scale-95 disabled:bg-slate-400" :disabled="isFetchingTrivia">
+
+        <button 
+          type="submit" 
+          :disabled="isFetchingTrivia" 
+          class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl shadow transition text-sm active:scale-95 disabled:bg-slate-400">
           <span v-if="isFetchingTrivia" class="animate-spin inline-block mr-1">🔄</span>
           {{ isFetchingTrivia ? '載入 AI 知識庫...' : '登入門市系統' }}
         </button>
@@ -83,73 +250,103 @@
     </div>
   </div>
 
-  <!-- 登入後主容器 -->
+  <!-- ==================== 2. 登入後主容器 ==================== -->
   <div v-else class="app-screen max-w-md mx-auto w-full min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col shadow-lg border-x border-slate-200 dark:border-slate-800 relative">
+
     <header class="fixed top-0 left-0 right-0 z-50 ios-header-glass text-white shadow-md">
       <div class="max-w-md mx-auto px-4 py-2.5 flex items-center justify-between">
         <div class="flex items-center space-x-2">
           <span class="text-xl">☕</span>
           <div>
             <h1 class="text-sm font-bold tracking-wider leading-tight">永和永安 (011218)</h1>
-            <p class="text-[10px] text-emerald-200">Hi, {{ currentPartner?.name || '夥伴' }} ({{ currentPartner?.role || '夥伴' }})</p>
+            <p class="text-[10px] text-emerald-200">
+              Hi, {{ currentPartner?.name || '夥伴' }} ({{ currentPartner?.role || '夥伴' }})
+            </p>
           </div>
         </div>
         <div class="flex items-center space-x-2">
-          <button @click="openSettingsModal" class="p-1 text-emerald-200 hover:text-white text-base active:scale-95 transition" title="個人設定">⚙️</button>
-          <button @click="handleLogout" class="px-2 py-0.5 bg-emerald-950/80 hover:bg-red-900 border border-emerald-700 rounded-full text-[10px] text-emerald-200 transition">登出</button>
+          <button @click="openSettingsModal" class="p-1 text-emerald-200 hover:text-white text-base active:scale-95 transition" title="個人設定">
+            ⚙️
+          </button>
+          <button @click="handleLogout" class="px-2 py-0.5 bg-emerald-950/80 hover:bg-red-900 border border-emerald-700 rounded-full text-[10px] text-emerald-200 transition">
+            登出
+          </button>
         </div>
       </div>
     </header>
 
+    <!-- 主要內容區 -->
     <main class="flex-1 p-4 space-y-4">
       <transition name="fade" mode="out-in">
         <div :key="currentTab">
 
-          <!-- 頁籤 0：首頁主視覺 -->
+          <!-- ==================== 頁籤 0：首頁主視覺 ==================== -->
           <section v-if="currentTab === 'home'" class="space-y-4">
-            <div :class="weatherBannerClass" class="text-white rounded-3xl p-5 shadow-sm space-y-3 relative overflow-hidden transition-all duration-700">
+            
+            <div 
+              :class="weatherBannerClass"
+              class="text-white rounded-3xl p-5 shadow-sm space-y-3 relative overflow-hidden transition-all duration-700">
+              
               <div v-if="weatherType === 'rain'" class="rain-container">
                 <div v-for="n in 12" :key="n" class="rain-drop" :style="{ left: (n * 8) + '%', animationDelay: (n * 0.15) + 's', animationDuration: (0.9 + (n % 4) * 0.2) + 's' }"></div>
               </div>
-              <div class="absolute -right-3 -bottom-3 text-white/10 text-8xl select-none font-serif z-0 pointer-events-none">SBUX</div>
+
+              <div class="absolute -right-3 -bottom-3 text-white/10 text-8xl select-none font-serif z-0 pointer-events-none">
+                SBUX
+              </div>
+              
               <div class="relative z-10">
                 <div class="flex justify-between items-center">
-                  <span class="px-2 py-0.5 bg-white/20 text-white text-[10px] font-bold rounded-full uppercase tracking-wider backdrop-blur-sm">永安門市 Hub</span>
-                  <span class="text-xs font-bold flex items-center gap-1 bg-black/25 px-2.5 py-0.5 rounded-full">{{ weatherIcon }} {{ weatherDesc }}</span>
+                  <span class="px-2 py-0.5 bg-white/20 text-white text-[10px] font-bold rounded-full uppercase tracking-wider backdrop-blur-sm">
+                    永安門市 Hub
+                  </span>
+                  <span class="text-xs font-bold flex items-center gap-1 bg-black/25 px-2.5 py-0.5 rounded-full">
+                    {{ weatherIcon }} {{ weatherDesc }}
+                  </span>
                 </div>
                 <h2 class="text-lg font-black mt-2">Hello, {{ currentPartner?.name || '夥伴' }}!</h2>
                 <p class="text-xs text-white/90 mt-0.5">{{ weatherGreeting }}</p>
               </div>
+
               <div class="relative z-10 flex justify-between items-center text-[11px] text-white/80 border-t border-white/20 pt-2.5">
                 <span>📅 {{ currentDateTimeDisplay }}</span>
                 <span>門市營業 07:00-21:30</span>
               </div>
             </div>
 
-            <!-- 壽星提醒 -->
+            <!-- 壽星生日前兩天提醒 -->
             <div v-if="birthdayAlerts.length > 0" class="p-3.5 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-amber-500/10 border border-pink-300 dark:border-pink-800 rounded-2xl flex items-center gap-3">
               <span class="text-2xl animate-bounce">🎂</span>
               <div class="text-xs">
                 <div class="font-bold text-pink-700 dark:text-pink-300">門市壽星祝福通知：</div>
-                <div class="text-slate-700 dark:text-slate-300 text-[11px]">{{ birthdayAlerts.join('、') }} 即將迎來生日，別忘了送上 Bravo 感謝與祝福！🎉</div>
+                <div class="text-slate-700 dark:text-slate-300 text-[11px]">
+                  {{ birthdayAlerts.join('、') }} 即將迎來生日，別忘了送上 Bravo 感謝與祝福！🎉
+                </div>
               </div>
             </div>
 
-            <!-- 門市公告欄 (含表揚榜) -->
+            <!-- 門市公告欄 -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 space-y-2.5">
               <div class="flex justify-between items-center">
-                <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5"><span>📌</span> 門市公告欄</h3>
-                <button v-if="isManager" @click="openBulletinModal" class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">+ 發布公告</button>
+                <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <span>📌</span> 門市公告欄
+                </h3>
+                <button v-if="isManager" @click="openBulletinModal" class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                  + 發布公告
+                </button>
               </div>
 
               <div v-if="bulletinList.length > 0 || latteArtArchives.length > 0" class="space-y-2">
-                <!-- AI 排版需求：榮譽榜置頂 -->
+                <!-- 榮譽榜動態插入 -->
                 <div v-if="latteArtArchives.length > 0" class="p-2.5 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/40 dark:to-amber-900/30 rounded-xl border border-yellow-300 dark:border-yellow-700 text-xs space-y-1 relative shadow-sm">
                   <div class="flex justify-between items-center">
                     <span class="font-bold text-yellow-900 dark:text-yellow-300">🏆 上期拉花大賽 榮譽表揚</span>
                     <span class="text-[9px] text-yellow-800/70">{{ latteArtArchives[0].folderName }}</span>
                   </div>
-                  <p class="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed font-bold">🥇 冠軍得主：{{ latteArtArchives[0].winner }}<br>上期賽事已圓滿落幕，恭喜獲獎夥伴！</p>
+                  <p class="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed font-bold">
+                    🥇 冠軍得主：{{ latteArtArchives[0].winner }}<br>
+                    感謝夥伴們的熱情參與，歡迎前往【拉花擂台賽】查看歷屆作品！
+                  </p>
                 </div>
 
                 <div v-for="b in bulletinList" :key="b.id" class="p-2.5 bg-amber-50/60 dark:bg-amber-950/30 rounded-xl border border-amber-200/80 dark:border-amber-900/40 text-xs space-y-1 relative">
@@ -161,21 +358,28 @@
                   <button v-if="isManager" @click="deleteBulletin(b.id)" class="text-[10px] text-slate-400 hover:text-red-500 absolute top-2 right-2">✕</button>
                 </div>
               </div>
-              <p v-else class="text-xs text-slate-400 py-3 text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">目前暫無門市宣達事項。</p>
+              <p v-else class="text-xs text-slate-400 py-3 text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                目前暫無門市宣達事項。
+              </p>
             </div>
 
             <!-- 每日隨機小知識 (AI 即時連線版) -->
-            <div class="block bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/90 dark:border-amber-900/50 rounded-2xl p-3.5 shadow-sm">
+            <div class="block bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/90 dark:border-amber-900/50 rounded-2xl p-3.5 shadow-sm transition active:scale-[0.99]">
               <div class="flex items-start gap-2.5">
                 <span class="text-2xl mt-0.5 flex-shrink-0">💡</span>
                 <div class="space-y-1 w-full">
                   <div class="flex items-center justify-between">
-                    <span class="text-[11px] font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1">每日咖啡新知 (AI 生成)</span>
+                    <span class="text-[11px] font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1">
+                      每日咖啡新知 (AI 生成)
+                    </span>
                     <button @click="fetchAiTrivia" :disabled="isFetchingTrivia" class="text-[10px] text-amber-700 dark:text-amber-400 hover:underline flex items-center gap-0.5">
-                      <span v-if="isFetchingTrivia" class="animate-spin">🔄</span><span v-else>換一則 ↗</span>
+                      <span v-if="isFetchingTrivia" class="animate-spin">🔄</span>
+                      <span v-else>換一則 ↗</span>
                     </button>
                   </div>
-                  <p class="text-xs text-slate-800 dark:text-slate-200 leading-relaxed font-medium min-h-[30px]">{{ aiTriviaText }}</p>
+                  <p class="text-xs text-slate-800 dark:text-slate-200 leading-relaxed font-medium min-h-[30px]">
+                    {{ aiTriviaText }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -184,11 +388,16 @@
             <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
               <div class="flex justify-between items-center">
                 <div>
-                  <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5"><span>🏆</span> 門市榮譽殿堂</h3>
+                  <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <span>🏆</span> 門市榮譽殿堂
+                  </h3>
                   <p class="text-[9px] text-slate-400 mt-0.5">{{ settledPeriodStr }}</p>
                 </div>
-                <span class="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">週日 23:30 結算</span>
+                <span class="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                  週日 23:30 結算
+                </span>
               </div>
+
               <div class="grid grid-cols-3 gap-2 text-center">
                 <div class="bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl p-2 space-y-1">
                   <span class="text-xl">🥇</span>
@@ -196,12 +405,14 @@
                   <div class="text-xs font-black text-slate-900 dark:text-white truncate">{{ settledHonors.champion }}</div>
                   <div class="text-[9px] text-amber-700 dark:text-amber-400 font-medium">{{ settledHonors.champScore ? settledHonors.champScore + ' 分' : '-' }}</div>
                 </div>
+
                 <div class="bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 rounded-xl p-2 space-y-1">
                   <span class="text-xl">🌟</span>
                   <div class="text-[10px] text-blue-800 dark:text-blue-300 font-bold leading-tight">最佳進步獎</div>
                   <div class="text-xs font-black text-slate-900 dark:text-white truncate">{{ settledHonors.mostImproved }}</div>
                   <div class="text-[9px] text-blue-700 dark:text-blue-400 font-medium">{{ settledHonors.improvedDelta || '-' }}</div>
                 </div>
+
                 <div class="bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl p-2 space-y-1">
                   <span class="text-xl">☕</span>
                   <div class="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold leading-tight">本週活躍</div>
@@ -209,12 +420,16 @@
                   <div class="text-[9px] text-emerald-700 dark:text-emerald-400 font-medium">{{ settledHonors.activeTitle || '-' }}</div>
                 </div>
               </div>
+
               <div class="bg-slate-50 dark:bg-slate-900/60 rounded-xl p-2 text-center border border-slate-200 dark:border-slate-700">
                 <span class="text-[11px] font-bold text-emerald-900 dark:text-emerald-300 flex items-center justify-center gap-1">
                   <span>⏳</span> 評選倒數：<span class="font-mono text-emerald-700 dark:text-emerald-400">{{ countdownToSunday }}</span>
                 </span>
               </div>
-              <button @click="currentTab = 'other'; otherSubTab = 'latteArt'" class="w-full py-2 bg-emerald-50/70 dark:bg-emerald-950/40 active:bg-emerald-100 text-emerald-800 dark:text-emerald-300 text-xs font-bold rounded-xl border border-emerald-200 dark:border-emerald-800 transition flex items-center justify-center gap-1">
+
+              <button 
+                @click="currentTab = 'other'; otherSubTab = 'latteArt'"
+                class="w-full py-2 bg-emerald-50/70 dark:bg-emerald-950/40 active:bg-emerald-100 text-emerald-800 dark:text-emerald-300 text-xs font-bold rounded-xl border border-emerald-200 dark:border-emerald-800 transition flex items-center justify-center gap-1">
                 <span>🎨</span> 上傳作品 / 投票
               </button>
             </div>
@@ -223,86 +438,192 @@
             <div class="grid grid-cols-2 gap-3">
               <button @click="currentTab = 'materials'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
                 <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
-                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
                 </div>
-                <div><div class="text-xs font-bold text-slate-900 dark:text-white">物料打點試算</div><div class="text-[10px] text-slate-400">效期防呆規範</div></div>
+                <div>
+                  <div class="text-xs font-bold text-slate-900 dark:text-white">物料打點試算</div>
+                  <div class="text-[10px] text-slate-400">效期防呆規範</div>
+                </div>
               </button>
+
               <button @click="currentTab = 'intake'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
                 <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
-                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                  </svg>
                 </div>
-                <div><div class="text-xs font-bold text-slate-900 dark:text-white">進貨下架月曆</div><div class="text-[10px] text-slate-400">標準庫與排程</div></div>
+                <div>
+                  <div class="text-xs font-bold text-slate-900 dark:text-white">進貨下架月曆</div>
+                  <div class="text-[10px] text-slate-400">標準庫與撤架排程</div>
+                </div>
               </button>
+
               <button @click="currentTab = 'roster'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
                 <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
-                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
                 </div>
-                <div><div class="text-xs font-bold text-slate-900 dark:text-white">排班出勤中心</div><div class="text-[10px] text-slate-400">畫假與排班</div></div>
+                <div>
+                  <div class="text-xs font-bold text-slate-900 dark:text-white">排班出勤中心</div>
+                  <div class="text-[10px] text-slate-400">畫假行事曆與排班</div>
+                </div>
               </button>
+
               <button @click="currentTab = 'about'" class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm text-left active:scale-[0.98] transition space-y-2 group">
                 <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition">
-                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 16v-4"></path>
+                    <path d="M12 8h.01"></path>
+                  </svg>
                 </div>
-                <div><div class="text-xs font-bold text-slate-900 dark:text-white">關於永安門市</div><div class="text-[10px] text-slate-400">資訊與相簿</div></div>
+                <div>
+                  <div class="text-xs font-bold text-slate-900 dark:text-white">關於永安門市</div>
+                  <div class="text-[10px] text-slate-400">門市資訊與相簿</div>
+                </div>
               </button>
             </div>
+
           </section>
 
-          <!-- 頁籤 1：物料效期 -->
+          <!-- ==================== 頁籤 1：物料效期查詢 ==================== -->
           <section v-if="currentTab === 'materials'" class="space-y-4">
             <div class="bg-white dark:bg-slate-800 p-3 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex gap-2 items-center">
               <div class="relative flex-1">
-                <input v-model="matSearchQuery" type="text" placeholder="搜尋物料..." class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none">
+                <input 
+                  v-model="matSearchQuery" 
+                  type="text" 
+                  placeholder="搜尋物料..." 
+                  class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                >
                 <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
               </div>
-              <button v-if="isManager" @click="openAddMaterialModal" class="px-3 py-2 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition">+ 新增物料</button>
+              <button 
+                v-if="isManager" 
+                @click="openAddMaterialModal" 
+                class="px-3 py-2 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition whitespace-nowrap">
+                + 新增物料
+              </button>
             </div>
+
             <div class="space-y-3">
-              <div v-for="mat in filteredMaterials" :key="mat._key || mat.id" class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2">
+              <div 
+                v-for="mat in filteredMaterials" :key="mat._key || mat.id || (mat.code + mat.name)" 
+                class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2">
                 <div class="flex justify-between items-start">
                   <div>
-                    <span class="px-2 py-0.5 text-xs font-bold rounded bg-emerald-100 text-emerald-800 font-mono">{{ mat.code }}</span>
+                    <span class="px-2 py-0.5 text-xs font-bold rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-mono">
+                      {{ mat.code }}
+                    </span>
                     <h3 class="text-base font-bold text-slate-900 dark:text-white mt-1">{{ mat.name }}</h3>
                   </div>
                   <div class="flex items-center gap-1.5">
-                    <span :class="mat.temp === '冷藏' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'" class="px-2 py-0.5 text-xs font-bold rounded-full">{{ mat.temp || '常溫' }}</span>
-                    <button v-if="isManager" @click="editMaterial(mat)" class="p-1 text-slate-400 hover:text-emerald-700 text-xs">✏️</button>
-                    <button v-if="isManager" @click="deleteMaterial(mat)" class="p-1 text-slate-400 hover:text-red-600 text-xs">🗑️</button>
+                    <span 
+                      :class="mat.temp === '冷藏' ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300' : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300'" 
+                      class="px-2 py-0.5 text-xs font-bold rounded-full">
+                      {{ mat.temp || '常溫' }}
+                    </span>
+                    <button v-if="isManager" @click="editMaterial(mat)" class="p-1 text-slate-400 hover:text-emerald-700 text-xs" title="編輯物料">✏️</button>
+                    <button v-if="isManager" @click="deleteMaterial(mat)" class="p-1 text-slate-400 hover:text-red-600 text-xs" title="刪除物料">🗑️</button>
                   </div>
                 </div>
+
                 <div class="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700 text-xs flex justify-between">
                   <span class="text-slate-500">次級效期：</span>
                   <span class="font-bold text-emerald-800 dark:text-emerald-300">{{ mat.notes || (mat.hours ? mat.hours + '小時' : (mat.days ? 'D+' + mat.days : '依標示')) }}</span>
                 </div>
-                <button @click="calculateOpenTime(mat)" class="w-full py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl border transition">⏱️ 試算打點效期</button>
+
+                <button 
+                  @click="calculateOpenTime(mat)" 
+                  class="w-full py-2 bg-slate-100 dark:bg-slate-700 hover:bg-emerald-100 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-600 transition flex items-center justify-center gap-1">
+                  <span>⏱️</span> 試算打點效期
+                </button>
+              </div>
+
+              <div v-if="filteredMaterials.length === 0" class="text-center py-12 text-slate-400 text-xs space-y-2">
+                <p v-if="materials.length === 0">門市尚未建立物料標準。</p>
+                <p v-else>查無符合「{{ matSearchQuery }}」的物料。</p>
               </div>
             </div>
           </section>
-
-          <!-- 頁籤 2：下架行事曆 -->
+          <!-- ==================== 頁籤 2：下架行事曆 ==================== -->
           <section v-if="currentTab === 'intake'" class="space-y-4">
-            <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
+            
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3 overflow-hidden">
               <div class="flex justify-between items-center">
-                <h2 class="text-xs font-bold text-slate-700 dark:text-slate-300">📦 登記進貨品項</h2>
-                <button @click="showRulesLibrary = !showRulesLibrary" class="text-[10px] text-emerald-700 hover:underline">{{ showRulesLibrary ? '關閉標準庫' : '下架標準庫' }}</button>
+                <h2 class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <span>📦</span> 登記進貨品項
+                </h2>
+                <button @click="showRulesLibrary = !showRulesLibrary" class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold hover:underline">
+                  {{ showRulesLibrary ? '關閉標準庫' : '下架標準庫' }}
+                </button>
               </div>
+
               <form @submit.prevent="submitIntake" class="space-y-2">
-                <select v-if="rules.length > 0" @change="applyRuleToForm($event.target.value)" class="w-full px-2 py-1.5 text-xs rounded-xl border bg-slate-50 dark:bg-slate-700">
-                  <option value="">-- 自訂品項 --</option>
-                  <option v-for="r in rules" :key="r.id" :value="r.id">{{ r.keyword }} (提前 {{ r.advance_days }} 天)</option>
-                </select>
-                <input v-model="intakeForm.itemName" type="text" required placeholder="食品品名" class="w-full px-3 py-2 text-xs rounded-xl border bg-slate-50 dark:bg-slate-700">
-                <div class="flex gap-2">
-                  <input v-model="intakeForm.factoryExpiry" type="date" required class="flex-1 px-2 py-1.5 text-xs rounded-xl border bg-slate-50">
-                  <input v-model.number="intakeForm.advanceDays" type="number" min="0" placeholder="天數" class="flex-1 px-2 py-1.5 text-xs rounded-xl border bg-slate-50">
+                <div v-if="rules.length > 0">
+                  <label class="text-[10px] text-slate-500 font-bold block mb-0.5">選擇標準</label>
+                  <select @change="applyRuleToForm($event.target.value)" class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white block">
+                    <option value="">-- 自訂品項 --</option>
+                    <option v-for="r in rules" :key="r.id" :value="r.id">
+                      {{ r.keyword }} (提前 {{ r.advance_days }} 天)
+                    </option>
+                  </select>
                 </div>
+
+                <input 
+                  v-model="intakeForm.itemName" 
+                  type="text" 
+                  required 
+                  placeholder="請輸入食品品名" 
+                  class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white block"
+                >
+                <div class="flex gap-2 w-full">
+                  <div class="flex-1 min-w-0">
+                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5 truncate">原廠到期日</label>
+                    <input 
+                      v-model="intakeForm.factoryExpiry" 
+                      type="date" 
+                      required 
+                      class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white block"
+                    >
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5 truncate">提前下架天數</label>
+                    <input 
+                      v-model.number="intakeForm.advanceDays" 
+                      type="number" 
+                      min="0" 
+                      placeholder="天數" 
+                      class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white block"
+                    >
+                  </div>
+                </div>
+
                 <div class="flex items-center justify-between pt-1">
-                  <label v-if="isManager" class="text-[11px] text-slate-600 flex items-center gap-1"><input type="checkbox" v-model="intakeForm.saveAsRule" class="rounded">儲存為標準</label>
+                  <label v-if="isManager" class="text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-1 cursor-pointer">
+                    <input type="checkbox" v-model="intakeForm.saveAsRule" class="rounded text-emerald-800">
+                    <span>儲存為門市標準</span>
+                  </label>
                   <span v-else></span>
-                  <button type="submit" class="px-4 py-2 bg-emerald-800 text-white text-xs font-bold rounded-xl transition">登記進貨</button>
+                  <button 
+                    type="submit" 
+                    class="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow active:scale-95 transition">
+                    登記進貨
+                  </button>
                 </div>
               </form>
             </div>
+
             <!-- 標準庫檢視 -->
             <div v-if="showRulesLibrary" class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-emerald-300 dark:border-emerald-700 space-y-3">
               <div class="flex justify-between items-center">
@@ -319,6 +640,11 @@
                     <input type="file" accept="image/*,application/pdf" @change="handleAiRuleImageUpload" class="hidden" :disabled="isAiRecognizingRules">
                   </label>
                 </div>
+              </div>
+              
+              <div v-if="isAiRecognizingRules" class="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-pulse">
+                <span class="animate-spin text-sm">🔄</span>
+                <span class="font-bold">AI 掃描分析中...</span>
               </div>
 
               <div class="divide-y divide-slate-100 dark:divide-slate-700 max-h-48 overflow-y-auto text-xs">
@@ -391,40 +717,63 @@
               </div>
               <p v-else class="text-xs text-slate-400 py-3 text-center">當天無排定下架品項。</p>
             </div>
+
           </section>
 
           <!-- ==================== 頁籤 3：門市排班出勤中心 ==================== -->
           <section v-if="currentTab === 'roster'" class="space-y-4">
             
+            <!-- 【管理職專用面板】：店經理、副理、值班經理、時薪值班可見 -->
             <div v-if="isDutyOrAbove" class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3 overflow-hidden">
               <div class="flex justify-between items-center">
                 <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <span>👥</span> 排班管理
                 </h2>
                 <div class="flex items-center gap-1.5">
-                  <button @click="openAddStaffModal" class="px-2 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition active:scale-95">+ 新增夥伴</button>
-                  <button @click="openBlackoutModal" class="px-2 py-1 bg-rose-700 hover:bg-rose-600 text-white rounded-lg text-xs font-bold shadow-sm transition active:scale-95">🚫 設定禁休</button>
-                  <button @click="clearScheduledRoster" class="px-2 py-1 bg-slate-200 hover:bg-rose-100 text-slate-700 hover:text-rose-700 dark:bg-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold transition active:scale-95" title="清空已套用的預排班表">🗑️ 清除預排紀錄</button>
+                  <button @click="openAddStaffModal" class="px-2 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition active:scale-95">
+                    + 新增夥伴
+                  </button>
+                  <button @click="openBlackoutModal" class="px-2 py-1 bg-rose-700 hover:bg-rose-600 text-white rounded-lg text-xs font-bold shadow-sm transition active:scale-95">
+                    🚫 設定禁休
+                  </button>
+                  <button @click="clearScheduledRoster" class="px-2 py-1 bg-slate-200 hover:bg-rose-100 text-slate-700 hover:text-rose-700 dark:bg-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold transition active:scale-95" title="清空已套用的預排班表">
+                    🗑️ 清除預排紀錄
+                  </button>
                 </div>
               </div>
 
+              <!-- 排班日期範圍設定 -->
               <div class="space-y-2 pt-1 border-t border-slate-100 dark:border-slate-700">
                 <div class="flex justify-between items-center">
                   <label class="text-xs text-slate-700 dark:text-slate-300 font-bold">排班週期</label>
-                  <button @click="setNextWeekRange" type="button" class="text-[10px] px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded font-medium">⚡ 選取 7 天</button>
+                  <button 
+                    @click="setNextWeekRange" 
+                    type="button" 
+                    class="text-[10px] px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded font-medium">
+                    ⚡ 選取 7 天
+                  </button>
                 </div>
 
                 <div class="flex gap-2 w-full">
                   <div class="flex-1 min-w-0">
                     <span class="text-[10px] text-slate-400 block mb-0.5 truncate">起始日</span>
-                    <input v-model="scheduleStartDate" type="date" class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white font-medium block">
+                    <input 
+                      v-model="scheduleStartDate" 
+                      type="date" 
+                      class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white font-medium block"
+                    >
                   </div>
                   <div class="flex-1 min-w-0">
                     <span class="text-[10px] text-slate-400 block mb-0.5 truncate">結束日</span>
-                    <input v-model="scheduleEndDate" type="date" class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white font-medium block">
+                    <input 
+                      v-model="scheduleEndDate" 
+                      type="date" 
+                      class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white font-medium block"
+                    >
                   </div>
                 </div>
 
+                <!-- 本週早晚班值班主管指定選單 -->
                 <div class="p-2.5 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-600 space-y-2 text-xs">
                   <div class="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                     <span>本週指定管理職</span>
@@ -452,25 +801,34 @@
                   </div>
                 </div>
 
-                <!-- 🌟 AI 智能排班按鈕 -->
+                <!-- 單一執行自動預排按鍵 (保留強大的本地端演算法防呆) -->
                 <div class="pt-1">
-                  <button @click="generateAiRoster" type="button" class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
-                    <span>🤖</span> 執行自動智慧預排 (勞基法與銜接班防呆)
+                  <button 
+                    @click="generateAiRoster" 
+                    type="button" 
+                    class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
+                    <span>🤖</span> 執行自動智慧預排
                   </button>
                 </div>
 
+                <!-- 雙列印按鍵 -->
                 <div class="grid grid-cols-2 gap-2 pt-1">
-                  <button @click="triggerPrintSchedule('blank')" class="py-2.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1 active:scale-95">
+                  <button 
+                    @click="triggerPrintSchedule('blank')" 
+                    class="py-2.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1 active:scale-95">
                     <span>🖨️</span> 列印空白排班表
                   </button>
-                  <button @click="triggerPrintSchedule('ai')" class="py-2.5 bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1 active:scale-95">
+                  
+                  <button 
+                    @click="triggerPrintSchedule('ai')" 
+                    class="py-2.5 bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1 active:scale-95">
                     <span>🖨️</span> 列印預排班表
                   </button>
                 </div>
               </div>
             </div>
 
-            <!-- 畫假行事曆 -->
+            <!-- 【全體夥伴皆可使用】：畫假登記與畫假行事曆 -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
               <div class="flex justify-between items-center">
                 <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
@@ -478,111 +836,213 @@
                 </h3>
               </div>
 
+              <!-- 登記畫假表單 -->
               <form @submit.prevent="submitVacation" class="space-y-2 p-3 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-600">
                 <div class="flex gap-2 w-full">
                   <div class="flex-1 min-w-0">
                     <label class="text-[10px] text-slate-500 font-bold block mb-0.5 truncate">登記夥伴</label>
                     <select v-if="isDutyOrAbove" v-model="vacationForm.staffId" required class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white block">
-                      <option v-for="s in sortedValidStaffList" :key="s._key || s.id" :value="s.id || s._key">{{ s.name }} ({{ s.nickname }}) - {{ s.role }}</option>
+                      <option v-for="s in sortedValidStaffList" :key="s._key || s.id" :value="s.id || s._key">
+                        {{ s.name }} ({{ s.nickname }}) - {{ s.role }}
+                      </option>
                     </select>
                     <input v-else :value="(currentPartner?.name || '') + ' (' + (currentPartner?.nickname || '') + ')'" disabled class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 block font-bold">
                   </div>
                   <div class="flex-1 min-w-0">
                     <label class="text-[10px] text-slate-500 font-bold block mb-0.5 truncate">休假日期</label>
-                    <input v-model="vacationForm.date" type="date" :min="allowedVacationStartStr" required class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white block">
+                    <input 
+                      v-model="vacationForm.date" 
+                      type="date" 
+                      :min="allowedVacationStartStr" 
+                      required 
+                      class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white block"
+                    >
                   </div>
                 </div>
+
                 <div class="flex gap-2 w-full">
                   <div class="w-1/3 min-w-0">
                     <label class="text-[10px] text-slate-500 font-bold block mb-0.5 truncate">假別</label>
                     <select v-model="vacationForm.type" class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white block">
-                      <option value="無法排班">無法排班</option><option value="代休假">代休假</option><option value="特別假">特別假</option>
+                      <option value="無法排班">無法排班</option>
+                      <option value="代休假">代休假</option>
+                      <option value="特別假">特別假</option>
                     </select>
                   </div>
                   <div class="flex-1 min-w-0">
                     <label class="text-[10px] text-slate-500 font-bold block mb-0.5 truncate">原因備註</label>
-                    <input v-model="vacationForm.notes" type="text" placeholder="選填備註" class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white block">
+                    <input 
+                      v-model="vacationForm.notes" 
+                      type="text" 
+                      placeholder="選填備註" 
+                      class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white block"
+                    >
                   </div>
                 </div>
-                <button type="submit" class="w-full py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 transition">送出畫假</button>
+
+                <button 
+                  type="submit" 
+                  class="w-full py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 transition">
+                  送出畫假
+                </button>
               </form>
 
+              <!-- 行事曆月份切換 -->
               <div class="flex items-center justify-between pt-2">
-                <span class="text-xs font-bold text-slate-900 dark:text-white">🗓️ {{ vacationCalYear }} 年 {{ vacationCalMonth + 1 }} 月</span>
+                <span class="text-xs font-bold text-slate-900 dark:text-white">
+                  🗓️ {{ vacationCalYear }} 年 {{ vacationCalMonth + 1 }} 月
+                </span>
                 <div class="flex space-x-1">
                   <button @click="changeVacationMonth(-1)" class="px-2 py-0.5 text-xs bg-slate-100 dark:bg-slate-700 rounded active:bg-slate-200">‹</button>
                   <button @click="resetVacationMonth" class="px-2 py-0.5 text-xs bg-slate-100 dark:bg-slate-700 rounded active:bg-slate-200">本月</button>
                   <button @click="changeVacationMonth(1)" class="px-2 py-0.5 text-xs bg-slate-100 dark:bg-slate-700 rounded active:bg-slate-200">›</button>
                 </div>
               </div>
+
+              <!-- 星期標題 -->
               <div class="grid grid-cols-7 gap-1 text-center font-bold text-[10px] text-slate-400">
                 <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
               </div>
+
+              <!-- 畫假月曆格子 -->
               <div class="grid grid-cols-7 gap-1">
-                <div v-for="(day, idx) in vacationCalendarDays" :key="idx" @click="openVacationDetailModal(day)" 
-                  :class="['min-h-[50px] p-1 rounded-xl border flex flex-col justify-between text-[10px] transition cursor-pointer relative',
+                <div 
+                  v-for="(day, idx) in vacationCalendarDays" :key="idx" 
+                  @click="openVacationDetailModal(day)" 
+                  :class="[
+                    'min-h-[50px] p-1 rounded-xl border flex flex-col justify-between text-[10px] transition cursor-pointer relative',
                     day.isCurrentMonth ? 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700' : 'bg-slate-50 dark:bg-slate-900 border-transparent text-slate-300 dark:text-slate-600',
-                    day.isBlackout ? 'bg-rose-50/80 dark:bg-rose-950/40 border-rose-300 dark:border-rose-900' : '']">
+                    day.isBlackout ? 'bg-rose-50/80 dark:bg-rose-950/40 border-rose-300 dark:border-rose-900' : ''
+                  ]">
                   <div class="flex justify-between items-start">
                     <span :class="day.isBlackout ? 'text-rose-600 font-bold' : ''">{{ day.dayNum }}</span>
                     <span v-if="day.isBlackout" class="text-[8px] bg-rose-600 text-white font-bold px-1 rounded">禁休</span>
                   </div>
+
                   <div v-if="day.vacations.length > 0" class="mt-1">
-                    <span class="px-1.5 py-0.5 bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-200 rounded text-[9px] font-bold block text-center truncate">{{ day.vacations.length }}人假</span>
+                    <span class="px-1.5 py-0.5 bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-200 rounded text-[9px] font-bold block text-center truncate">
+                      {{ day.vacations.length }}人假
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- 夥伴名冊 -->
+            <!-- 夥伴名冊（僅管理職可見） -->
             <div v-if="isDutyOrAbove" class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
-              <div><h3 class="text-xs font-bold text-slate-800 dark:text-slate-200">📋 門市夥伴名冊</h3></div>
+              <div>
+                <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200">📋 門市夥伴名冊</h3>
+              </div>
+              
               <div class="space-y-2 max-h-64 overflow-y-auto">
-                <div v-for="s in sortedValidStaffList" :key="s._key || s.id" :class="isSpecialCoffeeMaster(s) ? 'black-gold-card p-3 rounded-2xl relative overflow-hidden flex flex-col gap-1.5 text-xs text-amber-100' : 'p-2.5 bg-slate-50 dark:bg-slate-700/60 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col gap-1 text-xs'">
-                  <div v-if="s.nickname === 'Hazel'" class="absolute -top-1 -right-1 dcm-corner-badge text-[9px] font-black px-2.5 py-0.5 rounded-bl-xl flex items-center gap-1"><span>☕</span> 🌟 DCM</div>
-                  <div v-else-if="['Zero', 'Winona'].includes(s.nickname)" class="absolute -top-1 -right-1 bg-amber-400 text-black text-[9px] font-black px-2 py-0.5 rounded-bl-xl flex items-center gap-0.5"><span>☕</span> Master</div>
+                <div 
+                  v-for="s in sortedValidStaffList" :key="s._key || s.id" 
+                  :class="isSpecialCoffeeMaster(s) ? 'black-gold-card p-3 rounded-2xl relative overflow-hidden flex flex-col gap-1.5 text-xs text-amber-100' : 'p-2.5 bg-slate-50 dark:bg-slate-700/60 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col gap-1 text-xs'">
+                  
+                  <div v-if="s.nickname === 'Hazel'" class="absolute -top-1 -right-1 dcm-corner-badge text-[9px] font-black px-2.5 py-0.5 rounded-bl-xl flex items-center gap-1">
+                    <span>☕</span> 🌟 DCM
+                  </div>
+                  <div v-else-if="['Zero', 'Winona'].includes(s.nickname)" class="absolute -top-1 -right-1 bg-amber-400 text-black text-[9px] font-black px-2 py-0.5 rounded-bl-xl flex items-center gap-0.5">
+                    <span>☕</span> Master
+                  </div>
+
                   <div class="flex justify-between items-center">
                     <div class="flex items-center flex-wrap gap-1.5">
                       <span :class="isSpecialCoffeeMaster(s) ? 'text-amber-400/80' : 'text-slate-400'" class="font-mono text-[10px]">{{ s.empId }}</span>
                       <span :class="isSpecialCoffeeMaster(s) ? 'text-amber-200 font-black text-sm' : 'text-slate-900 dark:text-white font-bold'">{{ s.name }}</span>
                       <span :class="isSpecialCoffeeMaster(s) ? 'text-amber-300/80' : 'text-slate-500'">({{ s.nickname }})</span>
-                      <span :class="isSpecialCoffeeMaster(s) ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' : (s.role === '天使夥伴' ? 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800' : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300')" class="px-1.5 py-0.5 rounded text-[10px] font-bold"><span v-if="s.role === '天使夥伴'">👼 </span>{{ s.role }}</span>
+                      
+                      <span 
+                        :class="isSpecialCoffeeMaster(s) ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' : (s.role === '天使夥伴' ? 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800' : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300')" 
+                        class="px-1.5 py-0.5 rounded text-[10px] font-bold">
+                        <span v-if="s.role === '天使夥伴'">👼 </span>{{ s.role }}
+                      </span>
                     </div>
+
                     <div class="flex gap-2">
                       <button @click="openAvailabilityModal(s)" :class="isSpecialCoffeeMaster(s) ? 'text-amber-400 hover:text-amber-300' : 'text-emerald-700 dark:text-emerald-400'" class="hover:underline text-[11px] font-bold">時段</button>
                       <button @click="editStaff(s)" class="text-slate-400 hover:text-emerald-700">✏️</button>
                       <button @click="promptSecureDeleteStaff(s)" class="text-slate-400 hover:text-red-500">🗑️</button>
                     </div>
                   </div>
-                  <div :class="isSpecialCoffeeMaster(s) ? 'text-amber-400/60' : 'text-slate-400'" class="text-[10px] truncate">配班時段：{{ s.role === '天使夥伴' ? '每週二/四/五/六/日 08:30-17:30' : getAvailabilitySummary(s) }}</div>
+
+                  <div :class="isSpecialCoffeeMaster(s) ? 'text-amber-400/60' : 'text-slate-400'" class="text-[10px] truncate">
+                    配班時段：{{ s.role === '天使夥伴' ? '每週二/四/五/六/日 08:30-17:30' : getAvailabilitySummary(s) }}
+                  </div>
                 </div>
               </div>
             </div>
+
           </section>
 
           <!-- ==================== 頁籤 4：【其他】 ==================== -->
           <section v-if="currentTab === 'other'" class="space-y-4">
+            
+            <!-- 子頁籤選單 -->
             <div class="flex gap-1.5 overflow-x-auto pb-1 text-xs font-bold no-scrollbar">
-              <button @click="otherSubTab = 'academy'" :class="otherSubTab === 'academy' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">🎓 黑圍裙課程</button>
-              <button @click="otherSubTab = 'coffee'" :class="otherSubTab === 'coffee' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">☕ 沖煮與豆寶典</button>
-              <button @click="otherSubTab = 'tasting'" :class="otherSubTab === 'tasting' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">📝 品評 Tasting</button>
-              <button @click="otherSubTab = 'latteArt'" :class="otherSubTab === 'latteArt' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">🎨 拉花擂台賽</button>
-              <button @click="otherSubTab = 'quiz'" :class="otherSubTab === 'quiz' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">📖 永安小學堂</button>
+              <button @click="otherSubTab = 'academy'" :class="otherSubTab === 'academy' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
+                🎓 黑圍裙課程
+              </button>
+              <button @click="otherSubTab = 'coffee'" :class="otherSubTab === 'coffee' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
+                ☕ 沖煮與豆寶典
+              </button>
+              <button @click="otherSubTab = 'tasting'" :class="otherSubTab === 'tasting' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
+                📝 品評 Tasting
+              </button>
+              <button @click="otherSubTab = 'latteArt'" :class="otherSubTab === 'latteArt' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
+                🎨 拉花擂台賽
+              </button>
+              <button @click="otherSubTab = 'quiz'" :class="otherSubTab === 'quiz' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
+                📖 永安小學堂
+              </button>
             </div>
 
             <!-- CA 100~300 精編講義 -->
             <div v-if="otherSubTab === 'academy'" class="space-y-3">
               <div class="bg-gradient-to-r from-zinc-950 via-neutral-900 to-zinc-950 text-amber-100 p-4 rounded-2xl shadow-sm space-y-1.5 border border-amber-500/40">
                 <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-1.5"><span class="text-xl">🎓</span><h3 class="text-xs font-black tracking-wider text-amber-300">星巴克黑圍裙大師認證專用講義</h3></div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xl">🎓</span>
+                    <h3 class="text-xs font-black tracking-wider text-amber-300">星巴克黑圍裙大師認證專用講義</h3>
+                  </div>
                   <span class="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-bold border border-amber-400/30">核心指南</span>
                 </div>
               </div>
 
+              <!-- CA 100 -->
               <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
                 <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
-                  <div class="flex items-center gap-2"><span class="px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-xs font-black border border-amber-300 dark:border-amber-800">CA 100</span><h4 class="font-black text-slate-900 dark:text-white text-sm">咖啡基礎學與感官入門</h4></div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-xs font-black border border-amber-300 dark:border-amber-800">CA 100</span>
+                    <h4 class="font-black text-slate-900 dark:text-white text-sm">咖啡基礎學與感官入門</h4>
+                  </div>
+                  <span class="text-[10px] font-bold text-slate-400">Coffee Fundamentals</span>
                 </div>
+
+                <div class="space-y-1.5">
+                  <div class="text-xs font-bold text-emerald-900 dark:text-emerald-400 flex items-center gap-1">
+                    <span>👃</span> 品嚐咖啡四步驟
+                  </div>
+                  <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+                    <div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700">
+                      <b class="text-slate-800 dark:text-slate-200">1. 聞香 (Smell)：</b>
+                      <p class="text-slate-500 mt-0.5">杯口微罩嗅吸前調香氣。</p>
+                    </div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700">
+                      <b class="text-slate-800 dark:text-slate-200">2. 啜飲 (Slurp)：</b>
+                      <p class="text-slate-500 mt-0.5">大聲吸入散佈舌面味蕾。</p>
+                    </div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700">
+                      <b class="text-slate-800 dark:text-slate-200">3. 定位 (Locate)：</b>
+                      <p class="text-slate-500 mt-0.5">感知兩側酸度與上顎醇度。</p>
+                    </div>
+                    <div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700">
+                      <b class="text-slate-800 dark:text-slate-200">4. 描述 (Describe)：</b>
+                      <p class="text-slate-500 mt-0.5">具體描繪整體咖啡體驗。</p>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="space-y-2 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700 leading-relaxed">
                   <div>
                     <b class="text-slate-800 dark:text-slate-200">🎯 咖啡四大特徵：</b>
@@ -603,32 +1063,55 @@
                     </ul>
                   </div>
                 </div>
+                
                 <a href="https://pinnacle.starbucks.com.tw/" target="_blank" class="flex justify-center mt-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold rounded-xl border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 transition shadow-sm">
                   🔗 點我前往 Pinnacle 數位學習平台 (CA 100 測驗)
                 </a>
               </div>
 
+              <!-- CA 200 -->
               <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
                 <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
-                  <div class="flex items-center gap-2"><span class="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 text-xs font-black border border-emerald-300 dark:border-emerald-800">CA 200</span><h4 class="font-black text-slate-900 dark:text-white text-sm">產區風土與永續採購</h4></div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 text-xs font-black border border-emerald-300 dark:border-emerald-800">CA 200</span>
+                    <h4 class="font-black text-slate-900 dark:text-white text-sm">產區風土與永續採購</h4>
+                  </div>
+                  <span class="text-[10px] font-bold text-slate-400">Origins</span>
                 </div>
+
                 <div class="grid grid-cols-3 gap-1.5 text-[11px] text-center">
-                  <div class="p-2 bg-amber-50/70 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-900/50"><b class="text-amber-950 dark:text-amber-200">拉丁美洲</b><p class="text-[10px] text-slate-600 dark:text-slate-300 mt-1">堅果、黑可可、平衡酸質。</p></div>
-                  <div class="p-2 bg-rose-50/70 dark:bg-rose-950/30 rounded-xl border border-rose-200 dark:border-rose-900/50"><b class="text-rose-950 dark:text-rose-200">非洲產區</b><p class="text-[10px] text-slate-600 dark:text-slate-300 mt-1">柑橘、莓果與明亮果酸。</p></div>
-                  <div class="p-2 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800"><b class="text-emerald-950 dark:text-emerald-200">亞太產區</b><p class="text-[10px] text-slate-600 dark:text-slate-300 mt-1">草本、泥土芳香、厚重醇度。</p></div>
+                  <div class="p-2 bg-amber-50/70 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-900/50">
+                    <b class="text-amber-950 dark:text-amber-200">拉丁美洲</b>
+                    <p class="text-[10px] text-slate-600 dark:text-slate-300 mt-1">堅果、黑可可、平衡酸質。</p>
+                  </div>
+                  <div class="p-2 bg-rose-50/70 dark:bg-rose-950/30 rounded-xl border border-rose-200 dark:border-rose-900/50">
+                    <b class="text-rose-950 dark:text-rose-200">非洲產區</b>
+                    <p class="text-[10px] text-slate-600 dark:text-slate-300 mt-1">柑橘、莓果與明亮果酸。</p>
+                  </div>
+                  <div class="p-2 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                    <b class="text-emerald-950 dark:text-emerald-200">亞太產區</b>
+                    <p class="text-[10px] text-slate-600 dark:text-slate-300 mt-1">草本、泥土芳香、厚重醇度。</p>
+                  </div>
                 </div>
+
                 <a href="https://pinnacle.starbucks.com.tw/" target="_blank" class="flex justify-center mt-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold rounded-xl border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 transition shadow-sm">
                   🔗 點我前往 Pinnacle 數位學習平台 (CA 200 測驗)
                 </a>
               </div>
 
+              <!-- CA 300 -->
               <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
                 <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
-                  <div class="flex items-center gap-2"><span class="px-2 py-0.5 rounded bg-zinc-950 text-amber-300 text-xs font-black border border-amber-400">CA 300</span><h4 class="font-black text-slate-900 dark:text-white text-sm">烘焙工藝與拼配藝術</h4></div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-zinc-950 text-amber-300 text-xs font-black border border-amber-400">CA 300</span>
+                    <h4 class="font-black text-slate-900 dark:text-white text-sm">烘焙工藝與拼配藝術</h4>
+                  </div>
+                  <span class="text-[10px] font-bold text-amber-500">Roast</span>
                 </div>
                 <div class="text-[11px] text-slate-600 dark:text-slate-300 space-y-1">
                   <p>一爆發展花果酸香（黃金烘焙）；焦糖化帶出可可圓潤（中度烘焙）；二爆油脂浮出產生厚實煙燻感（深度烘焙）。</p>
                 </div>
+                
                 <a href="https://pinnacle.starbucks.com.tw/" target="_blank" class="flex justify-center mt-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold rounded-xl border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 transition shadow-sm">
                   🔗 點我前往 Pinnacle 數位學習平台 (CA 300 測驗)
                 </a>
@@ -638,36 +1121,65 @@
             <!-- 沖煮秘笈與常態豆寶典 -->
             <div v-if="otherSubTab === 'coffee'" class="space-y-4">
               <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
-                <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5"><span>📖</span> 沖煮標準參數</h3>
+                <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <span>📖</span> 沖煮標準參數
+                </h3>
                 <div class="grid grid-cols-2 gap-2 text-xs">
                   <div class="bg-emerald-50/60 dark:bg-emerald-950/40 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800 space-y-1">
-                    <div class="font-bold text-emerald-950 dark:text-emerald-300">手沖滴濾 (Pour-Over)</div><div class="text-[11px] text-emerald-800 dark:text-emerald-300">粉水比 1:16 ｜ 研磨度 4-5 ｜ 90-96°C</div>
+                    <div class="font-bold text-emerald-950 dark:text-emerald-300">手沖滴濾 (Pour-Over)</div>
+                    <div class="text-[11px] text-emerald-800 dark:text-emerald-300">粉水比 1:16 ｜ 研磨度 4-5 ｜ 90-96°C</div>
                   </div>
                   <div class="bg-amber-50/60 dark:bg-amber-950/40 p-3 rounded-xl border border-amber-200 dark:border-amber-800 space-y-1">
-                    <div class="font-bold text-amber-950 dark:text-amber-300">法式濾壓壺 (Press)</div><div class="text-[11px] text-amber-800 dark:text-amber-300">粉水比 1:15 ｜ 研磨度 8-9 ｜ 浸泡 4 分鐘</div>
+                    <div class="font-bold text-amber-950 dark:text-amber-300">法式濾壓壺 (Press)</div>
+                    <div class="text-[11px] text-amber-800 dark:text-amber-300">粉水比 1:15 ｜ 研磨度 8-9 ｜ 浸泡 4 分鐘</div>
                   </div>
                 </div>
               </div>
 
+              <!-- 豆寶典搜尋與清單 -->
               <div class="space-y-3">
                 <div class="relative">
-                  <input v-model="coffeeSearchQuery" type="text" placeholder="搜尋豆名、產區..." class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-700">
+                  <input 
+                    v-model="coffeeSearchQuery" 
+                    type="text" 
+                    placeholder="搜尋豆名、產區..." 
+                    class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                  >
                   <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
                 </div>
-                <div v-for="bean in filteredCoffeeBeans" :key="bean.name" class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+
+                <div 
+                  v-for="bean in filteredCoffeeBeans" :key="bean.name" 
+                  class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
                   <div class="flex justify-between items-start">
-                    <div><h3 class="text-base font-black text-slate-900 dark:text-white">{{ bean.name }}</h3><p class="text-[11px] font-bold text-slate-400">{{ bean.enName }}</p></div>
-                    <span class="px-2.5 py-1 text-[10px] font-bold rounded-lg border bg-amber-50 text-amber-900 border-amber-300">{{ bean.roast }}</span>
+                    <div>
+                      <h3 class="text-base font-black text-slate-900 dark:text-white">{{ bean.name }}</h3>
+                      <p class="text-[11px] font-bold text-slate-400">{{ bean.enName }}</p>
+                    </div>
+                    <span class="px-2.5 py-1 text-[10px] font-bold rounded-lg border bg-amber-50 text-amber-900 border-amber-300">
+                      {{ bean.roast }}
+                    </span>
                   </div>
-                  <p class="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700">{{ bean.description }}</p>
+
+                  <p class="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700">
+                    {{ bean.description }}
+                  </p>
+
                   <div class="grid grid-cols-2 gap-2 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
                     <div><span class="text-slate-500">產區：</span><span class="font-bold text-slate-700 dark:text-slate-300">{{ bean.region }}</span></div>
                     <div><span class="text-slate-500">處理法：</span><span class="font-bold text-slate-700 dark:text-slate-300">{{ bean.processing }}</span></div>
                     <div><span class="text-slate-500">酸度：</span><span class="font-bold text-slate-700 dark:text-slate-300">{{ bean.acidity }}</span></div>
                     <div><span class="text-slate-500">醇度：</span><span class="font-bold text-slate-700 dark:text-slate-300">{{ bean.body }}</span></div>
-                    <div class="col-span-2 border-t border-slate-200 dark:border-slate-700 pt-1.5 mt-0.5"><span class="text-slate-500 block mb-0.5">風味描述：</span><span class="font-bold text-emerald-800 dark:text-emerald-400 text-xs">{{ bean.flavorNotes }}</span></div>
-                    <div class="col-span-2"><span class="text-slate-500 block mb-0.5">推薦糕點搭配：</span><span class="font-bold text-amber-700 dark:text-amber-400">{{ bean.foodPairing }}</span></div>
+                    <div class="col-span-2 border-t border-slate-200 dark:border-slate-700 pt-1.5 mt-0.5">
+                      <span class="text-slate-500 block mb-0.5">風味描述：</span>
+                      <span class="font-bold text-emerald-800 dark:text-emerald-400 text-xs">{{ bean.flavorNotes }}</span>
+                    </div>
+                    <div class="col-span-2">
+                      <span class="text-slate-500 block mb-0.5">推薦糕點搭配：</span>
+                      <span class="font-bold text-amber-700 dark:text-amber-400">{{ bean.foodPairing }}</span>
+                    </div>
                   </div>
+                  
                   <a v-if="bean.url" :href="bean.url" target="_blank" class="mt-2 block text-center w-full py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-600 dark:text-slate-300 text-[11px] font-bold rounded-xl transition shadow-sm border border-slate-200 dark:border-slate-600">
                     🔗 前往星巴克官網了解更多
                   </a>
@@ -678,37 +1190,73 @@
             <!-- Tasting 品評 -->
             <div v-if="otherSubTab === 'tasting'" class="space-y-4">
               <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
-                <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5"><span>☕</span> 新增 Tasting 心得</h3>
+                <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <span>☕</span> 新增 Tasting 心得
+                </h3>
+
                 <div class="space-y-2.5 text-xs">
                   <div class="grid grid-cols-2 gap-2">
-                    <div><label class="text-[10px] text-slate-500 font-bold block mb-0.5">夥伴</label><input :value="currentPartner?.name || ''" disabled class="w-full px-2 py-1.5 rounded-xl border border-slate-200 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold"></div>
+                    <div>
+                      <label class="text-[10px] text-slate-500 font-bold block mb-0.5">夥伴</label>
+                      <input :value="currentPartner?.name || ''" disabled class="w-full px-2 py-1.5 rounded-xl border border-slate-200 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold">
+                    </div>
                     <div>
                       <label class="text-[10px] text-slate-500 font-bold block mb-0.5">豆款</label>
-                      <input v-model="tastingForm.coffeeName" list="coffeeBeansDatalist" type="text" placeholder="請輸入品名..." class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white">
-                      <datalist id="coffeeBeansDatalist"><option v-for="b in starbucksCoreBeans" :key="b.name" :value="b.name"></option></datalist>
+                      <input 
+                        v-model="tastingForm.coffeeName" 
+                        list="coffeeBeansDatalist" 
+                        type="text" 
+                        placeholder="請輸入品名..." 
+                        class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white">
+                      
+                      <datalist id="coffeeBeansDatalist">
+                        <option v-for="b in starbucksCoreBeans" :key="b.name" :value="b.name"></option>
+                      </datalist>
                     </div>
                   </div>
+
                   <div class="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
-                    <div class="flex justify-between items-center text-[11px]"><span class="font-bold text-slate-700 dark:text-slate-300">🍋 酸度</span><span class="font-bold text-emerald-800 dark:text-emerald-400">{{ getIntensityLabel(tastingForm.acidity) }}</span></div>
+                    <div class="flex justify-between items-center text-[11px]">
+                      <span class="font-bold text-slate-700 dark:text-slate-300">🍋 酸度</span>
+                      <span class="font-bold text-emerald-800 dark:text-emerald-400">{{ getIntensityLabel(tastingForm.acidity) }}</span>
+                    </div>
                     <input v-model.number="tastingForm.acidity" type="range" min="1" max="5" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-700">
                   </div>
+
                   <div class="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
-                    <div class="flex justify-between items-center text-[11px]"><span class="font-bold text-slate-700 dark:text-slate-300">🧈 醇度</span><span class="font-bold text-emerald-800 dark:text-emerald-400">{{ getIntensityLabel(tastingForm.body) }}</span></div>
+                    <div class="flex justify-between items-center text-[11px]">
+                      <span class="font-bold text-slate-700 dark:text-slate-300">🧈 醇度</span>
+                      <span class="font-bold text-emerald-800 dark:text-emerald-400">{{ getIntensityLabel(tastingForm.body) }}</span>
+                    </div>
                     <input v-model.number="tastingForm.body" type="range" min="1" max="5" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-700">
                   </div>
-                  <div><label class="text-[10px] text-slate-500 font-bold block mb-0.5">香氣</label><input v-model="tastingForm.aroma" type="text" placeholder="例：烤堅果" class="w-full px-2.5 py-1.5 text-xs rounded-xl border dark:bg-slate-700 dark:text-white"></div>
-                  <div><label class="text-[10px] text-slate-500 font-bold block mb-0.5">風味與心得</label><textarea v-model="tastingForm.notes" rows="2" placeholder="分享品鑑心得..." class="w-full px-2.5 py-1.5 text-xs rounded-xl border dark:bg-slate-700 dark:text-white"></textarea></div>
-                  <button @click="submitTastingNote" :disabled="isAiEvaluatingTasting" class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 disabled:bg-slate-300 transition flex items-center justify-center gap-1.5">
-                    <span v-if="isAiEvaluatingTasting" class="animate-spin">🔄</span><span>{{ isAiEvaluatingTasting ? 'AI 分析中...' : '發布品評' }}</span>
+
+                  <div>
+                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5">香氣</label>
+                    <input v-model="tastingForm.aroma" type="text" placeholder="例：烤堅果" class="w-full px-2.5 py-1.5 text-xs rounded-xl border dark:bg-slate-700 dark:text-white">
+                  </div>
+                  <div>
+                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5">風味與心得</label>
+                    <textarea v-model="tastingForm.notes" rows="2" placeholder="分享品鑑心得..." class="w-full px-2.5 py-1.5 text-xs rounded-xl border dark:bg-slate-700 dark:text-white"></textarea>
+                  </div>
+
+                  <button 
+                    @click="submitTastingNote" 
+                    :disabled="isAiEvaluatingTasting" 
+                    class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 disabled:bg-slate-300 transition flex items-center justify-center gap-1.5">
+                    <span v-if="isAiEvaluatingTasting" class="animate-spin">🔄</span>
+                    <span>{{ isAiEvaluatingTasting ? 'AI 分析中...' : '發布品評' }}</span>
                   </button>
                 </div>
               </div>
               
-              <!-- Tasting 動態牆 -->
+              <!-- Tasting 動態牆（獨立酸醇度數值標籤） -->
               <div class="space-y-3">
                 <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200">📋 品評動態牆</h4>
                 <div v-if="tastingNotesList.length > 0" class="space-y-2.5">
-                  <div v-for="item in tastingNotesList" :key="item.id || item._key" class="rounded-2xl p-3.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm space-y-2 text-xs relative">
+                  <div 
+                    v-for="item in tastingNotesList" :key="item.id || item._key" 
+                    class="rounded-2xl p-3.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm space-y-2 text-xs relative">
                     <div class="flex justify-between items-center">
                       <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                         <span class="px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 rounded text-[10px]">{{ item.coffeeName }}</span>
@@ -716,20 +1264,37 @@
                       </div>
                       <div class="flex items-center gap-2">
                         <span class="text-[10px] text-slate-400">{{ item.dateStr }}</span>
-                        <button v-if="isDutyOrAbove || item.authorStaffId === currentPartner?.id || item.authorStaffId === currentPartner?._key" @click="deleteTastingNote(item.id || item._key)" class="text-slate-300 hover:text-rose-500 text-xs px-1" title="刪除品評">🗑️</button>
+                        <button 
+                          v-if="isDutyOrAbove || item.authorStaffId === currentPartner?.id || item.authorStaffId === currentPartner?._key" 
+                          @click="deleteTastingNote(item.id || item._key)" 
+                          class="text-slate-300 hover:text-rose-500 text-xs px-1" title="刪除品評">
+                          🗑️
+                        </button>
                       </div>
                     </div>
+
+                    <!-- 清楚顯示獨立酸度與醇度標籤 -->
                     <div class="flex gap-2">
-                      <span class="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 rounded-lg text-[10px] font-bold border border-amber-200 dark:border-amber-900/40">🍋 酸度：{{ getIntensityLabel(item.acidity) }}</span>
-                      <span class="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 rounded-lg text-[10px] font-bold border border-indigo-200 dark:border-indigo-900/40">🧈 醇度：{{ getIntensityLabel(item.body) }}</span>
+                      <span class="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 rounded-lg text-[10px] font-bold border border-amber-200 dark:border-amber-900/40">
+                        🍋 酸度：{{ getIntensityLabel(item.acidity) }}
+                      </span>
+                      <span class="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 rounded-lg text-[10px] font-bold border border-indigo-200 dark:border-indigo-900/40">
+                        🧈 醇度：{{ getIntensityLabel(item.body) }}
+                      </span>
                     </div>
-                    <div class="text-[11px] bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl text-slate-600 dark:text-slate-300 leading-relaxed border border-slate-100 dark:border-slate-700">心得：{{ getCleanNotesText(item.notes || item.flavor) }}</div>
-                    <div class="bg-emerald-50/80 dark:bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-900 dark:text-emerald-300 leading-relaxed whitespace-pre-line">
-                      🤖 <b>AI 風味評析：</b><br><span class="font-bold text-emerald-800 dark:text-emerald-400">{{ item.aiComment }}</span>
+
+                    <div class="text-[11px] bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl text-slate-600 dark:text-slate-300 leading-relaxed">
+                      心得：{{ getCleanNotesText(item.notes || item.flavor) }}
+                    </div>
+
+                    <div class="bg-emerald-50/80 dark:bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 text-[10px] text-emerald-800 dark:text-emerald-300 leading-relaxed whitespace-pre-line">
+                      🤖 <b>AI 風味評析：</b>{{ item.aiComment }}
                     </div>
                   </div>
                 </div>
-                <p v-else class="text-xs text-slate-400 py-6 text-center bg-white dark:bg-slate-800 rounded-2xl border">目前尚無品評分享。</p>
+                <p v-else class="text-xs text-slate-400 py-6 text-center bg-white dark:bg-slate-800 rounded-2xl border">
+                  目前尚無品評分享。
+                </p>
               </div>
             </div>
 
@@ -737,27 +1302,48 @@
             <div v-if="otherSubTab === 'latteArt'" class="space-y-4">
               <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
                 <div class="flex justify-between items-center">
-                  <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5"><span>📸</span> 上傳拉花作品</h3>
+                  <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <span>📸</span> 上傳拉花作品
+                  </h3>
                 </div>
+
                 <div class="space-y-2 text-xs">
                   <div class="grid grid-cols-2 gap-2">
-                    <div><label class="text-[10px] text-slate-500 font-bold block mb-0.5">夥伴</label><input :value="currentPartner?.name || ''" disabled class="w-full px-2 py-1.5 rounded-xl border border-slate-200 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold"></div>
+                    <div>
+                      <label class="text-[10px] text-slate-500 font-bold block mb-0.5">夥伴</label>
+                      <input :value="currentPartner?.name || ''" disabled class="w-full px-2 py-1.5 rounded-xl border border-slate-200 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold">
+                    </div>
                     <div>
                       <label class="text-[10px] text-slate-500 font-bold block mb-0.5">挑戰圖案</label>
                       <select v-model="latteForm.pattern" class="w-full px-2 py-1.5 text-xs rounded-xl border dark:bg-slate-700 dark:text-white">
-                        <option value="心形 (Heart)">心形 (Heart)</option><option value="鬱金香 (Tulip)">鬱金香 (Tulip)</option><option value="天鵝 (Swan)">天鵝 (Swan)</option><option value="自由創作 (Free Pour)">自由創作 (Free Pour)</option>
+                        <option value="心形 (Heart)">心形 (Heart)</option>
+                        <option value="鬱金香 (Tulip)">鬱金香 (Tulip)</option>
+                        <option value="天鵝 (Swan)">天鵝 (Swan)</option>
+                        <option value="自由創作 (Free Pour)">自由創作 (Free Pour)</option>
                       </select>
                     </div>
                   </div>
+
                   <div>
                     <label class="block border-2 border-dashed border-emerald-600 bg-emerald-50/30 dark:bg-emerald-950/20 rounded-xl p-4 text-center cursor-pointer active:bg-emerald-100/50">
                       <input type="file" accept="image/*" @change="handleLattePhotoUpload" class="hidden">
-                      <div v-if="!latteForm.photoUrl" class="space-y-1"><span class="text-2xl">☕📷</span><p class="text-xs font-bold text-emerald-900 dark:text-emerald-300">點擊上傳，系統自動無損壓縮</p></div>
-                      <div v-else class="flex flex-col items-center"><img :src="latteForm.photoUrl" class="h-28 w-28 object-cover rounded-xl border mb-1 shadow-sm"><span class="text-[10px] text-emerald-800 font-bold">點擊更換照片</span></div>
+                      <div v-if="!latteForm.photoUrl" class="space-y-1">
+                        <span class="text-2xl">☕📷</span>
+                        <p class="text-xs font-bold text-emerald-900 dark:text-emerald-300">點擊上傳，系統自動無損壓縮</p>
+                      </div>
+                      <div v-else class="flex flex-col items-center">
+                        <img :src="latteForm.photoUrl" class="h-28 w-28 object-cover rounded-xl border mb-1 shadow-sm">
+                        <span class="text-[10px] text-emerald-800 font-bold">點擊更換照片</span>
+                      </div>
                     </label>
                   </div>
-                  <button @click="submitLattePost" :disabled="isAiEvaluating || !latteForm.photoUrl" class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 disabled:bg-slate-300 transition flex items-center justify-center gap-1.5">
-                    <span v-if="isAiEvaluating" class="animate-spin">🔄</span><span>{{ isAiEvaluating ? 'AI 視覺專業審查中...' : '提交作品' }}</span>
+
+                  <button 
+                    @click="submitLattePost" 
+                    :disabled="isAiEvaluating || !latteForm.photoUrl" 
+                    class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 disabled:bg-slate-300 transition flex items-center justify-center gap-1.5">
+                    <span v-if="isAiEvaluating" class="animate-spin">🔄</span>
+                    <span>{{ isAiEvaluating ? 'AI 視覺專業審查中...' : '提交作品' }}</span>
                   </button>
                 </div>
               </div>
@@ -765,23 +1351,42 @@
               <!-- 本週展示牆 -->
               <div class="space-y-3">
                 <div class="flex justify-between items-center">
-                  <h4 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5"><span>🔥</span> 本週參賽作品 (共 {{ weeklyLattePosts.length }} 幅)</h4>
+                  <h4 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <span>🔥</span> 本週參賽作品 (共 {{ weeklyLattePosts.length }} 幅)
+                  </h4>
                 </div>
+
                 <div v-if="weeklyLattePosts.length > 0" class="space-y-3">
-                  <div v-for="post in weeklyLattePosts" :key="post.id || post._key" class="rounded-2xl p-4 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm space-y-3 relative">
+                  <div 
+                    v-for="post in weeklyLattePosts" :key="post.id || post._key" 
+                    class="rounded-2xl p-4 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm space-y-3 relative">
+                    
                     <div class="flex justify-between items-center text-xs">
                       <div class="flex items-center gap-2">
-                        <div class="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold text-[10px]">{{ getStaffName(post.authorStaffId).slice(0, 1) }}</div>
-                        <div><div class="font-bold text-slate-900 dark:text-white">{{ getStaffName(post.authorStaffId) }}</div><span class="text-[10px] text-slate-400">{{ post.dateStr }}</span></div>
+                        <div class="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold text-[10px]">
+                          {{ getStaffName(post.authorStaffId).slice(0, 1) }}
+                        </div>
+                        <div>
+                          <div class="font-bold text-slate-900 dark:text-white">{{ getStaffName(post.authorStaffId) }}</div>
+                          <span class="text-[10px] text-slate-400">{{ post.dateStr }}</span>
+                        </div>
                       </div>
                       <div class="flex items-center gap-2">
                         <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md text-[10px] font-bold">{{ post.pattern }}</span>
-                        <button v-if="isDutyOrAbove || post.authorStaffId === currentPartner?.id || post.authorStaffId === currentPartner?._key" @click="deleteLattePost(post.id || post._key)" class="text-slate-300 hover:text-rose-500 text-xs px-1" title="刪除作品">🗑️</button>
+                        <button 
+                          v-if="isDutyOrAbove || post.authorStaffId === currentPartner?.id || post.authorStaffId === currentPartner?._key" 
+                          @click="deleteLattePost(post.id || post._key)" 
+                          class="text-slate-300 hover:text-rose-500 text-xs px-1" title="刪除作品">
+                          🗑️
+                        </button>
                       </div>
                     </div>
+
                     <div class="rounded-xl overflow-hidden bg-black/5 border border-slate-100 dark:border-slate-700 max-h-64 flex items-center justify-center">
                       <img :src="post.photoUrl" class="w-full object-cover">
                     </div>
+
+                    <!-- 🤖 AI 具體視覺評析 -->
                     <div class="bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3 text-xs shadow-inner">
                       <div class="flex justify-between items-center border-b border-emerald-200/50 pb-1.5 mb-1.5">
                         <span class="font-black text-emerald-950 dark:text-emerald-300">🤖 AI 專業評析：{{ post.aiScore }} 分</span>
@@ -789,57 +1394,107 @@
                       </div>
                       <p class="text-[11px] font-bold text-emerald-800 dark:text-emerald-400 leading-relaxed whitespace-pre-line">{{ post.aiFeedback }}</p>
                     </div>
+
                     <div class="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-700 text-xs">
                       <span class="text-[11px] text-slate-500">加權總分：<b class="text-emerald-900 dark:text-emerald-400">{{ calculateCombinedScore(post) }} 分</b></span>
+                      
                       <div class="flex items-center gap-2">
-                        <button @click="toggleComments(post.id || post._key)" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-full font-bold border border-slate-200 dark:border-slate-600 transition flex items-center gap-1 active:scale-95"><span>💬</span><span>{{ getCommentCount(post) }}</span></button>
-                        <button @click="voteLattePost(post)" :disabled="hasVoted(post.id || post._key)" :class="hasVoted(post.id || post._key) ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-red-50 hover:bg-red-100 text-red-600 active:scale-95'" class="px-3 py-1 rounded-full font-bold border transition flex items-center gap-1 shadow-sm">
-                          <span>{{ hasVoted(post.id || post._key) ? '✓ 已投' : '❤️' }}</span><span>({{ post.votes || 0 }})</span>
+                        <button 
+                          @click="toggleComments(post.id || post._key)" 
+                          class="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-full font-bold border border-slate-200 dark:border-slate-600 transition flex items-center gap-1 active:scale-95">
+                          <span>💬</span>
+                          <span>{{ getCommentCount(post) }}</span>
+                        </button>
+
+                        <button 
+                          @click="voteLattePost(post)" 
+                          :disabled="hasVoted(post.id || post._key)" 
+                          :class="hasVoted(post.id || post._key) ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-red-50 hover:bg-red-100 text-red-600 active:scale-95'" 
+                          class="px-3 py-1 rounded-full font-bold border transition flex items-center gap-1 shadow-sm">
+                          <span>{{ hasVoted(post.id || post._key) ? '✓ 已投' : '❤️' }}</span>
+                          <span>({{ post.votes || 0 }})</span>
                         </button>
                       </div>
                     </div>
+
                     <!-- 留言區 -->
                     <div v-if="activeCommentPostId === (post.id || post._key)" class="mt-2.5 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2 text-xs">
                       <div v-if="post.comments && Object.keys(post.comments).length > 0" class="space-y-1.5 max-h-40 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
                         <div v-for="c in Object.values(post.comments)" :key="c.id" class="pt-1.5 first:pt-0">
-                          <div class="flex justify-between items-center text-[10px]"><span class="font-bold text-slate-800 dark:text-slate-200">{{ c.authorName }}</span><span class="text-slate-400">{{ c.dateStr }}</span></div>
+                          <div class="flex justify-between items-center text-[10px]">
+                            <span class="font-bold text-slate-800 dark:text-slate-200">{{ c.authorName }}</span>
+                            <span class="text-slate-400">{{ c.dateStr }}</span>
+                          </div>
                           <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed">{{ c.text }}</p>
                         </div>
                       </div>
                       <p v-else class="text-[10px] text-slate-400 text-center py-2">目前尚無留言。</p>
+
                       <form @submit.prevent="submitComment(post)" class="flex gap-1.5 pt-1">
-                        <input v-model="newCommentText" type="text" required placeholder="留下給夥伴的回饋..." class="flex-1 px-2.5 py-1.5 text-xs rounded-lg border dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-700">
-                        <button type="submit" class="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition active:scale-95 shadow-sm">送出</button>
+                        <input 
+                          v-model="newCommentText" 
+                          type="text" 
+                          required 
+                          placeholder="留下給夥伴的回饋..." 
+                          class="flex-1 px-2.5 py-1.5 text-xs rounded-lg border dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-700"
+                        >
+                        <button 
+                          type="submit" 
+                          class="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition active:scale-95 shadow-sm">
+                          送出
+                        </button>
                       </form>
                     </div>
+
                   </div>
                 </div>
-                <div v-else class="text-xs text-slate-400 py-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-dashed">本週擂台尚無作品上傳。</div>
+
+                <div v-else class="text-xs text-slate-400 py-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-dashed">
+                  本週擂台尚無作品上傳。
+                </div>
               </div>
 
               <!-- 歷屆集錦區 -->
               <div class="mt-6 space-y-2 pt-4 border-t border-slate-200 dark:border-slate-700">
                 <div class="flex justify-between items-center">
-                  <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5"><span>📁</span> 歷屆拉花歷史集錦 ({{ latteArtArchives.length }} 個展期)</h4>
+                  <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <span>📁</span> 歷屆拉花歷史集錦 ({{ latteArtArchives.length }} 個展期)
+                  </h4>
                 </div>
+
                 <div v-for="arch in latteArtArchives" :key="arch.folderName || arch.key" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
                   <div @click="arch.expanded = !arch.expanded" class="p-3.5 flex justify-between items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-750 transition">
                     <div class="flex items-center gap-2.5">
                       <span class="text-xl">📂</span>
                       <div>
-                        <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">{{ arch.folderName }}<span class="text-[10px] px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full font-bold">👑 冠軍：{{ arch.winner }}</span></div>
-                        <div class="text-[10px] text-slate-400 mt-0.5">共 {{ arch.totalWorks || 0 }} 幅作品</div>
+                        <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                          {{ arch.folderName }}
+                          <span class="text-[10px] px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full font-bold">
+                            👑 冠軍：{{ arch.winner }}
+                          </span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-0.5">
+                          共 {{ arch.totalWorks || 0 }} 幅作品
+                        </div>
                       </div>
                     </div>
-                    <span class="text-xs text-slate-400 font-bold">{{ arch.expanded ? '▲ 收合' : '▼ 展開' }}</span>
+                    <span class="text-xs text-slate-400 font-bold">
+                      {{ arch.expanded ? '▲ 收合' : '▼ 展開' }}
+                    </span>
                   </div>
+
                   <div v-if="arch.expanded" class="p-3 bg-slate-50/70 dark:bg-slate-900/60 grid grid-cols-2 sm:grid-cols-3 gap-2.5 border-t">
                     <div v-for="work in arch.works" :key="work.id || work.key" class="rounded-xl overflow-hidden border bg-white dark:bg-slate-800 shadow-sm flex flex-col">
                       <div class="relative w-full pt-[100%] bg-slate-100">
                         <img :src="work.photoUrl" class="absolute inset-0 w-full h-full object-cover">
-                        <div class="absolute top-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">第 {{ work.rank }} 名</div>
+                        <div class="absolute top-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                          第 {{ work.rank }} 名
+                        </div>
                       </div>
-                      <div class="p-2 text-[10px]"><div class="font-bold text-slate-800 truncate">{{ work.pattern }}</div><div class="text-slate-500">{{ work.partnerName || getStaffName(work.authorStaffId) }}</div></div>
+                      <div class="p-2 text-[10px]">
+                        <div class="font-bold text-slate-800 truncate">{{ work.pattern }}</div>
+                        <div class="text-slate-500">{{ work.partnerName || getStaffName(work.authorStaffId) }}</div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -851,36 +1506,55 @@
               <div class="bg-gradient-to-r from-emerald-800 to-teal-900 rounded-2xl p-4 text-white shadow-sm space-y-3">
                 <div class="flex justify-between items-center">
                   <div>
-                    <h3 class="font-bold text-sm flex items-center gap-1.5"><span>☕</span> 永安咖啡小學堂 (本週測驗)</h3>
+                    <h3 class="font-bold text-sm flex items-center gap-1.5">
+                      <span>☕</span> 永安咖啡小學堂 (本週測驗)
+                    </h3>
                     <p class="text-[11px] text-emerald-200 mt-0.5">每週一隨機更新 5 題</p>
                   </div>
-                  <span class="text-xs px-2.5 py-1 bg-white/20 rounded-full font-bold">{{ currentWeekQuizId }}</span>
+                  <span class="text-xs px-2.5 py-1 bg-white/20 rounded-full font-bold">
+                    {{ currentWeekQuizId }}
+                  </span>
                 </div>
+
                 <div class="bg-white/10 rounded-xl p-3 text-xs flex justify-between items-center border border-white/10">
-                  <div><div class="font-bold">作答狀態：<span v-if="myQuizResult" class="text-emerald-300">已完成 ({{ myQuizResult.score }} / 5 分)</span><span v-else class="text-amber-300">尚未測驗</span></div></div>
-                  <button @click="startWeeklyQuiz" class="px-3 py-1.5 bg-white text-emerald-900 rounded-lg font-bold text-xs shadow-sm active:scale-95 transition">{{ myQuizResult ? '查看解析' : '開始測驗' }}</button>
+                  <div>
+                    <div class="font-bold">作答狀態：
+                      <span v-if="myQuizResult" class="text-emerald-300">已完成 ({{ myQuizResult.score }} / 5 分)</span>
+                      <span v-else class="text-amber-300">尚未測驗</span>
+                    </div>
+                  </div>
+                  <button @click="startWeeklyQuiz" class="px-3 py-1.5 bg-white text-emerald-900 rounded-lg font-bold text-xs shadow-sm active:scale-95 transition">
+                    {{ myQuizResult ? '查看解析' : '開始測驗' }}
+                  </button>
                 </div>
               </div>
 
+              <!-- 管理職進度追蹤 -->
               <div v-if="isDutyOrAbove" class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
                 <div class="flex justify-between items-center">
                   <h4 class="text-xs font-bold text-slate-900 dark:text-white">📊 填答進度</h4>
-                  <span class="text-[11px] px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded-full font-bold">{{ quizCompletedStaff.length }} / {{ allActivePartners.length }} 人完成</span>
+                  <span class="text-[11px] px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded-full font-bold">
+                    {{ quizCompletedStaff.length }} / {{ allActivePartners.length }} 人完成
+                  </span>
                 </div>
                 <div class="space-y-1 text-xs">
                   <div class="text-[11px] font-bold text-rose-600">未完成夥伴：</div>
                   <div class="flex flex-wrap gap-1.5">
-                    <span v-for="staff in quizPendingStaff" :key="staff.name" class="px-2 py-0.5 bg-rose-50 text-rose-700 rounded border border-rose-200 text-[11px] shadow-sm">{{ staff.name }}</span>
+                    <span v-for="staff in quizPendingStaff" :key="staff.name" class="px-2 py-0.5 bg-rose-50 text-rose-700 rounded border border-rose-200 text-[11px] shadow-sm">
+                      {{ staff.name }}
+                    </span>
                     <span v-if="quizPendingStaff.length === 0" class="text-emerald-600 text-xs font-bold">🎉 全員已完成！</span>
                   </div>
                 </div>
               </div>
 
+              <!-- 咖啡知識發布 -->
               <div v-if="isDutyOrAbove" class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2">
                 <div class="flex justify-between items-center">
                   <h4 class="text-xs font-bold text-slate-900 dark:text-white">📢 發布門市知識</h4>
                   <label class="text-[10px] px-2 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg font-bold cursor-pointer transition shadow-sm active:scale-95 flex items-center gap-1">
-                    <span v-if="isUploadingKnowledge" class="animate-spin text-sm">🔄</span><span v-else class="text-sm">📄</span>
+                    <span v-if="isUploadingKnowledge" class="animate-spin text-sm">🔄</span>
+                    <span v-else class="text-sm">📄</span>
                     {{ isUploadingKnowledge ? 'AI 辨識中' : 'AI 上傳辨識' }}
                     <input type="file" accept="image/*,application/pdf" @change="handleKnowledgeFileUpload" class="hidden" :disabled="isUploadingKnowledge">
                   </label>
@@ -890,6 +1564,7 @@
                 <button @click="publishKnowledge" class="w-full py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm active:scale-95">發布至知識庫</button>
               </div>
 
+              <!-- 知識列表 -->
               <div class="space-y-2">
                 <div v-for="item in coffeeKnowledgeList" :key="item.id" class="bg-white dark:bg-slate-800 rounded-2xl p-3.5 border border-slate-200 dark:border-slate-700 shadow-sm space-y-1">
                   <div class="flex justify-between items-center">
@@ -901,7 +1576,9 @@
                   </div>
                   <p class="text-[11px] text-slate-600 dark:text-slate-300 whitespace-pre-line leading-relaxed">{{ item.content }}</p>
                 </div>
-                <p v-if="coffeeKnowledgeList.length === 0" class="text-xs text-slate-400 py-6 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">目前知識庫尚無資料。</p>
+                <p v-if="coffeeKnowledgeList.length === 0" class="text-xs text-slate-400 py-6 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+                  目前知識庫尚無資料。
+                </p>
               </div>
             </div>
 
@@ -913,9 +1590,11 @@
                     <h3 class="font-bold text-sm text-slate-900 dark:text-white">📝 本週測驗 ({{ currentWeekQuizId }})</h3>
                     <button @click="showQuizModal = false" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
                   </div>
+                  
                   <div class="flex-1 overflow-y-auto p-4 space-y-4">
                     <div v-for="(q, qIndex) in currentQuizQuestions" :key="qIndex" class="space-y-2 bg-slate-50 dark:bg-slate-700/50 p-3 rounded-2xl border border-slate-100 dark:border-slate-600">
                       <div class="text-[11px] font-bold text-slate-900 dark:text-white">{{ qIndex + 1 }}. {{ q.question }}</div>
+                      
                       <div class="space-y-1">
                         <label v-for="(opt, optIndex) in q.options" :key="optIndex" 
                                class="flex items-start gap-2 p-2 rounded-xl border text-[11px] cursor-pointer transition"
@@ -929,9 +1608,13 @@
                           <span v-if="quizSubmitted && userAnswers[qIndex] === optIndex && optIndex !== q.correct" class="text-rose-500 text-sm">✕</span>
                         </label>
                       </div>
-                      <div v-if="quizSubmitted" class="text-[10px] text-emerald-800 dark:text-emerald-300 bg-emerald-50/50 dark:bg-emerald-950/30 p-2 rounded-lg mt-2 border border-emerald-100 dark:border-emerald-800 leading-relaxed font-bold">💡 解析：{{ q.explanation }}</div>
+
+                      <div v-if="quizSubmitted" class="text-[10px] text-emerald-800 dark:text-emerald-300 bg-emerald-50/50 dark:bg-emerald-950/30 p-2 rounded-lg mt-2 border border-emerald-100 dark:border-emerald-800 leading-relaxed font-bold">
+                        💡 解析：{{ q.explanation }}
+                      </div>
                     </div>
                   </div>
+
                   <div class="p-4 flex justify-between items-center border-t dark:border-slate-700 flex-shrink-0 bg-slate-50 dark:bg-slate-800 rounded-b-3xl">
                     <span v-if="quizSubmitted" class="font-black text-emerald-700 dark:text-emerald-400 text-sm">🏆 最終得分：{{ quizScore }} / 5 分</span>
                     <button v-if="!quizSubmitted" @click="submitWeeklyQuiz" class="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition active:scale-95 w-full">繳交測驗</button>
@@ -954,6 +1637,7 @@
                 </div>
                 <span class="text-3xl">🏛️</span>
               </div>
+
               <div class="text-[11px] space-y-2.5 text-slate-600 dark:text-slate-300 border-t border-slate-100 dark:border-slate-700 pt-3">
                 <div class="flex items-center justify-between">
                   <span>📍 新北市永和區安樂路 248-7 號 1F</span>
@@ -967,9 +1651,14 @@
             <!-- 門市相簿庫 -->
             <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
               <div class="flex justify-between items-center">
-                <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5"><span>📷</span> 門市相簿</h3>
-                <button @click="openCreateAlbumModal" class="text-[10px] font-bold px-2.5 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg shadow-sm transition active:scale-95">+ 建立相簿</button>
+                <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <span>📷</span> 門市相簿
+                </h3>
+                <button @click="openCreateAlbumModal" class="text-[10px] font-bold px-2.5 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg shadow-sm transition active:scale-95">
+                  + 建立相簿
+                </button>
               </div>
+
               <div class="flex gap-1.5 overflow-x-auto pb-1 text-[11px] items-center no-scrollbar">
                 <button @click="selectedAlbum = 'all'" :class="selectedAlbum === 'all' ? 'bg-emerald-800 text-white font-bold shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="px-3 py-1 rounded-lg whitespace-nowrap transition">全部相片</button>
                 <div v-for="alb in customAlbums" :key="alb" class="flex items-center rounded-lg overflow-hidden flex-shrink-0 transition" :class="selectedAlbum === alb ? 'bg-emerald-800 text-white font-bold shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'">
@@ -977,10 +1666,12 @@
                   <button v-if="isDutyOrAbove" @click.stop="deleteAlbum(alb)" class="pr-2 pl-0.5 py-1 hover:text-red-400 text-xs">✕</button>
                 </div>
               </div>
+
               <label class="block border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-3 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
                 <input type="file" accept="image/*" @change="handleStorePhotoUpload" class="hidden">
                 <div class="text-[11px] text-slate-500 font-bold">點擊上傳照片至【{{ selectedAlbum === 'all' ? '全部相片' : selectedAlbum }}】</div>
               </label>
+
               <div v-if="filteredStorePhotos.length > 0" class="grid grid-cols-2 gap-2 pt-1">
                 <div v-for="p in filteredStorePhotos" :key="p.id" class="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 relative group shadow-sm">
                   <img :src="p.url" class="w-full h-28 object-cover">
@@ -993,9 +1684,14 @@
             <!-- Bravo 感謝小卡 -->
             <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
               <div class="flex justify-between items-center">
-                <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5"><span>💌</span> Bravo 感謝牆</h3>
-                <button @click="openBravoModal" class="text-[10px] font-bold px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-black rounded-lg shadow-sm transition active:scale-95">+ 送出 Bravo</button>
+                <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <span>💌</span> Bravo 感謝牆
+                </h3>
+                <button @click="openBravoModal" class="text-[10px] font-bold px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-black rounded-lg shadow-sm transition active:scale-95">
+                  + 送出 Bravo
+                </button>
               </div>
+
               <div v-if="bravoCardsList.length > 0" class="space-y-2">
                 <div v-for="b in bravoCardsList" :key="b.id" class="p-3.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/30 rounded-2xl border border-amber-200/50 dark:border-amber-900/50 text-xs space-y-2 relative shadow-sm">
                   <div class="flex justify-between items-center border-b border-amber-200/30 pb-1.5">
@@ -1271,7 +1967,7 @@ const app = createApp({
       isFetchingTrivia.value = true;
       try {
         const apiKey = getEffectiveGeminiKey();
-        const prompt = `你是星巴克咖啡大師。請隨機分享一則極具專業性的星巴克咖啡知識 (如特定產區風土、處理法細節、歷史故事)。不能跟常見的四大原則重複。知識必須冷門但實用。輸出字數控制在60字以內。隨機碼: ${Math.random()}`;
+        const prompt = `你是星巴克咖啡大師。請隨機分享一則極具專業性的星巴克咖啡知識 (可以是特定產區風土、獨特處理法細節、烘焙化學變化、或是星巴克歷史故事)。要求：1. 絕對不能跟常見的四大原則重複。2. 知識必須冷門但實用。3. 輸出字數控制在60字以內。直接輸出純文字，不要加引號。隨機碼: ${Math.random()}`;
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.9 } })
         });
@@ -1303,7 +1999,14 @@ const app = createApp({
       try {
         const apiKey = getEffectiveGeminiKey();
         const b64 = latteForm.value.photoUrl.split(',')[1];
-        const prompt = `你是星巴克拉花大賽嚴格評審。請針對這杯【${latteForm.value.pattern}】進行嚴格視覺評鑑。必須具體指出：1. 優點（如奶泡細緻度、圖案對稱性） 2. 具體待改進點（如收尾切線歪斜、流速不穩）。給分範圍65~92分。隨機碼: ${Math.random()}。嚴格輸出JSON: {"score":整數, "feedback":"文字"}`;
+        const prompt = `你是星巴克拉花大賽嚴格評審。請針對這杯【${latteForm.value.pattern}】進行嚴格視覺評鑑。
+        你必須根據圖片的真實狀況給出分析，不要給罐頭回覆。
+        必須具體指出：
+        1. 優點（如奶泡細緻度、圖案對稱性、對比度）
+        2. 具體待改進點（如收尾切線歪斜、流速不穩、圖案未置中）
+        給分範圍 65~92分。
+        (系統隨機種子碼: ${Math.random()})
+        嚴格輸出 JSON: {"score":整數, "feedback":"文字"}`;
         
         const res = await fetch(`[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$){apiKey}`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1315,8 +2018,8 @@ const app = createApp({
         const parsed = JSON.parse(data.candidates[0].content.parts[0].text.replace(/```json|```/gi, '').trim());
         const post = { id: Date.now().toString(), authorStaffId: currentPartner.value.id, partnerName: currentPartner.value.nickname, pattern: latteForm.value.pattern, photoUrl: latteForm.value.photoUrl, aiScore: parsed.score || 75, aiFeedback: parsed.feedback, votes: 0, voters: {}, dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`, timestamp: Date.now() };
         if (db) await db.ref('sbux/latte_posts/' + post.id).set(post);
-        latteForm.value = { pattern: '心形 (Heart)', photoUrl: '' }; alert('🎉 作品評分成功！');
-      } catch (e) { alert(e.message === 'SYSTEM_MISSING_API_KEY' ? '⚠️ 請綁定 API Key！' : '評分失敗。'); }
+        latteForm.value = { pattern: '心形 (Heart)', photoUrl: '' }; alert('🎉 作品上傳並評分成功！');
+      } catch (e) { alert(e.message === 'SYSTEM_MISSING_API_KEY' ? '⚠️ 請綁定 Gemini API Key！' : '評分失敗，請重新上傳。'); }
       finally { isAiEvaluating.value = false; }
     };
 
@@ -1325,7 +2028,7 @@ const app = createApp({
       isAiEvaluatingTasting.value = true;
       try {
         const apiKey = getEffectiveGeminiKey();
-        const prompt = `你是黑圍裙咖啡大師。夥伴品評了【${tastingForm.value.coffeeName}】，酸度:${getIntensityLabel(tastingForm.value.acidity)}，醇度:${getIntensityLabel(tastingForm.value.body)}，香氣:${tastingForm.value.aroma||'無'}，心得:${tastingForm.value.notes||'無'}。請根據產區風土，必須具體指出：1. 夥伴描述的優點。2. 具體改進機會點(如沖煮水溫變因)。推薦一款糕點。字數80字內。隨機碼:${Math.random()}`;
+        const prompt = `你是星巴克資深黑圍裙咖啡大師。夥伴品評了【${tastingForm.value.coffeeName}】，酸度:${getIntensityLabel(tastingForm.value.acidity)}，醇度:${getIntensityLabel(tastingForm.value.body)}，香氣:${tastingForm.value.aroma||'無'}，心得:${tastingForm.value.notes||'無'}。請嚴格比對該豆子官方產區風味。必須具體指出：1. 夥伴風味描述的優點。2. 能進一步探索的機會點（例如沖煮水溫變因）。最後推薦一款糕點。字數80字內。隨機碼:${Math.random()}`;
         const res = await fetch(`[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$){apiKey}`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7 } })
@@ -1334,7 +2037,7 @@ const app = createApp({
         const note = { id: Date.now().toString(), authorStaffId: currentPartner.value.id, coffeeName: tastingForm.value.coffeeName, acidity: tastingForm.value.acidity, body: tastingForm.value.body, aroma: tastingForm.value.aroma || '無特殊標記', notes: tastingForm.value.notes || '無額外備註', aiComment: data.candidates[0].content.parts[0].text.trim(), dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`, timestamp: Date.now() };
         if (db) await db.ref('sbux/tasting_notes/' + note.id).set(note);
         tastingForm.value.notes = ''; alert('☕ 品評已發布！');
-      } catch (e) { alert(e.message === 'SYSTEM_MISSING_API_KEY' ? '⚠️ 請綁定 API Key！' : '發布失敗。'); }
+      } catch (e) { alert(e.message === 'SYSTEM_MISSING_API_KEY' ? '⚠️ 請綁定 Gemini API Key！' : '發布失敗。'); }
       finally { isAiEvaluatingTasting.value = false; }
     };
 
@@ -1344,12 +2047,15 @@ const app = createApp({
       isAiRecognizingRules.value = true;
       try {
         const apiKey = getEffectiveGeminiKey();
+        
+        // 【修正】使用 Promise 包裝 FileReader 確保非同步流程正確，解決白畫面主因
         const base64Data = await new Promise((resolve, reject) => {
           const reader = new FileReader(); 
           reader.onload = (evt) => resolve(evt.target.result.split(',')[1]); 
-          reader.onerror = () => reject(new Error('讀取失敗'));
+          reader.onerror = () => reject(new Error('檔案讀取失敗'));
           reader.readAsDataURL(file);
         });
+
         const prompt = `提取圖片中星巴克食品/原物料品名及「提前下架天數」。嚴格輸出 JSON 陣列：[{"keyword":"品名","advance_days":天數,"timing":"21:30 閉店前"}]`;
         const res = await fetch(`[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$){apiKey}`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1361,13 +2067,16 @@ const app = createApp({
         for (const r of parsed) {
           if (r.keyword) {
             const rid = 'rule_' + Date.now() + Math.random().toString(36).substr(2,4);
-            if (db) await db.ref('sbux/rules/' + rid).set({ id: rid, keyword: r.keyword, advance_days: parseInt(r.advance_days)||0, timing: '21:30 閉店前' });
+            if (db) await db.ref('sbux/rules/' + rid).set({ id: rid, keyword: r.keyword, advance_days: r.advance_days||0, timing: '21:30 閉店前' });
           }
         }
         alert('🎉 辨識成功匯入！');
       } catch (e) { alert('❌ 辨識失敗。請確認圖片清晰度與 API Key。'); }
       finally { isAiRecognizingRules.value = false; e.target.value = ''; }
     };
+
+    // ==================== 自動結算 ====================
+    const calculateCombinedScore = (post) => Number(((post.aiScore || 0) * 0.7 + (post.votes || 0) * 5).toFixed(1));
 
     // ==================== 🌟 勞基法 AI 動態排班引擎 ====================
     const setNextWeekRange = () => {
@@ -1388,44 +2097,6 @@ const app = createApp({
 
     const timeToMins = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
     const calculateShiftNetHours = (start, end) => { const raw = (timeToMins(end) - timeToMins(start)) / 60; return raw > 4.5 ? raw - 0.5 : raw; };
-    
-    const isDavidWorkDay = (dateStr) => [0, 2, 4, 5, 6].includes(new Date(dateStr).getDay());
-    const isStaffAvailableForShift = (staff, dateStr, shiftStart, shiftEnd) => {
-      if (staff.role === '天使夥伴' || staff.nickname === 'David') return false;
-      if (vacationList.value.some(v => v.staffId === staff.id && v.date === dateStr)) return false;
-      if (!staff.availability) return true;
-      const av = staff.availability['day_' + ((new Date(dateStr).getDay() + 6) % 7)];
-      if (!av || av.type === 'all') return true;
-      if (av.type === 'none') return false;
-      return (timeToMins(av.start) <= timeToMins(shiftStart) && timeToMins(av.end) >= timeToMins(shiftEnd));
-    };
-
-    const getPriorDayEndMinutes = (staffId, startDateStr) => {
-      const curr = new Date(startDateStr); curr.setDate(curr.getDate() - 1);
-      const shift = (scheduledRoster.value || {})[`${staffId}_${curr.toISOString().split('T')[0]}`];
-      return shift ? timeToMins(shift.time.match(/-(\d{2}:\d{2})/)[1]) : -9999;
-    };
-    const getPriorConsecutiveWorkDays = (staffId, startDateStr) => {
-      let count = 0, curr = new Date(startDateStr);
-      for (let i = 1; i <= 6; i++) {
-        const prev = new Date(curr); prev.setDate(curr.getDate() - i);
-        if ((scheduledRoster.value || {})[`${staffId}_${prev.toISOString().split('T')[0]}`]) count++; else break;
-      }
-      return count;
-    };
-    const getWorkMonthAccumulatedHours = (staffId, targetDateStr) => {
-      const target = new Date(targetDateStr), y = target.getFullYear(), m = target.getMonth(), day = target.getDate();
-      const startDate = day >= 21 ? new Date(y, m, 21) : new Date(y, m - 1, 21);
-      const endDate = day >= 21 ? new Date(y, m + 1, 20) : new Date(y, m, 20);
-      let total = 0;
-      for (const k in (scheduledRoster.value || {})) {
-        if (k.startsWith(staffId + '_')) {
-          const curr = new Date(k.split('_')[1]);
-          if (curr >= startDate && curr <= endDate) total += Number(scheduledRoster.value[k].hours || 0);
-        }
-      }
-      return total;
-    };
 
     const generateAiRoster = () => {
       if (!scheduleStartDate.value || !scheduleEndDate.value) return alert('請先設定排班範圍！');
@@ -1433,73 +2104,59 @@ const app = createApp({
       const schedulePlan = [], warnings = [], staffWorkTracker = {};
 
       allStaff.forEach(s => {
-        staffWorkTracker[s.id] = { weeklyHours: 0, daysWorked: 0, lastEndMins: getPriorDayEndMinutes(s.id, scheduleStartDate.value), consecutiveDays: getPriorConsecutiveWorkDays(s.id, scheduleStartDate.value), monthlyAccum: getWorkMonthAccumulatedHours(s.id, scheduleStartDate.value) };
+        staffWorkTracker[s.id] = { weeklyHours: 0, daysWorked: 0, lastEndMins: -9999, consecutiveDays: 0 };
       });
 
       targetRangeDates.value.forEach(dObj => {
         const dateStr = dObj.dateStr, isWeekend = ['六','日'].includes(dObj.weekday);
         const assignedToday = new Set(), assignedShifts = [];
 
-        // 🌟 動態排班核心：解決 15:00~19:00 人力斷層 (加入銜接班)
+        // 🌟 動態排班核心：解決 15:00~19:00 人力斷層
         const shiftSlots = [
           { name: "早班", start: "06:30", end: "15:00", reqMgr: true },
-          { name: "早班", start: "06:30", end: "15:00", reqMgr: false }
+          { name: "早班", start: "06:30", end: "15:00", reqMgr: false },
+          { name: "晚班", start: "14:00", end: "22:30", reqMgr: true },
+          { name: "晚班", start: "14:00", end: "22:30", reqMgr: false }
         ];
+
         if (isWeekend) {
-          shiftSlots.push({ name: "中班", start: "08:00", end: "15:00", reqMgr: false });
-          shiftSlots.push({ name: "中班", start: "10:30", end: "17:30", reqMgr: false });
-          shiftSlots.push({ name: "假日銜接", start: "12:00", end: "20:30", reqMgr: false });
+          shiftSlots.push({ name: "中班", start: "10:30", end: "19:00", reqMgr: false });
+          shiftSlots.push({ name: "銜接", start: "12:00", end: "20:30", reqMgr: false });
         } else {
-          shiftSlots.push({ name: "中班", start: "08:30", end: "17:30", reqMgr: false });
-          shiftSlots.push({ name: "銜接班", start: "11:00", end: "19:30", reqMgr: false });
+          shiftSlots.push({ name: "中班", start: "11:00", end: "19:30", reqMgr: false });
+          shiftSlots.push({ name: "晚輔", start: "17:30", end: "22:30", reqMgr: false }); 
         }
-        shiftSlots.push({ name: "晚班", start: "14:00", end: "22:30", reqMgr: true });
-        shiftSlots.push({ name: "晚班", start: "14:00", end: "22:30", reqMgr: false });
-        shiftSlots.push({ name: "晚班", start: "14:00", end: "22:30", reqMgr: false });
 
         shiftSlots.forEach(slot => {
           let candidates = allStaff.filter(s => {
-            const sid = s.id, t = staffWorkTracker[sid];
+            const sid = s.id;
             if (assignedToday.has(sid)) return false;
             if (vacationList.value.some(v => v.staffId === sid && v.date === dateStr)) return false;
-            if (t.consecutiveDays >= 6 || t.daysWorked >= 6) return false;
+            if (staffWorkTracker[sid].consecutiveDays >= 6 || staffWorkTracker[sid].daysWorked >= 6) return false;
             if (slot.reqMgr && !['店經理', '副理', '值班經理', '時薪值班'].includes(s.role)) return false;
-            if (t.lastEndMins > 0 && ((24*60 - t.lastEndMins) + timeToMins(slot.start) < 11*60)) return false; // 11小時休息
-            if (isTrueFullTime(s.role) && (t.weeklyHours >= 40 || (t.daysWorked >= 5 && t.weeklyHours >= 37))) {
-              if (allStaff.some(o => !isTrueFullTime(o.role) && !assignedToday.has(o.id) && isStaffAvailableForShift(o, dateStr, slot.start, slot.end) && staffWorkTracker[o.id].daysWorked < 6)) return false;
-            }
-            return isStaffAvailableForShift(s, dateStr, slot.start, slot.end);
+            if (staffWorkTracker[sid].lastEndMins > 0 && ((24*60 - staffWorkTracker[sid].lastEndMins) + timeToMins(slot.start) < 11*60)) return false; // 11小時休息
+            return true;
           });
 
-          // 排序：FT 優先補滿 37H，PT 月保底 50H 優先
+          // 排序：FT 優先補滿 37H，PT 保底
           candidates.sort((a, b) => {
-            const aFT = isTrueFullTime(a.role), bFT = isTrueFullTime(b.role);
-            const aT = staffWorkTracker[a.id], bT = staffWorkTracker[b.id];
-            if (aFT && aT.weeklyHours < 37 && (!bFT || bT.weeklyHours >= 37)) return -1;
-            if (bFT && bT.weeklyHours < 37 && (!aFT || aT.weeklyHours >= 37)) return 1;
-            if (!aFT && !bFT) {
-              if (aT.monthlyAccum < 50 && bT.monthlyAccum >= 50) return -1;
-              if (bT.monthlyAccum < 50 && aT.monthlyAccum >= 50) return 1;
-            }
-            return aT.weeklyHours - bT.weeklyHours;
+            const aFT = ['店經理', '副理', '值班經理', '正職夥伴'].includes(a.role);
+            const bFT = ['店經理', '副理', '值班經理', '正職夥伴'].includes(b.role);
+            const aH = staffWorkTracker[a.id].weeklyHours, bH = staffWorkTracker[b.id].weeklyHours;
+            if (aFT && aH < 37 && (!bFT || bH >= 37)) return -1;
+            if (bFT && bH < 37 && (!aFT || aH >= 37)) return 1;
+            return aH - bH;
           });
 
-          let picked = null;
-          if (slot.reqMgr) {
-            let mgrs = candidates.filter(s => ['店經理', '副理', '值班經理', '時薪值班'].includes(s.role));
-            if (slot.name.includes('早') && selectedWeeklyOpenManagers.value.length > 0) picked = mgrs.find(s => selectedWeeklyOpenManagers.value.includes(s.id));
-            else if (slot.name.includes('晚') && selectedWeeklyCloseManagers.value.length > 0) picked = mgrs.find(s => selectedWeeklyCloseManagers.value.includes(s.id));
-            if (!picked && mgrs.length > 0) picked = mgrs[0];
-            if (!picked) warnings.push(`${dateStr} ${slot.name} 缺少管理職！`);
-          } else {
-            picked = candidates[0];
-          }
-
+          let picked = candidates[0];
           if (picked) {
             assignedToday.add(picked.id);
-            const net = calculateShiftNetHours(slot.start, slot.end), t = staffWorkTracker[picked.id];
-            t.lastEndMins = timeToMins(slot.end); t.consecutiveDays++; t.daysWorked++; t.weeklyHours += net; t.monthlyAccum += net;
-            assignedShifts.push({ staffId: picked.id, staffName: picked.nickname, shiftName: slot.name, time: `${slot.start}-${slot.end}`, hours: net, isSixthDay: t.daysWorked === 6, isOvertime: net > 8, role: picked.role });
+            const net = calculateShiftNetHours(slot.start, slot.end);
+            staffWorkTracker[picked.id].lastEndMins = timeToMins(slot.end);
+            staffWorkTracker[picked.id].consecutiveDays++;
+            staffWorkTracker[picked.id].daysWorked++;
+            staffWorkTracker[picked.id].weeklyHours += net;
+            assignedShifts.push({ staffId: picked.id, staffName: picked.nickname, shiftName: slot.name, time: `${slot.start}-${slot.end}`, hours: net });
           } else {
             warnings.push(`${dateStr} ${slot.name} 缺額！`);
           }
@@ -1514,60 +2171,17 @@ const app = createApp({
     };
 
     const applyAiRosterToSchedule = () => {
-      const plan = aiRosterModal.value.result, newRosterMap = { ...(scheduledRoster.value || {}) };
-      plan.forEach(day => { day.shifts.forEach(shift => { if (shift.staffId) newRosterMap[`${shift.staffId}_${day.dateStr}`] = { shiftName: shift.shiftName, time: shift.time, hours: shift.hours, isSixthDay: shift.isSixthDay, isOvertime: shift.isOvertime }; }); });
+      const newRosterMap = { ...(scheduledRoster.value || {}) };
+      aiRosterModal.value.result.forEach(day => {
+        day.shifts.forEach(shift => {
+          if (shift.staffId) newRosterMap[`${shift.staffId}_${day.dateStr}`] = { shiftName: shift.shiftName, time: shift.time, hours: shift.hours };
+        });
+      });
       if (db) db.ref('sbux/scheduled_roster').set(newRosterMap);
-      aiRosterModal.value.show = false; printTargetMode.value = 'ai'; alert('🎉 預排班表已套用！(涵蓋動態銜接班，解決斷層問題)');
+      aiRosterModal.value.show = false; alert('🎉 預排班表已套用！(已含動態銜接班修復斷層)');
     };
 
-    // ==================== 結算與雜項 ====================
-    const calculateCombinedScore = (post) => Number(((post.aiScore || 0) * 0.7 + (post.votes || 0) * 5).toFixed(1));
-    const checkAndAutoArchiveLatteArt = async () => {
-      if (!db || isAutoArchivingInProgress) return;
-      const now = new Date(), isSundayNight = (now.getDay() === 0 && (now.getHours() > 23 || (now.getHours() === 23 && now.getMinutes() >= 30))), isMondayMorning = (now.getDay() === 1 && now.getHours() < 12);
-      if ((isSundayNight || isMondayMorning) && lattePosts.value.length > 0) {
-        isAutoArchivingInProgress = true;
-        try {
-          const monday = new Date(now); monday.setDate(now.getDate() + (now.getDay() === 0 ? -6 : 1) - now.getDay());
-          const autoKey = `${monday.getFullYear()}${String(monday.getMonth() + 1).padStart(2, '0')}${String(monday.getDate()).padStart(2, '0')}_期`;
-          const sorted = [...lattePosts.value].sort((a, b) => calculateCombinedScore(b) - calculateCombinedScore(a));
-          const finalRanked = sorted.map((item, idx) => ({ ...item, rank: idx + 1, finalScore: calculateCombinedScore(item), partnerName: item.partnerName || getStaffName(item.authorStaffId) }));
-          await db.ref('sbux/latteArtArchives/' + autoKey).set({ folderName: autoKey, archivedAt: new Date().toISOString(), archivedBy: '系統自動結算', totalWorks: finalRanked.length, winner: finalRanked[0]?.partnerName || '無', works: finalRanked });
-          await db.ref('sbux/bulletins/' + 'bulletin_' + Date.now()).set({ id: 'bulletin_' + Date.now(), title: `🏆 門市拉花擂台賽 (${autoKey}) 成果揭曉`, content: `🥇 冠軍：${finalRanked[0]?.partnerName}\n恭喜獲獎夥伴！當期作品已歸檔，新一期擂台已正式開跑！`, dateStr: `${now.getMonth() + 1}/${now.getDate()}`, timestamp: Date.now() });
-          await db.ref('sbux/latte_posts').remove();
-        } catch (e) {} finally { isAutoArchivingInProgress = false; }
-      }
-    };
-
-    const weatherType = ref('clear'), weatherDesc = ref('晴朗'), weatherIcon = ref('☀️'), weatherGreeting = ref('今天也是元氣滿滿的一天 🌟');
-    const fetchYongheWeather = async () => {
-      try {
-        const res = await fetch('[https://api.open-meteo.com/v1/forecast?latitude=25.00&longitude=121.51&current_weather=true](https://api.open-meteo.com/v1/forecast?latitude=25.00&longitude=121.51&current_weather=true)');
-        const data = await res.json();
-        if (data && data.current_weather) {
-          const code = data.current_weather.weathercode;
-          if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) { weatherType.value = 'rain'; weatherDesc.value = '局部有雨'; weatherIcon.value = '🌧️'; weatherGreeting.value = '永和有雨，溫暖咖啡陪你當班 💚'; }
-          else if ([1, 2, 3, 45, 48].includes(code)) { weatherType.value = 'clouds'; weatherDesc.value = '多雲'; weatherIcon.value = '☁️'; weatherGreeting.value = '微風輕拂，適合來杯香醇那堤 ☕'; }
-        }
-      } catch (e) {}
-    };
-    const weatherBannerClass = computed(() => weatherType.value === 'rain' ? 'bg-gradient-to-br from-slate-800 to-teal-950' : 'bg-gradient-to-br from-emerald-800 to-emerald-950');
-
-    const countdownToSunday = ref('--天 --時 --分');
-    const updateCountdown = () => {
-      const now = new Date(), target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + ((7 - now.getDay()) % 7), 23, 30, 0);
-      if (now > target) target.setDate(target.getDate() + 7);
-      const diff = target - now;
-      if (diff <= 0) { countdownToSunday.value = '結算中'; checkAndAutoArchiveLatteArt(); return; }
-      countdownToSunday.value = `${Math.floor(diff / 86400000)}天 ${Math.floor((diff / 3600000) % 24).toString().padStart(2, '0')}時 ${Math.floor((diff / 60000) % 60).toString().padStart(2, '0')}分`;
-    };
-
-    onMounted(() => {
-      const savedDark = localStorage.getItem('sbux_dark_mode');
-      if (savedDark === 'true') { isDarkMode.value = true; document.documentElement.classList.add('dark'); }
-      fetchYongheWeather(); updateCountdown(); setInterval(updateCountdown, 60000);
-      nextTick(() => { if (window.lucide) lucide.createIcons(); });
-    });
+    const getPrintRowHeight = computed(() => `calc((98vh - 90px) / ${sortedValidStaffList.value.length || 1})`);
 
     return {
       currentPartner, loginForm, handleLogin, handleLogout, currentTab, otherSubTab,
@@ -1579,7 +2193,7 @@ const app = createApp({
       tastingForm, submitTastingNote, tastingNotesList, isAiEvaluatingTasting, getIntensityLabel: (v) => ({1:'1(極輕)',2:'2(輕柔)',3:'3(適中)',4:'4(明亮)',5:'5(飽滿)'}[v]||'3(適中)'), getCleanNotesText, getStaffName,
       bulletinList, bulletinModal, openBulletinModal: () => bulletinModal.value = { show: true, form: {} }, submitBulletin: () => { const f = bulletinModal.value.form; if(db) db.ref('sbux/bulletins/' + Date.now()).set({ id: Date.now().toString(), title: f.title, content: f.content, dateStr: `${new Date().getMonth()+1}/${new Date().getDate()}`, timestamp: Date.now() }); bulletinModal.value.show = false; }, deleteBulletin: (id) => { if(confirm('確定刪除？') && db) db.ref('sbux/bulletins/' + id).remove(); },
       scheduleStartDate, scheduleEndDate, targetRangeDates, setNextWeekRange, aiRosterModal, generateAiRoster, applyAiRosterToSchedule, clearScheduledRoster: () => { if (confirm('確定清空？') && db) db.ref('sbux/scheduled_roster').remove(); scheduledRoster.value = {}; },
-      printTargetMode, triggerPrintSchedule: (mode) => { printTargetMode.value = mode; nextTick(() => window.print()); }, getPrintRowHeight: computed(() => `calc((98vh - 90px) / ${sortedValidStaffList.value.length || 1})`),
+      printTargetMode, triggerPrintSchedule: (mode) => { printTargetMode.value = mode; nextTick(() => window.print()); }, getPrintRowHeight,
       materials, matSearchQuery, filteredMaterials: computed(() => { const q = matSearchQuery.value.trim().toLowerCase(); return q ? materials.value.filter(m => (m.code && m.code.toLowerCase().includes(q)) || (m.name && m.name.toLowerCase().includes(q))) : materials.value; }), calcModal, calculateOpenTime: (mat) => { const n = new Date(); let h = parseInt(mat.hours)||0, d = parseInt(mat.days)||0; if(mat.code==='MO'&&h===0&&d===0) h=24; n.setHours(n.getHours()+h, n.getMinutes(), 0); if(d>0) { n.setDate(n.getDate()+d); n.setHours(21,30); } calcModal.value={show:true, item:mat, targetTimeStr:`應於 ${n.getMonth()+1}/${n.getDate()} ${n.getHours()}:${n.getMinutes()} EXP`, pullDate: n.toISOString().split('T')[0], timing: `${n.getHours()}:${n.getMinutes()}`}; }, addMaterialToSchedule: () => { if(db) db.ref('sbux/inventory/' + Date.now()).set({ id: Date.now(), itemName: `${calcModal.value.item.name} (${calcModal.value.item.code})`, factoryExpiry: '開封打點', pullDate: calcModal.value.pullDate, timing: calcModal.value.timing, isMaterial: true }); calcModal.value.show = false; alert('已加入排程'); },
       matEditModal, openAddMaterialModal: () => matEditModal.value = { show: true, isNew: true, form: { temp: '常溫' } }, editMaterial: (m) => matEditModal.value = { show: true, isNew: false, form: {...m} }, saveMaterialForm: () => { const f = matEditModal.value.form, k = f._key || f.id || ('mat_'+Date.now()); if(db) db.ref('sbux/materials/'+k).set({...f, id:k, _key:k}); matEditModal.value.show=false; }, deleteMaterial: (m) => { if(confirm('刪除？') && db) db.ref('sbux/materials/'+(m._key||m.id)).remove(); },
       intakeForm, submitIntake: () => { const d = new Date(intakeForm.value.factoryExpiry); d.setDate(d.getDate() - (parseInt(intakeForm.value.advanceDays)||0)); if(db) db.ref('sbux/inventory/'+Date.now()).set({id:Date.now(), itemName: intakeForm.value.itemName, factoryExpiry: intakeForm.value.factoryExpiry, pullDate: d.toISOString().split('T')[0], timing: "21:30 閉店前", isMaterial: false}); intakeForm.value = {itemName:'', factoryExpiry:'', advanceDays:null}; alert('登記成功'); }, calendarDays: computed(() => { const y = currentCalDate.value.getFullYear(), m = currentCalDate.value.getMonth(), fd = new Date(y, m, 1).getDay(), td = new Date(y, m+1, 0).getDate(); const d=[]; for(let i=0;i<fd;i++) d.push({dayNum:'', isCurrentMonth:false, items:[]}); for(let i=1;i<=td;i++){ const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`; d.push({dayNum:i, isCurrentMonth:true, dateStr:ds, items:inventory.value.filter(it=>it.pullDate===ds)}); } return d; }), selectedDate: ref(new Date().toISOString().split('T')[0]), selectedDateItems: computed(() => inventory.value.filter(it => it.pullDate === ref(new Date().toISOString().split('T')[0]).value)), calMonth: computed(() => currentCalDate.value.getMonth()), calYear: computed(() => currentCalDate.value.getFullYear()), changeMonth: (d) => currentCalDate.value = new Date(currentCalDate.value.getFullYear(), currentCalDate.value.getMonth()+d, 1), resetToCurrentMonth: () => currentCalDate.value = new Date(),
@@ -1600,3 +2214,5 @@ const app = createApp({
 });
 app.mount('#app');
 </script>
+</body>
+</html>
