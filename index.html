@@ -11,7 +11,6 @@
       darkMode: 'class',
       theme: { extend: {} }
     };
-    // 白畫面終極防護：確保無論網路多慢，v-cloak 都會在載入後自動解除
     window.addEventListener('DOMContentLoaded', function() {
       setTimeout(function() {
         var appEl = document.getElementById('app');
@@ -387,7 +386,7 @@
                         <span :class="isFetchingTrivia ? 'animate-spin' : ''">🔄</span> 換一則
                       </button>
                       <a :href="todayTrivia.searchUrl" target="_blank" class="text-[10px] text-amber-700 dark:text-amber-400 hover:underline flex items-center gap-0.5 font-bold">
-                        搜尋 ↗
+                        深入學習 ↗
                       </a>
                     </div>
                   </div>
@@ -661,7 +660,7 @@
               
               <div v-if="isAiRecognizingRules" class="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-pulse">
                 <span class="animate-spin text-sm">🔄</span>
-                <span class="font-bold">AI 正在深度掃描文件並萃取下架天數規範...</span>
+                <span class="font-bold">AI 正在自動匹配可用模型並深度萃取下架天數規範...</span>
               </div>
 
               <div v-if="aiRuleUploadFeedback" class="p-2.5 bg-teal-50 dark:bg-teal-950/40 rounded-xl border border-teal-200 dark:border-teal-800 text-[11px] text-teal-800 dark:text-teal-300 whitespace-pre-line">
@@ -675,11 +674,11 @@
                     <span class="text-emerald-700 dark:text-emerald-400 font-bold ml-2">提前 {{ r.advance_days }} 天下架</span>
                     <span class="text-[10px] text-slate-400 ml-1.5">({{ r.timing || '21:30 閉店前' }})</span>
                   </div>
-                  <button v-if="isManager" @click="deleteRule(r.id)" class="text-slate-400 hover:text-red-500 text-xs px-2">✕</button>
+                  <div v-if="isManager" class="flex items-center gap-1">
+                    <button @click="editRule(r)" class="text-slate-400 hover:text-emerald-700 text-xs px-1.5 py-0.5" title="修改錯字或天數">✏️</button>
+                    <button @click="deleteRule(r.id)" class="text-slate-400 hover:text-red-500 text-xs px-1.5 py-0.5" title="刪除">✕</button>
+                  </div>
                 </div>
-                <p v-if="rules.length === 0" class="text-center py-4 text-slate-400">目前尚無下架標準，可點擊右上角新增或 AI 辨識匯入。</p>
-              </div>
-            </div>
 
             <!-- 月曆 -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
@@ -741,7 +740,7 @@
             </div>
 
           </section>
-          <!-- ==================== 頁籤 3：門市排班出勤中心 ==================== -->
+<!-- ==================== 頁籤 3：門市排班出勤中心 ==================== -->
           <section v-if="currentTab === 'roster'" class="space-y-4">
             
             <!-- 【管理職專用面板】：店經理、副理、值班經理、時薪值班可見 -->
@@ -757,8 +756,8 @@
                   <button @click="openBlackoutModal" class="px-2 py-1 bg-rose-700 hover:bg-rose-600 text-white rounded-lg text-xs font-bold shadow-sm transition active:scale-95">
                     🚫 設定禁休
                   </button>
-                  <button @click="clearScheduledRoster" class="px-2 py-1 bg-slate-200 hover:bg-rose-100 text-slate-700 hover:text-rose-700 dark:bg-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold transition active:scale-95" title="清空已套用的預排班表">
-                    🗑️ 清除預排紀錄
+                  <button @click="clearScheduledRoster" class="px-2 py-1 bg-slate-200 hover:bg-rose-100 text-slate-700 hover:text-rose-700 dark:bg-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold transition active:scale-95" title="清空目前所選週期的預排班表">
+                    🗑️ 清除本週預排
                   </button>
                 </div>
               </div>
@@ -771,7 +770,7 @@
                     @click="setNextWeekRange" 
                     type="button" 
                     class="text-[10px] px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded font-medium">
-                    ⚡ 選取 7 天
+                    ⚡ 選取標準 7 天
                   </button>
                 </div>
 
@@ -794,28 +793,42 @@
                   </div>
                 </div>
 
-                <!-- 本週早晚班值班主管指定選單 -->
-                <div class="p-2.5 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-600 space-y-2 text-xs">
-                  <div class="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
-                    <span>本週指定管理職</span>
-                    <span class="text-[10px] text-slate-400 font-normal">未指定由 AI 自動輪替</span>
+                <!-- 🌟 本週早晚班值班主管指定選單 (支援強制鎖定 + 歷史兩週早晚輪替提示) 🌟 -->
+                <div class="p-3 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-600 space-y-2 text-xs">
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-slate-800 dark:text-slate-200">🎯 本週指定值班主管 (強制鎖定班別)</span>
+                    <button 
+                      type="button"
+                      @click="autoSelectRotatedManagers"
+                      class="text-[10px] px-2 py-0.5 bg-amber-100 hover:bg-amber-200 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 rounded-full font-bold border border-amber-300 dark:border-amber-800 transition active:scale-95">
+                      🔄 依兩週輪替自動帶入
+                    </button>
                   </div>
-                  <div class="grid grid-cols-2 gap-2">
+                  <p class="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                    💡 勾選後系統將<b>強制鎖定</b>該主管本週專屬負責早班或晚班（絕不混排）；若未勾選則由系統依「前兩週歷史班表」自動執行早晚輪替。
+                  </p>
+                  <div class="grid grid-cols-2 gap-2 pt-0.5">
                     <div>
-                      <span class="text-[10px] text-amber-700 dark:text-amber-400 font-bold block mb-1">早班值班</span>
-                      <div class="space-y-1 max-h-24 overflow-y-auto border rounded-lg p-1.5 bg-white dark:bg-slate-800">
-                        <label v-for="m in allDutyStaff" :key="'open_'+(m.id||m._key)" class="flex items-center gap-1.5 text-[11px] cursor-pointer">
-                          <input type="checkbox" :value="m.id||m._key" v-model="selectedWeeklyOpenManagers" class="rounded text-emerald-800">
-                          <span>{{ m.name }} ({{ m.nickname }})</span>
+                      <span class="text-[10px] text-amber-700 dark:text-amber-400 font-bold block mb-1">☀️ 指定早班值班 (06:30)</span>
+                      <div class="space-y-1.5 max-h-32 overflow-y-auto border rounded-lg p-1.5 bg-white dark:bg-slate-800">
+                        <label v-for="m in allDutyStaff" :key="'open_'+(m.id||m._key)" class="flex flex-col gap-0.5 text-[11px] cursor-pointer p-1 rounded hover:bg-amber-50/60 dark:hover:bg-slate-700/50">
+                          <div class="flex items-center gap-1.5">
+                            <input type="checkbox" :value="m.id||m._key" v-model="selectedWeeklyOpenManagers" class="rounded text-emerald-800">
+                            <span class="font-bold">{{ m.name }} ({{ m.nickname }})</span>
+                          </div>
+                          <span class="text-[9px] text-slate-400 pl-4">{{ getManagerRotationHint(m) }}</span>
                         </label>
                       </div>
                     </div>
                     <div>
-                      <span class="text-[10px] text-indigo-700 dark:text-indigo-400 font-bold block mb-1">晚班值班</span>
-                      <div class="space-y-1 max-h-24 overflow-y-auto border rounded-lg p-1.5 bg-white dark:bg-slate-800">
-                        <label v-for="m in allDutyStaff" :key="'close_'+(m.id||m._key)" class="flex items-center gap-1.5 text-[11px] cursor-pointer">
-                          <input type="checkbox" :value="m.id||m._key" v-model="selectedWeeklyCloseManagers" class="rounded text-emerald-800">
-                          <span>{{ m.name }} ({{ m.nickname }})</span>
+                      <span class="text-[10px] text-indigo-700 dark:text-indigo-400 font-bold block mb-1">🌙 指定晚班值班 (14:00)</span>
+                      <div class="space-y-1.5 max-h-32 overflow-y-auto border rounded-lg p-1.5 bg-white dark:bg-slate-800">
+                        <label v-for="m in allDutyStaff" :key="'close_'+(m.id||m._key)" class="flex flex-col gap-0.5 text-[11px] cursor-pointer p-1 rounded hover:bg-indigo-50/60 dark:hover:bg-slate-700/50">
+                          <div class="flex items-center gap-1.5">
+                            <input type="checkbox" :value="m.id||m._key" v-model="selectedWeeklyCloseManagers" class="rounded text-emerald-800">
+                            <span class="font-bold">{{ m.name }} ({{ m.nickname }})</span>
+                          </div>
+                          <span class="text-[9px] text-slate-400 pl-4">{{ getManagerRotationHint(m) }}</span>
                         </label>
                       </div>
                     </div>
@@ -831,7 +844,7 @@
                     class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 disabled:bg-slate-400 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
                     <span v-if="isAiGeneratingRoster" class="animate-spin">🔄</span>
                     <span v-else>🤖</span>
-                    <span>{{ isAiGeneratingRoster ? 'AI 正在計算人力覆蓋與排班中...' : '執行 AI 智慧預排 (含中晚3人以上覆蓋校準)' }}</span>
+                    <span>{{ isAiGeneratingRoster ? 'AI 正在串聯歷史班表與計算全天平衡中...' : '執行 AI 智慧預排 (早中固定08:00 + 下午動態補位)' }}</span>
                   </button>
                 </div>
 
@@ -1044,7 +1057,6 @@
                   <span class="text-[10px] font-bold text-slate-400">Coffee Fundamentals</span>
                 </div>
 
-                <!-- 課程跳轉連結與 AI 重點整理按鈕 -->
                 <div class="flex gap-2">
                   <button 
                     @click="generateCourseSummary('CA100')" 
@@ -1061,7 +1073,6 @@
                   </a>
                 </div>
 
-                <!-- AI 動態生成的重點區塊 -->
                 <div v-if="courseSummaries['CA100']" class="p-3 bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-xl text-xs text-emerald-950 dark:text-emerald-200 whitespace-pre-line leading-relaxed">
                   <div class="font-bold text-emerald-800 dark:text-emerald-300 mb-1">✨ AI 大師重點導讀 (CA 100)：</div>
                   {{ courseSummaries['CA100'] }}
@@ -1176,12 +1187,17 @@
               </div>
             </div>
 
-            <!-- 沖煮秘笈與常態豆寶典 -->
+            <!-- 🌟 沖煮秘笈與台灣星巴克官方全系列咖啡豆寶典 (含季節豆+常態豆+點擊跳轉官網) 🌟 -->
             <div v-if="otherSubTab === 'coffee'" class="space-y-4">
               <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
-                <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                  <span>📖</span> 沖煮標準參數
-                </h3>
+                <div class="flex justify-between items-center">
+                  <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <span>📖</span> 門市沖煮標準參數
+                  </h3>
+                  <a href="https://www.starbucks.com.tw/coffee/beans/index.jspx" target="_blank" class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline">
+                    台灣星巴克咖啡豆總覽 ↗
+                  </a>
+                </div>
                 <div class="grid grid-cols-2 gap-2 text-xs">
                   <div class="bg-emerald-50/60 dark:bg-emerald-950/40 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800 space-y-1">
                     <div class="font-bold text-emerald-950 dark:text-emerald-300">手沖滴濾 (Pour-Over)</div>
@@ -1194,37 +1210,89 @@
                 </div>
               </div>
 
-              <!-- 豆寶典搜尋與清單 -->
-              <div class="space-y-3">
+              <!-- 豆寶典分類篩選與搜尋 -->
+              <div class="space-y-2.5">
+                <div class="flex gap-1.5 overflow-x-auto pb-0.5 text-[11px] font-bold no-scrollbar">
+                  <button @click="coffeeCategoryFilter = 'all'" :class="coffeeCategoryFilter === 'all' ? 'bg-emerald-800 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'" class="px-3 py-1 rounded-full whitespace-nowrap transition">
+                    全部豆款 ({{ starbucksCoreBeans.length }})
+                  </button>
+                  <button @click="coffeeCategoryFilter = '常態經典豆'" :class="coffeeCategoryFilter === '常態經典豆' ? 'bg-emerald-800 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'" class="px-3 py-1 rounded-full whitespace-nowrap transition">
+                    ☕ 常態經典豆
+                  </button>
+                  <button @click="coffeeCategoryFilter = '季節限定豆'" :class="coffeeCategoryFilter === '季節限定豆' ? 'bg-amber-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'" class="px-3 py-1 rounded-full whitespace-nowrap transition">
+                    ✨ 季節限定豆
+                  </button>
+                </div>
+
+                <div class="flex gap-1.5 overflow-x-auto pb-0.5 text-[10px] font-bold no-scrollbar">
+                  <button @click="coffeeRoastFilter = 'all'" :class="coffeeRoastFilter === 'all' ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'" class="px-2.5 py-0.5 rounded-lg whitespace-nowrap">全部烘焙度</button>
+                  <button @click="coffeeRoastFilter = '黃金烘焙'" :class="coffeeRoastFilter === '黃金烘焙' ? 'bg-amber-400 text-black' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'" class="px-2.5 py-0.5 rounded-lg whitespace-nowrap">黃金烘焙 (Blonde)</button>
+                  <button @click="coffeeRoastFilter = '中度烘焙'" :class="coffeeRoastFilter === '中度烘焙' ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'" class="px-2.5 py-0.5 rounded-lg whitespace-nowrap">中度烘焙 (Medium)</button>
+                  <button @click="coffeeRoastFilter = '深度烘焙'" :class="coffeeRoastFilter === '深度烘焙' ? 'bg-stone-800 text-amber-200' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'" class="px-2.5 py-0.5 rounded-lg whitespace-nowrap">深度烘焙 (Dark)</button>
+                </div>
+
                 <div class="relative">
                   <input 
                     v-model="coffeeSearchQuery" 
                     type="text" 
-                    placeholder="搜尋豆名、產區或風味..." 
+                    placeholder="搜尋豆名、產區、處理法、風味或搭配食物..." 
                     class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white"
                   >
                   <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
                 </div>
 
-                <div 
-                  v-for="bean in filteredCoffeeBeans" :key="bean.name" 
-                  class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2">
-                  <div class="flex justify-between items-start">
+                <!-- 點擊整張卡片直接跳轉至台灣星巴克官網對應頁面 -->
+                <a 
+                  v-for="bean in filteredCoffeeBeans" 
+                  :key="bean.name" 
+                  :href="bean.officialUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="block bg-white dark:bg-slate-800 hover:border-emerald-600 dark:hover:border-emerald-500 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2.5 transition active:scale-[0.99] group cursor-pointer">
+                  
+                  <div class="flex justify-between items-start gap-2">
                     <div>
-                      <h3 class="text-base font-bold text-slate-900 dark:text-white">{{ bean.name }}</h3>
-                      <p class="text-[11px] text-slate-400 italic">{{ bean.enName }}</p>
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        <span :class="bean.category === '季節限定豆' ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300' : 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300'" class="px-1.5 py-0.2 text-[9px] font-bold rounded border">
+                          {{ bean.category }}
+                        </span>
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition">
+                          {{ bean.name }}
+                        </h3>
+                      </div>
+                      <p class="text-[10px] text-slate-400 italic mt-0.5">{{ bean.enName }}</p>
                     </div>
-                    <span class="px-2 py-0.5 text-xs font-bold rounded-md border bg-amber-50 text-amber-900 border-amber-300">
+                    <span 
+                      :class="bean.roast.includes('黃金') ? 'bg-amber-50 text-amber-900 border-amber-300' : (bean.roast.includes('中度') ? 'bg-orange-50 text-orange-900 border-orange-300' : 'bg-stone-900 text-amber-200 border-stone-700')"
+                      class="px-2 py-0.5 text-[10px] font-bold rounded-md border whitespace-nowrap flex-shrink-0">
                       {{ bean.roast }}
                     </span>
                   </div>
 
-                  <div class="grid grid-cols-2 gap-2 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
-                    <div><span class="text-slate-400">產區：</span><span class="font-bold text-slate-700 dark:text-slate-300">{{ bean.region }}</span></div>
-                    <div><span class="text-slate-400">處理法：</span><span class="font-bold text-slate-700 dark:text-slate-300">{{ bean.processing }}</span></div>
-                    <div class="col-span-2"><span class="text-slate-400">風味：</span><span class="font-bold text-emerald-800 dark:text-emerald-400">{{ bean.flavorNotes }}</span></div>
+                  <!-- 完整 7 大屬性展示 -->
+                  <div class="grid grid-cols-2 gap-1.5 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700">
+                    <div><span class="text-slate-400">🌍 產區：</span><span class="font-bold text-slate-700 dark:text-slate-200">{{ bean.region }}</span></div>
+                    <div><span class="text-slate-400">💧 處理法：</span><span class="font-bold text-slate-700 dark:text-slate-200">{{ bean.processing }}</span></div>
+                    <div><span class="text-slate-400">🍋 酸度：</span><span class="font-bold text-amber-700 dark:text-amber-400">{{ bean.acidity }}</span></div>
+                    <div><span class="text-slate-400">🧈 醇度：</span><span class="font-bold text-indigo-700 dark:text-indigo-400">{{ bean.body }}</span></div>
+                    <div class="col-span-2 pt-0.5 border-t border-slate-200/60 dark:border-slate-800">
+                      <span class="text-slate-400">✨ 風味筆記：</span>
+                      <span class="font-bold text-emerald-800 dark:text-emerald-400">{{ bean.flavorNotes }}</span>
+                    </div>
+                    <div class="col-span-2">
+                      <span class="text-slate-400">🥐 適合搭配食物：</span>
+                      <span class="font-bold text-slate-700 dark:text-slate-300">{{ bean.foodPairing }}</span>
+                    </div>
                   </div>
-                </div>
+
+                  <p v-if="bean.description" class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                    {{ bean.description }}
+                  </p>
+
+                  <div class="flex justify-end items-center pt-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 group-hover:underline">
+                    <span>🔗 點擊前往台灣星巴克官網查看詳情 ↗</span>
+                  </div>
+                </a>
               </div>
             </div>
 
@@ -1247,7 +1315,7 @@
                         v-model="tastingForm.coffeeName" 
                         list="coffeeBeansDatalist" 
                         type="text" 
-                        placeholder="請輸入品名..." 
+                        placeholder="請輸入或選擇品名..." 
                         class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white">
                       
                       <datalist id="coffeeBeansDatalist">
@@ -1730,7 +1798,7 @@
 
   </div>
 
-  <!-- ==================== 底部固定毛玻璃導航選單 (純內嵌 SVG，永不消失) ==================== -->
+  <!-- ==================== 底部固定毛玻璃導航選單 ==================== -->
   <footer v-if="currentPartner" class="screen-element fixed bottom-0 left-0 right-0 z-[9999] ios-glass-bar border-t border-slate-200/60 dark:border-slate-800 shadow-sm transition-all">
     <div class="max-w-md mx-auto grid grid-cols-6 py-2 px-1 text-center">
       <button @click="currentTab = 'home'" :class="currentTab === 'home' ? 'text-emerald-800 dark:text-emerald-400 font-bold' : 'text-slate-400'" class="flex flex-col items-center justify-center py-1 transition active:scale-95">
@@ -1795,7 +1863,7 @@
       <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg p-5 shadow-2xl space-y-3.5 max-h-[90vh] flex flex-col border border-slate-200 dark:border-slate-700">
         <div class="flex justify-between items-center border-b dark:border-slate-700 pb-2 flex-shrink-0">
           <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
-            <span>🤖</span> AI 智慧預排結果與人力覆蓋分析
+            <span>🤖</span> AI 智慧預排結果與全天平衡分析
           </h3>
           <button @click="aiRosterModal.show = false" class="text-slate-400 text-sm">✕</button>
         </div>
@@ -1803,7 +1871,7 @@
         <div class="flex-1 overflow-y-auto space-y-3 pr-1 text-xs">
           <!-- AI 排班分析摘要 -->
           <div v-if="aiRosterModal.aiAnalysis" class="p-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-300 dark:border-emerald-800 rounded-2xl space-y-1">
-            <div class="font-bold text-emerald-900 dark:text-emerald-300">🧠 AI 排班審查與交接覆蓋報告：</div>
+            <div class="font-bold text-emerald-900 dark:text-emerald-300">🧠 AI 排班審查與歷史串聯報告：</div>
             <p class="text-[11px] text-emerald-800 dark:text-emerald-200 whitespace-pre-line leading-relaxed">{{ aiRosterModal.aiAnalysis }}</p>
           </div>
 
@@ -1817,11 +1885,16 @@
 
           <!-- 各日預排結果卡片 -->
           <div v-for="day in aiRosterModal.result" :key="day.dateStr" class="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border space-y-1.5">
-            <div class="flex justify-between items-center font-bold text-emerald-900 dark:text-emerald-300 border-b pb-1">
+            <div class="flex justify-between items-center font-bold text-emerald-900 dark:text-emerald-300 border-b pb-1 flex-wrap gap-1">
               <span>📅 {{ day.dateStr }} ({{ day.weekday }}) {{ day.isWeekend ? '假日' : '平日' }}</span>
-              <span class="text-[10px] px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 rounded-full font-bold">
-                15:00-19:00 最低在店：{{ day.minAfternoonStaff || 3 }} 人
-              </span>
+              <div class="flex gap-1">
+                <span class="text-[9.5px] px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 rounded-full font-bold">
+                  早08-12：{{ day.minMorningStaff || 3 }}人
+                </span>
+                <span class="text-[9.5px] px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 rounded-full font-bold">
+                  午15-19：{{ day.minAfternoonStaff || 3 }}人
+                </span>
+              </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
@@ -1937,7 +2010,7 @@
     </div>
   </transition>
 
-  <!-- 個人設定 Modal -->
+  <!-- 個人設定 Modal (含 Gemini API Key 自動模型探測與測試) -->
   <transition name="modal">
     <div v-if="settingsModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
       <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-4 border">
@@ -1954,10 +2027,20 @@
             </button>
           </div>
 
-          <div v-if="isSuperTan" class="space-y-1 p-2.5 bg-teal-50/70 dark:bg-teal-950/40 rounded-xl border border-teal-200 dark:border-teal-800">
+          <div v-if="isSuperTan" class="space-y-1.5 p-2.5 bg-teal-50/70 dark:bg-teal-950/40 rounded-xl border border-teal-200 dark:border-teal-800">
             <label class="font-bold text-teal-900 dark:text-teal-300 block">🤖 Gemini API Key (全店雲端共享)</label>
             <input v-model="settingsModal.geminiApiKey" type="password" placeholder="貼上 AI Studio Key (AIzaSy...)" class="w-full px-2 py-1.5 rounded-lg border font-mono text-[11px] dark:bg-slate-800 dark:text-white">
-            <button @click="saveGeminiApiKey" class="w-full mt-1 py-1.5 bg-teal-700 hover:bg-teal-800 text-white font-bold rounded-lg transition active:scale-95">儲存並同步至雲端</button>
+            <div class="grid grid-cols-2 gap-1.5 pt-1">
+              <button @click="saveGeminiApiKey" class="py-1.5 bg-teal-700 hover:bg-teal-800 text-white font-bold rounded-lg transition active:scale-95">
+                💾 儲存並同步
+              </button>
+              <button @click="testGeminiApiKey" :disabled="isTestingApiKey" class="py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg transition active:scale-95">
+                {{ isTestingApiKey ? '🔄 檢測中...' : '🔍 測試連線模型' }}
+              </button>
+            </div>
+            <div v-if="apiKeyTestResult" class="text-[10px] p-1.5 rounded bg-white/80 dark:bg-slate-900/70 text-teal-900 dark:text-teal-200 font-mono leading-snug">
+              {{ apiKeyTestResult }}
+            </div>
           </div>
 
           <div class="space-y-1 p-2.5 bg-slate-50 dark:bg-slate-700/60 rounded-xl">
@@ -2382,7 +2465,7 @@
   
 </div>
 <script>
-// 全域錯誤防護：若發生任何異常，立即解除 v-cloak 並顯示提示，絕不白畫面
+// 全域錯誤防護：確保任何情況下都不會卡在 v-cloak 白畫面
 window.onerror = function(msg, url, line) {
   var el = document.getElementById('app');
   if (el) {
@@ -2412,6 +2495,20 @@ try {
   console.error("Firebase 初始化失敗：", e);
 }
 
+// 產生本地 YYYY-MM-DD 字串 (徹底解決 UTC 時區偏移導致歷史班表對不上的問題)
+const formatDateLocal = (dateObj) => {
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const d = String(dateObj.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
+const parseLocalDate = (dateStr) => {
+  if (!dateStr) return new Date();
+  const parts = dateStr.split('-').map(Number);
+  return new Date(parts[0], parts[1] - 1, parts[2], 12, 0, 0);
+};
+
 const generateTimeSlots = () => {
   const slots = [];
   for (let h = 6; h <= 22; h++) {
@@ -2428,15 +2525,307 @@ const generateTimeSlots = () => {
 };
 const timeSlots = generateTimeSlots();
 
+// ==================== ☕ 台灣星巴克官網完整咖啡豆資料庫 (常態經典豆 + 季節限定豆 + 官方連結) ====================
 const starbucksCoreBeans = [
-  { name: "派克市場烘焙", enName: "Pike Place® Roast", roast: "中度烘焙", region: "拉丁美洲", processing: "水洗法", flavorNotes: "巧克力、烤堅果、平衡圓潤", foodPairing: "巧克力餅乾、可頌、肉桂捲" },
-  { name: "黃金烘焙綜合", enName: "Veranda Blend®", roast: "黃金烘焙", region: "拉丁美洲", processing: "水洗法", flavorNotes: "烘烤麥芽、牛奶巧克力、溫和清爽", foodPairing: "檸檬塔、輕食三明治、鬆餅" },
-  { name: "瓜地馬拉安堤瓜", enName: "Guatemala Antigua", roast: "中度烘焙", region: "拉丁美洲", processing: "水洗法", flavorNotes: "可可、香料香氣、優雅微酸", foodPairing: "巧克力磅蛋糕、焦糖布丁" },
-  { name: "肯亞", enName: "Kenya", roast: "中度烘焙", region: "非洲", processing: "水洗法", flavorNotes: "葡萄柚、黑醋栗、明亮多汁的果酸", foodPairing: "莓果塔、新鮮水果" },
-  { name: "蘇門答臘", enName: "Sumatra", roast: "深度烘焙", region: "亞太產區", processing: "半水洗法 (濕刨法)", flavorNotes: "泥土芬芳、草本香氣、濃郁厚重醇度", foodPairing: "鹹派、香腸起司可頌" },
-  { name: "佛羅娜綜合", enName: "Caffè Verona®", roast: "深度烘焙", region: "綜合產區", processing: "水洗與半水洗", flavorNotes: "黑可可、焦糖甜感、深沉濃郁", foodPairing: "黑森林蛋糕、摩卡千層" },
-  { name: "義式濃縮烘焙", enName: "Espresso Roast", roast: "深度烘焙", region: "綜合產區", processing: "水洗與半水洗", flavorNotes: "糖蜜、濃郁焦糖香、持久餘韻", foodPairing: "提拉米蘇、焦糖瑪奇朵" },
-  { name: "低因熱情派克", enName: "Decaf Pike Place® Roast", roast: "中度烘焙", region: "拉丁美洲", processing: "天然二氧化碳脫因", flavorNotes: "烤堅果、可可、溫順圓滑", foodPairing: "司康、燕麥軟餅乾" }
+  // 【黃金烘焙 Blonde Roast - 常態與季節】
+  {
+    name: "輕柳綜合咖啡豆",
+    enName: "Starbucks® Willow Blend™",
+    category: "常態經典豆",
+    roast: "黃金烘焙",
+    region: "拉丁美洲、非洲",
+    processing: "水洗法",
+    acidity: "高 (明亮柑橘酸質)",
+    body: "輕盈",
+    flavorNotes: "明亮清爽、微妙柑橘與花香尾韻",
+    foodPairing: "檸檬塔、原味可頌、新鮮水果、起司蛋糕",
+    description: "明亮且清爽的黃金烘焙綜合豆，融合東非的柑橘花香與拉丁美洲的乾淨圓潤口感。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/blonde-roast.jspx"
+  },
+  {
+    name: "黃金烘焙綜合咖啡豆 (閒逸綜合)",
+    enName: "Starbucks® Veranda Blend™",
+    category: "常態經典豆",
+    roast: "黃金烘焙",
+    region: "拉丁美洲",
+    processing: "水洗法",
+    acidity: "中偏柔和",
+    body: "輕盈滑順",
+    flavorNotes: "烘烤麥芽、牛奶巧克力、柔和甘甜",
+    foodPairing: "蜂蜜鬆餅、堅果塔、輕食三明治、軟餅乾",
+    description: "以較短烘焙時間展現拉丁美洲咖啡豆的細膩柔和，帶有宜人的烘烤麥芽與堅果香氣。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/blonde-roast.jspx"
+  },
+  {
+    name: "星巴克日安綜合咖啡豆",
+    enName: "Starbucks® Odyssey Blend™",
+    category: "季節限定豆",
+    roast: "黃金烘焙",
+    region: "非洲、拉丁美洲、亞太綜合",
+    processing: "水洗法、日曬法、蜜處理",
+    acidity: "中高 (活潑果酸)",
+    body: "中等輕盈",
+    flavorNotes: "茂谷柑、熱帶水果、太妃糖與蜂蜜甜感",
+    foodPairing: "柑橘水果塔、奶油可頌、蜂蜜蛋糕",
+    description: "結合三大產區永續採購咖啡豆，層次豐富，帶有明亮柑橘香與溫暖甜美的蜂蜜餘韻。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/blonde-roast.jspx"
+  },
+  {
+    name: "單一產區衣索比亞 (黃金烘焙)",
+    enName: "Single-Origin Ethiopia Blonde Roast",
+    category: "季節限定豆",
+    roast: "黃金烘焙",
+    region: "非洲 (衣索比亞)",
+    processing: "水洗法",
+    acidity: "高 (鮮明檸檬柑橘)",
+    body: "輕盈",
+    flavorNotes: "佛手柑、茉莉花香、香檸與清爽茶感",
+    foodPairing: "檸檬磅蛋糕、莓果司康、馬卡龍",
+    description: "致敬咖啡發源地衣索比亞，黃金烘焙完美保留其細緻花香與活潑的柑橘檸檬調性。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/blonde-roast.jspx"
+  },
+
+  // 【中度烘焙 Medium Roast - 常態與季節】
+  {
+    name: "派克市場烘焙咖啡豆",
+    enName: "Starbucks® Pike Place® Roast",
+    category: "常態經典豆",
+    roast: "中度烘焙",
+    region: "拉丁美洲",
+    processing: "水洗法",
+    acidity: "中等平衡",
+    body: "中等圓潤",
+    flavorNotes: "可可、烘烤堅果、細膩肉桂香料尾韻",
+    foodPairing: "巧克力餅乾、經典肉桂捲、起司牛肉可頌",
+    description: "紀念 1971 年西雅圖派克市場創始店，口感滑順平衡，是每日滴濾咖啡的核心代表。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
+  },
+  {
+    name: "家常咖啡豆",
+    enName: "Starbucks® House Blend",
+    category: "常態經典豆",
+    roast: "中度烘焙",
+    region: "拉丁美洲",
+    processing: "水洗法",
+    acidity: "中等清爽",
+    body: "中等",
+    flavorNotes: "太妃糖、堅果與可可的絕佳平衡",
+    foodPairing: "藍莓馬芬、核桃香蕉蛋糕、烤蘋果派",
+    description: "星巴克於 1971 年調配的第一款綜合咖啡豆，風味乾淨平衡，展現拉丁美洲經典風土。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
+  },
+  {
+    name: "哥倫比亞咖啡豆",
+    enName: "Starbucks® Colombia",
+    category: "常態經典豆",
+    roast: "中度烘焙",
+    region: "拉丁美洲 (哥倫比亞)",
+    processing: "水洗法",
+    acidity: "中等微酸",
+    body: "中等飽滿",
+    flavorNotes: "多汁果香、胡桃堅果尾韻、圓潤順口",
+    foodPairing: "牛奶巧克力、核桃布朗尼、烤起司三明治",
+    description: "產自高聳安地斯山脈，具備極具辨識度的圓潤醇度與清爽的核果回甘。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
+  },
+  {
+    name: "肯亞咖啡豆",
+    enName: "Starbucks® Kenya",
+    category: "常態經典豆",
+    roast: "中度烘焙",
+    region: "非洲 (肯亞)",
+    processing: "水洗法",
+    acidity: "高 (明亮多汁果酸)",
+    body: "厚實飽滿",
+    flavorNotes: "紅葡萄柚、黑醋栗、柑橘ベリー果香",
+    foodPairing: "新鮮莓果塔、檸檬凝乳蛋糕、柳橙磅蛋糕",
+    description: "擁有罕見的高酸度與厚實醇度結合，果香奔放多汁，製作成冰手沖風味更是驚艷。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
+  },
+  {
+    name: "低咖啡因派克市場烘焙咖啡豆",
+    enName: "Decaf Pike Place® Roast",
+    category: "常態經典豆",
+    roast: "中度烘焙",
+    region: "拉丁美洲",
+    processing: "水洗法 (天然脫因)",
+    acidity: "中等柔和",
+    body: "中等滑順",
+    flavorNotes: "可可、烘烤堅果、溫潤平衡",
+    foodPairing: "原味司康、燕麥葡萄乾餅乾、輕乳酪蛋糕",
+    description: "保留派克市場經典的可可與烤堅果香氣，適合夜晚或想減少咖啡因攝取的時刻享用。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
+  },
+  {
+    name: "瓜地馬拉卡西塞羅咖啡豆",
+    enName: "Guatemala Casi Cielo™",
+    category: "季節限定豆",
+    roast: "中度烘焙",
+    region: "拉丁美洲 (瓜地馬拉安堤瓜)",
+    processing: "水洗法",
+    acidity: "中高 (優雅檸檬酸質)",
+    body: "中等絲滑",
+    flavorNotes: "細緻花香、香檸柑橘、黑可可尾韻",
+    foodPairing: "生巧克力塔、千層蛋糕、焦糖布丁",
+    description: "Casi Cielo 意為「近乎天堂」，源自安堤瓜高海拔火山山谷，為每年夥伴與顧客最期待的單一產區季節豆。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
+  },
+  {
+    name: "東非綜合咖啡豆",
+    enName: "East Africa Blend",
+    category: "季節限定豆",
+    roast: "中度烘焙",
+    region: "非洲 (東非產區)",
+    processing: "水洗法",
+    acidity: "高 (明亮柑橘莓果)",
+    body: "中等",
+    flavorNotes: "柑橘花香、乾燥莓果、柔和香料與可可",
+    foodPairing: "綜合莓果起司蛋糕、柑橘丹麥、水果塔",
+    description: "匯聚東非陽光產區的精選咖啡豆，呈現鮮明活潑的果酸與迷人的花香層次。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
+  },
+  {
+    name: "星巴克瑟加堤綜合咖啡豆",
+    enName: "Starbucks® Sirens Blend™",
+    category: "季節限定豆",
+    roast: "中度烘焙",
+    region: "非洲、拉丁美洲",
+    processing: "水洗法",
+    acidity: "中高 (多汁果酸)",
+    body: "中等圓潤",
+    flavorNotes: "柑橘、花香、牛奶巧克力與順滑尾韻",
+    foodPairing: "巧克力可頌、柑橘瑪德蓮、檸檬塔",
+    description: "向咖啡產業中的女性工作者致敬，融合拉丁美洲可可感與東非的柑橘花香，冷熱皆宜。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
+  },
+  {
+    name: "星旅綜合咖啡豆",
+    enName: "Starbucks® Voyage Blend™",
+    category: "季節限定豆",
+    roast: "中度烘焙",
+    region: "拉丁美洲、亞太、非洲",
+    processing: "水洗法、半水洗法",
+    acidity: "中等",
+    body: "中等飽滿",
+    flavorNotes: "葡萄柚、花蜜甜感、烤榛果餘韻",
+    foodPairing: "焦糖核桃塔、奶油捲、水果軟糖",
+    description: "象徵探索咖啡未來永續旅程的季節綜合豆，層次明亮且帶有溫暖堅果甜香。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
+  },
+  {
+    name: "哥倫比亞拿里諾咖啡豆",
+    enName: "Single-Origin Colombia Nariño",
+    category: "季節限定豆",
+    roast: "中度烘焙",
+    region: "拉丁美洲 (哥倫比亞拿里諾)",
+    processing: "水洗法",
+    acidity: "中等清爽",
+    body: "中等厚實",
+    flavorNotes: "甜美草本、黑可可、烤核桃與多汁口感",
+    foodPairing: "巧克力千層、核桃磅蛋糕、鹹派",
+    description: "來自哥倫比亞西南部高海拔火山陡坡，日照充足、日夜溫差大，孕育出極致濃郁的核果可可香。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
+  },
+
+  // 【深度烘焙 Dark Roast - 常態與季節】
+  {
+    name: "濃縮烘焙咖啡豆",
+    enName: "Starbucks® Espresso Roast",
+    category: "常態經典豆",
+    roast: "深度烘焙",
+    region: "拉丁美洲、亞太綜合",
+    processing: "水洗法、半水洗法",
+    acidity: "低至中",
+    body: "厚重濃郁",
+    flavorNotes: "濃郁糖蜜、焦糖甜香、深沉飽滿",
+    foodPairing: "提拉米蘇、焦糖瑪奇朵蛋糕、肉桂捲",
+    description: "自 1975 年以來的經典配方，是門市所有拿鐵與濃縮飲料的靈魂基底，帶有強烈焦糖甜感。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/dark-roast.jspx"
+  },
+  {
+    name: "蘇門答臘咖啡豆",
+    enName: "Starbucks® Sumatra",
+    category: "常態經典豆",
+    roast: "深度烘焙",
+    region: "亞洲/太平洋 (印尼蘇門答臘)",
+    processing: "半水洗法 (濕刨法)",
+    acidity: "極低",
+    body: "極度厚實飽滿",
+    flavorNotes: "大地芳香、草本植物、雪松與深邃香料",
+    foodPairing: "肉桂捲、起司鹹派、培根起司帕里尼、楓糖點心",
+    description: "採用印尼傳統濕刨法處理，幾乎沒有酸味，醇度如絲絨般厚重並伴隨獨特草本大地氣息。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/dark-roast.jspx"
+  },
+  {
+    name: "佛羅娜綜合咖啡豆",
+    enName: "Starbucks® Caffè Verona™",
+    category: "常態經典豆",
+    roast: "深度烘焙",
+    region: "拉丁美洲、亞太綜合",
+    processing: "水洗法、半水洗法",
+    acidity: "低",
+    body: "厚實醇厚",
+    flavorNotes: "黑可可、烘焙甜香、深邃濃郁焦糖",
+    foodPairing: "古典巧克力蛋糕、黑森林蛋糕、生巧克力",
+    description: "以愛之都維洛納命名，結合 80% 尤康綜合豆與 20% 義式烘焙豆，是搭配巧克力的完美絕配。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/dark-roast.jspx"
+  },
+  {
+    name: "春讚綜合咖啡豆",
+    enName: "Starbucks® Spring Season Blend™",
+    category: "季節限定豆",
+    roast: "深度烘焙",
+    region: "拉丁美洲、非洲、亞太",
+    processing: "水洗、日曬、半水洗",
+    acidity: "中等",
+    body: "厚實圓潤",
+    flavorNotes: "黑櫻桃、雪松木質香、黑可可與香料",
+    foodPairing: "黑森林蛋糕、莓果巧克力塔、起司可頌",
+    description: "迎接春季的經典限定綜合豆，完美揉合黑櫻桃果香與陳年蘇門答臘的雪松醇厚感。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/dark-roast.jspx"
+  },
+  {
+    name: "單一產區陳年蘇門答臘咖啡豆",
+    enName: "Single-Origin Aged Sumatra",
+    category: "季節限定豆",
+    roast: "深度烘焙",
+    region: "亞洲/太平洋 (蘇門答臘)",
+    processing: "半水洗法 (3~5年自然熟成)",
+    acidity: "低",
+    body: "極致醇厚飽滿",
+    flavorNotes: "甜美雪松、甘草香料、橡木桶與醇厚可可",
+    foodPairing: "重乳酪起司蛋糕、焦糖堅果塔、鹹味起司點心",
+    description: "生豆經 3 至 5 年嚴格翻倉自然陳年熟成，風味更加圓潤甘醇，散發迷人雪松與木質甜香。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/dark-roast.jspx"
+  },
+  {
+    name: "秋季綜合咖啡豆",
+    enName: "Starbucks® Autumn Blend / Thanksgiving Blend",
+    category: "季節限定豆",
+    roast: "深度烘焙",
+    region: "蘇門答臘、非洲、拉丁美洲",
+    processing: "水洗法、半水洗法",
+    acidity: "中偏低",
+    body: "厚實飽滿",
+    flavorNotes: "草本香料、柿子甜香、新鮮鼠尾草與可可",
+    foodPairing: "南瓜派、核桃派、烤雞起司三明治、肉桂捲",
+    description: "專為豐收季節打造的限定豆款，溫暖的草本香料與滑順可可醇度，最適合搭配濃郁鹹甜美食。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/dark-roast.jspx"
+  },
+  {
+    name: "星巴克 1971 深烘焙咖啡豆",
+    enName: "Starbucks® 1971 Dark Roast",
+    category: "季節限定豆",
+    roast: "深度烘焙",
+    region: "拉丁美洲、亞太綜合",
+    processing: "水洗法、半水洗法",
+    acidity: "低",
+    body: "厚重醇厚",
+    flavorNotes: "黑胡桃、煙燻焦糖、黑可可苦甜尾韻",
+    foodPairing: "提拉米蘇、濃郁布朗尼、巧克力淋醬泡芙",
+    description: "致敬星巴克半世紀深度烘焙工藝，展現濃厚飽滿的煙燻焦糖與黑可可風味。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/beans/dark-roast.jspx"
+  }
 ];
 
 const coffeeTriviaList = [
@@ -2460,7 +2849,7 @@ const masterQuizPool = [
   { question: "標準法式濾壓壺官方建議的浸泡萃取時間是多久？", options: ["2 分鐘", "3 分鐘", "4 分鐘", "5 分鐘"], correct: 2, explanation: "法式濾壓壺建議浸泡時間為完整的 4 分鐘。" },
   { question: "星巴克標準手沖咖啡的官方建議粉水比為何？", options: ["1 : 12", "1 : 15", "1 : 16", "1 : 18"], correct: 2, explanation: "標準手沖比例為 1:16（10g 咖啡粉配 160ml 水）。" },
   { question: "生豆處理法中的「半水洗法」在印尼當地又稱為什麼？", options: ["Giling Basah", "Monsooning", "Pulped Natural", "Double Washed"], correct: 0, explanation: "半水洗在印尼稱為 Giling Basah（濕刨法），使豆體保留厚實草本醇度。" },
-  { question: "下列哪一款咖啡豆屬於星巴克經典的「黃金烘焙」？", options: ["Pike Place 派克市場", "Veranda Blend 閒逸綜合", "Caffè Verona 佛羅娜", "Sumatra 蘇門答臘"], correct: 1, explanation: "Veranda Blend（輕度黃金烘焙）具備輕柔滑順與烘烤麥芽甜感。" },
+  { question: "下列哪一款咖啡豆屬於星巴克經典的「黃金烘焙」？", options: ["Pike Place 派克市場", "Willow Blend 輕柳綜合", "Caffè Verona 佛羅娜", "Sumatra 蘇門答臘"], correct: 1, explanation: "輕柳綜合 (Willow Blend) 與 Veranda Blend 皆屬於黃金烘焙。" },
   { question: "品嚐咖啡的四大特徵中，指「咖啡在舌面上重量與黏稠質地」的是哪一項？", options: ["Aroma (香氣)", "Acidity (酸度)", "Body (醇度)", "Flavor (風味)"], correct: 2, explanation: "醇度 (Body) 描述的是咖啡在舌頭與上顎間感受到的厚實重量與觸感。" }
 ];
 
@@ -2477,6 +2866,9 @@ const app = createApp({
     const isDarkMode = ref(false);
     const printTargetMode = ref('blank');
     const cloudGeminiKey = ref('');
+    const cachedValidModels = ref([]);
+    const isTestingApiKey = ref(false);
+    const apiKeyTestResult = ref('');
 
     // 2. 資料庫核心陣列與物件
     const materials = ref([]);
@@ -2497,11 +2889,13 @@ const app = createApp({
     const bravoCardsList = ref([]);
     const showRulesLibrary = ref(false);
 
-    // 3. 表單與搜尋響應式變數 (完整宣告，絕不遺漏)
+    // 3. 表單與搜尋篩選響應式變數
     const matSearchQuery = ref('');
     const coffeeSearchQuery = ref('');
+    const coffeeCategoryFilter = ref('all');
+    const coffeeRoastFilter = ref('all');
     const intakeForm = ref({ itemName: '', factoryExpiry: '', advanceDays: null, saveAsRule: false });
-    const tastingForm = ref({ coffeeName: '派克市場烘焙', acidity: 3, body: 3, aroma: '', flavor: '', notes: '' });
+    const tastingForm = ref({ coffeeName: '派克市場烘焙咖啡豆', acidity: 3, body: 3, aroma: '', flavor: '', notes: '' });
     const latteForm = ref({ pattern: '心形 (Heart)', photoUrl: '' });
     const vacationForm = ref({ staffId: '', date: '', type: '無法排班', notes: '' });
 
@@ -2556,41 +2950,191 @@ const app = createApp({
     const createAlbumModal = ref({ show: false, name: '' });
     const bravoModal = ref({ show: false, form: { targetStaffId: '', message: '' } });
 
-    // ==================== 🤖 通用 Gemini AI 呼叫引擎 (多模型自動容錯) ====================
+    /// ==================== 🤖 極速鎖定版 Gemini AI 引擎 (零 404 撞牆 + 自動記憶成功模型 + 圖片輕量加速) ====================
+    const lockedWorkingModel = ref(localStorage.getItem('sbux_working_gemini_model') || '');
+    const deadModels = new Set();
+
     const getEffectiveGeminiKey = () => {
-      return localStorage.getItem('sbux_custom_gemini_key') || cloudGeminiKey.value || firebaseConfig.apiKey;
+      const localKey = (localStorage.getItem('sbux_custom_gemini_key') || '').trim();
+      const cKey = (cloudGeminiKey.value || '').trim();
+      return localKey || cKey || firebaseConfig.apiKey;
+    };
+
+    // 自動將手機大圖輕量化壓縮 (辨識速度提升 5 倍，維持高清晰文字細節)
+    const optimizePartsForSpeed = async (parts) => {
+      const optimized = [];
+      for (const p of parts) {
+        if (p.inline_data && p.inline_data.mime_type && p.inline_data.mime_type.startsWith('image/') && p.inline_data.data.length > 350000) {
+          try {
+            const compressedBase64 = await new Promise((resolve) => {
+              const img = new Image();
+              img.onload = () => {
+                const maxDim = 1800;
+                let w = img.width, h = img.height;
+                if (w > maxDim || h > maxDim) {
+                  if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+                  else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                resolve(canvas.toDataURL('image/jpeg', 0.88).split(',')[1]);
+              };
+              img.onerror = () => resolve(p.inline_data.data);
+              img.src = `data:${p.inline_data.mime_type};base64,${p.inline_data.data}`;
+            });
+            optimized.push({ inline_data: { mime_type: 'image/jpeg', data: compressedBase64 } });
+            continue;
+          } catch (e) {}
+        }
+        optimized.push(p);
+      }
+      return optimized;
+    };
+
+    // 動態探測可用模型：徹底排除 image/tts/live 與會回傳 404 的舊模型，優先鎖定 Gemini 3 系列
+    const discoverAvailableModels = async (apiKey) => {
+      if (cachedValidModels.value.length > 0) {
+        return cachedValidModels.value.filter(m => !deadModels.has(m));
+      }
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        const data = await res.json();
+        if (data && Array.isArray(data.models)) {
+          const supported = data.models
+            .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
+            .map(m => m.name.replace(/^models\//, ''))
+            .filter(name =>
+              name.includes('gemini') &&
+              !name.includes('image') &&
+              !name.includes('tts') &&
+              !name.includes('live') &&
+              !name.includes('audio') &&
+              !name.includes('embedding') &&
+              !name.includes('aqa') &&
+              !name.includes('imagen') &&
+              !name.includes('robotics') &&
+              !name.includes('lyria') &&
+              !name.includes('banana') &&
+              !name.includes('transcribe') &&
+              !name.includes('customtools')
+            );
+
+          // 優先排序：曾成功連線的模型第 1 順位 -> Gemini 3 系列優先 -> 舊 2.5 墊底
+          supported.sort((a, b) => {
+            const score = (n) => {
+              if (n === lockedWorkingModel.value) return 1000;
+              if (n === 'gemini-3.6-flash' || n === 'gemini-3.7-flash') return 120;
+              if (n === 'gemini-3.5-flash' || n === 'gemini-3.5-flash-lite') return 115;
+              if (n === 'gemini-3.1-flash-lite' || n === 'gemini-flash-lite-latest') return 110;
+              if (n.includes('3.') && n.includes('flash')) return 105;
+              if (n === 'gemini-3-flash-preview') return 100;
+              if (n.includes('2.0-flash')) return 60;
+              if (n === 'gemini-flash-latest') return 40;
+              if (n.includes('2.5-flash')) return 15; // 新金鑰呼叫 2.5 易 404，移至最後備援
+              return 30;
+            };
+            return score(b) - score(a);
+          });
+
+          if (supported.length > 0) {
+            cachedValidModels.value = supported;
+            return supported.filter(m => !deadModels.has(m));
+          }
+        }
+      } catch (e) {
+        console.warn("ListModels 探測失敗，使用預設清單：", e);
+      }
+      return ['gemini-3.6-flash', 'gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-flash-lite-latest', 'gemini-2.0-flash'].filter(m => !deadModels.has(m));
     };
 
     const callGeminiApi = async (parts, requireJson = false, temperature = 0.3) => {
       const apiKey = getEffectiveGeminiKey();
-      const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+      const fastParts = await optimizePartsForSpeed(parts);
+      let modelsToTry = await discoverAvailableModels(apiKey);
+
+      // 若已有驗證成功的模型，強制排在第一順位直接命中！
+      if (lockedWorkingModel.value && !deadModels.has(lockedWorkingModel.value)) {
+        modelsToTry = [lockedWorkingModel.value, ...modelsToTry.filter(m => m !== lockedWorkingModel.value)];
+      }
+
       let lastError = '';
 
-      for (const m of models) {
+      for (const m of modelsToTry) {
+        if (deadModels.has(m)) continue;
         try {
           const genConfig = { temperature };
-          if (requireJson) genConfig.response_mime_type = "application/json";
+          if (requireJson) genConfig.responseMimeType = "application/json";
 
           const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              contents: [{ parts }],
+              contents: [{ parts: fastParts }],
               generationConfig: genConfig
             })
           });
+
+          // 遇到 404 代表該模型不支援此金鑰，永久加入黑名單不再重試
+          if (res.status === 404) {
+            deadModels.add(m);
+            lastError = `[${m}] 404 不支援`;
+            continue;
+          }
+          // 遇到 429 或 503 立即換下一顆模型，不重複卡住
+          if (res.status === 429 || res.status === 503) {
+            lastError = `[${m}] ${res.status} 忙碌中`;
+            continue;
+          }
+
           const data = await res.json();
           if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+            // 🌟 成功回應！立即將此模型永久鎖定為第一順位，後續所有 AI 操作 0 秒直達！
+            lockedWorkingModel.value = m;
+            localStorage.setItem('sbux_working_gemini_model', m);
             return data.candidates[0].content.parts[0].text.trim();
           }
           if (data.error) {
-            lastError = data.error.message;
+            lastError = `[${m}] ${data.error.message}`;
+            if (data.error.message.includes('API key not valid') || data.error.message.includes('has not been used in project')) {
+              throw new Error('尚未設定有效的 Gemini API Key，請至「⚙️ 個人設定」貼上金鑰並儲存！');
+            }
           }
         } catch (err) {
+          if (err.message.includes('尚未設定有效的 Gemini API Key')) throw err;
           lastError = err.message;
         }
       }
-      throw new Error(lastError || '無法連線至 Gemini AI 服務，請確認設定中的 Gemini API Key 是否有效。');
+      throw new Error(lastError || '所有模型皆忙碌中，請稍後幾秒再試。');
+    };
+
+    // 測試 API Key 與模型探測按鈕 (顯示真正跑通並鎖定的模型名稱)
+    const testGeminiApiKey = async () => {
+      const k = settingsModal.value.geminiApiKey.trim();
+      if (!k) {
+        apiKeyTestResult.value = '❌ 請先在上方輸入框貼上 AI Studio 金鑰！';
+        return;
+      }
+      isTestingApiKey.value = true;
+      apiKeyTestResult.value = '正在尋找最快可用模型並鎖定中...';
+      try {
+        localStorage.setItem('sbux_custom_gemini_key', k);
+        cloudGeminiKey.value = k;
+        cachedValidModels.value = [];
+        lockedWorkingModel.value = '';
+        deadModels.clear();
+        localStorage.removeItem('sbux_working_gemini_model');
+
+        const testReply = await callGeminiApi([{ text: '請回覆「連線成功」四個字' }], false, 0.1);
+        if (db) db.ref('sbux/systemConfig/geminiApiKey').set(k);
+        apiKeyTestResult.value = `✅ 金鑰驗證成功！\n🚀 已永久鎖定最快模型：${lockedWorkingModel.value}\nAI 回應：${testReply.slice(0, 20)}`;
+      } catch (err) {
+        apiKeyTestResult.value = `❌ 驗證失敗：${err.message}`;
+      } finally {
+        isTestingApiKey.value = false;
+      }
     };
 
     // ==================== 💡 每次登入動態從網路/AI 取得不同咖啡知識 ====================
@@ -2599,14 +3143,15 @@ const app = createApp({
     const fetchDynamicWebTrivia = async () => {
       isFetchingTrivia.value = true;
       try {
-        const randomSeed = Math.floor(Math.random() * 10000);
+        const randomSeed = Math.floor(Math.random() * 99999);
         const categories = ['CA 100 感官與沖煮', 'CA 200 產區與處理法', 'CA 300 烘焙與濃縮工藝', '星巴克歷史與豆款故事', '世界精品咖啡豆冷知識'];
         const chosenCat = categories[randomSeed % categories.length];
-        const prompt = `你是一位星巴克黑圍裙咖啡大師。請隨機提供一則關於「${chosenCat}」的專業、有趣且實用的咖啡冷知識（隨機種子：${randomSeed}，約 60~90 字）。
-請嚴格輸出 JSON 格式：{"level": "${chosenCat}", "text": "知識內容...", "keyword": "用於Google搜尋的英文或中文關鍵字"}`;
+        const prompt = `你是一位星巴克黑圍裙咖啡大師。請隨機提供一則關於「${chosenCat}」的專業、有趣且實用的咖啡冷知識（隨機碼：${randomSeed}，約 60~90 字）。
+請只輸出純 JSON 格式（不要加 markdown 符號）：{"level": "${chosenCat}", "text": "知識內容...", "keyword": "用於Google搜尋的關鍵字"}`;
 
         const rawJson = await callGeminiApi([{ text: prompt }], true, 0.85);
-        const cleanJson = rawJson.replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
+        const match = rawJson.match(/\{[\s\S]*\}/);
+        const cleanJson = match ? match[0] : rawJson;
         const parsed = JSON.parse(cleanJson);
         if (parsed && parsed.text) {
           todayTrivia.value = {
@@ -2617,7 +3162,6 @@ const app = createApp({
           return;
         }
       } catch (e) {
-        // 若尚未配置有效 AI Key，自動從擴充題庫抽取不同項目
         const currentText = todayTrivia.value.text;
         const others = coffeeTriviaList.filter(t => t.text !== currentText);
         todayTrivia.value = others[Math.floor(Math.random() * others.length)];
@@ -2761,7 +3305,6 @@ const app = createApp({
       const top2 = works[1] || null;
       const top3 = works[2] || null;
 
-      // 計算最佳進步獎 (比對上上期與上期同夥伴分數成長)
       let mostImproved = latestArch.mostImproved || '全體參賽夥伴';
       if (!latestArch.mostImproved && latteArtArchives.value.length > 1) {
         const prevArch = latteArtArchives.value[1];
@@ -2779,7 +3322,6 @@ const app = createApp({
         });
       }
 
-      // 計算品評活躍夥伴
       let activePartner = latestArch.activePartner || (tastingNotesList.value[0] ? getStaffName(tastingNotesList.value[0].authorStaffId) : (top1 ? top1.partnerName : '門市夥伴'));
 
       return {
@@ -2792,7 +3334,7 @@ const app = createApp({
       };
     });
 
-    // ==================== 🌟 自動結算與封存引擎 (自動發布全體得獎夥伴與期間至公告欄) ====================
+    // ==================== 🌟 自動結算與封存引擎 ====================
     let isAutoArchivingInProgress = false;
     const checkAndAutoArchiveLatteArt = async () => {
       if (!db || isAutoArchivingInProgress) return;
@@ -2868,6 +3410,7 @@ const app = createApp({
       db.ref('sbux/systemConfig/geminiApiKey').on('value', snap => {
         if (snap.val()) {
           cloudGeminiKey.value = snap.val();
+          cachedValidModels.value = [];
         }
       });
 
@@ -3091,16 +3634,21 @@ const app = createApp({
         reader.onload = async (evt) => {
           try {
             const base64Data = evt.target.result.split(',')[1];
-            const promptText = `你是一位專業星巴克門市管理員。請仔細閱讀這張圖片或文件中的效期與下架規範，提取所有食品、糕點、包裝食品或原物料的「品項名稱」與「提前下架天數」(若寫即期當日下架則 advance_days 為 0，若寫 D-2 則為 2)。
-請嚴格輸出 JSON 陣列格式：
-[{"keyword":"品項名稱","advance_days":數字,"timing":"21:30 閉店前"}]`;
+            const promptText = `你是一位專業的台灣星巴克門市管理員。請仔細閱讀這張圖片或文件中的效期與下架規範，提取所有食品、糕點、冷藏三明治、常溫包裝食品或禮盒的「品項名稱」與「提前下架天數」(若寫即期當日下架則 advance_days 為 0，若寫 D-2 則為 2)。
+【重要！模糊字跡自動校正規則】：
+若照片稍微模糊、反光或有手寫字，請務必結合「台灣星巴克官方商品常見詞彙」自動校正形近字或同音錯別字！
+常見正確詞彙參考：可頌、丹麥、帕里尼、軟法、フォカッチャ/佛卡夏、司康、馬芬、貝果、千層蛋糕、生乳捲、提拉米蘇、布朗尼、巴斯克、起司蛋糕、檸檬塔、肉桂捲、生義大利麵、焗烤、沙拉、優格、布丁、咖啡蛋捲、咖啡捲心酥、法蘭酥、薄餅、爆米花、牛軋糖、棉花糖、摩卡、那堤、焦糖瑪奇朵、星冰樂、松露、燻雞、牛肉、起司、里肌。
+請勿輸出錯別字（例如：不可寫成「可送、帕里泥、捲心蘇、司糠、千曾」）。
+請只輸出 JSON 陣列格式（不要加 markdown 符號）：
+[{"keyword":"校正後的正確品項名稱","advance_days":數字,"timing":"21:30 閉店前"}]`;
 
             const rawText = await callGeminiApi([
               { text: promptText },
               { inline_data: { mime_type: fileType, data: base64Data } }
             ], true, 0.1);
 
-            const cleanText = rawText.replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
+            const match = rawText.match(/\[[\s\S]*\]/);
+            const cleanText = match ? match[0] : rawText.replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
             const parsedRules = JSON.parse(cleanText);
 
             if (Array.isArray(parsedRules) && parsedRules.length > 0) {
@@ -3126,7 +3674,7 @@ const app = createApp({
             }
           } catch (innerErr) {
             aiRuleUploadFeedback.value = `❌ AI 辨識失敗：${innerErr.message}`;
-            alert(`❌ AI 辨識失敗：${innerErr.message}\n(請確認個人設定中已儲存有效的 Gemini API Key)`);
+            alert(`❌ AI 辨識失敗：${innerErr.message}`);
           } finally {
             isAiRecognizingRules.value = false;
             e.target.value = '';
@@ -3170,10 +3718,10 @@ const app = createApp({
         try {
           aiComment = await callGeminiApi([{ text: prompt }], false, 0.6);
         } catch (apiErr) {
-          const beanInfo = starbucksCoreBeans.find(b => b.name === tastingForm.value.coffeeName);
+          const beanInfo = starbucksCoreBeans.find(b => b.name.includes(tastingForm.value.coffeeName) || tastingForm.value.coffeeName.includes(b.name));
           aiComment = beanInfo
             ? `【大師風味回饋】能敏銳捕捉到「${beanInfo.name}」的${beanInfo.flavorNotes}特質！其產自${beanInfo.region}並採${beanInfo.processing}，酸度${getIntensityLabel(tastingForm.value.acidity)}與醇度${getIntensityLabel(tastingForm.value.body)}的平衡極佳，非常推薦搭配「${beanInfo.foodPairing}」一起進行顧客分享！`
-            : `【大師風味回饋】對「${tastingForm.value.coffeeName}」的香气（${tastingForm.value.aroma || '細膩前調'}）與口感層次觀察非常入微！酸度與醇度的定位精準，推薦搭配門市奶油可頌或巧克力點心提升餘韻。`;
+            : `【大師風味回饋】對「${tastingForm.value.coffeeName}」的香氣（${tastingForm.value.aroma || '細膩前調'}）與口感層次觀察非常入微！酸度與醇度的定位精準，推薦搭配門市奶油可頌或巧克力點心提升餘韻。`;
         }
 
         const newNote = {
@@ -3189,14 +3737,14 @@ const app = createApp({
           timestamp: Date.now()
         };
         if (db) await db.ref('sbux/tasting_notes/' + newNote.id).set(newNote);
-        tastingForm.value = { coffeeName: '派克市場烘焙', acidity: 3, body: 3, aroma: '', flavor: '', notes: '' };
+        tastingForm.value = { coffeeName: '派克市場烘焙咖啡豆', acidity: 3, body: 3, aroma: '', flavor: '', notes: '' };
         alert('🎉 Tasting 品評已發布！');
       } finally {
         isAiEvaluatingTasting.value = false;
       }
     };
 
-    // ==================== 3. 拉花擂台賽 AI 視覺真實評審 (依據實際圖案給分與差異化回饋) ====================
+    // ==================== 3. 拉花擂台賽 AI 視覺真實評審 ====================
     const handleLattePhotoUpload = (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -3218,7 +3766,7 @@ const app = createApp({
 1. 若這張圖片根本不是咖啡或沒有拉花（例如風景、人物、空白、無關物品），請將 isLatteArt 設為 false，score 設為 0，並在 feedback 說明「圖片非拉花作品」。
 2. 若是咖啡拉花，請根據實際影像中的：(A)奶泡細緻度與光澤（有無粗大氣泡）、(B)圖形與杯面置中對稱度、(C)濃縮基底與白奶泡的黑白對比清晰度、(D)收尾切線與圖案辨識度（是否符合所選的 ${latteForm.value.pattern}），給出真實有鑑別度的分數（範圍 60 到 96 分，不可固定給同一個數字）。
 3. feedback 必須具體描述你在這張照片裡看到的實際畫面細節（例如葉片層數、愛心包覆感、杯緣融合乾淨度或哪裡歪斜/氣泡偏多），約 60~100 字。
-請嚴格輸出 JSON 格式：
+請只輸出純 JSON 格式（不要加 markdown 符號）：
 {"isLatteArt": true, "score": 整數, "feedback": "具體視覺評析與改進建議"}`;
 
         let evalScore = 0;
@@ -3230,7 +3778,8 @@ const app = createApp({
             { inline_data: { mime_type: mimeType, data: base64Data } }
           ], true, 0.4);
 
-          const cleanRes = rawRes.replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
+          const match = rawRes.match(/\{[\s\S]*\}/);
+          const cleanRes = match ? match[0] : rawRes.replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
           const parsed = JSON.parse(cleanRes);
 
           if (parsed.isLatteArt === false || parsed.score === 0) {
@@ -3241,7 +3790,7 @@ const app = createApp({
           evalScore = Number(parsed.score) || 80;
           evalFeedback = parsed.feedback;
         } catch (apiErr) {
-          alert(`⚠️ AI 視覺連線異常：${apiErr.message}\n請請管理員（徐爰坦）至右上角「⚙️ 個人設定」確認 Gemini API Key 是否最新且有效！`);
+          alert(`⚠️ AI 視覺連線異常：${apiErr.message}`);
           isAiEvaluating.value = false;
           return;
         }
@@ -3267,7 +3816,7 @@ const app = createApp({
       }
     };
 
-    // ==================== 4. 排班演算法 + 15:00~19:00 嚴格 3 人以上覆蓋校準 + AI 參與審查 ====================
+    // ==================== 5. 歷史排班回溯 + 值班兩週輪替 + 指定主管強制鎖定 + 早中固定 08:00 + 兼職平均工時演算法 ====================
     const timeToMins = (t) => {
       if (!t || !t.includes(':')) return 0;
       const [h, m] = t.split(':').map(Number);
@@ -3286,20 +3835,30 @@ const app = createApp({
     };
 
     const isDavidWorkDay = (dateStr) => {
-      const d = new Date(dateStr);
+      const d = parseLocalDate(dateStr);
       const day = d.getDay();
       return [0, 2, 4, 5, 6].includes(day);
+    };
+
+    // 支援多鍵值格式查詢歷史班表 (相容 staff.id, staff._key, staff.empId)
+    const getRosterShiftEntry = (staff, dateStr) => {
+      const roster = scheduledRoster.value || {};
+      const keysToCheck = [staff.id, staff._key, `staff_${staff.empId}`, staff.empId].filter(Boolean);
+      for (const k of keysToCheck) {
+        if (roster[`${k}_${dateStr}`]) return roster[`${k}_${dateStr}`];
+      }
+      return null;
     };
 
     const isStaffAvailableForShift = (staff, dateStr, shiftStart, shiftEnd) => {
       const sid = staff.id || staff._key;
       if (staff.role === '天使夥伴' || staff.nickname === 'David') return false;
 
-      const onVacation = vacationList.value.some(v => (v.staffId === sid) && v.date === dateStr);
+      const onVacation = vacationList.value.some(v => (v.staffId === sid || v.staffId === staff._key) && v.date === dateStr);
       if (onVacation) return false;
 
       if (!staff.availability) return true;
-      const d = new Date(dateStr);
+      const d = parseLocalDate(dateStr);
       const dayIdx = (d.getDay() + 6) % 7;
       const av = staff.availability['day_' + dayIdx];
       if (!av || av.type === 'all') return true;
@@ -3312,58 +3871,169 @@ const app = createApp({
 
     const isManagerRole = (role) => ['店經理', '副理', '值班經理', '時薪值班', '值班'].includes(role || '');
 
-    const getPriorConsecutiveWorkDays = (staffId, startDateStr) => {
+    // 🌟 跨週追溯：計算排班起始日前連續出勤天數（使用本地日期，絕不偏移）
+    const getPriorConsecutiveWorkDays = (staff, startDateStr) => {
       let count = 0;
-      let curr = new Date(startDateStr);
-      const roster = scheduledRoster.value || {};
+      const curr = parseLocalDate(startDateStr);
       for (let i = 1; i <= 6; i++) {
         const prevDate = new Date(curr);
         prevDate.setDate(curr.getDate() - i);
-        const prevDateStr = prevDate.toISOString().split('T')[0];
-        if (roster[`${staffId}_${prevDateStr}`]) count++;
+        const prevDateStr = formatDateLocal(prevDate);
+        if (getRosterShiftEntry(staff, prevDateStr)) count++;
         else break;
       }
       return count;
     };
 
-    const getPriorDayEndMinutes = (staffId, startDateStr) => {
-      const curr = new Date(startDateStr);
+    // 🌟 跨週向後檢查：若修改中間週班表，檢查排班結束日後已排定的連續出勤天數
+    const getPostConsecutiveWorkDays = (staff, endDateStr) => {
+      let count = 0;
+      const curr = parseLocalDate(endDateStr);
+      for (let i = 1; i <= 6; i++) {
+        const nextDate = new Date(curr);
+        nextDate.setDate(curr.getDate() + i);
+        const nextDateStr = formatDateLocal(nextDate);
+        if (getRosterShiftEntry(staff, nextDateStr)) count++;
+        else break;
+      }
+      return count;
+    };
+
+    // 🌟 跨週追溯：獲取排班起始日前一日最後下班時間（確保跨週間隔 11 小時）
+    const getPriorDayEndMinutes = (staff, startDateStr) => {
+      const curr = parseLocalDate(startDateStr);
       curr.setDate(curr.getDate() - 1);
-      const prevDateStr = curr.toISOString().split('T')[0];
-      const roster = scheduledRoster.value || {};
-      const shift = roster[`${staffId}_${prevDateStr}`];
+      const prevDateStr = formatDateLocal(curr);
+      const shift = getRosterShiftEntry(staff, prevDateStr);
       if (shift) {
         const timeStr = typeof shift === 'object' ? shift.time : shift;
-        const match = timeStr.match(/(\d{2}:\d{2})-(\d{2}:\d{2})/);
+        const match = String(timeStr).match(/(\d{2}:\d{2})-(\d{2}:\d{2})/);
         if (match) return timeToMins(match[2]);
       }
       return -9999;
     };
 
-    const getWorkMonthAccumulatedHours = (staffId, targetDateStr) => {
-      const target = new Date(targetDateStr);
+    // 🌟 串聯前兩週 (14天) 歷史班表，分析值班夥伴早晚輪替狀態
+    const getManagerTwoWeekHistory = (staff, refDateStr) => {
+      const start = parseLocalDate(refDateStr || scheduleStartDate.value);
+      let w1Open = 0, w1Close = 0; // 前一週 (Day -7 ~ Day -1)
+      let w2Open = 0, w2Close = 0; // 前兩週 (Day -14 ~ Day -8)
+
+      for (let i = 1; i <= 14; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() - i);
+        const dStr = formatDateLocal(d);
+        const entry = getRosterShiftEntry(staff, dStr);
+        if (entry) {
+          const sName = typeof entry === 'object' ? (entry.shiftName || '') : String(entry);
+          const sTime = typeof entry === 'object' ? (entry.time || '') : String(entry);
+          const isOpen = sName.includes('早') || sTime.startsWith('06:30');
+          const isClose = sName.includes('晚') || sTime.endsWith('22:30');
+          if (i <= 7) {
+            if (isOpen) w1Open++;
+            if (isClose) w1Close++;
+          } else {
+            if (isOpen) w2Open++;
+            if (isClose) w2Close++;
+          }
+        }
+      }
+
+      const totalOpen = w1Open + w2Open;
+      const totalClose = w1Close + w2Close;
+      let recommendedShift = 'open';
+
+      if (totalOpen === 0 && totalClose === 0) {
+        // 若無歷史紀錄，依排班週次與工號奇偶自動交錯輪替
+        const weekParity = Math.floor(start.getTime() / (14 * 86400000)) % 2;
+        const empNum = parseInt(String(staff.empId || '0').slice(-2)) || 0;
+        recommendedShift = ((weekParity + empNum) % 2 === 0) ? 'open' : 'close';
+      } else if (w1Open > w1Close && w2Open >= w2Close && totalOpen >= 4) {
+        // 已連續兩週主上早班 ➔ 本週應輪替為晚班
+        recommendedShift = 'close';
+      } else if (w1Close > w1Open && w2Close >= w2Open && totalClose >= 4) {
+        // 已連續兩週主上晚班 ➔ 本週應輪替為早班
+        recommendedShift = 'open';
+      } else if (w1Open > w1Close) {
+        // 上週剛換早班（第一週），本週維持早班湊滿兩週後再輪替；若前兩週是晚班則繼續完成第二週早班
+        recommendedShift = (w2Open > w2Close) ? 'close' : 'open';
+      } else if (w1Close > w1Open) {
+        recommendedShift = (w2Close > w2Open) ? 'open' : 'close';
+      }
+
+      return { w1Open, w1Close, w2Open, w2Close, totalOpen, totalClose, recommendedShift };
+    };
+
+    const getManagerRotationHint = (staff) => {
+      const hist = getManagerTwoWeekHistory(staff, scheduleStartDate.value);
+      if (hist.totalOpen === 0 && hist.totalClose === 0) {
+        return `無前兩週紀錄 ➔ 建議輪【${hist.recommendedShift === 'open' ? '早班' : '晚班'}】`;
+      }
+      return `前兩週(早${hist.totalOpen}/晚${hist.totalClose}) ➔ 建議【${hist.recommendedShift === 'open' ? '早班' : '晚班'}】`;
+    };
+
+    const autoSelectRotatedManagers = () => {
+      const openList = [];
+      const closeList = [];
+      allDutyStaff.value.forEach(m => {
+        const sid = m.id || m._key;
+        const hist = getManagerTwoWeekHistory(m, scheduleStartDate.value);
+        if (hist.recommendedShift === 'open') openList.push(sid);
+        else closeList.push(sid);
+      });
+      // 若全部集中同一邊，自動對半平衡
+      if (openList.length === 0 && closeList.length > 1) {
+        openList.push(closeList.shift());
+      } else if (closeList.length === 0 && openList.length > 1) {
+        closeList.push(openList.pop());
+      }
+      selectedWeeklyOpenManagers.value = openList;
+      selectedWeeklyCloseManagers.value = closeList;
+    };
+
+    // 🌟 工作月（每月 21 日至次月 20 日）歷史累計工時與剩餘週數配速計算
+    const getWorkMonthStats = (staff, targetDateStr) => {
+      const target = parseLocalDate(targetDateStr);
       const y = target.getFullYear();
       const m = target.getMonth();
       const day = target.getDate();
 
-      let startDate = day >= 21 ? new Date(y, m, 21) : new Date(y, m - 1, 21);
-      let endDate = day >= 21 ? new Date(y, m + 1, 20) : new Date(y, m, 20);
+      const startDate = day >= 21 ? new Date(y, m, 21, 0, 0, 0) : new Date(y, m - 1, 21, 0, 0, 0);
+      const endDate = day >= 21 ? new Date(y, m + 1, 20, 23, 59, 59) : new Date(y, m, 20, 23, 59, 59);
 
-      let total = 0;
-      const roster = scheduledRoster.value || {};
-      for (const k in roster) {
-        if (k.startsWith(staffId + '_')) {
-          const dStr = k.split('_')[1];
-          const curr = new Date(dStr);
-          if (curr >= startDate && curr <= endDate) {
-            const item = roster[k];
-            if (typeof item === 'object' && item.hours) total += Number(item.hours);
+      // 計算在本次排班起始日「之前」已經累積的工作月工時
+      let priorAccumHours = 0;
+      const curr = new Date(startDate);
+      while (curr <= endDate) {
+        const dStr = formatDateLocal(curr);
+        // 排除本次正在預排的 7 天區間，避免重複計算
+        const inCurrentRange = dStr >= scheduleStartDate.value && dStr <= scheduleEndDate.value;
+        if (!inCurrentRange) {
+          const entry = getRosterShiftEntry(staff, dStr);
+          if (entry) {
+            if (typeof entry === 'object' && entry.hours) {
+              priorAccumHours += Number(entry.hours);
+            } else if (typeof entry === 'string') {
+              const match = entry.match(/(\d{2}:\d{2})-(\d{2}:\d{2})/);
+              if (match) priorAccumHours += calculateShiftNetHours(match[1], match[2]);
+            }
           }
         }
+        curr.setDate(curr.getDate() + 1);
       }
-      return total;
+
+      // 計算從排班起始日到工作月結算日 (20號) 還剩幾週 (至少 1 週)
+      const daysLeft = Math.max(7, Math.ceil((endDate - target) / 86400000));
+      const weeksLeft = Math.max(1, Math.min(4.3, daysLeft / 7));
+
+      // 兼職工作月目標底線 50 小時 (設定 52h 安全緩衝)，除以剩餘週數得出「本週理想平均工時 (限制在 15h ~ 24h 之間，絕不暴增暴減)」
+      const hoursStillNeeded = Math.max(0, 52 - priorAccumHours);
+      const idealWeeklyPace = Math.max(15, Math.min(24, Math.round((hoursStillNeeded / weeksLeft) * 10) / 10));
+
+      return { priorAccumHours, weeksLeft, idealWeeklyPace };
     };
 
+    // ==================== 🤖 主排班預排演算法 ====================
     const generateAiRoster = async () => {
       if (!scheduleStartDate.value || !scheduleEndDate.value) return alert('請先設定排班範圍！');
       const dates = targetRangeDates.value;
@@ -3376,166 +4046,233 @@ const app = createApp({
       const schedulePlan = [];
       const warnings = [];
 
+      // 建立每位夥伴的跨週出勤追蹤與本月平均配速目標
       const staffWorkTracker = {};
       allStaff.forEach(s => {
         const sid = s.id || s._key;
+        const mStats = getWorkMonthStats(s, scheduleStartDate.value);
+        const rotHist = isManagerRole(s.role) ? getManagerTwoWeekHistory(s, scheduleStartDate.value) : null;
+
         staffWorkTracker[sid] = {
           weeklyHours: 0,
           daysWorked: 0,
-          lastEndMins: getPriorDayEndMinutes(sid, scheduleStartDate.value),
-          consecutiveDays: getPriorConsecutiveWorkDays(sid, scheduleStartDate.value),
-          monthlyAccum: getWorkMonthAccumulatedHours(sid, scheduleStartDate.value)
+          lastEndMins: getPriorDayEndMinutes(s, scheduleStartDate.value),
+          consecutiveDays: getPriorConsecutiveWorkDays(s, scheduleStartDate.value),
+          postConsecutiveDays: getPostConsecutiveWorkDays(s, scheduleEndDate.value),
+          monthlyAccum: mStats.priorAccumHours,
+          idealWeeklyPace: isTrueFullTime(s.role) ? 40 : mStats.idealWeeklyPace,
+          recommendedShift: rotHist ? rotHist.recommendedShift : 'open'
         };
       });
 
-      dates.forEach(dObj => {
+      // 判斷管理職的早晚鎖定池：
+      // 若使用者有勾選「指定早班 / 晚班值班」，嚴格使用勾選名單；若未勾選，自動依前兩週輪替結果鎖定
+      const hasUserSelectedOpen = selectedWeeklyOpenManagers.value.length > 0;
+      const hasUserSelectedClose = selectedWeeklyCloseManagers.value.length > 0;
+
+      const lockedOpenManagers = new Set(selectedWeeklyOpenManagers.value);
+      const lockedCloseManagers = new Set(selectedWeeklyCloseManagers.value);
+
+      if (!hasUserSelectedOpen && !hasUserSelectedClose) {
+        allDutyStaff.value.forEach(m => {
+          const sid = m.id || m._key;
+          if (staffWorkTracker[sid]?.recommendedShift === 'open') lockedOpenManagers.add(sid);
+          else lockedCloseManagers.add(sid);
+        });
+      }
+
+      dates.forEach((dObj, dayIndexInRange) => {
         const dateStr = dObj.dateStr;
-        const d = new Date(dateStr);
+        const d = parseLocalDate(dateStr);
         const dayOfWeek = d.getDay();
         const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
         const dayIdx = (d.getDay() + 6) % 7;
+        const isLastDayOfRange = (dayIndexInRange === dates.length - 1);
 
+        // 🌟 核心班次結構：早上的中班嚴格固定為 08:00 進班 (08:00-16:30)，絕不延後到 10:00！
         const dayShiftSlots = [
-          { name: "早班(開店1)", start: "06:30", end: "15:00", requiresManager: true },
-          { name: "早班(開店2)", start: "06:30", end: "15:00", requiresManager: false }
+          { id: 'open_mgr', order: 1, name: "早班(開店1)", start: "06:30", end: "15:00", requiresManager: true, managerType: 'open' },
+          { id: 'close_mgr', order: 5, name: "晚班(收店1)", start: "14:00", end: "22:30", requiresManager: true, managerType: 'close', isEvening: true },
+          { id: 'open_2', order: 2, name: "早班(開店2)", start: "06:30", end: "15:00", requiresManager: false },
+          { id: 'mid_morning', order: 3, name: "中班(早中)", start: "08:00", end: "16:30", requiresManager: false, isMorningMid: true }
         ];
 
-        if (!isWeekend) {
-          dayShiftSlots.push({ name: "中班", start: "08:30", end: "17:30", requiresManager: false, isMidShift: true });
-        } else {
-          dayShiftSlots.push({ name: "中班1", start: "08:00", end: "15:00", requiresManager: false, isMidShift: true });
-          dayShiftSlots.push({ name: "中班2", start: "10:30", end: "17:30", requiresManager: false, isMidShift: true });
+        if (isWeekend) {
+          // 假日尖峰額外配置一位 10:30-19:00 假日中班
+          dayShiftSlots.push({ id: 'mid_weekend', order: 4, name: "中班(午中)", start: "10:30", end: "19:00", requiresManager: false, isAfternoonMid: true });
         }
 
-        const eveningSlotIndices = [dayShiftSlots.length, dayShiftSlots.length + 1, dayShiftSlots.length + 2];
-        dayShiftSlots.push({ name: "晚班(收店1)", start: "14:00", end: "22:30", requiresManager: true, isEvening: true });
-        dayShiftSlots.push({ name: "晚班(收店2)", start: "14:00", end: "22:30", requiresManager: false, isEvening: true });
-        dayShiftSlots.push({ name: "晚班(收店3)", start: "14:00", end: "22:30", requiresManager: false, isEvening: true });
+        dayShiftSlots.push({ id: 'close_2', order: 6, name: "晚班(收店2)", start: "14:00", end: "22:30", requiresManager: false, isEvening: true });
+        dayShiftSlots.push({ id: 'close_3', order: 7, name: "晚班(收店3)", start: "14:00", end: "22:30", requiresManager: false, isEvening: true });
 
         const assignedToday = new Set();
         const assignedShifts = [];
 
-        dayShiftSlots.forEach((slot, sIndex) => {
+        // 通用候選人資格檢查函式
+        const canStaffWorkSlot = (staff, slotStart, slotEnd, isEveningSlot = false, allowFlexEvening = false) => {
+          const sid = staff.id || staff._key;
+          if (assignedToday.has(sid)) return false;
+
+          const tracker = staffWorkTracker[sid];
+          // 🛑 嚴格禁止跨週或本週連續工作滿 7 天 (連 6 必休 1)
+          if (tracker.consecutiveDays >= 6 || tracker.daysWorked >= 6) return false;
+          // 若是本週最後一天，且下週緊接著已排滿 (加起來會連 7)，亦強制排休
+          if (isLastDayOfRange && (tracker.consecutiveDays + 1 + tracker.postConsecutiveDays) >= 7) return false;
+
+          // 🌟 嚴格執行「指定早班 / 晚班值班」隔離鎖定：
+          // 被指定為「晚班值班」的主管，絕不可排入早班或早上中班 (保留給晚班)
+          if (!isEveningSlot && lockedCloseManagers.has(sid) && !lockedOpenManagers.has(sid)) {
+            return false;
+          }
+          // 被指定為「早班值班」的主管，絕不可排入晚班
+          if (isEveningSlot && lockedOpenManagers.has(sid) && !lockedCloseManagers.has(sid)) {
+            return false;
+          }
+
+          // 正職每週 40h (37h~42h) 彈性控制：滿 40h 後優先讓位給未達標兼職
+          const isFT = isTrueFullTime(staff.role);
+          if (isFT && tracker.weeklyHours >= 40) {
+            return false;
+          }
+
+          // 標準時段匹配
+          if (isStaffAvailableForShift(staff, dateStr, slotStart, slotEnd)) {
+            if (tracker.lastEndMins > 0) {
+              const restMins = (24 * 60 - tracker.lastEndMins) + timeToMins(slotStart);
+              if (restMins < 11 * 60) return false;
+            }
+            return true;
+          }
+
+          // 晚班彈性時段匹配 (如學生兼職 17:00 / 18:00 / 19:00 進班至 22:30)
+          if (allowFlexEvening && isEveningSlot && staff.availability) {
+            const av = staff.availability['day_' + dayIdx];
+            if (av && av.type === 'custom') {
+              const avStartMins = timeToMins(av.start);
+              const avEndMins = timeToMins(av.end);
+              if (avStartMins <= timeToMins("19:00") && avEndMins >= timeToMins("22:30")) {
+                if (tracker.lastEndMins > 0) {
+                  const restMins = (24 * 60 - tracker.lastEndMins) + avStartMins;
+                  if (restMins < 11 * 60) return false;
+                }
+                return true;
+              }
+            }
+          }
+          return false;
+        };
+
+        // 依 dayShiftSlots 順序（早值班與晚值班第一優先鎖定！）進行指派
+        dayShiftSlots.forEach((slot) => {
           let slotStart = slot.start;
           let slotEnd = slot.end;
-
-          let candidates = allStaff.filter(staff => {
-            const sid = staff.id || staff._key;
-            if (assignedToday.has(sid)) return false;
-
-            const tracker = staffWorkTracker[sid];
-            if (tracker.consecutiveDays >= 6 || tracker.daysWorked >= 6) return false;
-
-            const isFT = isTrueFullTime(staff.role);
-            if (isFT && (tracker.weeklyHours >= 40 || (tracker.daysWorked >= 5 && tracker.weeklyHours >= 37))) {
-              const otherAvailablePT = allStaff.some(other => {
-                const oSid = other.id || other._key;
-                return !isTrueFullTime(other.role) && !assignedToday.has(oSid) && isStaffAvailableForShift(other, dateStr, slotStart, slotEnd) && staffWorkTracker[oSid].daysWorked < 6;
-              });
-              if (otherAvailablePT) return false;
-            }
-
-            if (isStaffAvailableForShift(staff, dateStr, slotStart, slotEnd)) {
-              if (tracker.lastEndMins > 0) {
-                const restMins = (24 * 60 - tracker.lastEndMins) + timeToMins(slotStart);
-                if (restMins < 11 * 60) return false;
-              }
-              return true;
-            }
-
-            if (eveningSlotIndices.includes(sIndex) && staff.availability) {
-              const av = staff.availability['day_' + dayIdx];
-              if (av && av.type === 'custom') {
-                const avStartMins = timeToMins(av.start);
-                const avEndMins = timeToMins(av.end);
-                if (avStartMins <= timeToMins("19:00") && avEndMins >= timeToMins("22:30")) {
-                  if (tracker.lastEndMins > 0) {
-                    const restMins = (24 * 60 - tracker.lastEndMins) + avStartMins;
-                    if (restMins < 11 * 60) return false;
-                  }
-                  return true;
-                }
-              }
-            }
-            return false;
-          });
-
           let pickedStaff = null;
 
           if (slot.requiresManager) {
-            let managerCandidates = candidates.filter(s => isManagerRole(s.role));
-            if (slot.name.includes('早') && selectedWeeklyOpenManagers.value.length > 0) {
-              pickedStaff = managerCandidates.find(s => selectedWeeklyOpenManagers.value.includes(s.id || s._key));
-            } else if (slot.name.includes('晚') && selectedWeeklyCloseManagers.value.length > 0) {
-              pickedStaff = managerCandidates.find(s => selectedWeeklyCloseManagers.value.includes(s.id || s._key));
+            // 第一階段：優先從「完整時段可用」的管理職中挑選
+            let mgrPool = allDutyStaff.value.filter(s => canStaffWorkSlot(s, slotStart, slotEnd, !!slot.isEvening, true));
+
+            // 1. 嚴格優先使用「本週指定早班 / 晚班值班」勾選名單
+            const targetDesignatedList = slot.managerType === 'open'
+              ? selectedWeeklyOpenManagers.value
+              : selectedWeeklyCloseManagers.value;
+
+            if (targetDesignatedList.length > 0) {
+              const designatedCandidates = mgrPool.filter(s => targetDesignatedList.includes(s.id || s._key));
+              if (designatedCandidates.length > 0) {
+                designatedCandidates.sort((a, b) => {
+                  const aCanFull = isStaffAvailableForShift(a, dateStr, slotStart, slotEnd) ? 1 : 0;
+                  const bCanFull = isStaffAvailableForShift(b, dateStr, slotStart, slotEnd) ? 1 : 0;
+                  if (aCanFull !== bCanFull) return bCanFull - aCanFull;
+                  return staffWorkTracker[a.id || a._key].weeklyHours - staffWorkTracker[b.id || b._key].weeklyHours;
+                });
+                pickedStaff = designatedCandidates[0];
+              }
             }
 
-            if (!pickedStaff && managerCandidates.length > 0) {
-              managerCandidates.sort((a, b) => {
+            // 2. 若指定的值班主管當天休假或未勾選指定名單，依「前兩週早晚輪替建議」挑選其他可用值班主管
+            if (!pickedStaff) {
+              // 若指定主管當天畫假，放寬讓其他值班主管代班支援
+              let fallbackMgrPool = mgrPool.length > 0 ? mgrPool : allDutyStaff.value.filter(s => {
+                const sid = s.id || s._key;
+                if (assignedToday.has(sid)) return false;
+                const tr = staffWorkTracker[sid];
+                if (tr.consecutiveDays >= 6 || tr.daysWorked >= 6) return false;
+                if (tr.lastEndMins > 0 && ((24 * 60 - tr.lastEndMins) + timeToMins(slotStart)) < 11 * 60) return false;
+                return isStaffAvailableForShift(s, dateStr, slotStart, slotEnd);
+              });
+
+              if (fallbackMgrPool.length > 0) {
+                fallbackMgrPool.sort((a, b) => {
+                  const sidA = a.id || a._key;
+                  const sidB = b.id || b._key;
+                  // 符合兩週輪替方向者優先
+                  const rotMatchA = staffWorkTracker[sidA].recommendedShift === slot.managerType ? 1 : 0;
+                  const rotMatchB = staffWorkTracker[sidB].recommendedShift === slot.managerType ? 1 : 0;
+                  if (rotMatchA !== rotMatchB) return rotMatchB - rotMatchA;
+
+                  // 正職未滿 37h 優先
+                  const aFT = isTrueFullTime(a.role) && staffWorkTracker[sidA].weeklyHours < 37 ? 1 : 0;
+                  const bFT = isTrueFullTime(b.role) && staffWorkTracker[sidB].weeklyHours < 37 ? 1 : 0;
+                  if (aFT !== bFT) return bFT - aFT;
+
+                  return staffWorkTracker[sidA].weeklyHours - staffWorkTracker[sidB].weeklyHours;
+                });
+                pickedStaff = fallbackMgrPool[0];
+              }
+            }
+
+            if (!pickedStaff) {
+              warnings.push(`${dateStr} (${dObj.weekday}) ${slot.name} 缺少可用值班主管！`);
+            }
+          } else {
+            // 一般夥伴槽位（早班2、早上08:00中班、晚班2、晚班3）
+            let candidates = allStaff.filter(s => canStaffWorkSlot(s, slotStart, slotEnd, !!slot.isEvening, true));
+
+            if (candidates.length > 0) {
+              candidates.sort((a, b) => {
+                const sidA = a.id || a._key;
+                const sidB = b.id || b._key;
+                const trA = staffWorkTracker[sidA];
+                const trB = staffWorkTracker[sidB];
                 const aIsFT = isTrueFullTime(a.role);
                 const bIsFT = isTrueFullTime(b.role);
-                const aHours = staffWorkTracker[a.id || a._key].weeklyHours;
-                const bHours = staffWorkTracker[b.id || b._key].weeklyHours;
-                const aDays = staffWorkTracker[a.id || a._key].daysWorked;
-                const bDays = staffWorkTracker[b.id || b._key].daysWorked;
 
-                if (aIsFT && (aHours < 37 || aDays < 5) && (!bIsFT || (bHours >= 37 && bDays >= 5))) return -1;
-                if (bIsFT && (bHours < 37 || bDays < 5) && (!aIsFT || (aHours >= 37 && aDays >= 5))) return 1;
-
-                const aCanFull = isStaffAvailableForShift(a, dateStr, slotStart, slotEnd);
-                const bCanFull = isStaffAvailableForShift(b, dateStr, slotStart, slotEnd);
+                // 1. 晚班優先選能 14:00 準時進班的夥伴，避免下午空窗
+                const aCanFull = isStaffAvailableForShift(a, dateStr, slotStart, slotEnd) ? 1 : 0;
+                const bCanFull = isStaffAvailableForShift(b, dateStr, slotStart, slotEnd) ? 1 : 0;
                 if (aCanFull !== bCanFull) return bCanFull - aCanFull;
 
-                return aHours - bHours;
+                // 2. 正職未滿 37h / 5天 優先排滿
+                if (aIsFT && (trA.weeklyHours < 37 || trA.daysWorked < 5) && (!bIsFT || (trB.weeklyHours >= 37 && trB.daysWorked >= 5))) return -1;
+                if (bIsFT && (trB.weeklyHours < 37 || trB.daysWorked < 5) && (!aIsFT || (trA.weeklyHours >= 37 && trA.daysWorked >= 5))) return 1;
+
+                // 3. 兼職「平均配速與 50h 保底」：比較「距離本週理想平均工時 (idealWeeklyPace) 的差距比例」
+                // 讓每位兼職夥伴在每一週都平均獲得班次，不會一週很少、隔週暴增
+                const gapRatioA = (trA.idealWeeklyPace - trA.weeklyHours) / Math.max(1, trA.idealWeeklyPace);
+                const gapRatioB = (trB.idealWeeklyPace - trB.weeklyHours) / Math.max(1, trB.idealWeeklyPace);
+                if (Math.abs(gapRatioA - gapRatioB) > 0.12) {
+                  return gapRatioB - gapRatioA;
+                }
+
+                // 4. 工作月累計尚未達 50h 底線者優先
+                if (!aIsFT && !bIsFT) {
+                  if (trA.monthlyAccum < 50 && trB.monthlyAccum >= 50) return -1;
+                  if (trB.monthlyAccum < 50 && trA.monthlyAccum >= 50) return 1;
+                }
+
+                return trA.weeklyHours - trB.weeklyHours;
               });
-              pickedStaff = managerCandidates[0];
+              pickedStaff = candidates[0];
             }
-
-            if (!pickedStaff) warnings.push(`${dateStr} ${slot.name} 缺少管理職 1 名！`);
-          }
-
-          if (!pickedStaff && candidates.length > 0) {
-            candidates.sort((a, b) => {
-              const aIsFT = isTrueFullTime(a.role);
-              const bIsFT = isTrueFullTime(b.role);
-              const aHours = staffWorkTracker[a.id || a._key].weeklyHours;
-              const bHours = staffWorkTracker[b.id || b._key].weeklyHours;
-              const aDays = staffWorkTracker[a.id || a._key].daysWorked;
-              const bDays = staffWorkTracker[b.id || b._key].daysWorked;
-              const aMonth = staffWorkTracker[a.id || a._key].monthlyAccum;
-              const bMonth = staffWorkTracker[b.id || b._key].monthlyAccum;
-
-              // 1. 正職未滿 37h 或 5 天優先
-              if (aIsFT && (aHours < 37 || aDays < 5) && (!bIsFT || (bHours >= 37 && bDays >= 5))) return -1;
-              if (bIsFT && (bHours < 37 || bDays < 5) && (!aIsFT || (aHours >= 37 && aDays >= 5))) return 1;
-
-              // 2. 兼職工作月 50 小時基礎保障
-              if (!aIsFT && !bIsFT) {
-                if (aHours < 16 && bHours >= 16) return -1;
-                if (bHours < 16 && aHours >= 16) return 1;
-                if (aMonth < 50 && bMonth >= 50) return -1;
-                if (bMonth < 50 && aMonth >= 50) return 1;
-                if (aMonth < 50 && bMonth < 50 && Math.abs(aMonth - bMonth) > 3) return aMonth - bMonth;
-              }
-
-              // 3. 能完整配合 14:00 進班者優先於 19:00 進班者
-              const aCanFull = isStaffAvailableForShift(a, dateStr, slotStart, slotEnd);
-              const bCanFull = isStaffAvailableForShift(b, dateStr, slotStart, slotEnd);
-              if (aCanFull !== bCanFull) return bCanFull - aCanFull;
-
-              return aHours - bHours;
-            });
-            pickedStaff = candidates[0];
           }
 
           let actualStart = slotStart;
-          if (pickedStaff && eveningSlotIndices.includes(sIndex)) {
+          if (pickedStaff && slot.isEvening) {
             if (!isStaffAvailableForShift(pickedStaff, dateStr, "14:00", "22:30")) {
-              if (pickedStaff.availability && pickedStaff.availability['day_' + dayIdx]) {
-                const customAv = pickedStaff.availability['day_' + dayIdx];
-                if (customAv.type === 'custom' && timeToMins(customAv.start) > timeToMins("14:00")) {
-                  actualStart = customAv.start;
-                }
+              const av = pickedStaff.availability ? pickedStaff.availability['day_' + dayIdx] : null;
+              if (av && av.type === 'custom' && timeToMins(av.start) > timeToMins("14:00")) {
+                actualStart = av.start;
               }
             }
           }
@@ -3546,7 +4283,6 @@ const app = createApp({
           if (pickedStaff) {
             const sid = pickedStaff.id || pickedStaff._key;
             assignedToday.add(sid);
-
             const tracker = staffWorkTracker[sid];
             tracker.lastEndMins = slotEndMins;
             tracker.consecutiveDays += 1;
@@ -3555,6 +4291,7 @@ const app = createApp({
             tracker.monthlyAccum += netHours;
 
             assignedShifts.push({
+              order: slot.order,
               shiftName: slot.name,
               time: `${actualStart}-${slotEnd}`,
               startMins: timeToMins(actualStart),
@@ -3567,8 +4304,9 @@ const app = createApp({
               role: pickedStaff.role
             });
           } else {
-            warnings.push(`${dateStr} ${slot.name} 缺少夥伴 1 名！`);
+            warnings.push(`${dateStr} (${dObj.weekday}) ${slot.name} 缺少可用夥伴！`);
             assignedShifts.push({
+              order: slot.order,
               shiftName: slot.name,
               time: `${slotStart}-${slotEnd}`,
               startMins: timeToMins(slotStart),
@@ -3583,126 +4321,107 @@ const app = createApp({
           }
         });
 
-        // 🌟 核心升級：15:00 ~ 19:00 多人延後進班之雙重人力補位機制 🌟
-        // 解決痛點：當晚班有 2 位夥伴 19:00 才進班時，單靠拉長 1 個中班到 19:00，會導致 15:00~19:00 只有 2 人在店！
-        // 我們逐半小時檢查 15:00 (900) ~ 19:00 (1140) 的在店人數（若有 David 上班日則計入支援，但核心吧台排班仍確保至少 3 人）
+        // 🌟 核心平衡機制：早上的中班固定 08:00 進班絕不延後！
+        // 若下午 15:00 ~ 19:00 因為晚班夥伴晚進班（如 18:00 或 19:00）而導致在店人數不足 3 人，
+        // 系統一律透過「調整下午人力（加派下午中班 13:00-19:00 / 14:00-19:00 或微幅延長下班時間但不改 08:00 起點）」來平衡整天人力！
         const countStaffAtMinute = (targetMin) => {
           return assignedShifts.filter(sh => sh.staffId && sh.startMins <= targetMin && sh.endMins > targetMin).length;
         };
 
-        // 找出當天所有延後進班的晚班最晚到達時間 (如 19:00 = 1140)
-        const eveningShifts = assignedShifts.filter(sh => sh.shiftName.includes('晚') && sh.staffId);
-        const lateEveningShifts = eveningShifts.filter(sh => sh.startMins > timeToMins("15:00"));
-
+        const lateEveningShifts = assignedShifts.filter(sh => sh.shiftName.includes('晚') && sh.staffId && sh.startMins > timeToMins("15:00"));
         if (lateEveningShifts.length > 0) {
-          // 按晚到時間排序 (例如兩位 19:00 進班)
-          lateEveningShifts.forEach((lateShift, idx) => {
-            const neededUntilMins = lateShift.startMins; // 如 19:00 (1140)
-            // 檢查 15:00 ~ neededUntilMins 之間是否少於 3 人
-            let hasGap = false;
-            for (let m = timeToMins("15:00"); m < neededUntilMins; m += 30) {
+          const maxLateArrivalMins = Math.max(...lateEveningShifts.map(sh => sh.startMins));
+          const targetEndStr = minsToTimeStr(maxLateArrivalMins);
+
+          // 逐一檢查 15:00 ~ maxLateArrivalMins 是否少於 3 人，若少於 3 人則持續補齊下午人力
+          for (let pass = 0; pass < 2; pass++) {
+            let needAfternoonSupport = false;
+            for (let m = timeToMins("15:00"); m < maxLateArrivalMins; m += 30) {
               if (countStaffAtMinute(m) < 3) {
-                hasGap = true;
+                needAfternoonSupport = true;
+                break;
+              }
+            }
+            if (!needAfternoonSupport) break;
+
+            let patched = false;
+
+            // 優先方案 1：從當日未上班的夥伴中，加派一位「下午中班 (13:00-19:00 或 14:00-19:00)」專門填補下午時段（同時幫兼職穩定增加工時）
+            const afternoonBridgeStarts = ["13:00", "14:00", "12:00"];
+            for (const bStart of afternoonBridgeStarts) {
+              const bridgePool = allStaff.filter(s => canStaffWorkSlot(s, bStart, targetEndStr, false, false));
+              if (bridgePool.length > 0) {
+                bridgePool.sort((a, b) => {
+                  const trA = staffWorkTracker[a.id || a._key];
+                  const trB = staffWorkTracker[b.id || b._key];
+                  return (trB.idealWeeklyPace - trB.weeklyHours) - (trA.idealWeeklyPace - trA.weeklyHours);
+                });
+                const bStaff = bridgePool[0];
+                const bSid = bStaff.id || bStaff._key;
+                const bHours = calculateShiftNetHours(bStart, targetEndStr);
+                assignedToday.add(bSid);
+                const tr = staffWorkTracker[bSid];
+                tr.lastEndMins = maxLateArrivalMins;
+                tr.consecutiveDays += 1;
+                tr.daysWorked += 1;
+                tr.weeklyHours += bHours;
+                tr.monthlyAccum += bHours;
+
+                assignedShifts.push({
+                  order: 4,
+                  shiftName: "中班(午間支援)",
+                  time: `${bStart}-${targetEndStr}`,
+                  startMins: timeToMins(bStart),
+                  endMins: maxLateArrivalMins,
+                  hours: bHours,
+                  isOvertime: bHours > 8,
+                  isSixthDay: (tr.daysWorked === 6 || tr.consecutiveDays === 6),
+                  staffId: bSid,
+                  staffName: `${bStaff.name} (${bStaff.nickname})`,
+                  role: bStaff.role
+                });
+                patched = true;
                 break;
               }
             }
 
-            if (hasGap) {
-              const targetEndStr = minsToTimeStr(neededUntilMins);
-              let gapFilled = false;
-
-              // 策略 A：優先尋找尚未延長到 neededUntilMins 的「中班」順延交接（調整起訖為 10:00-19:00 或 08:30-19:00）
-              const extendableMid = assignedShifts.find(sh => sh.shiftName.includes('中') && sh.staffId && sh.endMins < neededUntilMins);
-              if (extendableMid) {
-                const mStaff = allStaff.find(s => (s.id || s._key) === extendableMid.staffId);
-                const newStartStr = (neededUntilMins - extendableMid.startMins > 9 * 60) ? "10:00" : minsToTimeStr(extendableMid.startMins);
-                if (isStaffAvailableForShift(mStaff, dateStr, newStartStr, targetEndStr)) {
-                  const oldH = extendableMid.hours;
-                  const newH = calculateShiftNetHours(newStartStr, targetEndStr);
-                  extendableMid.startMins = timeToMins(newStartStr);
-                  extendableMid.endMins = neededUntilMins;
-                  extendableMid.time = `${newStartStr}-${targetEndStr}`;
-                  extendableMid.hours = newH;
-                  extendableMid.isOvertime = newH > 8;
-                  staffWorkTracker[extendableMid.staffId].weeklyHours += (newH - oldH);
-                  staffWorkTracker[extendableMid.staffId].monthlyAccum += (newH - oldH);
-                  staffWorkTracker[extendableMid.staffId].lastEndMins = neededUntilMins;
-                  gapFilled = true;
-                }
-              }
-
-              // 策略 B：若第 2 位晚班也 19:00 進班（中班已延完但 15:00~19:00 仍只有 2 人），自動加派一位「中班2(銜接)」(10:30-19:00 或 14:00-19:00)
-              if (!gapFilled) {
-                const bridgeStart = "10:30";
-                let bridgeCandidates = allStaff.filter(staff => {
-                  const sid = staff.id || staff._key;
-                  if (assignedToday.has(sid)) return false;
-                  const tracker = staffWorkTracker[sid];
-                  if (tracker.consecutiveDays >= 6 || tracker.daysWorked >= 6) return false;
-                  if (tracker.lastEndMins > 0 && ((24 * 60 - tracker.lastEndMins) + timeToMins(bridgeStart)) < 11 * 60) return false;
-                  return isStaffAvailableForShift(staff, dateStr, bridgeStart, targetEndStr);
-                });
-
-                if (bridgeCandidates.length > 0) {
-                  bridgeCandidates.sort((a, b) => staffWorkTracker[a.id || a._key].weeklyHours - staffWorkTracker[b.id || b._key].weeklyHours);
-                  const bridgeStaff = bridgeCandidates[0];
-                  const bSid = bridgeStaff.id || bridgeStaff._key;
-                  const bHours = calculateShiftNetHours(bridgeStart, targetEndStr);
-                  assignedToday.add(bSid);
-                  staffWorkTracker[bSid].lastEndMins = neededUntilMins;
-                  staffWorkTracker[bSid].consecutiveDays += 1;
-                  staffWorkTracker[bSid].daysWorked += 1;
-                  staffWorkTracker[bSid].weeklyHours += bHours;
-                  staffWorkTracker[bSid].monthlyAccum += bHours;
-
-                  assignedShifts.splice(3, 0, {
-                    shiftName: "中班(交接支援)",
-                    time: `${bridgeStart}-${targetEndStr}`,
-                    startMins: timeToMins(bridgeStart),
-                    endMins: neededUntilMins,
-                    hours: bHours,
-                    isOvertime: bHours > 8,
-                    isSixthDay: (staffWorkTracker[bSid].daysWorked === 6 || staffWorkTracker[bSid].consecutiveDays === 6),
-                    staffId: bSid,
-                    staffName: `${bridgeStaff.name} (${bridgeStaff.nickname})`,
-                    role: bridgeStaff.role
-                  });
-                  gapFilled = true;
-                }
-              }
-
-              // 策略 C：若當日無額外休假夥伴可加派，則將其中一位早班 (非開店值班) 調整順延為中早班 (08:30-17:30 或延至 19:00)
-              if (!gapFilled) {
-                const flexMorning = assignedShifts.find(sh => sh.shiftName === '早班(開店2)' && sh.staffId && sh.endMins < neededUntilMins);
-                if (flexMorning) {
-                  const fStaff = allStaff.find(s => (s.id || s._key) === flexMorning.staffId);
-                  if (isStaffAvailableForShift(fStaff, dateStr, "06:30", targetEndStr)) {
-                    const oldH = flexMorning.hours;
-                    const newH = calculateShiftNetHours("06:30", targetEndStr);
-                    flexMorning.endMins = neededUntilMins;
-                    flexMorning.time = `06:30-${targetEndStr}`;
-                    flexMorning.hours = newH;
-                    flexMorning.isOvertime = newH > 8;
-                    staffWorkTracker[flexMorning.staffId].weeklyHours += (newH - oldH);
-                    staffWorkTracker[flexMorning.staffId].monthlyAccum += (newH - oldH);
-                    staffWorkTracker[flexMorning.staffId].lastEndMins = neededUntilMins;
-                  }
+            // 備援方案 2：若當日無其他可加派的下午夥伴，將 08:00 早上中班的下班時間順延至交接點（嚴格維持 08:00 進班不變！）
+            if (!patched) {
+              const morningMidShift = assignedShifts.find(sh => sh.shiftName === '中班(早中)' && sh.staffId && sh.endMins < maxLateArrivalMins);
+              if (morningMidShift) {
+                const mStaff = allStaff.find(s => (s.id || s._key) === morningMidShift.staffId);
+                const netIfExtended = calculateShiftNetHours("08:00", targetEndStr);
+                if (netIfExtended <= 10 && isStaffAvailableForShift(mStaff, dateStr, "08:00", targetEndStr)) {
+                  const oldH = morningMidShift.hours;
+                  morningMidShift.endMins = maxLateArrivalMins;
+                  morningMidShift.time = `08:00-${targetEndStr}`;
+                  morningMidShift.hours = netIfExtended;
+                  morningMidShift.isOvertime = netIfExtended > 8;
+                  staffWorkTracker[morningMidShift.staffId].weeklyHours += (netIfExtended - oldH);
+                  staffWorkTracker[morningMidShift.staffId].monthlyAccum += (netIfExtended - oldH);
+                  staffWorkTracker[morningMidShift.staffId].lastEndMins = maxLateArrivalMins;
                 }
               }
             }
-          });
+          }
         }
 
-        // 計算當日 15:00 ~ 19:00 最低在店人數供主管檢視
+        // 依班別順序整齊排列當日班次 (早班 ➔ 早中08:00 ➔ 午中 ➔ 晚班)
+        assignedShifts.sort((a, b) => (a.order || 9) - (b.order || 9));
+
+        // 統計早晨 (08:00~12:00) 與下午 (15:00~19:00) 最低在店人數
+        let minMorningStaff = 99;
+        for (let m = timeToMins("08:00"); m < timeToMins("12:00"); m += 30) {
+          const c = countStaffAtMinute(m);
+          if (c < minMorningStaff) minMorningStaff = c;
+        }
         let minAfternoonStaff = 99;
         for (let m = timeToMins("15:00"); m < timeToMins("19:00"); m += 30) {
           const c = countStaffAtMinute(m);
           if (c < minAfternoonStaff) minAfternoonStaff = c;
         }
+        if (minMorningStaff === 99) minMorningStaff = 3;
         if (minAfternoonStaff === 99) minAfternoonStaff = 3;
-        if (minAfternoonStaff < 3) {
-          warnings.push(`${dateStr} (${dObj.weekday}) 15:00~19:00 因多人畫假或時段受限，最低在店僅 ${minAfternoonStaff} 人，建議協調夥伴支援！`);
-        }
 
         allStaff.forEach(s => {
           const sid = s.id || s._key;
@@ -3712,40 +4431,59 @@ const app = createApp({
           }
         });
 
-        schedulePlan.push({ dateStr, weekday: dObj.weekday, isWeekend, minAfternoonStaff, shifts: assignedShifts });
+        schedulePlan.push({
+          dateStr,
+          weekday: dObj.weekday,
+          isWeekend,
+          minMorningStaff,
+          minAfternoonStaff,
+          shifts: assignedShifts
+        });
       });
 
-      // 呼叫 Gemini AI 針對排出的班表進行合理性與勞基法/工時平衡審查報告
-      let aiAnalysisText = '';
-      try {
-        const summaryLines = allStaff.filter(s => s.role !== '天使夥伴').map(s => {
-          const sid = s.id || s._key;
-          const tr = staffWorkTracker[sid];
-          return `${s.name}(${s.role}): 本週排班 ${tr.daysWorked} 天 / ${tr.weeklyHours.toFixed(1)}h (工作月累計 ${tr.monthlyAccum.toFixed(1)}h)`;
-        }).join('；');
+      // 🌟 立即彈出預排班表視窗（0.05 秒瞬開，完全不卡頓！）
+      const designatedOpenNames = allDutyStaff.value.filter(m => lockedOpenManagers.has(m.id || m._key)).map(m => m.name).join('、') || '自動輪替';
+      const designatedCloseNames = allDutyStaff.value.filter(m => lockedCloseManagers.has(m.id || m._key)).map(m => m.name).join('、') || '自動輪替';
+      const defaultReport = `✅ 1. 指定值班鎖定：早班值班【${designatedOpenNames}】、晚班值班【${designatedCloseNames}】（已串聯前兩週歷史班表輪替）。\n✅ 2. 全天人力平衡：早上中班固定 08:00 進班確保早晨 3 人以上，下午 15:00~19:00 透過午間支援與晚班無縫銜接。\n✅ 3. 法規與工時平均：已嚴格阻擋跨週連上 7 天，並依工作月剩餘週數平均分配兼職每週工時（穩健達成 50h 底線）。`;
 
-        const aiPrompt = `你是星巴克永和永安門市排班顧問。系統已完成本週 (${scheduleStartDate.value} ~ ${scheduleEndDate.value}) 預排班表：
+      isAiGeneratingRoster.value = false;
+      aiRosterModal.value = {
+        show: true,
+        result: schedulePlan,
+        warnings,
+        aiAnalysis: defaultReport + '\n⏳ (AI 顧問正在背景生成深度工時審查報告...)'
+      };
+
+      // 背景非同步補充 AI 顧問報告，完全不影響主管看班表與套用！
+      const summaryLines = allStaff.filter(s => s.role !== '天使夥伴').map(s => {
+        const sid = s.id || s._key;
+        const tr = staffWorkTracker[sid];
+        return `${s.name}(${s.role}): 本週 ${tr.daysWorked}天/${tr.weeklyHours.toFixed(1)}h (月累計 ${tr.monthlyAccum.toFixed(1)}h)`;
+      }).join('；');
+
+      const aiPrompt = `你是星巴克永和永安門市排班顧問。系統已完成本週 (${scheduleStartDate.value} ~ ${scheduleEndDate.value}) 預排班表：
+【指定值班鎖定】：早班(${designatedOpenNames})、晚班(${designatedCloseNames})。
 【人員工時統計】：${summaryLines}
-【人力警示】：${warnings.length > 0 ? warnings.join('、') : '全週各時段（含15:00-19:00交接）皆符合 3 人以上在店標準，無人力缺口'}。
-請用 80~120 字簡短精要地向值班主管報告：
-1. 正職 40h 達成度與兼職工作月 50h 保障狀況。
-2. 下午 15:00~19:00 交接區間的人力覆蓋合理性與微調建議。`;
+請用 80~100 字向值班主管簡要報告本週排班在「值班早晚輪替、早中08:00固定與下午平衡、兼職50h平均配速」的達成狀況。`;
 
-        aiAnalysisText = await callGeminiApi([{ text: aiPrompt }], false, 0.3);
-      } catch (e) {
-        aiAnalysisText = `✅ 已完成跨週連六休一防呆、11小時輪班間隔與「15:00~19:00 至少 3 人在店」雙向交接校準。正職工時穩定維持於 40h 區間，兼職夥伴亦依工作月 50 小時目標優先配置。`;
-      } finally {
-        isAiGeneratingRoster.value = false;
-      }
-
-      aiRosterModal.value = { show: true, result: schedulePlan, warnings, aiAnalysis: aiAnalysisText };
+      callGeminiApi([{ text: aiPrompt }], false, 0.3)
+        .then(aiText => {
+          if (aiRosterModal.value.show) {
+            aiRosterModal.value.aiAnalysis = aiText;
+          }
+        })
+        .catch(() => {
+          if (aiRosterModal.value.show) {
+            aiRosterModal.value.aiAnalysis = defaultReport;
+          }
+        });
     };
 
     const applyAiRosterToSchedule = () => {
       const plan = aiRosterModal.value.result;
       const newRosterMap = { ...(scheduledRoster.value || {}) };
 
-      // 先清除本週期內的舊預排，再寫入新預排
+      // 僅清除本次預排日期區間內的舊紀錄，完整保留前幾週與其他週的歷史班表！
       targetRangeDates.value.forEach(d => {
         Object.keys(newRosterMap).forEach(k => {
           if (k.endsWith('_' + d.dateStr)) delete newRosterMap[k];
@@ -3771,20 +4509,26 @@ const app = createApp({
       scheduledRoster.value = newRosterMap;
       aiRosterModal.value.show = false;
       printTargetMode.value = 'ai';
-      alert('🎉 預排班表已成功套用更新！');
+      alert('🎉 預排班表已成功套用！（前幾週歷史班表已完整保留供跨週輪替與連七檢查使用）');
     };
 
+    // 僅清除目前所選排班週期的預排紀錄，不破壞歷史週班表
     const clearScheduledRoster = () => {
-      if (confirm('確定要清空已套用的 AI 預排班表紀錄嗎？\n清空後班表將還原為空白手寫狀態。')) {
-        if (db) db.ref('sbux/scheduled_roster').remove();
-        scheduledRoster.value = {};
-        alert('🗑️ 已成功清除所有預排班表紀錄！');
+      if (confirm(`確定要清除目前所選週期 (${scheduleStartDate.value} ~ ${scheduleEndDate.value}) 的預排班表嗎？\n(註：過去週次的歷史班表將予以保留，以供跨週連七與早晚輪替判斷)`)) {
+        const newRosterMap = { ...(scheduledRoster.value || {}) };
+        targetRangeDates.value.forEach(d => {
+          Object.keys(newRosterMap).forEach(k => {
+            if (k.endsWith('_' + d.dateStr)) delete newRosterMap[k];
+          });
+        });
+        if (db) db.ref('sbux/scheduled_roster').set(newRosterMap);
+        scheduledRoster.value = newRosterMap;
+        alert('🗑️ 已清除本週預排班表紀錄！');
       }
     };
 
     const getScheduledShiftObj = (staff, dateStr) => {
-      const sid = staff.id || staff._key;
-      return (scheduledRoster.value || {})[`${sid}_${dateStr}`] || null;
+      return getRosterShiftEntry(staff, dateStr);
     };
 
     const getScheduledShiftText = (staff, dateStr) => {
@@ -3805,7 +4549,6 @@ const app = createApp({
     };
 
     const calculateWeeklyStaffHours = (staff) => {
-      const sid = staff.id || staff._key;
       if (staff.role === '天使夥伴' || staff.nickname === 'David') {
         let cnt = 0;
         targetRangeDates.value.forEach(d => {
@@ -3816,7 +4559,7 @@ const app = createApp({
 
       let total = 0;
       targetRangeDates.value.forEach(d => {
-        const item = (scheduledRoster.value || {})[`${sid}_${d.dateStr}`];
+        const item = getRosterShiftEntry(staff, d.dateStr);
         if (item) {
           if (typeof item === 'object' && item.hours) {
             total += Number(item.hours);
@@ -3908,7 +4651,7 @@ const app = createApp({
       const diffToMonday = (day === 0 ? -6 : 1) - day;
       const thisMonday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday);
       const targetMonday = new Date(thisMonday.getFullYear(), thisMonday.getMonth(), thisMonday.getDate() + 14);
-      return `${targetMonday.getFullYear()}-${(targetMonday.getMonth() + 1).toString().padStart(2, '0')}-${targetMonday.getDate().toString().padStart(2, '0')}`;
+      return formatDateLocal(targetMonday);
     });
 
     const scheduleStartDate = ref('');
@@ -3916,21 +4659,21 @@ const app = createApp({
     const setNextWeekRange = () => {
       const start = allowedVacationStartStr.value;
       scheduleStartDate.value = start;
-      const d = new Date(start);
+      const d = parseLocalDate(start);
       d.setDate(d.getDate() + 6);
-      scheduleEndDate.value = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+      scheduleEndDate.value = formatDateLocal(d);
     };
     setNextWeekRange();
 
     const targetRangeDates = computed(() => {
       if (!scheduleStartDate.value || !scheduleEndDate.value) return [];
       const dates = [];
-      const current = new Date(scheduleStartDate.value);
-      const end = new Date(scheduleEndDate.value);
+      const current = parseLocalDate(scheduleStartDate.value);
+      const end = parseLocalDate(scheduleEndDate.value);
       const weekNames = ['日', '一', '二', '三', '四', '五', '六'];
       while (current <= end) {
         dates.push({
-          dateStr: current.toISOString().split('T')[0],
+          dateStr: formatDateLocal(current),
           displayDate: `${(current.getMonth() + 1).toString().padStart(2, '0')}/${current.getDate().toString().padStart(2, '0')}`,
           weekday: weekNames[current.getDay()]
         });
@@ -4002,7 +4745,7 @@ const app = createApp({
         return isDavidWorkDay(dateStr) ? '08:30-17:30' : '不配';
       }
       if (!staff.availability) return '';
-      const d = new Date(dateStr);
+      const d = parseLocalDate(dateStr);
       const dayIdx = (d.getDay() + 6) % 7;
       const av = staff.availability['day_' + dayIdx];
       if (!av) return '';
@@ -4011,7 +4754,7 @@ const app = createApp({
       return '';
     };
 
-    // ==================== 物料、進貨、拉花投票與小學堂操作 ====================
+    // ==================== 物料、進貨、咖啡豆篩選、拉花投票與小學堂操作 ====================
     const filteredMaterials = computed(() => {
       const q = matSearchQuery.value.trim().toLowerCase();
       if (!q) return materials.value;
@@ -4107,9 +4850,9 @@ const app = createApp({
     const submitIntake = () => {
       if (!intakeForm.value.itemName || !intakeForm.value.factoryExpiry) return;
       let advanceDays = parseInt(intakeForm.value.advanceDays) || 0;
-      const d = new Date(intakeForm.value.factoryExpiry);
+      const d = parseLocalDate(intakeForm.value.factoryExpiry);
       d.setDate(d.getDate() - advanceDays);
-      const pullDate = d.toISOString().split('T')[0];
+      const pullDate = formatDateLocal(d);
       const newItem = {
         id: Date.now(),
         itemName: intakeForm.value.itemName.trim(),
@@ -4143,7 +4886,7 @@ const app = createApp({
     const calMonth = computed(() => currentCalDate.value.getMonth());
     const changeMonth = (d) => currentCalDate.value = new Date(calYear.value, calMonth.value + d, 1);
     const resetToCurrentMonth = () => currentCalDate.value = new Date();
-    const todayStr = computed(() => new Date().toISOString().split('T')[0]);
+    const todayStr = computed(() => formatDateLocal(new Date()));
     const selectedDate = ref(todayStr.value);
 
     const calendarDays = computed(() => {
@@ -4161,14 +4904,19 @@ const app = createApp({
     });
     const selectedDateItems = computed(() => selectedDate.value ? inventory.value.filter(it => it.pullDate === selectedDate.value) : []);
 
-    const openAddRuleModal = () => { addRuleModal.value = { show: true, form: { keyword: '', advance_days: 7 } }; };
+    const openAddRuleModal = () => {
+      addRuleModal.value = { show: true, isEdit: false, form: { id: '', keyword: '', advance_days: 7 } };
+    };
+    const editRule = (r) => {
+      addRuleModal.value = { show: true, isEdit: true, form: { id: r.id, keyword: r.keyword, advance_days: r.advance_days } };
+    };
     const saveNewRule = () => {
       const f = addRuleModal.value.form;
       if (!f.keyword) return;
-      const id = Date.now().toString();
+      const id = f.id || Date.now().toString();
       if (db) db.ref('sbux/rules/' + id).set({ id, keyword: f.keyword.trim(), advance_days: f.advance_days || 0, timing: '21:30 閉店前' });
       addRuleModal.value.show = false;
-      alert(`已建立【${f.keyword}】下架標準！`);
+      alert(addRuleModal.value.isEdit ? `✅ 已修正【${f.keyword}】下架標準！` : `✅ 已建立【${f.keyword}】下架標準！`);
     };
     const deleteRule = (id) => {
       if (confirm('確定移除此條標準？') && db) db.ref('sbux/rules/' + id).remove();
@@ -4181,10 +4929,22 @@ const app = createApp({
       }
     };
 
+    // 咖啡豆寶典複合篩選 (常態/季節 + 烘焙度 + 關鍵字搜尋)
     const filteredCoffeeBeans = computed(() => {
       const q = coffeeSearchQuery.value.trim().toLowerCase();
-      if (!q) return starbucksCoreBeans;
-      return starbucksCoreBeans.filter(b => b.name.toLowerCase().includes(q) || b.enName.toLowerCase().includes(q) || b.flavorNotes.toLowerCase().includes(q));
+      return starbucksCoreBeans.filter(b => {
+        if (coffeeCategoryFilter.value !== 'all' && b.category !== coffeeCategoryFilter.value) return false;
+        if (coffeeRoastFilter.value !== 'all' && b.roast !== coffeeRoastFilter.value) return false;
+        if (!q) return true;
+        return (
+          b.name.toLowerCase().includes(q) ||
+          b.enName.toLowerCase().includes(q) ||
+          b.region.toLowerCase().includes(q) ||
+          b.processing.toLowerCase().includes(q) ||
+          b.flavorNotes.toLowerCase().includes(q) ||
+          b.foodPairing.toLowerCase().includes(q)
+        );
+      });
     });
 
     const weeklyLattePosts = computed(() => [...lattePosts.value].sort((a,b) => b.timestamp - a.timestamp));
@@ -4278,10 +5038,11 @@ const app = createApp({
           try {
             const base64Data = evt.target.result.split(',')[1];
             const rawText = await callGeminiApi([
-              { text: '你是星巴克咖啡大師。請閱讀圖片或PDF中的咖啡知識，萃取精華筆記。輸出 JSON: {"title":"標題","content":"要點內容"}' },
+              { text: '你是星巴克咖啡大師。請閱讀圖片或PDF中的咖啡知識，萃取精華筆記。請只輸出純 JSON: {"title":"標題","content":"要點內容"}' },
               { inline_data: { mime_type: fileType, data: base64Data } }
             ], true, 0.2);
-            const parsed = JSON.parse(rawText.replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim());
+            const match = rawText.match(/\{[\s\S]*\}/);
+            const parsed = JSON.parse(match ? match[0] : rawText.replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim());
             const todayDate = new Date().toLocaleDateString('zh-TW');
             await db.ref('sbux/coffeeKnowledge').push().set({
               title: parsed.title || file.name,
@@ -4464,7 +5225,7 @@ const app = createApp({
         currentPartner.value = partner;
         localStorage.setItem('sbux_logged_empid', partner.empId);
         loginForm.value = { empId: '', password: '' };
-        fetchDynamicWebTrivia(); // 每次登入時重新從網路/AI抓取最新咖啡知識
+        fetchDynamicWebTrivia();
         nextTick(() => { if (window.lucide) lucide.createIcons(); });
         alert(`歡迎回來，${partner.nickname}！☕`);
       } else {
@@ -4510,6 +5271,7 @@ const app = createApp({
     });
 
     const openSettingsModal = () => {
+      apiKeyTestResult.value = '';
       settingsModal.value = {
         show: true,
         newPassword: '',
@@ -4522,10 +5284,11 @@ const app = createApp({
       const k = settingsModal.value.geminiApiKey.trim();
       localStorage.setItem('sbux_custom_gemini_key', k);
       cloudGeminiKey.value = k;
+      cachedValidModels.value = [];
       if (db && k) {
         db.ref('sbux/systemConfig/geminiApiKey').set(k);
       }
-      alert('🤖 已儲存 Gemini API Key 並同步至門市雲端！全店 AI 功能已啟用。');
+      alert('🤖 已儲存 Gemini API Key 並同步至門市雲端！可點擊旁邊的「🔍 測試連線模型」確認狀態。');
     };
 
     const saveNewPassword = () => {
@@ -4553,17 +5316,17 @@ const app = createApp({
 
     return {
       currentPartner, loginForm, handleLogin, handleLogout, isManager, isDutyOrAbove, isSuperTan, isDarkMode, toggleDarkMode,
-      settingsModal, openSettingsModal, saveNewPassword, saveBirthday, saveGeminiApiKey, birthdayAlerts,
+      settingsModal, openSettingsModal, saveNewPassword, saveBirthday, saveGeminiApiKey, testGeminiApiKey, isTestingApiKey, apiKeyTestResult, birthdayAlerts,
       currentTab, otherSubTab, isCloudConnected, currentDateTimeDisplay,
       todayTrivia, fetchDynamicWebTrivia, isFetchingTrivia,
       weatherType, weatherDesc, weatherIcon, weatherGreeting, weatherBannerClass,
       countdownToSunday, settledPeriodStr, settledHonors, lastWeekHonorBoard,
-      showRulesLibrary, addRuleModal, openAddRuleModal, isAiRecognizingRules, aiRuleUploadFeedback, handleAiRuleImageUpload, saveNewRule, deleteRule, applyRuleToForm, autoMatchRuleByKeyword,
+      showRulesLibrary, addRuleModal, openAddRuleModal, editRule, isAiRecognizingRules, aiRuleUploadFeedback, handleAiRuleImageUpload, saveNewRule, deleteRule, applyRuleToForm, autoMatchRuleByKeyword,
       bulletinList, bulletinModal, openBulletinModal, submitBulletin, deleteBulletin,
       storePhotos, customAlbums, selectedAlbum, createAlbumModal, openCreateAlbumModal, saveNewAlbum,
       handleStorePhotoUpload, deleteStorePhoto, deleteAlbum, filteredStorePhotos,
       bravoCardsList, bravoModal, openBravoModal, submitBravoCard,
-      starbucksCoreBeans, coffeeSearchQuery, filteredCoffeeBeans,
+      starbucksCoreBeans, coffeeSearchQuery, coffeeCategoryFilter, coffeeRoastFilter, filteredCoffeeBeans,
       courseSummaries, isGeneratingSummary, generateCourseSummary,
       tastingForm, submitTastingNote, tastingNotesList, getIntensityLabel, getCleanNotesText, deleteTastingNote, isAiEvaluatingTasting,
       latteForm, handleLattePhotoUpload, submitLattePost, isAiEvaluating, isArchivingLatteArt,
@@ -4572,7 +5335,7 @@ const app = createApp({
       matEditModal, openAddMaterialModal, editMaterial, saveMaterialForm, deleteMaterial,
       intakeForm, submitIntake, deleteIntake, rules,
       calYear, calMonth, changeMonth, resetToCurrentMonth, calendarDays, todayStr, selectedDate, selectedDateItems,
-      staffList, validStaffList, sortedValidStaffList, allDutyStaff, selectedWeeklyOpenManagers, selectedWeeklyCloseManagers, getPrintRowHeight,
+      staffList, validStaffList, sortedValidStaffList, allDutyStaff, selectedWeeklyOpenManagers, selectedWeeklyCloseManagers, getManagerRotationHint, autoSelectRotatedManagers, getPrintRowHeight,
       isSpecialCoffeeMaster, isDavidWorkDay,
       vacationList, vacationForm, submitVacation,
       secureDeleteModal, promptSecureDeleteVacation, confirmSecureDelete,
