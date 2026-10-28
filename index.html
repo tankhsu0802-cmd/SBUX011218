@@ -41,6 +41,10 @@
       overflow-x: hidden;
     }
 
+    /* 徹底隱藏橫向捲軸，消除子頁籤下方的灰色滾動條 */
+    .no-scrollbar::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+    .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+
     input[type="date"] {
       -webkit-appearance: none;
       -moz-appearance: none;
@@ -59,14 +63,14 @@
     }
 
     .ios-glass-bar {
-      background: rgba(255, 255, 255, 0.65) !important;
+      background: rgba(255, 255, 255, 0.72) !important;
       backdrop-filter: blur(25px) saturate(190%) !important;
       -webkit-backdrop-filter: blur(25px) saturate(190%) !important;
       box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04) !important;
       border-top: 1px solid rgba(255, 255, 255, 0.6) !important;
     }
     .dark .ios-glass-bar {
-      background: rgba(15, 23, 42, 0.75) !important;
+      background: rgba(15, 23, 42, 0.78) !important;
       backdrop-filter: blur(25px) saturate(190%) !important;
       -webkit-backdrop-filter: blur(25px) saturate(190%) !important;
       box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3) !important;
@@ -74,7 +78,7 @@
     }
 
     .ios-header-glass {
-      background: rgba(6, 78, 59, 0.88) !important;
+      background: rgba(6, 78, 59, 0.90) !important;
       backdrop-filter: blur(20px) saturate(180%) !important;
       -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
       border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -108,10 +112,10 @@
     }
 
     .fade-enter-active, .fade-leave-active {
-      transition: opacity 0.25s ease, transform 0.25s ease;
+      transition: opacity 0.22s ease, transform 0.22s ease;
     }
-    .fade-enter-from { opacity: 0; transform: translateY(6px); }
-    .fade-leave-to { opacity: 0; transform: translateY(-6px); }
+    .fade-enter-from { opacity: 0; transform: translateY(5px); }
+    .fade-leave-to { opacity: 0; transform: translateY(-5px); }
 
     .modal-enter-active, .modal-leave-active {
       transition: opacity 0.2s ease, transform 0.2s ease;
@@ -249,10 +253,10 @@
           </div>
         </div>
         <div class="flex items-center space-x-2">
-          <button @click="openSettingsModal" class="p-1 text-emerald-200 hover:text-white text-base active:scale-95 transition" title="個人設定">
+          <button @click="openSettingsModal" class="p-1 text-emerald-200 hover:text-white text-base active:scale-95 transition" title="設定">
             ⚙️
           </button>
-          <button @click="handleLogout" class="px-2 py-0.5 bg-emerald-950/80 hover:bg-red-900 border border-emerald-700 rounded-full text-[10px] text-emerald-200 transition">
+          <button @click="handleLogout" class="px-2.5 py-0.5 bg-emerald-950/80 hover:bg-red-900 border border-emerald-700 rounded-full text-[10px] text-emerald-200 transition">
             登出
           </button>
         </div>
@@ -269,7 +273,7 @@
             
             <div 
               :class="weatherBannerClass"
-              class="text-white rounded-3xl p-5 shadow-sm space-y-3 relative overflow-hidden transition-all duration-700">
+              class="text-white rounded-3xl p-5 shadow-md space-y-3 relative overflow-hidden transition-all duration-700">
               
               <div v-if="weatherType === 'rain'" class="rain-container">
                 <div v-for="n in 12" :key="n" class="rain-drop" :style="{ left: (n * 8) + '%', animationDelay: (n * 0.15) + 's', animationDuration: (0.9 + (n % 4) * 0.2) + 's' }"></div>
@@ -279,7 +283,7 @@
               
               <div class="relative z-10">
                 <div class="flex justify-between items-center">
-                  <span class="px-2 py-0.5 bg-white/20 text-white text-[10px] font-bold rounded-full uppercase tracking-wider backdrop-blur-sm">
+                  <span class="px-2.5 py-0.5 bg-white/20 text-white text-[10px] font-bold rounded-full uppercase tracking-wider backdrop-blur-sm">
                     永安門市 Hub
                   </span>
                   <span class="text-xs font-bold flex items-center gap-1 bg-black/25 px-2.5 py-0.5 rounded-full">
@@ -296,49 +300,66 @@
               </div>
             </div>
 
+            <!-- 🚨 今日應下架速覽提醒條 (有當日到期品項時自動浮現) -->
+            <div 
+              v-if="todayPullItems.length > 0" 
+              @click="currentTab = 'intake'; selectedDate = todayStr"
+              class="p-3.5 bg-gradient-to-r from-rose-500/15 via-red-500/10 to-orange-500/10 border border-rose-300 dark:border-rose-800 rounded-2xl flex items-center justify-between gap-3 cursor-pointer active:scale-[0.99] transition shadow-sm">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="text-xl flex-shrink-0">🚨</span>
+                <div class="text-xs min-w-0">
+                  <div class="font-black text-rose-800 dark:text-rose-300">今日有 {{ todayPullItems.length }} 項品項需下架</div>
+                  <div class="text-rose-700/80 dark:text-rose-400 text-[11px] truncate">
+                    {{ todayPullItems.map(i => i.itemName).join('、') }}
+                  </div>
+                </div>
+              </div>
+              <span class="text-[10px] font-bold px-2.5 py-1 bg-rose-600 text-white rounded-xl whitespace-nowrap flex-shrink-0">前往查看 ➔</span>
+            </div>
+
             <!-- 壽星生日前兩天提醒 -->
             <div v-if="birthdayAlerts.length > 0" class="p-3.5 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-amber-500/10 border border-pink-300 dark:border-pink-800 rounded-2xl flex items-center gap-3">
               <span class="text-2xl animate-bounce">🎂</span>
               <div class="text-xs">
-                <div class="font-bold text-pink-700 dark:text-pink-300">門市壽星祝福通知：</div>
+                <div class="font-bold text-pink-700 dark:text-pink-300">門市壽星祝福通知</div>
                 <div class="text-slate-700 dark:text-slate-300 text-[11px]">
                   {{ birthdayAlerts.join('、') }} 即將迎來生日，別忘了送上 Bravo 感謝與祝福！🎉
                 </div>
               </div>
             </div>
 
-            <!-- 門市公告欄 (內含前一週所有得獎夥伴榮譽表揚與期間標註) -->
+            <!-- 門市公告欄 (內含上週得獎夥伴表揚) -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
               <div class="flex justify-between items-center">
                 <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <span>📌</span> 門市公告欄
                 </h3>
-                <button v-if="isManager" @click="openBulletinModal" class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                <button v-if="isManager" @click="openBulletinModal" class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
                   + 發布公告
                 </button>
               </div>
 
-              <!-- 🌟 前一週全體得獎夥伴榮譽表揚專區 (自動標註結算期間) 🌟 -->
-              <div v-if="lastWeekHonorBoard" class="p-3.5 bg-gradient-to-br from-amber-50 via-yellow-50/80 to-orange-50 dark:from-amber-950/50 dark:via-yellow-950/30 dark:to-orange-950/40 rounded-2xl border-2 border-amber-300 dark:border-amber-700/80 shadow-sm space-y-2 relative overflow-hidden">
+              <!-- 上週得獎夥伴表揚 -->
+              <div v-if="lastWeekHonorBoard" class="p-3.5 bg-gradient-to-br from-amber-50 via-yellow-50/80 to-orange-50 dark:from-amber-950/50 dark:via-yellow-950/30 dark:to-orange-950/40 rounded-2xl border border-amber-300 dark:border-amber-700/80 shadow-sm space-y-2 relative overflow-hidden">
                 <div class="flex justify-between items-center border-b border-amber-200/80 dark:border-amber-800/60 pb-1.5">
                   <div class="font-black text-xs text-amber-900 dark:text-amber-300 flex items-center gap-1">
-                    <span>🏆</span> 上週門市榮譽得獎夥伴表揚
+                    <span>🏆</span> 上週榮譽得獎夥伴
                   </div>
                   <span class="text-[10px] font-mono font-bold px-2 py-0.5 bg-amber-200/80 dark:bg-amber-900 text-amber-950 dark:text-amber-200 rounded-full">
-                    期間：{{ lastWeekHonorBoard.periodStr }}
+                    {{ lastWeekHonorBoard.periodStr }}
                   </span>
                 </div>
                 <div class="grid grid-cols-1 gap-1.5 text-[11px]">
                   <div v-if="lastWeekHonorBoard.top1" class="flex justify-between items-center bg-white/80 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-amber-200/60 dark:border-amber-800/40">
-                    <span>🥇 <b>拉花冠軍：</b>{{ lastWeekHonorBoard.top1.partnerName }} <span class="text-[10px] text-slate-500">({{ lastWeekHonorBoard.top1.pattern }})</span></span>
+                    <span>🥇 <b>拉花冠軍：</b>{{ lastWeekHonorBoard.top1.partnerName }}</span>
                     <span class="font-bold text-amber-700 dark:text-amber-400">{{ lastWeekHonorBoard.top1.finalScore }} 分</span>
                   </div>
                   <div v-if="lastWeekHonorBoard.top2" class="flex justify-between items-center bg-white/80 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-amber-200/60 dark:border-amber-800/40">
-                    <span>🥈 <b>拉花亞軍：</b>{{ lastWeekHonorBoard.top2.partnerName }} <span class="text-[10px] text-slate-500">({{ lastWeekHonorBoard.top2.pattern }})</span></span>
+                    <span>🥈 <b>拉花亞軍：</b>{{ lastWeekHonorBoard.top2.partnerName }}</span>
                     <span class="font-bold text-slate-600 dark:text-slate-300">{{ lastWeekHonorBoard.top2.finalScore }} 分</span>
                   </div>
                   <div v-if="lastWeekHonorBoard.top3" class="flex justify-between items-center bg-white/80 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-amber-200/60 dark:border-amber-800/40">
-                    <span>🥉 <b>拉花季軍：</b>{{ lastWeekHonorBoard.top3.partnerName }} <span class="text-[10px] text-slate-500">({{ lastWeekHonorBoard.top3.pattern }})</span></span>
+                    <span>🥉 <b>拉花季軍：</b>{{ lastWeekHonorBoard.top3.partnerName }}</span>
                     <span class="font-bold text-amber-800/80 dark:text-amber-500">{{ lastWeekHonorBoard.top3.finalScore }} 分</span>
                   </div>
                   <div class="grid grid-cols-2 gap-1.5 pt-0.5">
@@ -347,14 +368,11 @@
                       <span class="font-black text-slate-800 dark:text-white">{{ lastWeekHonorBoard.mostImproved }}</span>
                     </div>
                     <div class="bg-emerald-50/90 dark:bg-emerald-950/50 px-2.5 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60 text-[10px]">
-                      <span class="text-emerald-800 dark:text-emerald-300 font-bold block">☕ 咖啡品評活躍獎</span>
+                      <span class="text-emerald-800 dark:text-emerald-300 font-bold block">☕ 品評活躍獎</span>
                       <span class="font-black text-slate-800 dark:text-white">{{ lastWeekHonorBoard.activePartner }}</span>
                     </div>
                   </div>
                 </div>
-                <p class="text-[10px] text-amber-900/80 dark:text-amber-200/80 text-center font-medium pt-0.5">
-                  👏 感謝以上得獎夥伴對咖啡工藝與門市熱情的投入！
-                </p>
               </div>
 
               <div v-if="bulletinList.length > 0" class="space-y-2">
@@ -368,18 +386,76 @@
                 </div>
               </div>
               <p v-else class="text-xs text-slate-400 py-3 text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
-                目前暫無其他門市宣達事項。
+                目前暫無門市宣達事項。
               </p>
             </div>
 
-            <!-- 每次登入即時更新：動態網路/AI 咖啡小知識 -->
+            <!-- 📝 新增營運工具：當日班次交接與待辦清單 (Shift Handover) -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
+              <div class="flex justify-between items-center">
+                <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <span>📝</span> 班次交接與待辦事項
+                </h3>
+                <span class="text-[10px] text-slate-400">全店即時同步</span>
+              </div>
+
+              <form @submit.prevent="addShiftTask" class="flex gap-1.5 text-xs">
+                <select v-model="shiftTaskForm.tag" class="px-2 py-1.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white text-[11px] font-bold">
+                  <option value="交接">交接</option>
+                  <option value="缺貨">缺貨</option>
+                  <option value="設備">設備</option>
+                  <option value="清潔">清潔</option>
+                </select>
+                <input 
+                  v-model="shiftTaskForm.text" 
+                  type="text" 
+                  required 
+                  placeholder="輸入交接事項..." 
+                  class="flex-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white text-xs"
+                >
+                <button type="submit" class="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs active:scale-95 transition whitespace-nowrap">
+                  新增
+                </button>
+              </form>
+
+              <div v-if="shiftTasksList.length > 0" class="space-y-1.5 max-h-48 overflow-y-auto">
+                <div 
+                  v-for="task in shiftTasksList" :key="task.id" 
+                  class="p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition"
+                  :class="task.done ? 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 opacity-60' : 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200/80 dark:border-emerald-900/40'">
+                  <div @click="toggleShiftTask(task)" class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer">
+                    <span class="w-4 h-4 rounded border flex items-center justify-center text-[10px] flex-shrink-0"
+                          :class="task.done ? 'bg-emerald-700 border-emerald-700 text-white' : 'bg-white dark:bg-slate-800 border-slate-400'">
+                      <span v-if="task.done">✓</span>
+                    </span>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center gap-1.5">
+                        <span class="px-1.5 py-0.2 rounded text-[9px] font-bold"
+                              :class="task.tag === '缺貨' ? 'bg-rose-100 text-rose-800' : (task.tag === '設備' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800')">
+                          {{ task.tag }}
+                        </span>
+                        <span :class="task.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-200'" class="truncate">{{ task.text }}</span>
+                      </div>
+                      <div class="text-[9px] text-slate-400 mt-0.5">
+                        {{ task.author }} · {{ task.timeStr }}
+                        <span v-if="task.done && task.doneBy" class="text-emerald-700 dark:text-emerald-400 font-bold ml-1">(由 {{ task.doneBy }} 完成)</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button @click="deleteShiftTask(task.id)" class="text-slate-300 hover:text-rose-500 text-xs px-1">✕</button>
+                </div>
+              </div>
+              <p v-else class="text-xs text-slate-400 py-2 text-center">目前無待辦交接事項。</p>
+            </div>
+
+            <!-- 每日咖啡知識 -->
             <div class="bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/90 dark:border-amber-900/50 rounded-2xl p-3.5 shadow-sm space-y-2">
               <div class="flex items-start gap-2.5">
                 <span class="text-2xl mt-0.5 flex-shrink-0">💡</span>
                 <div class="space-y-1.5 flex-1">
                   <div class="flex items-center justify-between">
                     <span class="text-[11px] font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1">
-                      每日動態咖啡知識 ({{ todayTrivia.level }})
+                      每日咖啡知識 · {{ todayTrivia.level }}
                     </span>
                     <div class="flex items-center gap-2">
                       <button @click="fetchDynamicWebTrivia" :disabled="isFetchingTrivia" class="text-[10px] px-2 py-0.5 bg-amber-200/70 hover:bg-amber-300/70 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 rounded-full font-bold transition flex items-center gap-0.5">
@@ -397,17 +473,17 @@
               </div>
             </div>
 
-            <!-- 門市榮譽殿堂 (本週即時戰況) -->
+            <!-- 門市榮譽殿堂 -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
               <div class="flex justify-between items-center">
                 <div>
                   <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <span>🏆</span> 門市榮譽殿堂 (本週即時榜)
+                    <span>🏆</span> 門市榮譽殿堂
                   </h3>
                   <p class="text-[9px] text-slate-400 mt-0.5">{{ settledPeriodStr }}</p>
                 </div>
                 <span class="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                  週日 23:30 結算表揚
+                  週日 23:30 結算
                 </span>
               </div>
 
@@ -513,22 +589,31 @@
 
           <!-- ==================== 頁籤 1：物料效期查詢 ==================== -->
           <section v-if="currentTab === 'materials'" class="space-y-4">
-            <div class="bg-white dark:bg-slate-800 p-3 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex gap-2 items-center">
-              <div class="relative flex-1">
-                <input 
-                  v-model="matSearchQuery" 
-                  type="text" 
-                  placeholder="搜尋物料代號或名稱..." 
-                  class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-700"
-                >
-                <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
+            <div class="bg-white dark:bg-slate-800 p-3 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-2.5">
+              <div class="flex gap-2 items-center">
+                <div class="relative flex-1">
+                  <input 
+                    v-model="matSearchQuery" 
+                    type="text" 
+                    placeholder="搜尋物料代號或名稱..." 
+                    class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                  >
+                  <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
+                </div>
+                <button 
+                  v-if="isManager" 
+                  @click="openAddMaterialModal" 
+                  class="px-3 py-2 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition whitespace-nowrap">
+                  + 新增物料
+                </button>
               </div>
-              <button 
-                v-if="isManager" 
-                @click="openAddMaterialModal" 
-                class="px-3 py-2 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition whitespace-nowrap">
-                + 新增物料
-              </button>
+
+              <!-- 溫層快速篩選 -->
+              <div class="flex gap-1.5 text-[11px] font-bold">
+                <button @click="matTempFilter = 'all'" :class="matTempFilter === 'all' ? 'bg-emerald-800 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="px-3 py-1 rounded-lg transition">全部 ({{ materials.length }})</button>
+                <button @click="matTempFilter = '常溫'" :class="matTempFilter === '常溫' ? 'bg-amber-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="px-3 py-1 rounded-lg transition">常溫</button>
+                <button @click="matTempFilter = '冷藏'" :class="matTempFilter === '冷藏' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="px-3 py-1 rounded-lg transition">冷藏</button>
+              </div>
             </div>
 
             <div class="space-y-3">
@@ -548,8 +633,8 @@
                       class="px-2 py-0.5 text-xs font-bold rounded-full">
                       {{ mat.temp || '常溫' }}
                     </span>
-                    <button v-if="isManager" @click="editMaterial(mat)" class="p-1 text-slate-400 hover:text-emerald-700 text-xs" title="編輯物料">✏️</button>
-                    <button v-if="isManager" @click="deleteMaterial(mat)" class="p-1 text-slate-400 hover:text-red-600 text-xs" title="刪除物料">🗑️</button>
+                    <button v-if="isManager" @click="editMaterial(mat)" class="p-1 text-slate-400 hover:text-emerald-700 text-xs" title="編輯">✏️</button>
+                    <button v-if="isManager" @click="deleteMaterial(mat)" class="p-1 text-slate-400 hover:text-red-600 text-xs" title="刪除">🗑️</button>
                   </div>
                 </div>
 
@@ -572,119 +657,14 @@
             </div>
           </section>
 
-          <!-- ==================== 頁籤 2：下架行事曆 ==================== -->
+          <!-- ==================== 頁籤 2：下架行事曆 (行事曆獨立顯示，標準庫隱藏於開啟資料庫中) ==================== -->
           <section v-if="currentTab === 'intake'" class="space-y-4">
             
-            <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3 overflow-hidden">
-              <div class="flex justify-between items-center">
-                <h2 class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                  <span>📦</span> 登記進貨品項
-                </h2>
-                <button @click="showRulesLibrary = !showRulesLibrary" class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold hover:underline">
-                  {{ showRulesLibrary ? '關閉標準庫' : '下架標準庫' }}
-                </button>
-              </div>
-
-              <form @submit.prevent="submitIntake" class="space-y-2">
-                <div v-if="rules.length > 0">
-                  <label class="text-[10px] text-slate-500 font-bold block mb-0.5">快速套用下架標準</label>
-                  <select @change="applyRuleToForm($event.target.value)" class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white block">
-                    <option value="">-- 自訂品項 (或輸入關鍵字自動匹配) --</option>
-                    <option v-for="r in rules" :key="r.id" :value="r.id">
-                      {{ r.keyword }} (提前 {{ r.advance_days }} 天)
-                    </option>
-                  </select>
-                </div>
-
-                <input 
-                  v-model="intakeForm.itemName" 
-                  @input="autoMatchRuleByKeyword"
-                  type="text" 
-                  required 
-                  placeholder="請輸入食品品名 (自動比對標準庫)" 
-                  class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white block"
-                >
-                <div class="flex gap-2 w-full">
-                  <div class="flex-1 min-w-0">
-                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5 truncate">原廠到期日</label>
-                    <input 
-                      v-model="intakeForm.factoryExpiry" 
-                      type="date" 
-                      required 
-                      class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white block"
-                    >
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5 truncate">提前下架天數</label>
-                    <input 
-                      v-model.number="intakeForm.advanceDays" 
-                      type="number" 
-                      min="0" 
-                      placeholder="天數" 
-                      class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white block"
-                    >
-                  </div>
-                </div>
-
-                <div class="flex items-center justify-between pt-1">
-                  <label v-if="isManager" class="text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-1 cursor-pointer">
-                    <input type="checkbox" v-model="intakeForm.saveAsRule" class="rounded text-emerald-800">
-                    <span>同時儲存為門市標準</span>
-                  </label>
-                  <span v-else></span>
-                  <button 
-                    type="submit" 
-                    class="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow active:scale-95 transition">
-                    登記進貨
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            <!-- 標準庫檢視與 AI 辨識 -->
-            <div v-if="showRulesLibrary" class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-emerald-300 dark:border-emerald-700 space-y-3">
-              <div class="flex justify-between items-center">
-                <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
-                  <span>📋</span> 下架標準庫 (共 {{ rules.length }} 條)
-                </h3>
-                <div class="flex items-center gap-1.5">
-                  <button v-if="isManager" @click="openAddRuleModal" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-[10px] font-bold transition">
-                    + 手動新增
-                  </button>
-                  <label v-if="isManager" class="px-2.5 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold transition cursor-pointer flex items-center gap-1 active:scale-95 shadow-sm">
-                    <span>📄</span> AI 圖片/PDF辨識匯入
-                    <input type="file" accept="image/*,application/pdf" @change="handleAiRuleImageUpload" class="hidden" :disabled="isAiRecognizingRules">
-                  </label>
-                </div>
-              </div>
-              
-              <div v-if="isAiRecognizingRules" class="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-pulse">
-                <span class="animate-spin text-sm">🔄</span>
-                <span class="font-bold">AI 正在自動匹配可用模型並深度萃取下架天數規範...</span>
-              </div>
-
-              <div v-if="aiRuleUploadFeedback" class="p-2.5 bg-teal-50 dark:bg-teal-950/40 rounded-xl border border-teal-200 dark:border-teal-800 text-[11px] text-teal-800 dark:text-teal-300 whitespace-pre-line">
-                {{ aiRuleUploadFeedback }}
-              </div>
-
-              <div class="divide-y divide-slate-100 dark:divide-slate-700 max-h-48 overflow-y-auto text-xs">
-                <div v-for="r in rules" :key="r.id" class="py-2 flex justify-between items-center">
-                  <div>
-                    <span class="font-bold text-slate-900 dark:text-white">{{ r.keyword }}</span>
-                    <span class="text-emerald-700 dark:text-emerald-400 font-bold ml-2">提前 {{ r.advance_days }} 天下架</span>
-                    <span class="text-[10px] text-slate-400 ml-1.5">({{ r.timing || '21:30 閉店前' }})</span>
-                  </div>
-                  <div v-if="isManager" class="flex items-center gap-1">
-                    <button @click="editRule(r)" class="text-slate-400 hover:text-emerald-700 text-xs px-1.5 py-0.5" title="修改錯字或天數">✏️</button>
-                    <button @click="deleteRule(r.id)" class="text-slate-400 hover:text-red-500 text-xs px-1.5 py-0.5" title="刪除">✕</button>
-                  </div>
-                </div>
-
-            <!-- 月曆 -->
+            <!-- 1. 獨立置頂顯示：下架排程行事曆 -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
               <div class="flex items-center justify-between mb-3">
-                <h3 class="text-sm font-bold text-slate-900 dark:text-white">
-                  🗓️ {{ calYear }} 年 {{ calMonth + 1 }} 月 下架排程
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <span>🗓️</span> {{ calYear }} 年 {{ calMonth + 1 }} 月 下架行事曆
                 </h3>
                 <div class="flex space-x-1">
                   <button @click="changeMonth(-1)" class="px-2.5 py-1 text-xs bg-slate-100 dark:bg-slate-700 rounded-lg active:bg-slate-200">‹</button>
@@ -715,7 +695,7 @@
               </div>
             </div>
 
-            <!-- 應下架清單 -->
+            <!-- 2. 當日應下架清單 -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
               <h4 class="font-bold text-xs text-slate-900 dark:text-white mb-2 flex justify-between">
                 <span>📌 {{ selectedDate || '請選擇日期' }} 應下架清單</span>
@@ -731,7 +711,7 @@
                       <span v-if="item.isMaterial" class="px-1.5 py-0.2 bg-emerald-800 text-white rounded text-[10px]">物料</span>
                       <span>{{ item.itemName }}</span>
                     </div>
-                    <div class="text-[11px] text-red-700 dark:text-red-300 mt-0.5">時機：{{ item.timing }} (原效期：{{ item.factoryExpiry }})</div>
+                    <div class="text-[11px] text-red-700 dark:text-red-300 mt-0.5">時機：{{ item.timing }}</div>
                   </div>
                   <button @click="deleteIntake(item.id)" class="text-slate-400 active:text-red-600 text-xs px-2 py-1">✕</button>
                 </div>
@@ -739,11 +719,122 @@
               <p v-else class="text-xs text-slate-400 py-3 text-center">當天無排定下架品項。</p>
             </div>
 
+            <!-- 3. 登記進貨品項與開啟標準庫按鈕 -->
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3 overflow-hidden">
+              <div class="flex justify-between items-center">
+                <h2 class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <span>📦</span> 登記進貨品項
+                </h2>
+                <button 
+                  @click="showRulesLibrary = !showRulesLibrary" 
+                  class="px-2.5 py-1 rounded-full text-[10px] font-bold border transition flex items-center gap-1"
+                  :class="showRulesLibrary ? 'bg-emerald-800 text-white border-emerald-800' : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'">
+                  <span>📋</span> {{ showRulesLibrary ? '隱藏下架標準庫' : '開啟下架標準庫 (' + rules.length + ')' }}
+                </button>
+              </div>
+
+              <form @submit.prevent="submitIntake" class="space-y-2">
+                <div v-if="rules.length > 0">
+                  <label class="text-[10px] text-slate-500 font-bold block mb-0.5">選擇標準</label>
+                  <select @change="applyRuleToForm($event.target.value)" class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white block">
+                    <option value="">-- 自訂品項 --</option>
+                    <option v-for="r in rules" :key="r.id" :value="r.id">
+                      {{ r.keyword }} (提前 {{ r.advance_days }} 天)
+                    </option>
+                  </select>
+                </div>
+
+                <input 
+                  v-model="intakeForm.itemName" 
+                  @input="autoMatchRuleByKeyword"
+                  type="text" 
+                  required 
+                  placeholder="請輸入食品品名" 
+                  class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white block"
+                >
+                <div class="flex gap-2 w-full">
+                  <div class="flex-1 min-w-0">
+                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5 truncate">原廠到期日</label>
+                    <input 
+                      v-model="intakeForm.factoryExpiry" 
+                      type="date" 
+                      required 
+                      class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white block"
+                    >
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5 truncate">提前下架天數</label>
+                    <input 
+                      v-model.number="intakeForm.advanceDays" 
+                      type="number" 
+                      min="0" 
+                      placeholder="天數" 
+                      class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white block"
+                    >
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-1">
+                  <label v-if="isManager" class="text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-1 cursor-pointer">
+                    <input type="checkbox" v-model="intakeForm.saveAsRule" class="rounded text-emerald-800">
+                    <span>儲存為標準</span>
+                  </label>
+                  <span v-else></span>
+                  <button 
+                    type="submit" 
+                    class="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow active:scale-95 transition">
+                    登記進貨
+                  </button>
+                </div>
+              </form>
+
+              <!-- 4. 隱藏於資料庫開關內的「下架標準庫」清單 -->
+              <div v-if="showRulesLibrary" class="pt-3 mt-2 border-t border-slate-200 dark:border-slate-700 space-y-3">
+                <div class="flex justify-between items-center">
+                  <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
+                    <span>📋</span> 下架標準資料庫 ({{ rules.length }})
+                  </h3>
+                  <div class="flex items-center gap-1.5">
+                    <button v-if="isManager" @click="openAddRuleModal" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-[10px] font-bold transition">
+                      + 手動新增
+                    </button>
+                    <label v-if="isManager" class="px-2.5 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold transition cursor-pointer flex items-center gap-1 active:scale-95 shadow-sm">
+                      <span>📄</span> AI 辨識匯入
+                      <input type="file" accept="image/*,application/pdf" @change="handleAiRuleImageUpload" class="hidden" :disabled="isAiRecognizingRules">
+                    </label>
+                  </div>
+                </div>
+                
+                <div v-if="isAiRecognizingRules" class="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-pulse">
+                  <span class="animate-spin text-sm">🔄</span>
+                  <span class="font-bold">AI 掃描分析中...</span>
+                </div>
+
+                <div v-if="aiRuleUploadFeedback" class="p-2.5 bg-teal-50 dark:bg-teal-950/40 rounded-xl border border-teal-200 dark:border-teal-800 text-[11px] text-teal-800 dark:text-teal-300 whitespace-pre-line">
+                  {{ aiRuleUploadFeedback }}
+                </div>
+
+                <div class="divide-y divide-slate-100 dark:divide-slate-700 max-h-52 overflow-y-auto text-xs">
+                  <div v-for="r in rules" :key="r.id" class="py-2 flex justify-between items-center">
+                    <div>
+                      <span class="font-bold text-slate-900 dark:text-white">{{ r.keyword }}</span>
+                      <span class="text-emerald-700 dark:text-emerald-400 font-bold ml-2">提前 {{ r.advance_days }} 天</span>
+                    </div>
+                    <div v-if="isManager" class="flex items-center gap-1">
+                      <button @click="editRule(r)" class="text-slate-400 hover:text-emerald-700 text-xs px-1.5 py-0.5" title="編輯">✏️</button>
+                      <button @click="deleteRule(r.id)" class="text-slate-400 hover:text-red-500 text-xs px-1.5 py-0.5" title="刪除">✕</button>
+                    </div>
+                  </div>
+                  <p v-if="rules.length === 0" class="text-center py-4 text-slate-400">目前尚無下架標準。</p>
+                </div>
+              </div>
+            </div>
+
           </section>
 <!-- ==================== 頁籤 3：門市排班出勤中心 ==================== -->
           <section v-if="currentTab === 'roster'" class="space-y-4">
             
-            <!-- 【管理職專用面板】：店經理、副理、值班經理、時薪值班可見 -->
+            <!-- 【管理職專用面板】 -->
             <div v-if="isDutyOrAbove" class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3 overflow-hidden">
               <div class="flex justify-between items-center">
                 <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
@@ -756,8 +847,8 @@
                   <button @click="openBlackoutModal" class="px-2 py-1 bg-rose-700 hover:bg-rose-600 text-white rounded-lg text-xs font-bold shadow-sm transition active:scale-95">
                     🚫 設定禁休
                   </button>
-                  <button @click="clearScheduledRoster" class="px-2 py-1 bg-slate-200 hover:bg-rose-100 text-slate-700 hover:text-rose-700 dark:bg-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold transition active:scale-95" title="清空目前所選週期的預排班表">
-                    🗑️ 清除本週預排
+                  <button @click="clearScheduledRoster" class="px-2 py-1 bg-slate-200 hover:bg-rose-100 text-slate-700 hover:text-rose-700 dark:bg-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold transition active:scale-95">
+                    🗑️ 清除預排
                   </button>
                 </div>
               </div>
@@ -770,7 +861,7 @@
                     @click="setNextWeekRange" 
                     type="button" 
                     class="text-[10px] px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded font-medium">
-                    ⚡ 選取標準 7 天
+                    ⚡ 選取 7 天
                   </button>
                 </div>
 
@@ -793,23 +884,20 @@
                   </div>
                 </div>
 
-                <!-- 🌟 本週早晚班值班主管指定選單 (支援強制鎖定 + 歷史兩週早晚輪替提示) 🌟 -->
+                <!-- 本週指定值班主管 -->
                 <div class="p-3 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-600 space-y-2 text-xs">
                   <div class="flex items-center justify-between">
-                    <span class="font-bold text-slate-800 dark:text-slate-200">🎯 本週指定值班主管 (強制鎖定班別)</span>
+                    <span class="font-bold text-slate-800 dark:text-slate-200">🎯 本週指定值班主管</span>
                     <button 
                       type="button"
                       @click="autoSelectRotatedManagers"
                       class="text-[10px] px-2 py-0.5 bg-amber-100 hover:bg-amber-200 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 rounded-full font-bold border border-amber-300 dark:border-amber-800 transition active:scale-95">
-                      🔄 依兩週輪替自動帶入
+                      🔄 自動帶入輪替
                     </button>
                   </div>
-                  <p class="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                    💡 勾選後系統將<b>強制鎖定</b>該主管本週專屬負責早班或晚班（絕不混排）；若未勾選則由系統依「前兩週歷史班表」自動執行早晚輪替。
-                  </p>
                   <div class="grid grid-cols-2 gap-2 pt-0.5">
                     <div>
-                      <span class="text-[10px] text-amber-700 dark:text-amber-400 font-bold block mb-1">☀️ 指定早班值班 (06:30)</span>
+                      <span class="text-[10px] text-amber-700 dark:text-amber-400 font-bold block mb-1">☀️ 早班值班</span>
                       <div class="space-y-1.5 max-h-32 overflow-y-auto border rounded-lg p-1.5 bg-white dark:bg-slate-800">
                         <label v-for="m in allDutyStaff" :key="'open_'+(m.id||m._key)" class="flex flex-col gap-0.5 text-[11px] cursor-pointer p-1 rounded hover:bg-amber-50/60 dark:hover:bg-slate-700/50">
                           <div class="flex items-center gap-1.5">
@@ -821,7 +909,7 @@
                       </div>
                     </div>
                     <div>
-                      <span class="text-[10px] text-indigo-700 dark:text-indigo-400 font-bold block mb-1">🌙 指定晚班值班 (14:00)</span>
+                      <span class="text-[10px] text-indigo-700 dark:text-indigo-400 font-bold block mb-1">🌙 晚班值班</span>
                       <div class="space-y-1.5 max-h-32 overflow-y-auto border rounded-lg p-1.5 bg-white dark:bg-slate-800">
                         <label v-for="m in allDutyStaff" :key="'close_'+(m.id||m._key)" class="flex flex-col gap-0.5 text-[11px] cursor-pointer p-1 rounded hover:bg-indigo-50/60 dark:hover:bg-slate-700/50">
                           <div class="flex items-center gap-1.5">
@@ -844,7 +932,7 @@
                     class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 disabled:bg-slate-400 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
                     <span v-if="isAiGeneratingRoster" class="animate-spin">🔄</span>
                     <span v-else>🤖</span>
-                    <span>{{ isAiGeneratingRoster ? 'AI 正在串聯歷史班表與計算全天平衡中...' : '執行 AI 智慧預排 (早中固定08:00 + 下午動態補位)' }}</span>
+                    <span>{{ isAiGeneratingRoster ? 'AI 預排計算中...' : '執行 AI 智慧預排' }}</span>
                   </button>
                 </div>
 
@@ -966,6 +1054,68 @@
               </div>
             </div>
 
+            <!-- 🔄 新增營運工具：班次互調／代班媒合板 -->
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
+              <div class="flex justify-between items-center">
+                <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <span>🔄</span> 班次互調與代班媒合
+                </h3>
+                <button @click="showSwapForm = !showSwapForm" class="text-[10px] font-bold px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-full border border-emerald-200 dark:border-emerald-800">
+                  {{ showSwapForm ? '收起表單' : '+ 發布換班需求' }}
+                </button>
+              </div>
+
+              <form v-if="showSwapForm" @submit.prevent="submitShiftSwap" class="p-3 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-600 space-y-2 text-xs">
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5">日期</label>
+                    <input v-model="shiftSwapForm.date" type="date" required class="w-full px-2 py-1.5 rounded-xl border bg-white dark:bg-slate-800 dark:text-white text-xs">
+                  </div>
+                  <div>
+                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5">原班別時段</label>
+                    <input v-model="shiftSwapForm.shiftTime" type="text" required placeholder="例：14:00-22:30" class="w-full px-2 py-1.5 rounded-xl border bg-white dark:bg-slate-800 dark:text-white text-xs">
+                  </div>
+                </div>
+                <div>
+                  <label class="text-[10px] text-slate-500 font-bold block mb-0.5">需求說明</label>
+                  <input v-model="shiftSwapForm.reason" type="text" required placeholder="例：徵求代班 或 與週五早班互調" class="w-full px-2.5 py-1.5 rounded-xl border bg-white dark:bg-slate-800 dark:text-white text-xs">
+                </div>
+                <button type="submit" class="w-full py-2 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition active:scale-95">
+                  張貼至媒合板
+                </button>
+              </form>
+
+              <div v-if="shiftSwapsList.length > 0" class="space-y-2 max-h-48 overflow-y-auto">
+                <div v-for="sw in shiftSwapsList" :key="sw.id" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 text-xs flex justify-between items-center gap-2">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="font-bold text-slate-900 dark:text-white">{{ sw.requesterName }}</span>
+                      <span class="px-1.5 py-0.2 bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 rounded text-[10px] font-mono font-bold">{{ sw.date }} ({{ sw.shiftTime }})</span>
+                    </div>
+                    <div class="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">{{ sw.reason }}</div>
+                    <div v-if="sw.helperName" class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold mt-0.5">
+                      🤝 已由 {{ sw.helperName }} 認領支援（請告知值班主管確認）
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1 flex-shrink-0">
+                    <button 
+                      v-if="!sw.helperName && sw.requesterId !== (currentPartner?.id || currentPartner?._key)" 
+                      @click="acceptShiftSwap(sw)" 
+                      class="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-[10px] font-bold active:scale-95 transition">
+                      我可支援
+                    </button>
+                    <button 
+                      v-if="isDutyOrAbove || sw.requesterId === (currentPartner?.id || currentPartner?._key)" 
+                      @click="deleteShiftSwap(sw.id)" 
+                      class="text-slate-400 hover:text-rose-500 text-xs px-1.5">
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <p v-else class="text-xs text-slate-400 py-2 text-center">目前無換班或代班需求。</p>
+            </div>
+
             <!-- 夥伴名冊（僅管理職可見） -->
             <div v-if="isDutyOrAbove" class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
               <div>
@@ -1016,7 +1166,7 @@
           <!-- ==================== 頁籤 4：【其他】 ==================== -->
           <section v-if="currentTab === 'other'" class="space-y-4">
             
-            <!-- 子頁籤選單 -->
+            <!-- 子頁籤選單 (隱藏滾動條) -->
             <div class="flex gap-1.5 overflow-x-auto pb-1 text-xs font-bold no-scrollbar">
               <button @click="otherSubTab = 'academy'" :class="otherSubTab === 'academy' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
                 🎓 黑圍裙課程
@@ -1035,15 +1185,15 @@
               </button>
             </div>
 
-            <!-- CA 100~300 精編講義 (內含 AI 重點整理與外部課程跳轉連結) -->
+            <!-- CA 100~300 精編講義 -->
             <div v-if="otherSubTab === 'academy'" class="space-y-3">
               <div class="bg-gradient-to-r from-zinc-950 via-neutral-900 to-zinc-950 text-amber-100 p-4 rounded-2xl shadow-sm space-y-1.5 border border-amber-500/40">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-1.5">
                     <span class="text-xl">🎓</span>
-                    <h3 class="text-xs font-black tracking-wider text-amber-300">星巴克黑圍裙大師認證專用講義</h3>
+                    <h3 class="text-xs font-black tracking-wider text-amber-300">星巴克黑圍裙大師認證講義</h3>
                   </div>
-                  <span class="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-bold border border-amber-400/30">AI 導讀與連結</span>
+                  <span class="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-bold border border-amber-400/30">核心指南</span>
                 </div>
               </div>
 
@@ -1063,18 +1213,17 @@
                     :disabled="isGeneratingSummary === 'CA100'" 
                     class="flex-1 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-bold border border-emerald-200 dark:border-emerald-800 flex items-center justify-center gap-1 transition active:scale-95">
                     <span v-if="isGeneratingSummary === 'CA100'" class="animate-spin">🔄</span>
-                    <span>🤖 {{ isGeneratingSummary === 'CA100' ? 'AI 整理中...' : 'AI 整理重點與考題' }}</span>
+                    <span>🤖 {{ isGeneratingSummary === 'CA100' ? '整理中...' : 'AI 重點整理' }}</span>
                   </button>
                   <a 
                     href="https://www.starbucksglobalacademy.com/coffee-academy/" 
                     target="_blank" 
                     class="flex-1 py-2 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/50 text-amber-900 dark:text-amber-300 rounded-xl text-xs font-bold border border-amber-200 dark:border-amber-800 flex items-center justify-center gap-1 transition active:scale-95">
-                    <span>🔗</span> 前往 CA 100 線上課程 ↗
+                    <span>🔗</span> 前往線上課程 ↗
                   </a>
                 </div>
 
                 <div v-if="courseSummaries['CA100']" class="p-3 bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-xl text-xs text-emerald-950 dark:text-emerald-200 whitespace-pre-line leading-relaxed">
-                  <div class="font-bold text-emerald-800 dark:text-emerald-300 mb-1">✨ AI 大師重點導讀 (CA 100)：</div>
                   {{ courseSummaries['CA100'] }}
                 </div>
 
@@ -1108,7 +1257,7 @@
                 <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
                   <div class="flex items-center gap-2">
                     <span class="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 text-xs font-black border border-emerald-300 dark:border-emerald-800">CA 200</span>
-                    <h4 class="font-black text-slate-900 dark:text-white text-sm">產區風土、處理法與永續採購</h4>
+                    <h4 class="font-black text-slate-900 dark:text-white text-sm">產區風土與處理法</h4>
                   </div>
                   <span class="text-[10px] font-bold text-slate-400">Origins & Processing</span>
                 </div>
@@ -1119,18 +1268,17 @@
                     :disabled="isGeneratingSummary === 'CA200'" 
                     class="flex-1 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-bold border border-emerald-200 dark:border-emerald-800 flex items-center justify-center gap-1 transition active:scale-95">
                     <span v-if="isGeneratingSummary === 'CA200'" class="animate-spin">🔄</span>
-                    <span>🤖 {{ isGeneratingSummary === 'CA200' ? 'AI 整理中...' : 'AI 整理重點與考題' }}</span>
+                    <span>🤖 {{ isGeneratingSummary === 'CA200' ? '整理中...' : 'AI 重點整理' }}</span>
                   </button>
                   <a 
                     href="https://www.starbucksglobalacademy.com/coffee-academy/" 
                     target="_blank" 
                     class="flex-1 py-2 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/50 text-amber-900 dark:text-amber-300 rounded-xl text-xs font-bold border border-amber-200 dark:border-amber-800 flex items-center justify-center gap-1 transition active:scale-95">
-                    <span>🔗</span> 前往 CA 200 線上課程 ↗
+                    <span>🔗</span> 前往線上課程 ↗
                   </a>
                 </div>
 
                 <div v-if="courseSummaries['CA200']" class="p-3 bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-xl text-xs text-emerald-950 dark:text-emerald-200 whitespace-pre-line leading-relaxed">
-                  <div class="font-bold text-emerald-800 dark:text-emerald-300 mb-1">✨ AI 大師重點導讀 (CA 200)：</div>
                   {{ courseSummaries['CA200'] }}
                 </div>
 
@@ -1155,7 +1303,7 @@
                 <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
                   <div class="flex items-center gap-2">
                     <span class="px-2 py-0.5 rounded bg-zinc-950 text-amber-300 text-xs font-black border border-amber-400">CA 300</span>
-                    <h4 class="font-black text-slate-900 dark:text-white text-sm">烘焙工藝、拼配藝術與手沖進階</h4>
+                    <h4 class="font-black text-slate-900 dark:text-white text-sm">烘焙工藝與拼配藝術</h4>
                   </div>
                   <span class="text-[10px] font-bold text-amber-500">Roast & Craft</span>
                 </div>
@@ -1166,18 +1314,17 @@
                     :disabled="isGeneratingSummary === 'CA300'" 
                     class="flex-1 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-bold border border-emerald-200 dark:border-emerald-800 flex items-center justify-center gap-1 transition active:scale-95">
                     <span v-if="isGeneratingSummary === 'CA300'" class="animate-spin">🔄</span>
-                    <span>🤖 {{ isGeneratingSummary === 'CA300' ? 'AI 整理中...' : 'AI 整理重點與考題' }}</span>
+                    <span>🤖 {{ isGeneratingSummary === 'CA300' ? '整理中...' : 'AI 重點整理' }}</span>
                   </button>
                   <a 
                     href="https://www.starbucksglobalacademy.com/coffee-academy/" 
                     target="_blank" 
                     class="flex-1 py-2 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/50 text-amber-900 dark:text-amber-300 rounded-xl text-xs font-bold border border-amber-200 dark:border-amber-800 flex items-center justify-center gap-1 transition active:scale-95">
-                    <span>🔗</span> 前往 CA 300 線上課程 ↗
+                    <span>🔗</span> 前往線上課程 ↗
                   </a>
                 </div>
 
                 <div v-if="courseSummaries['CA300']" class="p-3 bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-xl text-xs text-emerald-950 dark:text-emerald-200 whitespace-pre-line leading-relaxed">
-                  <div class="font-bold text-emerald-800 dark:text-emerald-300 mb-1">✨ AI 大師重點導讀 (CA 300)：</div>
                   {{ courseSummaries['CA300'] }}
                 </div>
 
@@ -1187,15 +1334,15 @@
               </div>
             </div>
 
-            <!-- 🌟 沖煮秘笈與台灣星巴克官方全系列咖啡豆寶典 (含季節豆+常態豆+點擊跳轉官網) 🌟 -->
+            <!-- 沖煮秘笈與台灣星巴克官方咖啡豆寶典 -->
             <div v-if="otherSubTab === 'coffee'" class="space-y-4">
               <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
                 <div class="flex justify-between items-center">
                   <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <span>📖</span> 門市沖煮標準參數
+                    <span>📖</span> 沖煮標準參數
                   </h3>
                   <a href="https://www.starbucks.com.tw/coffee/beans/index.jspx" target="_blank" class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline">
-                    台灣星巴克咖啡豆總覽 ↗
+                    官方咖啡豆總覽 ↗
                   </a>
                 </div>
                 <div class="grid grid-cols-2 gap-2 text-xs">
@@ -1226,22 +1373,22 @@
 
                 <div class="flex gap-1.5 overflow-x-auto pb-0.5 text-[10px] font-bold no-scrollbar">
                   <button @click="coffeeRoastFilter = 'all'" :class="coffeeRoastFilter === 'all' ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'" class="px-2.5 py-0.5 rounded-lg whitespace-nowrap">全部烘焙度</button>
-                  <button @click="coffeeRoastFilter = '黃金烘焙'" :class="coffeeRoastFilter === '黃金烘焙' ? 'bg-amber-400 text-black' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'" class="px-2.5 py-0.5 rounded-lg whitespace-nowrap">黃金烘焙 (Blonde)</button>
-                  <button @click="coffeeRoastFilter = '中度烘焙'" :class="coffeeRoastFilter === '中度烘焙' ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'" class="px-2.5 py-0.5 rounded-lg whitespace-nowrap">中度烘焙 (Medium)</button>
-                  <button @click="coffeeRoastFilter = '深度烘焙'" :class="coffeeRoastFilter === '深度烘焙' ? 'bg-stone-800 text-amber-200' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'" class="px-2.5 py-0.5 rounded-lg whitespace-nowrap">深度烘焙 (Dark)</button>
+                  <button @click="coffeeRoastFilter = '黃金烘焙'" :class="coffeeRoastFilter === '黃金烘焙' ? 'bg-amber-400 text-black' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'" class="px-2.5 py-0.5 rounded-lg whitespace-nowrap">黃金烘焙</button>
+                  <button @click="coffeeRoastFilter = '中度烘焙'" :class="coffeeRoastFilter === '中度烘焙' ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'" class="px-2.5 py-0.5 rounded-lg whitespace-nowrap">中度烘焙</button>
+                  <button @click="coffeeRoastFilter = '深度烘焙'" :class="coffeeRoastFilter === '深度烘焙' ? 'bg-stone-800 text-amber-200' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'" class="px-2.5 py-0.5 rounded-lg whitespace-nowrap">深度烘焙</button>
                 </div>
 
                 <div class="relative">
                   <input 
                     v-model="coffeeSearchQuery" 
                     type="text" 
-                    placeholder="搜尋豆名、產區、處理法、風味或搭配食物..." 
+                    placeholder="搜尋豆名、產區、風味或搭配食物..." 
                     class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white"
                   >
                   <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
                 </div>
 
-                <!-- 點擊整張卡片直接跳轉至台灣星巴克官網對應頁面 -->
+                <!-- 點擊整張卡片直接跳轉至台灣星巴克官網 -->
                 <a 
                   v-for="bean in filteredCoffeeBeans" 
                   :key="bean.name" 
@@ -1269,18 +1416,17 @@
                     </span>
                   </div>
 
-                  <!-- 完整 7 大屬性展示 -->
                   <div class="grid grid-cols-2 gap-1.5 text-[11px] bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700">
                     <div><span class="text-slate-400">🌍 產區：</span><span class="font-bold text-slate-700 dark:text-slate-200">{{ bean.region }}</span></div>
                     <div><span class="text-slate-400">💧 處理法：</span><span class="font-bold text-slate-700 dark:text-slate-200">{{ bean.processing }}</span></div>
                     <div><span class="text-slate-400">🍋 酸度：</span><span class="font-bold text-amber-700 dark:text-amber-400">{{ bean.acidity }}</span></div>
                     <div><span class="text-slate-400">🧈 醇度：</span><span class="font-bold text-indigo-700 dark:text-indigo-400">{{ bean.body }}</span></div>
                     <div class="col-span-2 pt-0.5 border-t border-slate-200/60 dark:border-slate-800">
-                      <span class="text-slate-400">✨ 風味筆記：</span>
+                      <span class="text-slate-400">✨ 風味：</span>
                       <span class="font-bold text-emerald-800 dark:text-emerald-400">{{ bean.flavorNotes }}</span>
                     </div>
                     <div class="col-span-2">
-                      <span class="text-slate-400">🥐 適合搭配食物：</span>
+                      <span class="text-slate-400">🥐 搭配食物：</span>
                       <span class="font-bold text-slate-700 dark:text-slate-300">{{ bean.foodPairing }}</span>
                     </div>
                   </div>
@@ -1290,7 +1436,7 @@
                   </p>
 
                   <div class="flex justify-end items-center pt-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 group-hover:underline">
-                    <span>🔗 點擊前往台灣星巴克官網查看詳情 ↗</span>
+                    <span>🔗 前往官網查看詳情 ↗</span>
                   </div>
                 </a>
               </div>
@@ -1346,7 +1492,7 @@
                   </div>
                   <div>
                     <label class="text-[10px] text-slate-500 font-bold block mb-0.5">風味與心得</label>
-                    <textarea v-model="tastingForm.notes" rows="2" placeholder="分享品鑑心得與的食物搭配體驗..." class="w-full px-2.5 py-1.5 text-xs rounded-xl border dark:bg-slate-700 dark:text-white"></textarea>
+                    <textarea v-model="tastingForm.notes" rows="2" placeholder="分享品鑑心得..." class="w-full px-2.5 py-1.5 text-xs rounded-xl border dark:bg-slate-700 dark:text-white"></textarea>
                   </div>
 
                   <button 
@@ -1354,7 +1500,7 @@
                     :disabled="isAiEvaluatingTasting" 
                     class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 disabled:bg-slate-300 transition flex items-center justify-center gap-1.5">
                     <span v-if="isAiEvaluatingTasting" class="animate-spin">🔄</span>
-                    <span>{{ isAiEvaluatingTasting ? 'AI 大師分析風味中...' : '發布品評並請 AI 點評' }}</span>
+                    <span>{{ isAiEvaluatingTasting ? 'AI 分析中...' : '發布品評' }}</span>
                   </button>
                 </div>
               </div>
@@ -1376,7 +1522,7 @@
                         <button 
                           v-if="isDutyOrAbove || item.authorStaffId === currentPartner?.id || item.authorStaffId === currentPartner?._key" 
                           @click="deleteTastingNote(item.id || item._key)" 
-                          class="text-slate-300 hover:text-rose-500 text-xs px-1" title="刪除品評">
+                          class="text-slate-300 hover:text-rose-500 text-xs px-1" title="刪除">
                           🗑️
                         </button>
                       </div>
@@ -1406,12 +1552,12 @@
               </div>
             </div>
 
-            <!-- 拉花擂台賽 -->
+            <!-- 拉花擂台賽 (移除冗贅括號說明，照片可點擊放大檢視) -->
             <div v-if="otherSubTab === 'latteArt'" class="space-y-4">
               <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
                 <div class="flex justify-between items-center">
                   <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <span>📸</span> 上傳拉花作品 (AI 視覺真實審查)
+                    <span>📸</span> 上傳拉花作品
                   </h3>
                 </div>
 
@@ -1452,7 +1598,7 @@
                     :disabled="isAiEvaluating || !latteForm.photoUrl" 
                     class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 disabled:bg-slate-300 transition flex items-center justify-center gap-1.5">
                     <span v-if="isAiEvaluating" class="animate-spin">🔄</span>
-                    <span>{{ isAiEvaluating ? 'AI 正在分析奶泡綿密度、對稱度與圖形...' : '提交作品並執行 AI 視覺評分' }}</span>
+                    <span>{{ isAiEvaluating ? 'AI 評分中...' : '提交作品' }}</span>
                   </button>
                 </div>
               </div>
@@ -1461,7 +1607,7 @@
               <div class="space-y-3">
                 <div class="flex justify-between items-center">
                   <h4 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <span>🔥</span> 本週參賽作品 (共 {{ weeklyLattePosts.length }} 幅)
+                    <span>🔥</span> 本週參賽作品 ({{ weeklyLattePosts.length }})
                   </h4>
                 </div>
 
@@ -1491,8 +1637,11 @@
                       </div>
                     </div>
 
-                    <div class="rounded-xl overflow-hidden bg-black/5 border border-slate-100 dark:border-slate-700 max-h-64 flex items-center justify-center">
+                    <div 
+                      @click="openPhotoLightbox(post.photoUrl, post.pattern + ' - ' + getStaffName(post.authorStaffId))"
+                      class="rounded-xl overflow-hidden bg-black/5 border border-slate-100 dark:border-slate-700 max-h-64 flex items-center justify-center cursor-zoom-in relative group">
                       <img :src="post.photoUrl" class="w-full object-cover">
+                      <span class="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition">🔍 點擊放大</span>
                     </div>
 
                     <div class="bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl p-2.5 space-y-1 text-xs">
@@ -1566,7 +1715,7 @@
               <div class="mt-6 space-y-2 pt-4 border-t border-slate-200 dark:border-slate-700">
                 <div class="flex justify-between items-center">
                   <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <span>📁</span> 歷屆拉花歷史集錦 ({{ latteArtArchives.length }} 個展期)
+                    <span>📁</span> 歷屆拉花歷史集錦 ({{ latteArtArchives.length }})
                   </h4>
                 </div>
 
@@ -1592,7 +1741,10 @@
                   </div>
 
                   <div v-if="arch.expanded" class="p-3 bg-slate-50/70 dark:bg-slate-900/60 grid grid-cols-2 sm:grid-cols-3 gap-2.5 border-t">
-                    <div v-for="work in arch.works" :key="work.id || work.key" class="rounded-xl overflow-hidden border bg-white dark:bg-slate-800 shadow-sm flex flex-col">
+                    <div 
+                      v-for="work in arch.works" :key="work.id || work.key" 
+                      @click="openPhotoLightbox(work.photoUrl, work.pattern + ' - ' + (work.partnerName || getStaffName(work.authorStaffId)))"
+                      class="rounded-xl overflow-hidden border bg-white dark:bg-slate-800 shadow-sm flex flex-col cursor-zoom-in">
                       <div class="relative w-full pt-[100%] bg-slate-100">
                         <img :src="work.photoUrl" class="absolute inset-0 w-full h-full object-cover">
                         <div class="absolute top-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
@@ -1616,9 +1768,9 @@
                 <div class="flex justify-between items-center">
                   <div>
                     <h3 class="font-bold text-sm flex items-center gap-1.5">
-                      <span>☕</span> 永安咖啡小學堂 (本週測驗)
+                      <span>☕</span> 永安咖啡小學堂
                     </h3>
-                    <p class="text-[11px] text-emerald-200 mt-0.5">每週一隨機更新 5 題</p>
+                    <p class="text-[11px] text-emerald-200 mt-0.5">每週一更新 5 題</p>
                   </div>
                   <span class="text-xs px-2.5 py-1 bg-white/20 rounded-full font-bold">
                     {{ currentWeekQuizId }}
@@ -1711,7 +1863,7 @@
 
           </section>
 
-          <!-- ==================== 頁籤 5：【關於】 ==================== -->
+          <!-- ==================== 頁籤 5：【關於】 (相簿支援資料夾收合、多圖上傳、點擊放大與下載) ==================== -->
           <section v-if="currentTab === 'about'" class="space-y-4">
             <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
               <div class="flex justify-between items-start">
@@ -1733,37 +1885,113 @@
               </div>
             </div>
 
-            <!-- 門市相簿庫 -->
-            <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+            <!-- 📷 門市相簿庫 (支援相簿收合展開、一次上傳多張照片、放大檢視與下載) -->
+            <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3.5">
               <div class="flex justify-between items-center">
                 <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <span>📷</span> 門市相簿
                 </h3>
-                <button @click="openCreateAlbumModal" class="text-[10px] font-bold px-2.5 py-1 bg-emerald-800 text-white rounded-lg">
+                <button @click="openCreateAlbumModal" class="text-[10px] font-bold px-2.5 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg active:scale-95 transition">
                   + 建立相簿
                 </button>
               </div>
 
-              <div class="flex gap-1.5 overflow-x-auto pb-1 text-[11px] items-center">
-                <button @click="selectedAlbum = 'all'" :class="selectedAlbum === 'all' ? 'bg-emerald-800 text-white font-bold' : 'bg-slate-100 dark:bg-slate-700 text-slate-600'" class="px-2.5 py-1 rounded-lg whitespace-nowrap">全部</button>
-                <div v-for="alb in customAlbums" :key="alb" class="flex items-center rounded-lg overflow-hidden flex-shrink-0" :class="selectedAlbum === alb ? 'bg-emerald-800 text-white font-bold' : 'bg-slate-100 dark:bg-slate-700 text-slate-600'">
-                  <button @click="selectedAlbum = alb" class="px-2.5 py-1 whitespace-nowrap">{{ alb }}</button>
-                  <button v-if="isDutyOrAbove" @click.stop="deleteAlbum(alb)" class="pr-2 pl-0.5 py-1 hover:text-red-400 text-xs">✕</button>
+              <!-- 選擇上傳目標相簿 + 支援一次上傳多張照片 -->
+              <div class="p-3 bg-slate-50 dark:bg-slate-700/40 rounded-2xl border border-slate-200 dark:border-slate-600 space-y-2 text-xs">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-[11px] font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap">上傳至相簿：</span>
+                  <select v-model="selectedAlbum" class="flex-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white text-xs font-bold">
+                    <option value="一般門市相簿">一般門市相簿</option>
+                    <option v-for="alb in customAlbums" :key="alb" :value="alb">{{ alb }}</option>
+                  </select>
                 </div>
+
+                <label class="block border-2 border-dashed border-emerald-600/70 bg-emerald-50/40 dark:bg-emerald-950/20 rounded-xl p-3 text-center cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition active:scale-[0.99]">
+                  <input type="file" accept="image/*" multiple @change="handleStorePhotoUpload" class="hidden" :disabled="isUploadingPhotos">
+                  <div v-if="isUploadingPhotos" class="text-xs text-emerald-800 dark:text-emerald-300 font-bold flex items-center justify-center gap-1.5">
+                    <span class="animate-spin">🔄</span>
+                    <span>正在上傳照片 ({{ photoUploadProgress }})...</span>
+                  </div>
+                  <div v-else class="space-y-0.5">
+                    <div class="text-xs text-emerald-900 dark:text-emerald-300 font-bold">📤 點擊選取多張照片上傳</div>
+                    <div class="text-[10px] text-slate-400">支援一次框選多張照片批次匯入【{{ selectedAlbum }}】</div>
+                  </div>
+                </label>
               </div>
 
-              <label class="block border-2 border-dashed rounded-xl p-3 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
-                <input type="file" accept="image/*" @change="handleStorePhotoUpload" class="hidden">
-                <div class="text-[11px] text-slate-500 font-bold">上傳照片至【{{ selectedAlbum === 'all' ? '一般門市相簿' : selectedAlbum }}】</div>
-              </label>
+              <!-- 相簿資料夾列表 (平時收合，點擊該相簿才展開照片) -->
+              <div v-if="groupedAlbumFolders.length > 0" class="space-y-2.5">
+                <div 
+                  v-for="folder in groupedAlbumFolders" :key="folder.name" 
+                  class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 overflow-hidden transition">
+                  
+                  <!-- 相簿資料夾標題列 (點擊展開/收合) -->
+                  <div 
+                    @click="toggleAlbumFolder(folder.name)" 
+                    class="p-3 flex justify-between items-center cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-800 transition select-none">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div class="w-11 h-11 rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 flex items-center justify-center flex-shrink-0">
+                        <img v-if="folder.coverUrl" :src="folder.coverUrl" class="w-full h-full object-cover">
+                        <span v-else class="text-xl">📁</span>
+                      </div>
+                      <div class="min-w-0">
+                        <div class="text-xs font-black text-slate-900 dark:text-white truncate flex items-center gap-1.5">
+                          <span>{{ folder.name }}</span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-0.5">
+                          共 {{ folder.photos.length }} 張照片
+                        </div>
+                      </div>
+                    </div>
 
-              <div v-if="filteredStorePhotos.length > 0" class="grid grid-cols-2 gap-2 pt-1">
-                <div v-for="p in filteredStorePhotos" :key="p.id" class="rounded-xl overflow-hidden border relative group">
-                  <img :src="p.url" class="w-full h-28 object-cover">
-                  <button @click="deleteStorePhoto(p.id)" class="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 text-[10px] flex items-center justify-center">✕</button>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                      <button 
+                        v-if="isDutyOrAbove && folder.name !== '一般門市相簿'" 
+                        @click.stop="deleteAlbum(folder.name)" 
+                        class="text-slate-400 hover:text-rose-500 text-xs px-1.5 py-0.5" title="刪除相簿">
+                        🗑️
+                      </button>
+                      <span class="text-[11px] font-bold text-emerald-800 dark:text-emerald-400 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                        {{ isAlbumExpanded(folder.name) ? '▲ 收合' : '▼ 展開' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- 展開後的相簿照片網格 -->
+                  <div v-if="isAlbumExpanded(folder.name)" class="p-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
+                    <div v-if="folder.photos.length > 0" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      <div 
+                        v-for="(p, pIdx) in folder.photos" :key="p.id" 
+                        class="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 relative group bg-slate-100 dark:bg-slate-900">
+                        <img 
+                          :src="p.url" 
+                          @click="openPhotoLightbox(p.url, folder.name + ' (' + (p.dateStr || '') + ')', folder.photos, pIdx)"
+                          class="w-full h-28 object-cover cursor-zoom-in transition group-hover:scale-105"
+                        >
+                        <!-- 右上角操作按鈕：下載與刪除 -->
+                        <div class="absolute top-1.5 right-1.5 flex items-center gap-1">
+                          <button 
+                            @click.stop="downloadPhoto(p.url, folder.name + '_' + p.id + '.jpg')" 
+                            class="bg-black/65 hover:bg-emerald-700 text-white rounded-full w-6 h-6 text-[11px] flex items-center justify-center shadow transition" title="下載照片">
+                            ⬇️
+                          </button>
+                          <button 
+                            @click.stop="deleteStorePhoto(p.id)" 
+                            class="bg-black/65 hover:bg-rose-600 text-white rounded-full w-6 h-6 text-[10px] flex items-center justify-center shadow transition" title="刪除照片">
+                            ✕
+                          </button>
+                        </div>
+                        <div class="absolute bottom-1 left-1.5 bg-black/50 text-white text-[9px] px-1.5 py-0.2 rounded pointer-events-none">
+                          {{ p.dateStr }}
+                        </div>
+                      </div>
+                    </div>
+                    <p v-else class="text-xs text-slate-400 py-4 text-center">此相簿尚無照片。</p>
+                  </div>
+
                 </div>
               </div>
-              <p v-else class="text-xs text-slate-400 py-4 text-center">尚無相片。</p>
+              <p v-else class="text-xs text-slate-400 py-4 text-center">目前尚無相片。</p>
             </div>
 
             <!-- Bravo 感謝小卡 -->
@@ -1857,25 +2085,66 @@
 
   <!-- ==================== 模態視窗群 (Modals) ==================== -->
 
+  <!-- 🔍 全螢幕相片放大檢視與下載 Lightbox Modal -->
+  <transition name="modal">
+    <div v-if="lightboxModal.show" @click.self="lightboxModal.show = false" class="fixed inset-0 bg-black/90 z-[100000] flex flex-col items-center justify-center p-4 select-none">
+      <div class="w-full max-w-lg flex justify-between items-center text-white mb-3 px-1">
+        <div class="text-xs font-bold truncate pr-4">{{ lightboxModal.title }}</div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <button 
+            @click="downloadPhoto(lightboxModal.url, (lightboxModal.title || '門市相片') + '.jpg')" 
+            class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-full text-xs font-bold flex items-center gap-1 shadow active:scale-95 transition">
+            <span>⬇️</span> 下載照片
+          </button>
+          <button 
+            @click="lightboxModal.show = false" 
+            class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center text-sm font-bold">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <div class="relative w-full max-w-lg max-h-[75vh] flex items-center justify-center">
+        <button 
+          v-if="lightboxModal.list && lightboxModal.list.length > 1" 
+          @click.stop="stepLightboxPhoto(-1)" 
+          class="absolute left-2 z-10 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center text-lg font-bold shadow">
+          ‹
+        </button>
+
+        <img :src="lightboxModal.url" class="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/10">
+
+        <button 
+          v-if="lightboxModal.list && lightboxModal.list.length > 1" 
+          @click.stop="stepLightboxPhoto(1)" 
+          class="absolute right-2 z-10 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center text-lg font-bold shadow">
+          ›
+        </button>
+      </div>
+
+      <div v-if="lightboxModal.list && lightboxModal.list.length > 1" class="text-[11px] text-white/70 mt-3 font-mono">
+        {{ lightboxModal.index + 1 }} / {{ lightboxModal.list.length }}
+      </div>
+    </div>
+  </transition>
+
   <!-- 🤖 AI 預排班表結果確認 Modal -->
   <transition name="modal">
     <div v-if="aiRosterModal.show" class="fixed inset-0 bg-black/60 z-[99999] flex items-center justify-center p-3">
       <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg p-5 shadow-2xl space-y-3.5 max-h-[90vh] flex flex-col border border-slate-200 dark:border-slate-700">
         <div class="flex justify-between items-center border-b dark:border-slate-700 pb-2 flex-shrink-0">
           <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
-            <span>🤖</span> AI 智慧預排結果與全天平衡分析
+            <span>🤖</span> AI 智慧預排結果
           </h3>
           <button @click="aiRosterModal.show = false" class="text-slate-400 text-sm">✕</button>
         </div>
 
         <div class="flex-1 overflow-y-auto space-y-3 pr-1 text-xs">
-          <!-- AI 排班分析摘要 -->
           <div v-if="aiRosterModal.aiAnalysis" class="p-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-300 dark:border-emerald-800 rounded-2xl space-y-1">
-            <div class="font-bold text-emerald-900 dark:text-emerald-300">🧠 AI 排班審查與歷史串聯報告：</div>
+            <div class="font-bold text-emerald-900 dark:text-emerald-300">🧠 AI 排班審查報告：</div>
             <p class="text-[11px] text-emerald-800 dark:text-emerald-200 whitespace-pre-line leading-relaxed">{{ aiRosterModal.aiAnalysis }}</p>
           </div>
 
-          <!-- 缺額警訊 -->
           <div v-if="aiRosterModal.warnings && aiRosterModal.warnings.length > 0" class="p-3 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 rounded-2xl space-y-1">
             <div class="font-bold text-rose-700 dark:text-rose-300">⚠️ 排班注意事項：</div>
             <ul class="list-disc pl-4 text-[11px] text-rose-600 dark:text-rose-400 space-y-0.5">
@@ -1883,7 +2152,6 @@
             </ul>
           </div>
 
-          <!-- 各日預排結果卡片 -->
           <div v-for="day in aiRosterModal.result" :key="day.dateStr" class="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border space-y-1.5">
             <div class="flex justify-between items-center font-bold text-emerald-900 dark:text-emerald-300 border-b pb-1 flex-wrap gap-1">
               <span>📅 {{ day.dateStr }} ({{ day.weekday }}) {{ day.isWeekend ? '假日' : '平日' }}</span>
@@ -2010,7 +2278,7 @@
     </div>
   </transition>
 
-  <!-- 個人設定 Modal (含 Gemini API Key 自動模型探測與測試) -->
+  <!-- 個人設定 Modal -->
   <transition name="modal">
     <div v-if="settingsModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
       <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-4 border">
@@ -2028,17 +2296,17 @@
           </div>
 
           <div v-if="isSuperTan" class="space-y-1.5 p-2.5 bg-teal-50/70 dark:bg-teal-950/40 rounded-xl border border-teal-200 dark:border-teal-800">
-            <label class="font-bold text-teal-900 dark:text-teal-300 block">🤖 Gemini API Key (全店雲端共享)</label>
-            <input v-model="settingsModal.geminiApiKey" type="password" placeholder="貼上 AI Studio Key (AIzaSy...)" class="w-full px-2 py-1.5 rounded-lg border font-mono text-[11px] dark:bg-slate-800 dark:text-white">
+            <label class="font-bold text-teal-900 dark:text-teal-300 block">🤖 Gemini API Key</label>
+            <input v-model="settingsModal.geminiApiKey" type="password" placeholder="貼上 AI Studio Key" class="w-full px-2 py-1.5 rounded-lg border font-mono text-[11px] dark:bg-slate-800 dark:text-white">
             <div class="grid grid-cols-2 gap-1.5 pt-1">
               <button @click="saveGeminiApiKey" class="py-1.5 bg-teal-700 hover:bg-teal-800 text-white font-bold rounded-lg transition active:scale-95">
-                💾 儲存並同步
+                💾 儲存同步
               </button>
               <button @click="testGeminiApiKey" :disabled="isTestingApiKey" class="py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg transition active:scale-95">
-                {{ isTestingApiKey ? '🔄 檢測中...' : '🔍 測試連線模型' }}
+                {{ isTestingApiKey ? '🔄 檢測中...' : '🔍 測試模型' }}
               </button>
             </div>
-            <div v-if="apiKeyTestResult" class="text-[10px] p-1.5 rounded bg-white/80 dark:bg-slate-900/70 text-teal-900 dark:text-teal-200 font-mono leading-snug">
+            <div v-if="apiKeyTestResult" class="text-[10px] p-1.5 rounded bg-white/80 dark:bg-slate-900/70 text-teal-900 dark:text-teal-200 font-mono leading-snug whitespace-pre-line">
               {{ apiKeyTestResult }}
             </div>
           </div>
@@ -2061,12 +2329,12 @@
     </div>
   </transition>
 
-  <!-- 手動新增下架標準 Modal -->
+  <!-- 手動新增/編輯下架標準 Modal -->
   <transition name="modal">
     <div v-if="addRuleModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
       <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3">
         <div class="flex justify-between items-center">
-          <h3 class="font-bold text-sm text-slate-900 dark:text-white">📋 新增標準</h3>
+          <h3 class="font-bold text-sm text-slate-900 dark:text-white">📋 {{ addRuleModal.isEdit ? '編輯下架標準' : '新增下架標準' }}</h3>
           <button @click="addRuleModal.show = false" class="text-slate-400 text-sm">✕</button>
         </div>
         <div class="space-y-2 text-xs">
@@ -2097,7 +2365,7 @@
         </div>
         <div class="space-y-2 text-xs">
           <label class="font-bold text-slate-600 dark:text-slate-300 block mb-0.5">相簿名稱</label>
-          <input v-model="createAlbumModal.name" placeholder="名稱" class="w-full border rounded-xl px-3 py-1.5 dark:bg-slate-700 dark:text-white">
+          <input v-model="createAlbumModal.name" placeholder="例：門市聚餐、檔期佈置" class="w-full border rounded-xl px-3 py-1.5 dark:bg-slate-700 dark:text-white">
         </div>
         <div class="pt-2 flex gap-2">
           <button @click="saveNewAlbum" class="flex-1 py-2 bg-emerald-800 text-white rounded-xl text-xs font-bold">建立</button>
@@ -2358,7 +2626,7 @@
     </div>
   </transition>
 
-  <!-- ==================== A4 直式單頁滿版列印表格 (David 固定呈現班表·絕不跳頁) ==================== -->
+  <!-- ==================== A4 直式單頁滿版列印表格 ==================== -->
   <div class="print-only-container bg-white text-black font-sans">
     
     <div class="print-page-single">
@@ -2410,7 +2678,6 @@
               <!-- 7 天日期格 -->
               <td v-for="d in targetRangeDates" :key="d.dateStr" class="relative align-middle p-0.5">
                 
-                <!-- 🌟 小天使 David：每週二、四、五、六、日固定呈現 08:30-17:30，一/三休息 🌟 -->
                 <template v-if="staff.role === '天使夥伴' || staff.nickname === 'David'">
                   <div v-if="isDavidWorkDay(d.dateStr)" class="leading-tight">
                     <div class="text-[9.5px] font-black text-slate-900">08:30-17:30</div>
@@ -2418,13 +2685,11 @@
                   <div v-else class="text-[9px] text-slate-400 font-medium">不配</div>
                 </template>
 
-                <!-- 一般夥伴畫假標記 -->
                 <template v-else-if="getVacationData(staff.id || staff._key, d.dateStr)">
                   <div class="text-black font-black text-lg leading-none">✕</div>
                   <div class="text-[9px] font-black text-slate-900 leading-tight">【{{ getVacationData(staff.id || staff._key, d.dateStr).type }}】</div>
                 </template>
 
-                <!-- 【AI 預排模式】列印 -->
                 <template v-else-if="printTargetMode === 'ai'">
                   <div v-if="getScheduledShiftText(staff, d.dateStr)" class="leading-tight">
                     <div v-if="isConsecutiveSixthDay(staff, d.dateStr)" class="text-[8.5px] font-black text-amber-800 bg-amber-100 px-0.5 rounded inline-block">
@@ -2437,7 +2702,6 @@
                   <div v-else class="text-[9px] text-slate-300">-</div>
                 </template>
 
-                <!-- 【空白班表模式】列印 -->
                 <template v-else>
                   <div v-if="getAvailabilityText(staff, d.dateStr)" class="text-[8.5px] font-bold text-slate-600 leading-snug">
                     {{ getAvailabilityText(staff, d.dateStr) }}
@@ -2495,7 +2759,6 @@ try {
   console.error("Firebase 初始化失敗：", e);
 }
 
-// 產生本地 YYYY-MM-DD 字串 (徹底解決 UTC 時區偏移導致歷史班表對不上的問題)
 const formatDateLocal = (dateObj) => {
   const y = dateObj.getFullYear();
   const m = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -2525,306 +2788,316 @@ const generateTimeSlots = () => {
 };
 const timeSlots = generateTimeSlots();
 
-// ==================== ☕ 台灣星巴克官網完整咖啡豆資料庫 (常態經典豆 + 季節限定豆 + 官方連結) ====================
-const starbucksCoreBeans = [
-  // 【黃金烘焙 Blonde Roast - 常態與季節】
+// ==================== ☕ 台灣星巴克官網真實獨立連結與官方資料 (our-coffees/product.jspx?id=XXX) ====================
+const initialStarbucksBeans = [
+  // 【黃金烘焙 Blonde Roast】
   {
-    name: "輕柳綜合咖啡豆",
+    id: "149",
+    name: "星巴克輕柳綜合咖啡豆",
     enName: "Starbucks® Willow Blend™",
+    matchKey: "輕柳",
     category: "常態經典豆",
     roast: "黃金烘焙",
-    region: "拉丁美洲、非洲",
+    region: "綜合產區 (拉丁美洲、東非)",
     processing: "水洗法",
+    acidity: "高",
+    body: "輕盈",
+    flavorNotes: "焦糖和檸檬皮",
+    foodPairing: "柑橘、檸檬塔、原味可頌、輕乳酪蛋糕",
+    description: "明亮、清爽的口感，同時展現出細膩的風味層次。猶似陽光輕灑過，吹拂起亮麗微風般的愜意感受。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=149"
+  },
+  {
+    id: "576",
+    name: "星巴克®瑟加堤綜合咖啡",
+    enName: "Starbucks® Segati / Sirens Blend™",
+    matchKey: "瑟加堤",
+    category: "季節限定豆",
+    roast: "黃金烘焙",
+    region: "亞洲/太平洋、非洲",
+    processing: "水洗法、半水洗法",
     acidity: "高 (明亮柑橘酸質)",
-    body: "輕盈",
-    flavorNotes: "明亮清爽、微妙柑橘與花香尾韻",
-    foodPairing: "檸檬塔、原味可頌、新鮮水果、起司蛋糕",
-    description: "明亮且清爽的黃金烘焙綜合豆，融合東非的柑橘花香與拉丁美洲的乾淨圓潤口感。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/blonde-roast.jspx"
+    body: "輕盈至中等",
+    flavorNotes: "柑橘果香、柔和花香與細緻胡椒辛香",
+    foodPairing: "柑橘甜點、檸檬塔、奶油可頌、軟餅乾",
+    description: "較淺的烘焙方式，完整保留咖啡明亮的柑橘酸質與清新香氣，也讓草本與辛香調性更加鮮明。當明亮果香遇上柔和花香與細緻胡椒辛香，譜寫出清爽活潑的感官旅程。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=576"
   },
   {
-    name: "黃金烘焙綜合咖啡豆 (閒逸綜合)",
-    enName: "Starbucks® Veranda Blend™",
-    category: "常態經典豆",
-    roast: "黃金烘焙",
-    region: "拉丁美洲",
-    processing: "水洗法",
-    acidity: "中偏柔和",
-    body: "輕盈滑順",
-    flavorNotes: "烘烤麥芽、牛奶巧克力、柔和甘甜",
-    foodPairing: "蜂蜜鬆餅、堅果塔、輕食三明治、軟餅乾",
-    description: "以較短烘焙時間展現拉丁美洲咖啡豆的細膩柔和，帶有宜人的烘烤麥芽與堅果香氣。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/blonde-roast.jspx"
-  },
-  {
-    name: "星巴克日安綜合咖啡豆",
-    enName: "Starbucks® Odyssey Blend™",
+    id: "533",
+    name: "星巴克®東非綜合咖啡豆",
+    enName: "Starbucks® East Africa Blend",
+    matchKey: "東非綜合",
     category: "季節限定豆",
     roast: "黃金烘焙",
-    region: "非洲、拉丁美洲、亞太綜合",
-    processing: "水洗法、日曬法、蜜處理",
-    acidity: "中高 (活潑果酸)",
-    body: "中等輕盈",
-    flavorNotes: "茂谷柑、熱帶水果、太妃糖與蜂蜜甜感",
-    foodPairing: "柑橘水果塔、奶油可頌、蜂蜜蛋糕",
-    description: "結合三大產區永續採購咖啡豆，層次豐富，帶有明亮柑橘香與溫暖甜美的蜂蜜餘韻。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/blonde-roast.jspx"
+    region: "非洲 (衣索比亞、肯亞)",
+    processing: "水洗法、日曬法",
+    acidity: "高",
+    body: "中等",
+    flavorNotes: "葡萄柚、金銀花與紅色漿果",
+    foodPairing: "柑橘、甘蔗、牛奶巧克力、莓果塔",
+    description: "靈感來自東非大裂谷，選用衣索比亞與肯亞的咖啡豆調和而成。入口展現明亮花香，伴隨柑橘、莓果與細緻香料調性，無論熱飲或冰飲都能呈現其迷人風貌。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=533"
   },
   {
-    name: "單一產區衣索比亞 (黃金烘焙)",
+    id: "567",
+    name: "星巴克®日安綜合™咖啡豆",
+    enName: "Starbucks® Sunsera / Odyssey Blend™",
+    matchKey: "日安綜合",
+    category: "季節限定豆",
+    roast: "黃金烘焙",
+    region: "綜合產區 (拉丁美洲)",
+    processing: "水洗法、日曬法",
+    acidity: "中高",
+    body: "輕盈柔順",
+    flavorNotes: "明亮柑橘調性與烘烤杏仁香氣",
+    foodPairing: "柑橘水果塔、杏仁可頌、蜂蜜鬆餅、輕食三明治",
+    description: "星巴克至今最柔順、也最明亮的一款咖啡，由資深烘焙師與研發團隊精心調配。杯中展現明亮的柑橘調性與烘烤杏仁的迷人香氣，整體口感親切柔和。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=567"
+  },
+  {
+    id: "560",
+    name: "星巴克®單一產區衣索比亞黃金烘焙咖啡豆",
     enName: "Single-Origin Ethiopia Blonde Roast",
+    matchKey: "衣索比亞黃金烘焙",
     category: "季節限定豆",
     roast: "黃金烘焙",
-    region: "非洲 (衣索比亞)",
+    region: "非洲 (衣索比亞西達馬 Sidama)",
     processing: "水洗法",
-    acidity: "高 (鮮明檸檬柑橘)",
+    acidity: "高 (多汁明亮酸質)",
     body: "輕盈",
-    flavorNotes: "佛手柑、茉莉花香、香檸與清爽茶感",
-    foodPairing: "檸檬磅蛋糕、莓果司康、馬卡龍",
-    description: "致敬咖啡發源地衣索比亞，黃金烘焙完美保留其細緻花香與活潑的柑橘檸檬調性。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/blonde-roast.jspx"
+    flavorNotes: "薑花細緻香氣、橘子、檸檬香蜂草與甜棗",
+    foodPairing: "檸檬磅蛋糕、柑橘塔、莓果司康、馬卡龍",
+    description: "選自衣索比亞最受推崇的西達馬（Sidama）產區，散發薑花般的細緻香氣，並呈現橘子、檸檬香蜂草與甜棗的迷人風味，展現優雅花香與多汁明亮的酸質。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=560"
   },
 
-  // 【中度烘焙 Medium Roast - 常態與季節】
+  // 【中度烘焙 Medium Roast】
   {
-    name: "派克市場烘焙咖啡豆",
-    enName: "Starbucks® Pike Place® Roast",
-    category: "常態經典豆",
-    roast: "中度烘焙",
-    region: "拉丁美洲",
-    processing: "水洗法",
-    acidity: "中等平衡",
-    body: "中等圓潤",
-    flavorNotes: "可可、烘烤堅果、細膩肉桂香料尾韻",
-    foodPairing: "巧克力餅乾、經典肉桂捲、起司牛肉可頌",
-    description: "紀念 1971 年西雅圖派克市場創始店，口感滑順平衡，是每日滴濾咖啡的核心代表。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
-  },
-  {
-    name: "家常咖啡豆",
+    id: "145",
+    name: "星巴克家常咖啡豆",
     enName: "Starbucks® House Blend",
+    matchKey: "家常咖啡豆",
     category: "常態經典豆",
     roast: "中度烘焙",
     region: "拉丁美洲",
     processing: "水洗法",
-    acidity: "中等清爽",
+    acidity: "中等",
     body: "中等",
-    flavorNotes: "太妃糖、堅果與可可的絕佳平衡",
-    foodPairing: "藍莓馬芬、核桃香蕉蛋糕、烤蘋果派",
-    description: "星巴克於 1971 年調配的第一款綜合咖啡豆，風味乾淨平衡，展現拉丁美洲經典風土。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
+    flavorNotes: "核果及可可、烘烤後的自然甜味",
+    foodPairing: "核果、蘋果、藍莓馬芬、核桃香蕉蛋糕",
+    description: "看似簡單，實則不凡。星巴克家常是我們在 1971 年創造的第一款綜合咖啡，以最上乘的拉丁美洲咖啡豆綜合而成，帶來核果及可可般的味覺體驗。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=145"
   },
   {
-    name: "哥倫比亞咖啡豆",
-    enName: "Starbucks® Colombia",
-    category: "常態經典豆",
-    roast: "中度烘焙",
-    region: "拉丁美洲 (哥倫比亞)",
-    processing: "水洗法",
-    acidity: "中等微酸",
-    body: "中等飽滿",
-    flavorNotes: "多汁果香、胡桃堅果尾韻、圓潤順口",
-    foodPairing: "牛奶巧克力、核桃布朗尼、烤起司三明治",
-    description: "產自高聳安地斯山脈，具備極具辨識度的圓潤醇度與清爽的核果回甘。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
-  },
-  {
+    id: "151",
     name: "肯亞咖啡豆",
     enName: "Starbucks® Kenya",
+    matchKey: "肯亞咖啡豆",
     category: "常態經典豆",
     roast: "中度烘焙",
     region: "非洲 (肯亞)",
     processing: "水洗法",
-    acidity: "高 (明亮多汁果酸)",
+    acidity: "高",
     body: "厚實飽滿",
-    flavorNotes: "紅葡萄柚、黑醋栗、柑橘ベリー果香",
-    foodPairing: "新鮮莓果塔、檸檬凝乳蛋糕、柳橙磅蛋糕",
-    description: "擁有罕見的高酸度與厚實醇度結合，果香奔放多汁，製作成冰手沖風味更是驚艷。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
+    flavorNotes: "黑醋栗和葡萄柚、新鮮黑莓酸甜感",
+    foodPairing: "葡萄柚、莓果、醋栗、葡萄乾、柳丁",
+    description: "層次豐富，風味中帶有黑醋栗、新鮮黑莓以及葡萄柚的酸甜感，擁有罕見的高酸度與厚實醇度結合，是一款獨特、清新的經典咖啡。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=151"
   },
   {
-    name: "低咖啡因派克市場烘焙咖啡豆",
-    enName: "Decaf Pike Place® Roast",
+    id: "154",
+    name: "哥倫比亞咖啡豆",
+    enName: "Starbucks® Colombia",
+    matchKey: "哥倫比亞咖啡豆",
+    category: "常態經典豆",
+    roast: "中度烘焙",
+    region: "拉丁美洲 (哥倫比亞)",
+    processing: "水洗法",
+    acidity: "中等",
+    body: "中等",
+    flavorNotes: "平衡、核果味",
+    foodPairing: "牛奶巧克力、核果、胡桃布朗尼",
+    description: "中等體度，口感濃厚，完美平衡，馥郁中帶著清亮，並在舌尖留下溫潤的核果餘味。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=154"
+  },
+  {
+    id: "165",
+    name: "派克市場烘焙咖啡豆",
+    enName: "Starbucks® Pike Place® Roast",
+    matchKey: "派克市場烘焙",
     category: "常態經典豆",
     roast: "中度烘焙",
     region: "拉丁美洲",
-    processing: "水洗法 (天然脫因)",
-    acidity: "中等柔和",
-    body: "中等滑順",
-    flavorNotes: "可可、烘烤堅果、溫潤平衡",
-    foodPairing: "原味司康、燕麥葡萄乾餅乾、輕乳酪蛋糕",
-    description: "保留派克市場經典的可可與烤堅果香氣，適合夜晚或想減少咖啡因攝取的時刻享用。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
-  },
-  {
-    name: "瓜地馬拉卡西塞羅咖啡豆",
-    enName: "Guatemala Casi Cielo™",
-    category: "季節限定豆",
-    roast: "中度烘焙",
-    region: "拉丁美洲 (瓜地馬拉安堤瓜)",
     processing: "水洗法",
-    acidity: "中高 (優雅檸檬酸質)",
-    body: "中等絲滑",
-    flavorNotes: "細緻花香、香檸柑橘、黑可可尾韻",
-    foodPairing: "生巧克力塔、千層蛋糕、焦糖布丁",
-    description: "Casi Cielo 意為「近乎天堂」，源自安堤瓜高海拔火山山谷，為每年夥伴與顧客最期待的單一產區季節豆。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
-  },
-  {
-    name: "東非綜合咖啡豆",
-    enName: "East Africa Blend",
-    category: "季節限定豆",
-    roast: "中度烘焙",
-    region: "非洲 (東非產區)",
-    processing: "水洗法",
-    acidity: "高 (明亮柑橘莓果)",
+    acidity: "中等",
     body: "中等",
-    flavorNotes: "柑橘花香、乾燥莓果、柔和香料與可可",
-    foodPairing: "綜合莓果起司蛋糕、柑橘丹麥、水果塔",
-    description: "匯聚東非陽光產區的精選咖啡豆，呈現鮮明活潑的果酸與迷人的花香層次。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
+    flavorNotes: "可可、烘烤堅果、細膩香料尾韻",
+    foodPairing: "巧克力餅乾、經典肉桂捲、堅果蛋糕、起司牛肉可頌",
+    description: "紀念 1971 年西雅圖派克市場創始店，帶有濃郁巧克力及烤堅果味，口感滑順平衡，是門市每日滴濾咖啡的核心代表。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=165"
   },
   {
-    name: "星巴克瑟加堤綜合咖啡豆",
-    enName: "Starbucks® Sirens Blend™",
+    id: "573",
+    name: "星巴克®星旅綜合™咖啡豆",
+    enName: "Starbucks® Voyage Blend™ 2026",
+    matchKey: "星旅綜合",
     category: "季節限定豆",
     roast: "中度烘焙",
-    region: "非洲、拉丁美洲",
-    processing: "水洗法",
-    acidity: "中高 (多汁果酸)",
-    body: "中等圓潤",
-    flavorNotes: "柑橘、花香、牛奶巧克力與順滑尾韻",
-    foodPairing: "巧克力可頌、柑橘瑪德蓮、檸檬塔",
-    description: "向咖啡產業中的女性工作者致敬，融合拉丁美洲可可感與東非的柑橘花香，冷熱皆宜。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
-  },
-  {
-    name: "星旅綜合咖啡豆",
-    enName: "Starbucks® Voyage Blend™",
-    category: "季節限定豆",
-    roast: "中度烘焙",
-    region: "拉丁美洲、亞太、非洲",
+    region: "綜合產區 (烏干達、東帝汶、哥倫比亞)",
     processing: "水洗法、半水洗法",
     acidity: "中等",
     body: "中等飽滿",
-    flavorNotes: "葡萄柚、花蜜甜感、烤榛果餘韻",
-    foodPairing: "焦糖核桃塔、奶油捲、水果軟糖",
-    description: "象徵探索咖啡未來永續旅程的季節綜合豆，層次明亮且帶有溫暖堅果甜香。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
+    flavorNotes: "烏干達甜美果香、東帝汶醇厚大地與哥倫比亞清新草本",
+    foodPairing: "焦糖核桃塔、蜂蜜蛋糕、奶油可頌",
+    description: "來自三個獨特產區，展現當地咖啡農以創新方式培育咖啡的成果——烏干達帶來的甜美風味、東帝汶的醇厚大地氣息，以及哥倫比亞的清新草本調性，承載對咖啡永續未來的承諾。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=573"
   },
   {
-    name: "哥倫比亞拿里諾咖啡豆",
+    id: "528",
+    name: "星巴克®單一產區哥倫比亞拿里諾",
     enName: "Single-Origin Colombia Nariño",
+    matchKey: "哥倫比亞拿里諾",
     category: "季節限定豆",
     roast: "中度烘焙",
     region: "拉丁美洲 (哥倫比亞拿里諾)",
     processing: "水洗法",
     acidity: "中等清爽",
-    body: "中等厚實",
-    flavorNotes: "甜美草本、黑可可、烤核桃與多汁口感",
-    foodPairing: "巧克力千層、核桃磅蛋糕、鹹派",
-    description: "來自哥倫比亞西南部高海拔火山陡坡，日照充足、日夜溫差大，孕育出極致濃郁的核果可可香。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/medium-roast.jspx"
+    body: "中等飽滿",
+    flavorNotes: "甜美草本、黑可可、烘烤核桃",
+    foodPairing: "牛奶巧克力、核桃磅蛋糕、起司鹹派",
+    description: "拿里諾是哥倫比亞極具代表性的精品咖啡產區。高海拔地形與熱帶氣候交織，結合肥沃火山土壤，使咖啡櫻桃得以緩慢成熟，造就層次複雜、口感飽滿且細緻的風味表現。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=528"
+  },
+  {
+    id: "566",
+    name: "星巴克®春讚綜合™咖啡豆",
+    enName: "Starbucks® Spring Season Blend™ 2026",
+    matchKey: "春讚綜合",
+    category: "季節限定豆",
+    roast: "中度烘焙",
+    region: "綜合產區",
+    processing: "自然處理法、水洗法、濕剝法",
+    acidity: "中等柔和",
+    body: "中等圓潤",
+    flavorNotes: "蜜樹茶和可可、柔和熱帶水果甜感",
+    foodPairing: "香草、巧克力、莓果塔、奶油點心",
+    description: "春讚綜合最初為慶祝星巴克 40 週年而誕生。可以喝到南非特有植物「蜜樹茶」溫潤的蜂蜜甜香與細緻花香，帶有柔和熱帶水果甜感，尾韻帶著綿長細膩的可可香氣。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=566"
+  },
+  {
+    id: "561",
+    name: "星巴克®單一產區瓜地馬拉卡西塞羅咖啡豆",
+    enName: "STARBUCKS® Single-Origin Guatemala Casi Cielo™",
+    matchKey: "瓜地馬拉卡西塞羅",
+    category: "季節限定豆",
+    roast: "中度烘焙",
+    region: "拉丁美洲 (瓜地馬拉安提瓜)",
+    processing: "水洗法",
+    acidity: "中高 (優雅檸檬酸質)",
+    body: "中等圓潤",
+    flavorNotes: "梅爾檸檬和可可碎",
+    foodPairing: "柑橘、軟乳酪、烤堅果、岩漿巧克力蛋糕、焦糖布蕾",
+    description: "酸甜明亮又帶巧克力的厚度，層次豐富且口感圓潤。「Casi Cielo」在西班牙語中意為「接近天堂」，向以頂級咖啡聞名的瓜地馬拉安提瓜山谷致敬。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=561"
+  },
+  {
+    id: "516",
+    name: "星巴克®單一產區陳年蘇門答臘",
+    enName: "Single-Origin Aged Sumatra",
+    matchKey: "陳年蘇門答臘",
+    category: "季節限定豆",
+    roast: "中度烘焙",
+    region: "亞洲/太平洋 (蘇門答臘)",
+    processing: "半水洗法 (3至5年自然陳年)",
+    acidity: "低 (柔和酸質)",
+    body: "厚實飽滿",
+    flavorNotes: "香草和橡木、烘焙香料",
+    foodPairing: "烘焙香料、鼠尾草、起司、重乳酪蛋糕",
+    description: "將生豆存放於新加坡的特殊倉庫中長達 3 至 5 年的陳年並定期翻動。最終呈現的是一杯風味均衡、帶有香料、香草莢與橡木氣息，口感飽滿、酸質柔和、層次深遠的咖啡。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=516"
   },
 
-  // 【深度烘焙 Dark Roast - 常態與季節】
+  // 【深度烘焙 Dark Roast】
   {
+    id: "153",
     name: "濃縮烘焙咖啡豆",
     enName: "Starbucks® Espresso Roast",
+    matchKey: "濃縮烘焙咖啡豆",
     category: "常態經典豆",
     roast: "深度烘焙",
-    region: "拉丁美洲、亞太綜合",
+    region: "綜合產區 (拉丁美洲、亞太)",
     processing: "水洗法、半水洗法",
-    acidity: "低至中",
+    acidity: "中偏低",
     body: "厚重濃郁",
-    flavorNotes: "濃郁糖蜜、焦糖甜香、深沉飽滿",
-    foodPairing: "提拉米蘇、焦糖瑪奇朵蛋糕、肉桂捲",
-    description: "自 1975 年以來的經典配方，是門市所有拿鐵與濃縮飲料的靈魂基底，帶有強烈焦糖甜感。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/dark-roast.jspx"
+    flavorNotes: "濃郁焦糖甜香、糖蜜與飽滿醇度",
+    foodPairing: "焦糖、香料、巧克力、堅果、提拉米蘇",
+    description: "這款多產區的綜合咖啡豆最初在 1975 年問世，至今仍是全球星巴克門市手工調製濃縮咖啡飲料的基礎。無論單喝或搭配牛奶都無比美味。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=153"
   },
   {
+    id: "152",
     name: "蘇門答臘咖啡豆",
     enName: "Starbucks® Sumatra",
+    matchKey: "蘇門答臘咖啡豆",
     category: "常態經典豆",
     roast: "深度烘焙",
     region: "亞洲/太平洋 (印尼蘇門答臘)",
     processing: "半水洗法 (濕刨法)",
-    acidity: "極低",
-    body: "極度厚實飽滿",
-    flavorNotes: "大地芳香、草本植物、雪松與深邃香料",
-    foodPairing: "肉桂捲、起司鹹派、培根起司帕里尼、楓糖點心",
-    description: "採用印尼傳統濕刨法處理，幾乎沒有酸味，醇度如絲絨般厚重並伴隨獨特草本大地氣息。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/dark-roast.jspx"
+    acidity: "低",
+    body: "極致厚實飽滿",
+    flavorNotes: "大地芳香、草本與辛香料風味",
+    foodPairing: "肉桂、燕麥片、楓糖、奶油、太妃糖、起司鹹派",
+    description: "這款富含草本和辛香料風味的咖啡在印尼綠意盎然的島嶼上種植。自 1971 年起一直是我們最珍愛的咖啡豆之一，口感獨特且鮮明飽滿。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=152"
   },
   {
+    id: "156",
     name: "佛羅娜綜合咖啡豆",
     enName: "Starbucks® Caffè Verona™",
+    matchKey: "佛羅娜綜合咖啡豆",
     category: "常態經典豆",
     roast: "深度烘焙",
-    region: "拉丁美洲、亞太綜合",
-    processing: "水洗法、半水洗法",
+    region: "綜合產區 (拉丁美洲、亞太)",
+    processing: "水洗法/半水洗法",
     acidity: "低",
     body: "厚實醇厚",
-    flavorNotes: "黑可可、烘焙甜香、深邃濃郁焦糖",
-    foodPairing: "古典巧克力蛋糕、黑森林蛋糕、生巧克力",
-    description: "以愛之都維洛納命名，結合 80% 尤康綜合豆與 20% 義式烘焙豆，是搭配巧克力的完美絕配。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/dark-roast.jspx"
+    flavorNotes: "黑可可和焦糖",
+    foodPairing: "牛奶巧克力、黑巧克力、焦糖甜點",
+    description: "這款以浪漫之都命名的咖啡，專為搭配甜點而誕生。風味豐富、口感均衡，交織著黑可可的濃郁質地與焦糖的甜感，是巧克力甜點的絕佳搭檔。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=156"
   },
   {
-    name: "春讚綜合咖啡豆",
-    enName: "Starbucks® Spring Season Blend™",
+    id: "577",
+    name: "星巴克®秋季綜合™咖啡豆",
+    enName: "Starbucks® Autumn Blend™ 2026",
+    matchKey: "秋季綜合",
     category: "季節限定豆",
     roast: "深度烘焙",
-    region: "拉丁美洲、非洲、亞太",
-    processing: "水洗、日曬、半水洗",
-    acidity: "中等",
-    body: "厚實圓潤",
-    flavorNotes: "黑櫻桃、雪松木質香、黑可可與香料",
-    foodPairing: "黑森林蛋糕、莓果巧克力塔、起司可頌",
-    description: "迎接春季的經典限定綜合豆，完美揉合黑櫻桃果香與陳年蘇門答臘的雪松醇厚感。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/dark-roast.jspx"
-  },
-  {
-    name: "單一產區陳年蘇門答臘咖啡豆",
-    enName: "Single-Origin Aged Sumatra",
-    category: "季節限定豆",
-    roast: "深度烘焙",
-    region: "亞洲/太平洋 (蘇門答臘)",
-    processing: "半水洗法 (3~5年自然熟成)",
-    acidity: "低",
-    body: "極致醇厚飽滿",
-    flavorNotes: "甜美雪松、甘草香料、橡木桶與醇厚可可",
-    foodPairing: "重乳酪起司蛋糕、焦糖堅果塔、鹹味起司點心",
-    description: "生豆經 3 至 5 年嚴格翻倉自然陳年熟成，風味更加圓潤甘醇，散發迷人雪松與木質甜香。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/dark-roast.jspx"
-  },
-  {
-    name: "秋季綜合咖啡豆",
-    enName: "Starbucks® Autumn Blend / Thanksgiving Blend",
-    category: "季節限定豆",
-    roast: "深度烘焙",
-    region: "蘇門答臘、非洲、拉丁美洲",
+    region: "綜合產區 (蘇門答臘、非洲、拉丁美洲)",
     processing: "水洗法、半水洗法",
     acidity: "中偏低",
     body: "厚實飽滿",
-    flavorNotes: "草本香料、柿子甜香、新鮮鼠尾草與可可",
-    foodPairing: "南瓜派、核桃派、烤雞起司三明治、肉桂捲",
-    description: "專為豐收季節打造的限定豆款，溫暖的草本香料與滑順可可醇度，最適合搭配濃郁鹹甜美食。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/dark-roast.jspx"
+    flavorNotes: "糖漬胡桃、鼠尾草與無花果乾",
+    foodPairing: "胡桃派、南瓜派、香料蛋糕、烤雞起司三明治",
+    description: "以細緻烘焙展現糖漬胡桃、鼠尾草與無花果乾的優雅風味，甜感柔和、層次細膩，呈現溫暖而豐富的秋季氣息，適合搭配各式鹹甜美食。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=577"
   },
   {
-    name: "星巴克 1971 深烘焙咖啡豆",
-    enName: "Starbucks® 1971 Dark Roast",
+    id: "579",
+    name: "星巴克®1971 深烘焙™",
+    enName: "Starbucks® 1971 Dark Roast™",
+    matchKey: "1971",
     category: "季節限定豆",
     roast: "深度烘焙",
-    region: "拉丁美洲、亞太綜合",
+    region: "綜合產區",
     processing: "水洗法、半水洗法",
     acidity: "低",
-    body: "厚重醇厚",
-    flavorNotes: "黑胡桃、煙燻焦糖、黑可可苦甜尾韻",
-    foodPairing: "提拉米蘇、濃郁布朗尼、巧克力淋醬泡芙",
-    description: "致敬星巴克半世紀深度烘焙工藝，展現濃厚飽滿的煙燻焦糖與黑可可風味。",
-    officialUrl: "https://www.starbucks.com.tw/coffee/beans/dark-roast.jspx"
+    body: "厚重濃郁",
+    flavorNotes: "焦糖糖香和濃郁核桃",
+    foodPairing: "黑巧克力、起司、烘烤堅果、甜點／甜麵包",
+    description: "每一口深焙風味彷彿帶我們回到星巴克創立初期，在西雅圖派克市場門市親手舀取咖啡豆的那段時光。展現焦糖糖香與濃郁核桃尾韻。",
+    officialUrl: "https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=579"
   }
 ];
 
@@ -2849,7 +3122,7 @@ const masterQuizPool = [
   { question: "標準法式濾壓壺官方建議的浸泡萃取時間是多久？", options: ["2 分鐘", "3 分鐘", "4 分鐘", "5 分鐘"], correct: 2, explanation: "法式濾壓壺建議浸泡時間為完整的 4 分鐘。" },
   { question: "星巴克標準手沖咖啡的官方建議粉水比為何？", options: ["1 : 12", "1 : 15", "1 : 16", "1 : 18"], correct: 2, explanation: "標準手沖比例為 1:16（10g 咖啡粉配 160ml 水）。" },
   { question: "生豆處理法中的「半水洗法」在印尼當地又稱為什麼？", options: ["Giling Basah", "Monsooning", "Pulped Natural", "Double Washed"], correct: 0, explanation: "半水洗在印尼稱為 Giling Basah（濕刨法），使豆體保留厚實草本醇度。" },
-  { question: "下列哪一款咖啡豆屬於星巴克經典的「黃金烘焙」？", options: ["Pike Place 派克市場", "Willow Blend 輕柳綜合", "Caffè Verona 佛羅娜", "Sumatra 蘇門答臘"], correct: 1, explanation: "輕柳綜合 (Willow Blend) 與 Veranda Blend 皆屬於黃金烘焙。" },
+  { question: "下列哪一款咖啡豆屬於星巴克經典的「黃金烘焙」？", options: ["Pike Place 派克市場", "Willow Blend 輕柳綜合", "Caffè Verona 佛羅娜", "Sumatra 蘇門答臘"], correct: 1, explanation: "輕柳綜合 (Willow Blend) 屬於黃金烘焙。" },
   { question: "品嚐咖啡的四大特徵中，指「咖啡在舌面上重量與黏稠質地」的是哪一項？", options: ["Aroma (香氣)", "Acidity (酸度)", "Body (醇度)", "Flavor (風味)"], correct: 2, explanation: "醇度 (Body) 描述的是咖啡在舌頭與上顎間感受到的厚實重量與觸感。" }
 ];
 
@@ -2871,6 +3144,7 @@ const app = createApp({
     const apiKeyTestResult = ref('');
 
     // 2. 資料庫核心陣列與物件
+    const starbucksCoreBeans = ref([...initialStarbucksBeans]);
     const materials = ref([]);
     const rules = ref([]);
     const inventory = ref([]);
@@ -2885,17 +3159,29 @@ const app = createApp({
     const bulletinList = ref([]);
     const storePhotos = ref([]);
     const customAlbums = ref([]);
-    const selectedAlbum = ref('all');
+    const selectedAlbum = ref('一般門市相簿');
+    const expandedAlbums = ref({});
+    const isUploadingPhotos = ref(false);
+    const photoUploadProgress = ref('');
+    const lightboxModal = ref({ show: false, url: '', title: '', list: [], index: 0 });
     const bravoCardsList = ref([]);
     const showRulesLibrary = ref(false);
 
+    // 班次交接清單 & 換班媒合板
+    const shiftTasksList = ref([]);
+    const shiftTaskForm = ref({ tag: '交接', text: '' });
+    const shiftSwapsList = ref([]);
+    const showSwapForm = ref(false);
+    const shiftSwapForm = ref({ date: '', shiftTime: '', reason: '' });
+
     // 3. 表單與搜尋篩選響應式變數
     const matSearchQuery = ref('');
+    const matTempFilter = ref('all');
     const coffeeSearchQuery = ref('');
     const coffeeCategoryFilter = ref('all');
     const coffeeRoastFilter = ref('all');
     const intakeForm = ref({ itemName: '', factoryExpiry: '', advanceDays: null, saveAsRule: false });
-    const tastingForm = ref({ coffeeName: '派克市場烘焙咖啡豆', acidity: 3, body: 3, aroma: '', flavor: '', notes: '' });
+    const tastingForm = ref({ coffeeName: '星巴克家常咖啡豆', acidity: 3, body: 3, aroma: '', flavor: '', notes: '' });
     const latteForm = ref({ pattern: '心形 (Heart)', photoUrl: '' });
     const vacationForm = ref({ staffId: '', date: '', type: '無法排班', notes: '' });
 
@@ -2939,7 +3225,7 @@ const app = createApp({
     const blackoutModal = ref({ show: false, form: { date: '', reason: '' } });
     const vacationDetailModal = ref({ show: false, dateStr: '', isBlackout: false, blackoutReason: '', vacations: [] });
     const settingsModal = ref({ show: false, newPassword: '', birthday: '', geminiApiKey: '' });
-    const addRuleModal = ref({ show: false, form: { keyword: '', advance_days: 7 } });
+    const addRuleModal = ref({ show: false, isEdit: false, form: { id: '', keyword: '', advance_days: 7 } });
     const calcModal = ref({ show: false, item: {}, targetTimeStr: '', pullDate: '', timing: '', isAdjustedForClose: false });
     const matEditModal = ref({ show: false, isNew: true, form: {} });
     const staffModal = ref({ show: false, isNew: true, form: {} });
@@ -2950,7 +3236,191 @@ const app = createApp({
     const createAlbumModal = ref({ show: false, name: '' });
     const bravoModal = ref({ show: false, form: { targetStaffId: '', message: '' } });
 
-    /// ==================== 🤖 極速鎖定版 Gemini AI 引擎 (零 404 撞牆 + 自動記憶成功模型 + 圖片輕量加速) ====================
+    // ==================== 🔗 台灣星巴克官網「全自動新檔期季節豆爬蟲與同步引擎」 ====================
+    // 透過多重代理抓取台灣星巴克官網 HTML，自動發現新上市的季節豆款並解析其官方屬性匯入系統
+    const fetchHtmlViaCorsProxy = async (targetUrl) => {
+      const proxies = [
+        (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+        (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+        (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`
+      ];
+      for (const buildProxy of proxies) {
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 7000);
+          const res = await fetch(buildProxy(targetUrl), { signal: controller.signal });
+          clearTimeout(timer);
+          if (res.ok) {
+            const text = await res.text();
+            if (text && text.includes('starbucks') && text.length > 500) {
+              return text;
+            }
+          }
+        } catch (e) {}
+      }
+      return '';
+    };
+
+    // 解析單一咖啡豆官網頁面 (https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=XXX)
+    const parseOfficialBeanDetailPage = (html, id, fallbackMeta = {}) => {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const fullText = (doc.body ? doc.body.innerText : html).replace(/\s+/g, ' ');
+
+      // 1. 解析標題與分類
+      const titleText = (doc.querySelector('title')?.textContent || '').trim();
+      let category = fallbackMeta.category || (titleText.includes('季節') ? '季節限定豆' : '常態經典豆');
+      let name = fallbackMeta.name || '';
+      if (!name && titleText.includes('|')) {
+        name = titleText.split('|')[0].replace(/^(季節咖啡豆|經典咖啡豆)-/, '').trim();
+      }
+      const h1El = doc.querySelector('h1, .product-title, .title');
+      if (!name && h1El) name = h1El.textContent.trim();
+
+      // 2. 解析英文名稱
+      const enEl = doc.querySelector('.en, .sub-title, h2, .eng');
+      let enName = (enEl ? enEl.textContent.trim() : '') || fallbackMeta.enName || 'Starbucks® Whole Bean Coffee';
+
+      // 3. 解析烘焙程度
+      let roast = fallbackMeta.roast || '中度烘焙';
+      if (fullText.includes('黃金烘焙') && !roast) roast = '黃金烘焙';
+      else if (fullText.includes('深度烘焙') || name.includes('深烘焙')) roast = '深度烘焙';
+
+      // 4. 從頁面文字精準提取：產區、風味、處理法、適合搭配的食物風味、認識咖啡豆
+      const extractField = (regex, defaultVal) => {
+        const m = fullText.match(regex);
+        return (m && m[1]) ? m[1].trim() : defaultVal;
+      };
+
+      const region = extractField(/產區\s*([^\s*•｜|]{2,18})/, fallbackMeta.region || '綜合產區');
+      const flavorNotes = extractField(/風味\s*([^\s*•｜|]{2,25})/, fallbackMeta.flavorNotes || '層次豐富平衡');
+      const processing = extractField(/處理法\s*([^\s*•｜|]{2,20})/, fallbackMeta.processing || '水洗法');
+      const foodPairing = extractField(/適合搭配的食物風味\s*([^\s*•｜|認識咖啡豆]{2,35})/, fallbackMeta.foodPairing || '可頌、巧克力、堅果點心');
+
+      let description = fallbackMeta.description || '';
+      const descMatch = fullText.match(/認識咖啡豆\s*(.+?)\s*(?:前往生活頻道|更多咖啡豆選擇|如何調理好咖啡)/);
+      if (descMatch && descMatch[1]) {
+        description = descMatch[1].trim().slice(0, 140);
+      }
+
+      let acidity = fallbackMeta.acidity || (roast === '黃金烘焙' ? '高' : (roast === '深度烘焙' ? '低' : '中等'));
+      let body = fallbackMeta.body || (roast === '黃金烘焙' ? '輕盈' : (roast === '深度烘焙' ? '厚實飽滿' : '中等'));
+
+      return {
+        id: String(id),
+        name: name || `星巴克季節咖啡豆 (#${id})`,
+        enName,
+        matchKey: name.replace(/星巴克|®|™|咖啡豆|單一產區/g, '').trim() || String(id),
+        category,
+        roast,
+        region,
+        processing,
+        acidity,
+        body,
+        flavorNotes,
+        foodPairing,
+        description: description || '台灣星巴克官方當季嚴選咖啡豆，點擊卡片可查看官網完整介紹。',
+        officialUrl: `https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=${id}`
+      };
+    };
+
+    // 合併雲端或自動抓取到的新豆款至現有陣列
+    const mergeBeansIntoCatalog = (incomingBeans) => {
+      if (!incomingBeans) return;
+      const list = Array.isArray(incomingBeans) ? incomingBeans : Object.values(incomingBeans);
+      const mapById = {};
+      starbucksCoreBeans.value.forEach(b => {
+        if (b && b.id) mapById[String(b.id)] = b;
+      });
+      list.forEach(nb => {
+        if (nb && nb.id && nb.name) {
+          // 僅收納咖啡豆（排除禮盒/提袋/掛耳網格袋）
+          if (nb.name.includes('禮盒') || nb.name.includes('提袋') || nb.name.includes('掛耳')) return;
+          mapById[String(nb.id)] = {
+            ...(mapById[String(nb.id)] || {}),
+            ...nb,
+            officialUrl: `https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=${nb.id}`
+          };
+        }
+      });
+      starbucksCoreBeans.value = Object.values(mapById);
+    };
+
+    // 每次上線自動執行：掃描台灣星巴克官網 `our-coffees` 是否有新上市季節豆款
+    const syncStarbucksTaiwanBeanUrls = async () => {
+      // 1. 先載入本機快取的最新豆單
+      try {
+        const cachedBeans = localStorage.getItem('sbux_tw_official_beans_v2');
+        if (cachedBeans) {
+          mergeBeansIntoCatalog(JSON.parse(cachedBeans));
+        }
+      } catch (e) {}
+
+      // 2. 連線至官網 `product.jspx?id=149`（內含全站所有在架經典豆與季節豆輪播清單）
+      try {
+        const seedHtml = await fetchHtmlViaCorsProxy('https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=149');
+        if (!seedHtml) return;
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(seedHtml, 'text/html');
+        const links = doc.querySelectorAll('a[href*="product.jspx?id="]');
+
+        const existingIds = new Set(starbucksCoreBeans.value.map(b => String(b.id)));
+        const newlyDiscoveredMeta = [];
+
+        links.forEach(a => {
+          const href = a.getAttribute('href') || '';
+          const idMatch = href.match(/product\.jspx\?id=(\d+)/);
+          if (!idMatch) return;
+          const beanId = idMatch[1];
+
+          // 讀取該連結所在的卡片容器文字，判斷是否為「經典咖啡豆」或「季節咖啡豆」
+          const containerText = (a.closest('li, div')?.textContent || a.parentElement?.textContent || '').replace(/\s+/g, ' ').trim();
+          const isBeanCategory = containerText.includes('經典咖啡豆') || containerText.includes('季節咖啡豆');
+          const isExcluded = containerText.includes('掛耳') || containerText.includes('VIA') || containerText.includes('禮盒') || containerText.includes('提袋');
+
+          if (isBeanCategory && !isExcluded && !existingIds.has(beanId)) {
+            let roast = '中度烘焙';
+            if (containerText.includes('黃金烘焙')) roast = '黃金烘焙';
+            else if (containerText.includes('深度烘焙')) roast = '深度烘焙';
+
+            const category = containerText.includes('季節咖啡豆') ? '季節限定豆' : '常態經典豆';
+            const cleanName = containerText
+              .replace(/經典咖啡豆|季節咖啡豆|黃金烘焙|中度烘焙|深度烘焙|了解詳情/g, '')
+              .trim();
+
+            if (cleanName) {
+              existingIds.add(beanId);
+              newlyDiscoveredMeta.push({ id: beanId, name: cleanName, category, roast });
+            }
+          }
+        });
+
+        // 3. 若發現官網有新上市的季節豆款，自動爬取該豆款的獨立頁面並匯入系統與 Firebase！
+        if (newlyDiscoveredMeta.length > 0) {
+          const newBeansFetched = [];
+          for (const meta of newlyDiscoveredMeta.slice(0, 6)) {
+            const detailUrl = `https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=${meta.id}`;
+            const detailHtml = await fetchHtmlViaCorsProxy(detailUrl);
+            if (detailHtml) {
+              const parsedBean = parseOfficialBeanDetailPage(detailHtml, meta.id, meta);
+              newBeansFetched.push(parsedBean);
+              if (db) {
+                db.ref('sbux/officialCoffeeBeans/' + meta.id).set(parsedBean);
+              }
+            }
+          }
+          if (newBeansFetched.length > 0) {
+            mergeBeansIntoCatalog(newBeansFetched);
+            localStorage.setItem('sbux_tw_official_beans_v2', JSON.stringify(starbucksCoreBeans.value));
+          }
+        }
+      } catch (err) {
+        console.warn('官網季節豆自動同步略過：', err);
+      }
+    };
+
+    // ==================== 🤖 極速鎖定版 Gemini AI 引擎 ====================
     const lockedWorkingModel = ref(localStorage.getItem('sbux_working_gemini_model') || '');
     const deadModels = new Set();
 
@@ -2960,7 +3430,6 @@ const app = createApp({
       return localKey || cKey || firebaseConfig.apiKey;
     };
 
-    // 自動將手機大圖輕量化壓縮 (辨識速度提升 5 倍，維持高清晰文字細節)
     const optimizePartsForSpeed = async (parts) => {
       const optimized = [];
       for (const p of parts) {
@@ -2994,7 +3463,6 @@ const app = createApp({
       return optimized;
     };
 
-    // 動態探測可用模型：徹底排除 image/tts/live 與會回傳 404 的舊模型，優先鎖定 Gemini 3 系列
     const discoverAvailableModels = async (apiKey) => {
       if (cachedValidModels.value.length > 0) {
         return cachedValidModels.value.filter(m => !deadModels.has(m));
@@ -3022,7 +3490,6 @@ const app = createApp({
               !name.includes('customtools')
             );
 
-          // 優先排序：曾成功連線的模型第 1 順位 -> Gemini 3 系列優先 -> 舊 2.5 墊底
           supported.sort((a, b) => {
             const score = (n) => {
               if (n === lockedWorkingModel.value) return 1000;
@@ -3033,7 +3500,7 @@ const app = createApp({
               if (n === 'gemini-3-flash-preview') return 100;
               if (n.includes('2.0-flash')) return 60;
               if (n === 'gemini-flash-latest') return 40;
-              if (n.includes('2.5-flash')) return 15; // 新金鑰呼叫 2.5 易 404，移至最後備援
+              if (n.includes('2.5-flash')) return 15;
               return 30;
             };
             return score(b) - score(a);
@@ -3044,9 +3511,7 @@ const app = createApp({
             return supported.filter(m => !deadModels.has(m));
           }
         }
-      } catch (e) {
-        console.warn("ListModels 探測失敗，使用預設清單：", e);
-      }
+      } catch (e) {}
       return ['gemini-3.6-flash', 'gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-flash-lite-latest', 'gemini-2.0-flash'].filter(m => !deadModels.has(m));
     };
 
@@ -3055,7 +3520,6 @@ const app = createApp({
       const fastParts = await optimizePartsForSpeed(parts);
       let modelsToTry = await discoverAvailableModels(apiKey);
 
-      // 若已有驗證成功的模型，強制排在第一順位直接命中！
       if (lockedWorkingModel.value && !deadModels.has(lockedWorkingModel.value)) {
         modelsToTry = [lockedWorkingModel.value, ...modelsToTry.filter(m => m !== lockedWorkingModel.value)];
       }
@@ -3077,13 +3541,11 @@ const app = createApp({
             })
           });
 
-          // 遇到 404 代表該模型不支援此金鑰，永久加入黑名單不再重試
           if (res.status === 404) {
             deadModels.add(m);
             lastError = `[${m}] 404 不支援`;
             continue;
           }
-          // 遇到 429 或 503 立即換下一顆模型，不重複卡住
           if (res.status === 429 || res.status === 503) {
             lastError = `[${m}] ${res.status} 忙碌中`;
             continue;
@@ -3091,7 +3553,6 @@ const app = createApp({
 
           const data = await res.json();
           if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-            // 🌟 成功回應！立即將此模型永久鎖定為第一順位，後續所有 AI 操作 0 秒直達！
             lockedWorkingModel.value = m;
             localStorage.setItem('sbux_working_gemini_model', m);
             return data.candidates[0].content.parts[0].text.trim();
@@ -3110,7 +3571,6 @@ const app = createApp({
       throw new Error(lastError || '所有模型皆忙碌中，請稍後幾秒再試。');
     };
 
-    // 測試 API Key 與模型探測按鈕 (顯示真正跑通並鎖定的模型名稱)
     const testGeminiApiKey = async () => {
       const k = settingsModal.value.geminiApiKey.trim();
       if (!k) {
@@ -3137,7 +3597,7 @@ const app = createApp({
       }
     };
 
-    // ==================== 💡 每次登入動態從網路/AI 取得不同咖啡知識 ====================
+    // ==================== 💡 每日動態咖啡知識 ====================
     const todayTrivia = ref(coffeeTriviaList[Math.floor(Math.random() * coffeeTriviaList.length)]);
 
     const fetchDynamicWebTrivia = async () => {
@@ -3296,7 +3756,7 @@ const app = createApp({
       return s ? `${s.name} (${s.nickname})` : '門市夥伴';
     };
 
-    // ==================== 🏆 上週得獎夥伴榮譽榜 (置頂表揚於首頁公告欄並標註期間) ====================
+    // ==================== 🏆 上週得獎夥伴榮譽榜 ====================
     const lastWeekHonorBoard = computed(() => {
       if (!latteArtArchives.value || latteArtArchives.value.length === 0) return null;
       const latestArch = latteArtArchives.value[0];
@@ -3414,6 +3874,13 @@ const app = createApp({
         }
       });
 
+      // 監聽雲端自動匯入的最新官網季節豆款
+      db.ref('sbux/officialCoffeeBeans').on('value', snap => {
+        if (snap.val()) {
+          mergeBeansIntoCatalog(snap.val());
+        }
+      });
+
       db.ref('sbux/materials').on('value', snap => {
         const val = snap.val();
         materials.value = val ? Object.keys(val).map(key => ({ _key: key, id: key, ...(typeof val[key] === 'object' ? val[key] : {}) })) : [];
@@ -3425,6 +3892,16 @@ const app = createApp({
       db.ref('sbux/blackout_dates').on('value', snap => { blackoutDates.value = snap.val() || {}; });
       db.ref('sbux/scheduled_roster').on('value', snap => { scheduledRoster.value = snap.val() || {}; });
       
+      db.ref('sbux/shift_tasks').on('value', snap => {
+        const val = snap.val();
+        shiftTasksList.value = val ? Object.values(val).sort((a, b) => (a.done === b.done ? b.timestamp - a.timestamp : (a.done ? 1 : -1))) : [];
+      });
+
+      db.ref('sbux/shift_swaps').on('value', snap => {
+        const val = snap.val();
+        shiftSwapsList.value = val ? Object.values(val).sort((a, b) => b.timestamp - a.timestamp) : [];
+      });
+
       db.ref('sbux/latte_posts').on('value', snap => {
         const val = snap.val();
         lattePosts.value = val ? Object.keys(val).map(k => ({ id: k, _key: k, ...val[k] })) : [];
@@ -3495,6 +3972,72 @@ const app = createApp({
         }
       });
     }
+
+    // ==================== 📝 班次交接與待辦事項邏輯 ====================
+    const addShiftTask = () => {
+      const text = shiftTaskForm.value.text.trim();
+      if (!text || !currentPartner.value) return;
+      const now = new Date();
+      const id = 'task_' + Date.now();
+      const newTask = {
+        id,
+        tag: shiftTaskForm.value.tag || '交接',
+        text,
+        author: currentPartner.value.nickname || currentPartner.value.name,
+        timeStr: `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
+        done: false,
+        doneBy: '',
+        timestamp: Date.now()
+      };
+      if (db) db.ref('sbux/shift_tasks/' + id).set(newTask);
+      shiftTaskForm.value.text = '';
+    };
+
+    const toggleShiftTask = (task) => {
+      if (!db || !currentPartner.value) return;
+      const nextDone = !task.done;
+      const doneBy = nextDone ? (currentPartner.value.nickname || currentPartner.value.name) : '';
+      db.ref('sbux/shift_tasks/' + task.id).update({ done: nextDone, doneBy });
+    };
+
+    const deleteShiftTask = (id) => {
+      if (db) db.ref('sbux/shift_tasks/' + id).remove();
+    };
+
+    // ==================== 🔄 班次互調與代班媒合邏輯 ====================
+    const submitShiftSwap = () => {
+      if (!currentPartner.value || !shiftSwapForm.value.date || !shiftSwapForm.value.shiftTime) return;
+      const id = 'swap_' + Date.now();
+      const newSwap = {
+        id,
+        requesterId: currentPartner.value.id || currentPartner.value._key,
+        requesterName: `${currentPartner.value.name} (${currentPartner.value.nickname})`,
+        date: shiftSwapForm.value.date,
+        shiftTime: shiftSwapForm.value.shiftTime.trim(),
+        reason: shiftSwapForm.value.reason.trim(),
+        helperName: '',
+        timestamp: Date.now()
+      };
+      if (db) db.ref('sbux/shift_swaps/' + id).set(newSwap);
+      shiftSwapForm.value = { date: '', shiftTime: '', reason: '' };
+      showSwapForm.value = false;
+      alert('✅ 已張貼至班次媒合板！');
+    };
+
+    const acceptShiftSwap = (sw) => {
+      if (!currentPartner.value || !db) return;
+      const helper = `${currentPartner.value.name} (${currentPartner.value.nickname})`;
+      if (confirm(`確定要支援 ${sw.requesterName} 於 ${sw.date} (${sw.shiftTime}) 的班次嗎？`)) {
+        db.ref('sbux/shift_swaps/' + sw.id).update({ helperName: helper });
+        alert('🤝 已標記由您支援！請雙方提醒值班主管更新正式班表。');
+      }
+    };
+
+    const deleteShiftSwap = (id) => {
+      if (confirm('確定移除此筆換班需求？') && db) {
+        db.ref('sbux/shift_swaps/' + id).remove();
+      }
+    };
 
     // ==================== 天氣、倒數計時與深色模式 ====================
     const weatherType = ref('clear');
@@ -3577,6 +4120,7 @@ const app = createApp({
       checkDarkMode();
       fetchYongheWeather();
       fetchDynamicWebTrivia();
+      syncStarbucksTaiwanBeanUrls(); // 每次上線自動同步台灣星巴克官網最新季節豆款
       updateCountdown();
       setInterval(updateCountdown, 1000);
       nextTick(() => { if (window.lucide) lucide.createIcons(); });
@@ -3637,7 +4181,7 @@ const app = createApp({
             const promptText = `你是一位專業的台灣星巴克門市管理員。請仔細閱讀這張圖片或文件中的效期與下架規範，提取所有食品、糕點、冷藏三明治、常溫包裝食品或禮盒的「品項名稱」與「提前下架天數」(若寫即期當日下架則 advance_days 為 0，若寫 D-2 則為 2)。
 【重要！模糊字跡自動校正規則】：
 若照片稍微模糊、反光或有手寫字，請務必結合「台灣星巴克官方商品常見詞彙」自動校正形近字或同音錯別字！
-常見正確詞彙參考：可頌、丹麥、帕里尼、軟法、フォカッチャ/佛卡夏、司康、馬芬、貝果、千層蛋糕、生乳捲、提拉米蘇、布朗尼、巴斯克、起司蛋糕、檸檬塔、肉桂捲、生義大利麵、焗烤、沙拉、優格、布丁、咖啡蛋捲、咖啡捲心酥、法蘭酥、薄餅、爆米花、牛軋糖、棉花糖、摩卡、那堤、焦糖瑪奇朵、星冰樂、松露、燻雞、牛肉、起司、里肌。
+常見正確詞彙參考：可頌、丹麥、帕里尼、軟法、佛卡夏、司康、馬芬、貝果、千層蛋糕、生乳捲、提拉米蘇、布朗尼、巴斯克、起司蛋糕、檸檬塔、肉桂捲、生義大利麵、焗烤、沙拉、優格、布丁、咖啡蛋捲、咖啡捲心酥、法蘭酥、薄餅、爆米花、牛軋糖、棉花糖、摩卡、那堤、焦糖瑪奇朵、星冰樂、松露、燻雞、牛肉、起司、里肌。
 請勿輸出錯別字（例如：不可寫成「可送、帕里泥、捲心蘇、司糠、千曾」）。
 請只輸出 JSON 陣列格式（不要加 markdown 符號）：
 [{"keyword":"校正後的正確品項名稱","advance_days":數字,"timing":"21:30 閉店前"}]`;
@@ -3718,7 +4262,7 @@ const app = createApp({
         try {
           aiComment = await callGeminiApi([{ text: prompt }], false, 0.6);
         } catch (apiErr) {
-          const beanInfo = starbucksCoreBeans.find(b => b.name.includes(tastingForm.value.coffeeName) || tastingForm.value.coffeeName.includes(b.name));
+          const beanInfo = starbucksCoreBeans.value.find(b => b.name.includes(tastingForm.value.coffeeName) || tastingForm.value.coffeeName.includes(b.name));
           aiComment = beanInfo
             ? `【大師風味回饋】能敏銳捕捉到「${beanInfo.name}」的${beanInfo.flavorNotes}特質！其產自${beanInfo.region}並採${beanInfo.processing}，酸度${getIntensityLabel(tastingForm.value.acidity)}與醇度${getIntensityLabel(tastingForm.value.body)}的平衡極佳，非常推薦搭配「${beanInfo.foodPairing}」一起進行顧客分享！`
             : `【大師風味回饋】對「${tastingForm.value.coffeeName}」的香氣（${tastingForm.value.aroma || '細膩前調'}）與口感層次觀察非常入微！酸度與醇度的定位精準，推薦搭配門市奶油可頌或巧克力點心提升餘韻。`;
@@ -3737,7 +4281,7 @@ const app = createApp({
           timestamp: Date.now()
         };
         if (db) await db.ref('sbux/tasting_notes/' + newNote.id).set(newNote);
-        tastingForm.value = { coffeeName: '派克市場烘焙咖啡豆', acidity: 3, body: 3, aroma: '', flavor: '', notes: '' };
+        tastingForm.value = { coffeeName: '星巴克家常咖啡豆', acidity: 3, body: 3, aroma: '', flavor: '', notes: '' };
         alert('🎉 Tasting 品評已發布！');
       } finally {
         isAiEvaluatingTasting.value = false;
@@ -3816,7 +4360,7 @@ const app = createApp({
       }
     };
 
-    // ==================== 5. 歷史排班回溯 + 值班兩週輪替 + 指定主管強制鎖定 + 早中固定 08:00 + 兼職平均工時演算法 ====================
+    // ==================== 4. 歷史排班回溯 + 值班兩週輪替 + 指定主管強制鎖定 + 早中固定 08:00 + 兼職平均工時演算法 ====================
     const timeToMins = (t) => {
       if (!t || !t.includes(':')) return 0;
       const [h, m] = t.split(':').map(Number);
@@ -3840,7 +4384,6 @@ const app = createApp({
       return [0, 2, 4, 5, 6].includes(day);
     };
 
-    // 支援多鍵值格式查詢歷史班表 (相容 staff.id, staff._key, staff.empId)
     const getRosterShiftEntry = (staff, dateStr) => {
       const roster = scheduledRoster.value || {};
       const keysToCheck = [staff.id, staff._key, `staff_${staff.empId}`, staff.empId].filter(Boolean);
@@ -3871,7 +4414,6 @@ const app = createApp({
 
     const isManagerRole = (role) => ['店經理', '副理', '值班經理', '時薪值班', '值班'].includes(role || '');
 
-    // 🌟 跨週追溯：計算排班起始日前連續出勤天數（使用本地日期，絕不偏移）
     const getPriorConsecutiveWorkDays = (staff, startDateStr) => {
       let count = 0;
       const curr = parseLocalDate(startDateStr);
@@ -3885,7 +4427,6 @@ const app = createApp({
       return count;
     };
 
-    // 🌟 跨週向後檢查：若修改中間週班表，檢查排班結束日後已排定的連續出勤天數
     const getPostConsecutiveWorkDays = (staff, endDateStr) => {
       let count = 0;
       const curr = parseLocalDate(endDateStr);
@@ -3899,7 +4440,6 @@ const app = createApp({
       return count;
     };
 
-    // 🌟 跨週追溯：獲取排班起始日前一日最後下班時間（確保跨週間隔 11 小時）
     const getPriorDayEndMinutes = (staff, startDateStr) => {
       const curr = parseLocalDate(startDateStr);
       curr.setDate(curr.getDate() - 1);
@@ -3913,11 +4453,10 @@ const app = createApp({
       return -9999;
     };
 
-    // 🌟 串聯前兩週 (14天) 歷史班表，分析值班夥伴早晚輪替狀態
     const getManagerTwoWeekHistory = (staff, refDateStr) => {
       const start = parseLocalDate(refDateStr || scheduleStartDate.value);
-      let w1Open = 0, w1Close = 0; // 前一週 (Day -7 ~ Day -1)
-      let w2Open = 0, w2Close = 0; // 前兩週 (Day -14 ~ Day -8)
+      let w1Open = 0, w1Close = 0;
+      let w2Open = 0, w2Close = 0;
 
       for (let i = 1; i <= 14; i++) {
         const d = new Date(start);
@@ -3944,18 +4483,14 @@ const app = createApp({
       let recommendedShift = 'open';
 
       if (totalOpen === 0 && totalClose === 0) {
-        // 若無歷史紀錄，依排班週次與工號奇偶自動交錯輪替
         const weekParity = Math.floor(start.getTime() / (14 * 86400000)) % 2;
         const empNum = parseInt(String(staff.empId || '0').slice(-2)) || 0;
         recommendedShift = ((weekParity + empNum) % 2 === 0) ? 'open' : 'close';
       } else if (w1Open > w1Close && w2Open >= w2Close && totalOpen >= 4) {
-        // 已連續兩週主上早班 ➔ 本週應輪替為晚班
         recommendedShift = 'close';
       } else if (w1Close > w1Open && w2Close >= w2Open && totalClose >= 4) {
-        // 已連續兩週主上晚班 ➔ 本週應輪替為早班
         recommendedShift = 'open';
       } else if (w1Open > w1Close) {
-        // 上週剛換早班（第一週），本週維持早班湊滿兩週後再輪替；若前兩週是晚班則繼續完成第二週早班
         recommendedShift = (w2Open > w2Close) ? 'close' : 'open';
       } else if (w1Close > w1Open) {
         recommendedShift = (w2Close > w2Open) ? 'open' : 'close';
@@ -3967,7 +4502,7 @@ const app = createApp({
     const getManagerRotationHint = (staff) => {
       const hist = getManagerTwoWeekHistory(staff, scheduleStartDate.value);
       if (hist.totalOpen === 0 && hist.totalClose === 0) {
-        return `無前兩週紀錄 ➔ 建議輪【${hist.recommendedShift === 'open' ? '早班' : '晚班'}】`;
+        return `建議輪【${hist.recommendedShift === 'open' ? '早班' : '晚班'}】`;
       }
       return `前兩週(早${hist.totalOpen}/晚${hist.totalClose}) ➔ 建議【${hist.recommendedShift === 'open' ? '早班' : '晚班'}】`;
     };
@@ -3981,7 +4516,6 @@ const app = createApp({
         if (hist.recommendedShift === 'open') openList.push(sid);
         else closeList.push(sid);
       });
-      // 若全部集中同一邊，自動對半平衡
       if (openList.length === 0 && closeList.length > 1) {
         openList.push(closeList.shift());
       } else if (closeList.length === 0 && openList.length > 1) {
@@ -3991,7 +4525,6 @@ const app = createApp({
       selectedWeeklyCloseManagers.value = closeList;
     };
 
-    // 🌟 工作月（每月 21 日至次月 20 日）歷史累計工時與剩餘週數配速計算
     const getWorkMonthStats = (staff, targetDateStr) => {
       const target = parseLocalDate(targetDateStr);
       const y = target.getFullYear();
@@ -4001,12 +4534,10 @@ const app = createApp({
       const startDate = day >= 21 ? new Date(y, m, 21, 0, 0, 0) : new Date(y, m - 1, 21, 0, 0, 0);
       const endDate = day >= 21 ? new Date(y, m + 1, 20, 23, 59, 59) : new Date(y, m, 20, 23, 59, 59);
 
-      // 計算在本次排班起始日「之前」已經累積的工作月工時
       let priorAccumHours = 0;
       const curr = new Date(startDate);
       while (curr <= endDate) {
         const dStr = formatDateLocal(curr);
-        // 排除本次正在預排的 7 天區間，避免重複計算
         const inCurrentRange = dStr >= scheduleStartDate.value && dStr <= scheduleEndDate.value;
         if (!inCurrentRange) {
           const entry = getRosterShiftEntry(staff, dStr);
@@ -4022,18 +4553,14 @@ const app = createApp({
         curr.setDate(curr.getDate() + 1);
       }
 
-      // 計算從排班起始日到工作月結算日 (20號) 還剩幾週 (至少 1 週)
       const daysLeft = Math.max(7, Math.ceil((endDate - target) / 86400000));
       const weeksLeft = Math.max(1, Math.min(4.3, daysLeft / 7));
-
-      // 兼職工作月目標底線 50 小時 (設定 52h 安全緩衝)，除以剩餘週數得出「本週理想平均工時 (限制在 15h ~ 24h 之間，絕不暴增暴減)」
       const hoursStillNeeded = Math.max(0, 52 - priorAccumHours);
       const idealWeeklyPace = Math.max(15, Math.min(24, Math.round((hoursStillNeeded / weeksLeft) * 10) / 10));
 
       return { priorAccumHours, weeksLeft, idealWeeklyPace };
     };
 
-    // ==================== 🤖 主排班預排演算法 ====================
     const generateAiRoster = async () => {
       if (!scheduleStartDate.value || !scheduleEndDate.value) return alert('請先設定排班範圍！');
       const dates = targetRangeDates.value;
@@ -4046,7 +4573,6 @@ const app = createApp({
       const schedulePlan = [];
       const warnings = [];
 
-      // 建立每位夥伴的跨週出勤追蹤與本月平均配速目標
       const staffWorkTracker = {};
       allStaff.forEach(s => {
         const sid = s.id || s._key;
@@ -4065,8 +4591,6 @@ const app = createApp({
         };
       });
 
-      // 判斷管理職的早晚鎖定池：
-      // 若使用者有勾選「指定早班 / 晚班值班」，嚴格使用勾選名單；若未勾選，自動依前兩週輪替結果鎖定
       const hasUserSelectedOpen = selectedWeeklyOpenManagers.value.length > 0;
       const hasUserSelectedClose = selectedWeeklyCloseManagers.value.length > 0;
 
@@ -4089,7 +4613,6 @@ const app = createApp({
         const dayIdx = (d.getDay() + 6) % 7;
         const isLastDayOfRange = (dayIndexInRange === dates.length - 1);
 
-        // 🌟 核心班次結構：早上的中班嚴格固定為 08:00 進班 (08:00-16:30)，絕不延後到 10:00！
         const dayShiftSlots = [
           { id: 'open_mgr', order: 1, name: "早班(開店1)", start: "06:30", end: "15:00", requiresManager: true, managerType: 'open' },
           { id: 'close_mgr', order: 5, name: "晚班(收店1)", start: "14:00", end: "22:30", requiresManager: true, managerType: 'close', isEvening: true },
@@ -4098,7 +4621,6 @@ const app = createApp({
         ];
 
         if (isWeekend) {
-          // 假日尖峰額外配置一位 10:30-19:00 假日中班
           dayShiftSlots.push({ id: 'mid_weekend', order: 4, name: "中班(午中)", start: "10:30", end: "19:00", requiresManager: false, isAfternoonMid: true });
         }
 
@@ -4108,34 +4630,26 @@ const app = createApp({
         const assignedToday = new Set();
         const assignedShifts = [];
 
-        // 通用候選人資格檢查函式
         const canStaffWorkSlot = (staff, slotStart, slotEnd, isEveningSlot = false, allowFlexEvening = false) => {
           const sid = staff.id || staff._key;
           if (assignedToday.has(sid)) return false;
 
           const tracker = staffWorkTracker[sid];
-          // 🛑 嚴格禁止跨週或本週連續工作滿 7 天 (連 6 必休 1)
           if (tracker.consecutiveDays >= 6 || tracker.daysWorked >= 6) return false;
-          // 若是本週最後一天，且下週緊接著已排滿 (加起來會連 7)，亦強制排休
           if (isLastDayOfRange && (tracker.consecutiveDays + 1 + tracker.postConsecutiveDays) >= 7) return false;
 
-          // 🌟 嚴格執行「指定早班 / 晚班值班」隔離鎖定：
-          // 被指定為「晚班值班」的主管，絕不可排入早班或早上中班 (保留給晚班)
           if (!isEveningSlot && lockedCloseManagers.has(sid) && !lockedOpenManagers.has(sid)) {
             return false;
           }
-          // 被指定為「早班值班」的主管，絕不可排入晚班
           if (isEveningSlot && lockedOpenManagers.has(sid) && !lockedCloseManagers.has(sid)) {
             return false;
           }
 
-          // 正職每週 40h (37h~42h) 彈性控制：滿 40h 後優先讓位給未達標兼職
           const isFT = isTrueFullTime(staff.role);
           if (isFT && tracker.weeklyHours >= 40) {
             return false;
           }
 
-          // 標準時段匹配
           if (isStaffAvailableForShift(staff, dateStr, slotStart, slotEnd)) {
             if (tracker.lastEndMins > 0) {
               const restMins = (24 * 60 - tracker.lastEndMins) + timeToMins(slotStart);
@@ -4144,7 +4658,6 @@ const app = createApp({
             return true;
           }
 
-          // 晚班彈性時段匹配 (如學生兼職 17:00 / 18:00 / 19:00 進班至 22:30)
           if (allowFlexEvening && isEveningSlot && staff.availability) {
             const av = staff.availability['day_' + dayIdx];
             if (av && av.type === 'custom') {
@@ -4162,17 +4675,14 @@ const app = createApp({
           return false;
         };
 
-        // 依 dayShiftSlots 順序（早值班與晚值班第一優先鎖定！）進行指派
         dayShiftSlots.forEach((slot) => {
           let slotStart = slot.start;
           let slotEnd = slot.end;
           let pickedStaff = null;
 
           if (slot.requiresManager) {
-            // 第一階段：優先從「完整時段可用」的管理職中挑選
             let mgrPool = allDutyStaff.value.filter(s => canStaffWorkSlot(s, slotStart, slotEnd, !!slot.isEvening, true));
 
-            // 1. 嚴格優先使用「本週指定早班 / 晚班值班」勾選名單
             const targetDesignatedList = slot.managerType === 'open'
               ? selectedWeeklyOpenManagers.value
               : selectedWeeklyCloseManagers.value;
@@ -4190,9 +4700,7 @@ const app = createApp({
               }
             }
 
-            // 2. 若指定的值班主管當天休假或未勾選指定名單，依「前兩週早晚輪替建議」挑選其他可用值班主管
             if (!pickedStaff) {
-              // 若指定主管當天畫假，放寬讓其他值班主管代班支援
               let fallbackMgrPool = mgrPool.length > 0 ? mgrPool : allDutyStaff.value.filter(s => {
                 const sid = s.id || s._key;
                 if (assignedToday.has(sid)) return false;
@@ -4206,12 +4714,10 @@ const app = createApp({
                 fallbackMgrPool.sort((a, b) => {
                   const sidA = a.id || a._key;
                   const sidB = b.id || b._key;
-                  // 符合兩週輪替方向者優先
                   const rotMatchA = staffWorkTracker[sidA].recommendedShift === slot.managerType ? 1 : 0;
                   const rotMatchB = staffWorkTracker[sidB].recommendedShift === slot.managerType ? 1 : 0;
                   if (rotMatchA !== rotMatchB) return rotMatchB - rotMatchA;
 
-                  // 正職未滿 37h 優先
                   const aFT = isTrueFullTime(a.role) && staffWorkTracker[sidA].weeklyHours < 37 ? 1 : 0;
                   const bFT = isTrueFullTime(b.role) && staffWorkTracker[sidB].weeklyHours < 37 ? 1 : 0;
                   if (aFT !== bFT) return bFT - aFT;
@@ -4226,7 +4732,6 @@ const app = createApp({
               warnings.push(`${dateStr} (${dObj.weekday}) ${slot.name} 缺少可用值班主管！`);
             }
           } else {
-            // 一般夥伴槽位（早班2、早上08:00中班、晚班2、晚班3）
             let candidates = allStaff.filter(s => canStaffWorkSlot(s, slotStart, slotEnd, !!slot.isEvening, true));
 
             if (candidates.length > 0) {
@@ -4238,24 +4743,19 @@ const app = createApp({
                 const aIsFT = isTrueFullTime(a.role);
                 const bIsFT = isTrueFullTime(b.role);
 
-                // 1. 晚班優先選能 14:00 準時進班的夥伴，避免下午空窗
                 const aCanFull = isStaffAvailableForShift(a, dateStr, slotStart, slotEnd) ? 1 : 0;
                 const bCanFull = isStaffAvailableForShift(b, dateStr, slotStart, slotEnd) ? 1 : 0;
                 if (aCanFull !== bCanFull) return bCanFull - aCanFull;
 
-                // 2. 正職未滿 37h / 5天 優先排滿
                 if (aIsFT && (trA.weeklyHours < 37 || trA.daysWorked < 5) && (!bIsFT || (trB.weeklyHours >= 37 && trB.daysWorked >= 5))) return -1;
                 if (bIsFT && (trB.weeklyHours < 37 || trB.daysWorked < 5) && (!aIsFT || (trA.weeklyHours >= 37 && trA.daysWorked >= 5))) return 1;
 
-                // 3. 兼職「平均配速與 50h 保底」：比較「距離本週理想平均工時 (idealWeeklyPace) 的差距比例」
-                // 讓每位兼職夥伴在每一週都平均獲得班次，不會一週很少、隔週暴增
                 const gapRatioA = (trA.idealWeeklyPace - trA.weeklyHours) / Math.max(1, trA.idealWeeklyPace);
                 const gapRatioB = (trB.idealWeeklyPace - trB.weeklyHours) / Math.max(1, trB.idealWeeklyPace);
                 if (Math.abs(gapRatioA - gapRatioB) > 0.12) {
                   return gapRatioB - gapRatioA;
                 }
 
-                // 4. 工作月累計尚未達 50h 底線者優先
                 if (!aIsFT && !bIsFT) {
                   if (trA.monthlyAccum < 50 && trB.monthlyAccum >= 50) return -1;
                   if (trB.monthlyAccum < 50 && trA.monthlyAccum >= 50) return 1;
@@ -4321,9 +4821,6 @@ const app = createApp({
           }
         });
 
-        // 🌟 核心平衡機制：早上的中班固定 08:00 進班絕不延後！
-        // 若下午 15:00 ~ 19:00 因為晚班夥伴晚進班（如 18:00 或 19:00）而導致在店人數不足 3 人，
-        // 系統一律透過「調整下午人力（加派下午中班 13:00-19:00 / 14:00-19:00 或微幅延長下班時間但不改 08:00 起點）」來平衡整天人力！
         const countStaffAtMinute = (targetMin) => {
           return assignedShifts.filter(sh => sh.staffId && sh.startMins <= targetMin && sh.endMins > targetMin).length;
         };
@@ -4333,7 +4830,6 @@ const app = createApp({
           const maxLateArrivalMins = Math.max(...lateEveningShifts.map(sh => sh.startMins));
           const targetEndStr = minsToTimeStr(maxLateArrivalMins);
 
-          // 逐一檢查 15:00 ~ maxLateArrivalMins 是否少於 3 人，若少於 3 人則持續補齊下午人力
           for (let pass = 0; pass < 2; pass++) {
             let needAfternoonSupport = false;
             for (let m = timeToMins("15:00"); m < maxLateArrivalMins; m += 30) {
@@ -4345,8 +4841,6 @@ const app = createApp({
             if (!needAfternoonSupport) break;
 
             let patched = false;
-
-            // 優先方案 1：從當日未上班的夥伴中，加派一位「下午中班 (13:00-19:00 或 14:00-19:00)」專門填補下午時段（同時幫兼職穩定增加工時）
             const afternoonBridgeStarts = ["13:00", "14:00", "12:00"];
             for (const bStart of afternoonBridgeStarts) {
               const bridgePool = allStaff.filter(s => canStaffWorkSlot(s, bStart, targetEndStr, false, false));
@@ -4385,7 +4879,6 @@ const app = createApp({
               }
             }
 
-            // 備援方案 2：若當日無其他可加派的下午夥伴，將 08:00 早上中班的下班時間順延至交接點（嚴格維持 08:00 進班不變！）
             if (!patched) {
               const morningMidShift = assignedShifts.find(sh => sh.shiftName === '中班(早中)' && sh.staffId && sh.endMins < maxLateArrivalMins);
               if (morningMidShift) {
@@ -4406,10 +4899,8 @@ const app = createApp({
           }
         }
 
-        // 依班別順序整齊排列當日班次 (早班 ➔ 早中08:00 ➔ 午中 ➔ 晚班)
         assignedShifts.sort((a, b) => (a.order || 9) - (b.order || 9));
 
-        // 統計早晨 (08:00~12:00) 與下午 (15:00~19:00) 最低在店人數
         let minMorningStaff = 99;
         for (let m = timeToMins("08:00"); m < timeToMins("12:00"); m += 30) {
           const c = countStaffAtMinute(m);
@@ -4441,10 +4932,9 @@ const app = createApp({
         });
       });
 
-      // 🌟 立即彈出預排班表視窗（0.05 秒瞬開，完全不卡頓！）
       const designatedOpenNames = allDutyStaff.value.filter(m => lockedOpenManagers.has(m.id || m._key)).map(m => m.name).join('、') || '自動輪替';
       const designatedCloseNames = allDutyStaff.value.filter(m => lockedCloseManagers.has(m.id || m._key)).map(m => m.name).join('、') || '自動輪替';
-      const defaultReport = `✅ 1. 指定值班鎖定：早班值班【${designatedOpenNames}】、晚班值班【${designatedCloseNames}】（已串聯前兩週歷史班表輪替）。\n✅ 2. 全天人力平衡：早上中班固定 08:00 進班確保早晨 3 人以上，下午 15:00~19:00 透過午間支援與晚班無縫銜接。\n✅ 3. 法規與工時平均：已嚴格阻擋跨週連上 7 天，並依工作月剩餘週數平均分配兼職每週工時（穩健達成 50h 底線）。`;
+      const defaultReport = `✅ 1. 指定值班鎖定：早班【${designatedOpenNames}】、晚班【${designatedCloseNames}】。\n✅ 2. 全天人力平衡：早上中班固定 08:00 進班，下午缺口由午間支援與晚班銜接。\n✅ 3. 法規與工時平均：已阻擋跨週連上 7 天，並依工作月剩餘週數平均分配兼職每週工時。`;
 
       isAiGeneratingRoster.value = false;
       aiRosterModal.value = {
@@ -4454,7 +4944,6 @@ const app = createApp({
         aiAnalysis: defaultReport + '\n⏳ (AI 顧問正在背景生成深度工時審查報告...)'
       };
 
-      // 背景非同步補充 AI 顧問報告，完全不影響主管看班表與套用！
       const summaryLines = allStaff.filter(s => s.role !== '天使夥伴').map(s => {
         const sid = s.id || s._key;
         const tr = staffWorkTracker[sid];
@@ -4483,7 +4972,6 @@ const app = createApp({
       const plan = aiRosterModal.value.result;
       const newRosterMap = { ...(scheduledRoster.value || {}) };
 
-      // 僅清除本次預排日期區間內的舊紀錄，完整保留前幾週與其他週的歷史班表！
       targetRangeDates.value.forEach(d => {
         Object.keys(newRosterMap).forEach(k => {
           if (k.endsWith('_' + d.dateStr)) delete newRosterMap[k];
@@ -4509,12 +4997,11 @@ const app = createApp({
       scheduledRoster.value = newRosterMap;
       aiRosterModal.value.show = false;
       printTargetMode.value = 'ai';
-      alert('🎉 預排班表已成功套用！（前幾週歷史班表已完整保留供跨週輪替與連七檢查使用）');
+      alert('🎉 預排班表已成功套用！');
     };
 
-    // 僅清除目前所選排班週期的預排紀錄，不破壞歷史週班表
     const clearScheduledRoster = () => {
-      if (confirm(`確定要清除目前所選週期 (${scheduleStartDate.value} ~ ${scheduleEndDate.value}) 的預排班表嗎？\n(註：過去週次的歷史班表將予以保留，以供跨週連七與早晚輪替判斷)`)) {
+      if (confirm(`確定要清除目前所選週期 (${scheduleStartDate.value} ~ ${scheduleEndDate.value}) 的預排班表嗎？`)) {
         const newRosterMap = { ...(scheduledRoster.value || {}) };
         targetRangeDates.value.forEach(d => {
           Object.keys(newRosterMap).forEach(k => {
@@ -4754,11 +5241,14 @@ const app = createApp({
       return '';
     };
 
-    // ==================== 物料、進貨、咖啡豆篩選、拉花投票與小學堂操作 ====================
+    // ==================== 物料、進貨、咖啡豆篩選、相簿收合與多圖上傳操作 ====================
     const filteredMaterials = computed(() => {
       const q = matSearchQuery.value.trim().toLowerCase();
-      if (!q) return materials.value;
-      return materials.value.filter(m => (m.code && String(m.code).toLowerCase().includes(q)) || (m.name && String(m.name).toLowerCase().includes(q)));
+      return materials.value.filter(m => {
+        if (matTempFilter.value !== 'all' && (m.temp || '常溫') !== matTempFilter.value) return false;
+        if (!q) return true;
+        return (m.code && String(m.code).toLowerCase().includes(q)) || (m.name && String(m.name).toLowerCase().includes(q));
+      });
     });
 
     const calculateOpenTime = (mat) => {
@@ -4888,6 +5378,7 @@ const app = createApp({
     const resetToCurrentMonth = () => currentCalDate.value = new Date();
     const todayStr = computed(() => formatDateLocal(new Date()));
     const selectedDate = ref(todayStr.value);
+    const todayPullItems = computed(() => inventory.value.filter(it => it.pullDate === todayStr.value));
 
     const calendarDays = computed(() => {
       const year = calYear.value;
@@ -4929,10 +5420,9 @@ const app = createApp({
       }
     };
 
-    // 咖啡豆寶典複合篩選 (常態/季節 + 烘焙度 + 關鍵字搜尋)
     const filteredCoffeeBeans = computed(() => {
       const q = coffeeSearchQuery.value.trim().toLowerCase();
-      return starbucksCoreBeans.filter(b => {
+      return starbucksCoreBeans.value.filter(b => {
         if (coffeeCategoryFilter.value !== 'all' && b.category !== coffeeCategoryFilter.value) return false;
         if (coffeeRoastFilter.value !== 'all' && b.roast !== coffeeRoastFilter.value) return false;
         if (!q) return true;
@@ -5096,6 +5586,7 @@ const app = createApp({
       alert(`🎉 測驗完成！得分：${score} / 5 分`);
     };
 
+    // ==================== 📷 門市相簿：收合展開、多張上傳、放大檢視與下載 ====================
     const openCreateAlbumModal = () => { createAlbumModal.value = { show: true, name: '' }; };
     const saveNewAlbum = () => {
       const name = createAlbumModal.value.name.trim();
@@ -5105,43 +5596,149 @@ const app = createApp({
         if (db) db.ref('sbux/custom_albums').set(customAlbums.value);
       }
       selectedAlbum.value = name;
+      expandedAlbums.value[name] = true;
       createAlbumModal.value.show = false;
     };
 
     const deleteAlbum = (albumName) => {
-      if (confirm(`確定刪除相簿【${albumName}】？`)) {
+      if (confirm(`確定刪除相簿【${albumName}】及其內所有照片嗎？`)) {
         customAlbums.value = customAlbums.value.filter(a => a !== albumName);
-        if (db) db.ref('sbux/custom_albums').set(customAlbums.value);
-        if (selectedAlbum.value === albumName) selectedAlbum.value = 'all';
+        if (db) {
+          db.ref('sbux/custom_albums').set(customAlbums.value);
+          storePhotos.value.forEach(p => {
+            if (p.album === albumName) db.ref('sbux/store_photos/' + p.id).remove();
+          });
+        }
+        if (selectedAlbum.value === albumName) selectedAlbum.value = '一般門市相簿';
       }
     };
 
-    const handleStorePhotoUpload = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        const photoItem = {
-          id: Date.now().toString(),
-          album: selectedAlbum.value === 'all' ? '一般門市相簿' : selectedAlbum.value,
-          url: evt.target.result,
-          dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`,
-          timestamp: Date.now()
+    const groupedAlbumFolders = computed(() => {
+      const folderMap = {};
+      const allAlbumNames = ['一般門市相簿', ...customAlbums.value];
+      allAlbumNames.forEach(name => {
+        if (name && !folderMap[name]) {
+          folderMap[name] = { name, photos: [], coverUrl: '' };
+        }
+      });
+
+      storePhotos.value.forEach(p => {
+        const albName = p.album || '一般門市相簿';
+        if (!folderMap[albName]) {
+          folderMap[albName] = { name: albName, photos: [], coverUrl: '' };
+        }
+        folderMap[albName].photos.push(p);
+        if (!folderMap[albName].coverUrl) {
+          folderMap[albName].coverUrl = p.url;
+        }
+      });
+
+      return Object.values(folderMap).filter(f => f.photos.length > 0 || customAlbums.value.includes(f.name) || f.name === '一般門市相簿');
+    });
+
+    const toggleAlbumFolder = (albumName) => {
+      expandedAlbums.value[albumName] = !expandedAlbums.value[albumName];
+    };
+
+    const isAlbumExpanded = (albumName) => {
+      return !!expandedAlbums.value[albumName];
+    };
+
+    const compressImageFile = (file) => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const img = new Image();
+          img.onload = () => {
+            const maxDim = 1600;
+            let w = img.width, h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+              else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.85));
+          };
+          img.onerror = () => resolve(evt.target.result);
+          img.src = evt.target.result;
         };
-        if (db) db.ref('sbux/store_photos/' + photoItem.id).set(photoItem);
-        alert('照片已上傳！');
-      };
-      reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
+      });
+    };
+
+    const handleStorePhotoUpload = async (e) => {
+      const files = Array.from(e.target.files || []);
+      if (files.length === 0) return;
+
+      const targetAlb = selectedAlbum.value === 'all' ? '一般門市相簿' : (selectedAlbum.value || '一般門市相簿');
+      isUploadingPhotos.value = true;
+      try {
+        for (let i = 0; i < files.length; i++) {
+          photoUploadProgress.value = `${i + 1} / ${files.length}`;
+          const compressedDataUrl = await compressImageFile(files[i]);
+          const id = Date.now().toString() + '_' + i;
+          const photoItem = {
+            id,
+            album: targetAlb,
+            url: compressedDataUrl,
+            dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`,
+            timestamp: Date.now() + i
+          };
+          if (db) await db.ref('sbux/store_photos/' + id).set(photoItem);
+        }
+        expandedAlbums.value[targetAlb] = true;
+        alert(`🎉 已成功上傳 ${files.length} 張照片至【${targetAlb}】！`);
+      } catch (err) {
+        alert('照片上傳失敗：' + err.message);
+      } finally {
+        isUploadingPhotos.value = false;
+        photoUploadProgress.value = '';
+        e.target.value = '';
+      }
     };
 
     const deleteStorePhoto = (id) => {
-      if (confirm('確定刪除？') && db) db.ref('sbux/store_photos/' + id).remove();
+      if (confirm('確定刪除這張照片？') && db) db.ref('sbux/store_photos/' + id).remove();
     };
 
     const filteredStorePhotos = computed(() => {
       if (selectedAlbum.value === 'all') return storePhotos.value;
       return storePhotos.value.filter(p => p.album === selectedAlbum.value);
     });
+
+    const openPhotoLightbox = (url, title = '相片預覽', list = [], index = 0) => {
+      lightboxModal.value = {
+        show: true,
+        url,
+        title,
+        list: Array.isArray(list) ? list : [],
+        index: index || 0
+      };
+    };
+
+    const stepLightboxPhoto = (delta) => {
+      const list = lightboxModal.value.list;
+      if (!list || list.length <= 1) return;
+      const nextIdx = (lightboxModal.value.index + delta + list.length) % list.length;
+      const nextItem = list[nextIdx];
+      lightboxModal.value.index = nextIdx;
+      lightboxModal.value.url = nextItem.url;
+      lightboxModal.value.title = `${nextItem.album || '門市相簿'} (${nextItem.dateStr || ''})`;
+    };
+
+    const downloadPhoto = (dataUrl, filename = 'starbucks_photo.jpg') => {
+      if (!dataUrl) return;
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = filename.replace(/[\\/:*?"<>|]/g, '_');
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    };
 
     const openBravoModal = () => { bravoModal.value = { show: true, form: { targetStaffId: '', message: '' } }; };
     const submitBravoCard = () => {
@@ -5226,6 +5823,7 @@ const app = createApp({
         localStorage.setItem('sbux_logged_empid', partner.empId);
         loginForm.value = { empId: '', password: '' };
         fetchDynamicWebTrivia();
+        syncStarbucksTaiwanBeanUrls(); // 每次登入時自動同步台灣星巴克官網最新季節豆款
         nextTick(() => { if (window.lucide) lucide.createIcons(); });
         alert(`歡迎回來，${partner.nickname}！☕`);
       } else {
@@ -5288,7 +5886,7 @@ const app = createApp({
       if (db && k) {
         db.ref('sbux/systemConfig/geminiApiKey').set(k);
       }
-      alert('🤖 已儲存 Gemini API Key 並同步至門市雲端！可點擊旁邊的「🔍 測試連線模型」確認狀態。');
+      alert('🤖 已儲存 Gemini API Key 並同步至門市雲端！');
     };
 
     const saveNewPassword = () => {
@@ -5321,20 +5919,24 @@ const app = createApp({
       todayTrivia, fetchDynamicWebTrivia, isFetchingTrivia,
       weatherType, weatherDesc, weatherIcon, weatherGreeting, weatherBannerClass,
       countdownToSunday, settledPeriodStr, settledHonors, lastWeekHonorBoard,
+      shiftTaskForm, shiftTasksList, addShiftTask, toggleShiftTask, deleteShiftTask,
+      showSwapForm, shiftSwapForm, shiftSwapsList, submitShiftSwap, acceptShiftSwap, deleteShiftSwap,
       showRulesLibrary, addRuleModal, openAddRuleModal, editRule, isAiRecognizingRules, aiRuleUploadFeedback, handleAiRuleImageUpload, saveNewRule, deleteRule, applyRuleToForm, autoMatchRuleByKeyword,
       bulletinList, bulletinModal, openBulletinModal, submitBulletin, deleteBulletin,
       storePhotos, customAlbums, selectedAlbum, createAlbumModal, openCreateAlbumModal, saveNewAlbum,
-      handleStorePhotoUpload, deleteStorePhoto, deleteAlbum, filteredStorePhotos,
+      handleStorePhotoUpload, isUploadingPhotos, photoUploadProgress, deleteStorePhoto, deleteAlbum, filteredStorePhotos,
+      groupedAlbumFolders, toggleAlbumFolder, isAlbumExpanded,
+      lightboxModal, openPhotoLightbox, stepLightboxPhoto, downloadPhoto,
       bravoCardsList, bravoModal, openBravoModal, submitBravoCard,
       starbucksCoreBeans, coffeeSearchQuery, coffeeCategoryFilter, coffeeRoastFilter, filteredCoffeeBeans,
       courseSummaries, isGeneratingSummary, generateCourseSummary,
       tastingForm, submitTastingNote, tastingNotesList, getIntensityLabel, getCleanNotesText, deleteTastingNote, isAiEvaluatingTasting,
       latteForm, handleLattePhotoUpload, submitLattePost, isAiEvaluating, isArchivingLatteArt,
-      weeklyLattePosts, deleteLattePost, materials, matSearchQuery, filteredMaterials,
+      weeklyLattePosts, deleteLattePost, materials, matSearchQuery, matTempFilter, filteredMaterials,
       calcModal, calculateOpenTime, addMaterialToSchedule,
       matEditModal, openAddMaterialModal, editMaterial, saveMaterialForm, deleteMaterial,
       intakeForm, submitIntake, deleteIntake, rules,
-      calYear, calMonth, changeMonth, resetToCurrentMonth, calendarDays, todayStr, selectedDate, selectedDateItems,
+      calYear, calMonth, changeMonth, resetToCurrentMonth, calendarDays, todayStr, todayPullItems, selectedDate, selectedDateItems,
       staffList, validStaffList, sortedValidStaffList, allDutyStaff, selectedWeeklyOpenManagers, selectedWeeklyCloseManagers, getManagerRotationHint, autoSelectRotatedManagers, getPrintRowHeight,
       isSpecialCoffeeMaster, isDavidWorkDay,
       vacationList, vacationForm, submitVacation,
