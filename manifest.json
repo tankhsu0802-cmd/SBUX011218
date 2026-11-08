@@ -1,0 +1,19 @@
+{
+  "name": "星巴克永和永安門市管理系統 (011218)",
+  "short_name": "永安門市",
+  "description": "星巴克永和永安門市 (011218) 夥伴專屬營運、效期、排班與咖啡學院系統",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#064e3b",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='115' fill='%23064e3b'/><circle cx='256' cy='256' r='210' fill='none' stroke='%23cba258' stroke-width='12'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='240'>☕</text><text x='50%25' y='83%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='52' fill='%23ffffff'>011218</text></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
