@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>永和永安門市管理系統 (011218)</title>
+  <!-- PWA 與 iOS 全螢幕獨立 App 設定 -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#064e3b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="永安門市">
+  <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23064e3b'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='260'>☕</text></svg>">
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -35,10 +42,16 @@
       overflow-x: hidden;
     }
     .app-screen {
-      padding-top: 64px;
-      padding-bottom: 95px;
+      padding-top: calc(64px + env(safe-area-inset-top, 0px));
+      padding-bottom: calc(95px + env(safe-area-inset-bottom, 0px));
       width: 100%;
       overflow-x: hidden;
+    }
+    header.ios-header-glass {
+      padding-top: env(safe-area-inset-top, 0px);
+    }
+    footer.ios-glass-bar {
+      padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     .no-scrollbar::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
@@ -263,6 +276,9 @@
           </div>
         </div>
         <div class="flex items-center space-x-2">
+          <button v-if="!isRunningStandalone" @click="triggerInstallApp" class="px-2 py-0.5 bg-amber-400 hover:bg-amber-300 text-black font-black rounded-full text-[10px] shadow active:scale-95 transition flex items-center gap-1">
+            <span>📲</span> 安裝App
+          </button>
           <button @click="openSettingsModal" class="p-1 text-emerald-200 hover:text-white text-base active:scale-95 transition" title="設定">
             ⚙️
           </button>
@@ -2304,6 +2320,38 @@
     </div>
   </transition>
 
+    <!-- 📲 安裝門市專屬 App 引導 Modal -->
+  <transition name="modal">
+    <div v-if="installAppModal.show" class="fixed inset-0 bg-black/60 z-[99999] flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-4 border border-slate-200 dark:border-slate-700">
+        <div class="flex justify-between items-center border-b dark:border-slate-700 pb-2">
+          <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+            <span>📲</span> 安裝「永安門市 App」至手機桌面
+          </h3>
+          <button @click="installAppModal.show = false" class="text-slate-400 text-sm">✕</button>
+        </div>
+
+        <div class="space-y-3 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+          <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border border-emerald-200 dark:border-emerald-800 space-y-1.5">
+            <div class="font-black text-emerald-900 dark:text-emerald-300">🍎 iPhone / iPad (Safari 瀏覽器) 安裝步驟：</div>
+            <p>1. 點擊螢幕底部正中央的 <b>「分享」圖示</b>（方框向上箭頭 📤）。</p>
+            <p>2. 往下滑動選單，點選 <b>「加入主畫面 (Add to Home Screen)」</b>。</p>
+            <p>3. 點擊右上角 <b>「新增」</b>，桌面就會出現專屬的「永安門市」App 圖示！</p>
+          </div>
+
+          <div class="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-200 dark:border-slate-600 space-y-1.5">
+            <div class="font-black text-slate-900 dark:text-white">🤖 Android (Chrome 瀏覽器) 安裝步驟：</div>
+            <p>1. 點擊瀏覽器右上角的 <b>「⋮」選單</b>。</p>
+            <p>2. 點選 <b>「安裝應用程式」</b> 或 <b>「加到主畫面」</b> 即可完成安裝！</p>
+          </div>
+        </div>
+
+        <button @click="installAppModal.show = false" class="w-full py-2.5 bg-emerald-800 text-white rounded-xl text-xs font-bold">
+          我知道了
+        </button>
+      </div>
+    </div>
+  </transition>
   <!-- 個人設定 Modal -->
   <transition name="modal">
     <div v-if="settingsModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
@@ -3252,6 +3300,39 @@ const app = createApp({
     const blackoutModal = ref({ show: false, form: { date: '', reason: '' } });
     const vacationDetailModal = ref({ show: false, dateStr: '', isBlackout: false, blackoutReason: '', vacations: [] });
     const settingsModal = ref({ show: false, newPassword: '', birthday: '', geminiApiKey: '' });
+    // PWA 獨立 App 模式偵測、安裝引導與吧台螢幕常亮鎖
+    const isRunningStandalone = ref(
+      window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+    );
+    const deferredInstallPrompt = ref(null);
+    const installAppModal = ref({ show: false });
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt.value = e;
+    });
+
+    const triggerInstallApp = async () => {
+      if (deferredInstallPrompt.value) {
+        deferredInstallPrompt.value.prompt();
+        const { outcome } = await deferredInstallPrompt.value.userChoice;
+        if (outcome === 'accepted') {
+          deferredInstallPrompt.value = null;
+          isRunningStandalone.value = true;
+        }
+      } else {
+        installAppModal.value.show = true;
+      }
+    };
+
+    // 吧台作業防休眠：當夥伴開著系統查效期或沖煮參數時，保持螢幕常亮不自動黑屏
+    const requestScreenWakeLock = async () => {
+      try {
+        if ('wakeLock' in navigator) {
+          await navigator.wakeLock.request('screen');
+        }
+      } catch (e) {}
+    };
     const addRuleModal = ref({ show: false, isEdit: false, form: { id: '', keyword: '', advance_days: 7 } });
     const calcModal = ref({ show: false, item: {}, targetTimeStr: '', pullDate: '', timing: '', isAdjustedForClose: false });
     const matEditModal = ref({ show: false, isNew: true, form: {} });
@@ -4457,6 +4538,10 @@ const app = createApp({
       updateCountdown();
       setInterval(updateCountdown, 1000);
       nextTick(() => { if (window.lucide) lucide.createIcons(); });
+      requestScreenWakeLock();
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      }
     });
 
     const settledPeriodStr = computed(() => {
@@ -6322,7 +6407,8 @@ const app = createApp({
       currentWeekQuizId, showQuizModal, userAnswers, quizSubmitted,
       quizScore, currentQuizQuestions, myQuizResult, allActivePartners,
       quizCompletedStaff, quizPendingStaff, publishKnowledge, deleteKnowledge,
-      handleKnowledgeFileUpload, startWeeklyQuiz, submitWeeklyQuiz
+      handleKnowledgeFileUpload, startWeeklyQuiz, submitWeeklyQuiz,
+      isRunningStandalone, installAppModal, triggerInstallApp
     };
   }
 });
