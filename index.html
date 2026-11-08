@@ -4002,11 +4002,58 @@ const app = createApp({
       return { name: '尚無紀錄', scoreText: '-', delta: 0 };
     };
 
-    // ==================== ☕ 品評活躍獎統計 (統計夥伴品評篇數與平均感知分數) ====================
-    const computeActiveTasterAward = (notesArr, fallbackWork = null) => {
-      if (notesArr && notesArr.length > 0) {
+    // ==================== ☕ 品評活躍獎統計 (嚴格依據實際品評紀錄統計，無品評時顯示從缺) ====================
+    const computeActiveTasterAward = (notesArr, targetPeriodStr = null) => {
+      const rawList = Array.isArray(notesArr) ? notesArr : [];
+      const isArchiveMode = (typeof targetPeriodStr === 'string' && targetPeriodStr.includes('~'));
+
+      // 依週期過濾品評紀錄（區分「上週結算區間」與「本週即時區間」）
+      let validNotes = [];
+      if (isArchiveMode) {
+        // 解析如 "11/2 ~ 11/8" 的 7 天日期字串集合
+        const parts = targetPeriodStr.split('~').map(s => s.trim());
+        const startMD = parts[0] ? parts[0].split('/').map(Number) : [];
+        if (startMD.length === 2) {
+          const year = new Date().getFullYear();
+          const startDate = new Date(year, startMD[0] - 1, startMD[1], 0, 0, 0);
+          const allowedDateStrs = new Set();
+          for (let i = 0; i < 7; i++) {
+            const d = new Date(startDate);
+            d.setDate(startDate.getDate() + i);
+            allowedDateStrs.add(`${d.getMonth() + 1}/${d.getDate()}`);
+          }
+          const endTime = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + 6, 23, 59, 59).getTime();
+          validNotes = rawList.filter(n => {
+            if (!n) return false;
+            if (n.timestamp && n.timestamp >= startDate.getTime() && n.timestamp <= endTime) return true;
+            if (n.dateStr && allowedDateStrs.has(String(n.dateStr).trim())) return true;
+            return false;
+          });
+        }
+      } else {
+        // 本週即時榜：只統計本週一 00:00 之後上傳的品評紀錄
+        const now = new Date();
+        const day = now.getDay();
+        const diffToMonday = (day === 0 ? -6 : 1) - day;
+        const thisMonday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday, 0, 0, 0);
+        const allowedThisWeekStrs = new Set();
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(thisMonday);
+          d.setDate(thisMonday.getDate() + i);
+          allowedThisWeekStrs.add(`${d.getMonth() + 1}/${d.getDate()}`);
+        }
+        validNotes = rawList.filter(n => {
+          if (!n) return false;
+          if (n.timestamp && n.timestamp >= thisMonday.getTime()) return true;
+          if (n.dateStr && allowedThisWeekStrs.has(String(n.dateStr).trim())) return true;
+          return false;
+        });
+      }
+
+      // 統計有效品評篇數最高者
+      if (validNotes.length > 0) {
         const countMap = {};
-        notesArr.forEach(n => {
+        validNotes.forEach(n => {
           const pKey = resolveWorkPartnerKey(n);
           const pName = resolveWorkPartnerName(n);
           if (!pKey) return;
@@ -4016,19 +4063,18 @@ const app = createApp({
           countMap[pKey].count += 1;
         });
         const sortedTasters = Object.values(countMap).sort((a, b) => b.count - a.count);
-        if (sortedTasters.length > 0 && sortedTasters[0].name !== '門市夥伴') {
+        if (sortedTasters.length > 0) {
           return {
             name: sortedTasters[0].name,
             scoreText: `${sortedTasters[0].count} 篇品評 (${sortedTasters[0].count * 10}分)`
           };
         }
       }
-      if (fallbackWork) {
-        const fbName = resolveWorkPartnerName(fallbackWork);
-        const fbScore = calculateCombinedScore(fallbackWork);
-        return { name: fbName, scoreText: `${fbScore} 分` };
-      }
-      return { name: '尚無紀錄', scoreText: '-' };
+
+      // 若該週期內無人上傳品評，直接回傳從缺 / 尚無紀錄（絕不借用拉花成績）
+      return isArchiveMode
+        ? { name: '從缺 (尚無品評)', scoreText: '0 篇' }
+        : { name: '虛位以待', scoreText: '尚無品評' };
     };
 
     // ==================== 🏆 首頁公告欄：上週榮譽得獎夥伴（僅顯示三大獎項 + 真實姓名與分數） ====================
@@ -4043,11 +4089,12 @@ const app = createApp({
       const championName = top1 ? resolveWorkPartnerName(top1) : resolveArchiveWinner(latestArch);
       const championScore = top1 ? `${calculateCombinedScore(top1)} 分` : '-';
 
+      const periodStr = latestArch.periodRange || latestArch.folderName;
       const improvedInfo = computeSelfImprovedAward(works, prevWorks);
-      const activeInfo = computeActiveTasterAward(tastingNotesList.value, top1);
+      const activeInfo = computeActiveTasterAward(tastingNotesList.value, periodStr);
 
       return {
-        periodStr: latestArch.periodRange || latestArch.folderName,
+        periodStr,
         championName,
         championScore,
         mostImprovedName: improvedInfo.name,
