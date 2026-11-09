@@ -1001,10 +1001,22 @@
 
             <!-- 【全體夥伴皆可使用】：畫假登記與畫假行事曆 -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
-              <div class="flex justify-between items-center">
+              <div class="flex justify-between items-center flex-wrap gap-1">
                 <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <span>📅</span> 門市畫假行事曆
                 </h3>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[10px] font-mono px-2 py-0.5 rounded-full border"
+                        :class="isSyncingRoster ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'">
+                    {{ isSyncingRoster ? '🔄 同步雲端中...' : '🟢 已同步 ' + lastVacSyncTimeStr + ' (' + vacationList.length + '筆)' }}
+                  </span>
+                  <button 
+                    type="button" 
+                    @click="forceSyncRosterDataNow(true)" 
+                    class="text-[10px] px-2 py-0.5 bg-slate-100 hover:bg-emerald-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg font-bold transition active:scale-95">
+                    🔄 刷新
+                  </button>
+                </div>
               </div>
 
               <!-- 登記畫假表單 -->
@@ -3384,16 +3396,83 @@ const app = createApp({
     } catch (e) {}
 
     // 步驟 2：透過輕量 REST API 直接抓取 sbux/staff.json (不跟幾十 MB 的相簿圖片排隊，0.2 秒內完成)
+    const isSyncingRoster = ref(false);
+    const lastVacSyncTimeStr = ref('連線中');
+
+    const updateSyncTimestampDisplay = () => {
+      const now = new Date();
+      lastVacSyncTimeStr.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    };
+
+    // 步驟 2：透過無快取 REST API 僅針對「名冊」極速拉取 (供登入驗證使用)
     const fetchStaffFastRest = async () => {
       try {
-        const res = await fetch(`${firebaseConfig.databaseURL}/sbux/staff.json`);
+        const res = await fetch(`${firebaseConfig.databaseURL}/sbux/staff.json?t=${Date.now()}`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           if (data) applyRawStaffData(data);
         }
       } catch (e) {}
     };
-    fetchStaffFastRest();
+
+    // ⚡ 核心排班資料「零時差強制同步引擎」：平行拉取最新畫假、禁休、名冊與班表 (完全繞過圖片排隊與瀏覽器快取)
+    const forceSyncRosterDataNow = async (showToast = false) => {
+      isSyncingRoster.value = true;
+      try {
+        const ts = Date.now();
+        const baseUrl = firebaseConfig.databaseURL;
+        const [staffRes, vacRes, blackRes, rosterRes] = await Promise.all([
+          fetch(`${baseUrl}/sbux/staff.json?t=${ts}`, { cache: 'no-store' }),
+          fetch(`${baseUrl}/sbux/vacations.json?t=${ts}`, { cache: 'no-store' }),
+          fetch(`${baseUrl}/sbux/blackout_dates.json?t=${ts}`, { cache: 'no-store' }),
+          fetch(`${baseUrl}/sbux/scheduled_roster.json?t=${ts}`, { cache: 'no-store' })
+        ]);
+
+        if (staffRes.ok) {
+          const sData = await staffRes.json();
+          if (sData) applyRawStaffData(sData);
+        }
+        if (vacRes.ok) {
+          const vData = await vacRes.json();
+          vacationList.value = vData ? Object.values(vData) : [];
+        }
+        if (blackRes.ok) {
+          const bData = await blackRes.json();
+          blackoutDates.value = bData || {};
+        }
+        if (rosterRes.ok) {
+          const rData = await rosterRes.json();
+          scheduledRoster.value = rData || {};
+        }
+        updateSyncTimestampDisplay();
+        if (showToast) {
+          alert(`✅ 已完成雲端強制同步！\n目前共有 ${vacationList.value.length} 筆最新畫假紀錄。`);
+        }
+      } catch (e) {
+        console.warn('強制同步異常，改由 WebSocket 接手：', e);
+      } finally {
+        isSyncingRoster.value = false;
+      }
+    };
+
+    // 網頁啟動瞬間立即平行同步名冊與畫假紀錄
+    forceSyncRosterDataNow(false);
+
+    // 當夥伴或店經理切換到「排班」頁籤時，自動觸發零時差同步
+    watch(currentTab, (newTab) => {
+      if (newTab === 'roster') {
+        forceSyncRosterDataNow(false);
+      } else if (newTab === 'about') {
+        loadStorePhotosLazy();
+      }
+    });
+
+    // 當手機或電腦從背景切回前台喚醒時，自動強制拉取最新畫假紀錄
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        forceSyncRosterDataNow(false);
+      }
+    });
 
     // ==================== 🔗 台灣星巴克官網「全自動新檔期季節豆爬蟲與同步引擎」 ====================
     const fetchHtmlViaCorsProxy = async (targetUrl) => {
@@ -4279,17 +4358,51 @@ const app = createApp({
       });
     };
 
-    // ==================== Firebase 即時同步監聽 (優先載入 staff 名冊，延後大型圖片節點) ====================
-    if (db) {
-      db.ref('.info/connected').on('value', snap => isCloudConnected.value = snap.val() === true);
+    // ==================== Firebase 即時同步監聽 (優先同步排班畫假，相簿大圖改為點進頁面才載入) ====================
+    let isStorePhotosLoaded = false;
+    const loadStorePhotosLazy = () => {
+      if (!db || isStorePhotosLoaded) return;
+      isStorePhotosLoaded = true;
+      db.ref('sbux/store_photos').on('value', snap => {
+        storePhotos.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
+      });
+    };
 
-      // ⚡ 第一優先監聽：夥伴名冊 (確保登入 0 等待)
+    if (db) {
+      db.ref('.info/connected').on('value', snap => {
+        isCloudConnected.value = snap.val() === true;
+        if (snap.val() === true) {
+          forceSyncRosterDataNow(false);
+        }
+      });
+
+      // ⚡ 第一優先監聽：夥伴名冊、畫假紀錄、禁休日、預排班表與全店同步脈衝
       db.ref('sbux/staff').on('value', snap => {
         const data = snap.val();
         if (data) {
           applyRawStaffData(data);
           repairArchivedPartnerNamesIfNeeded();
           checkAndAutoArchiveLatteArt();
+        }
+      });
+
+      db.ref('sbux/vacations').on('value', snap => {
+        vacationList.value = snap.val() ? Object.values(snap.val()) : [];
+        updateSyncTimestampDisplay();
+      });
+
+      db.ref('sbux/blackout_dates').on('value', snap => {
+        blackoutDates.value = snap.val() || {};
+      });
+
+      db.ref('sbux/scheduled_roster').on('value', snap => {
+        scheduledRoster.value = snap.val() || {};
+      });
+
+      // 監聽全店畫假異動脈衝：一旦任何裝置送出或刪除畫假，所有裝置 0.1 秒內強制同步
+      db.ref('sbux/lastRosterSyncAt').on('value', snap => {
+        if (snap.val()) {
+          forceSyncRosterDataNow(false);
         }
       });
 
@@ -4313,9 +4426,6 @@ const app = createApp({
 
       db.ref('sbux/rules').on('value', snap => { rules.value = snap.val() ? Object.values(snap.val()) : []; });
       db.ref('sbux/inventory').on('value', snap => { inventory.value = snap.val() ? Object.values(snap.val()) : []; });
-      db.ref('sbux/vacations').on('value', snap => { vacationList.value = snap.val() ? Object.values(snap.val()) : []; });
-      db.ref('sbux/blackout_dates').on('value', snap => { blackoutDates.value = snap.val() || {}; });
-      db.ref('sbux/scheduled_roster').on('value', snap => { scheduledRoster.value = snap.val() || {}; });
       
       db.ref('sbux/shift_tasks').on('value', snap => {
         const val = snap.val();
@@ -4345,7 +4455,7 @@ const app = createApp({
         weeklyQuizRecords.value = snap.val() || {};
       });
 
-      // 延後 400ms 載入大型 Base64 圖片節點，避免阻塞登入驗證與首頁文字載入
+      // 拉花作品與榮譽榜封存於核心文字資料就緒後載入 (而相簿大圖則改為點進「關於」頁籤才載入)
       setTimeout(() => {
         db.ref('sbux/latte_posts').on('value', snap => {
           const val = snap.val();
@@ -4380,11 +4490,7 @@ const app = createApp({
             latteArtArchives.value = [];
           }
         });
-
-        db.ref('sbux/store_photos').on('value', snap => {
-          storePhotos.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
-        });
-      }, 400);
+      }, 600);
     }
 
     // ==================== 📝 班次交接與待辦事項邏輯 ====================
@@ -5000,14 +5106,19 @@ const app = createApp({
     };
 
     const generateAiRoster = async () => {
-      if (!scheduleStartDate.value || !scheduleEndDate.value) return alert('請先設定排班範圍！');
-      const dates = targetRangeDates.value;
-      if (dates.length === 0) return alert('日期範圍無效！');
+   if (!scheduleStartDate.value || !scheduleEndDate.value) return alert('請先設定排班範圍！');
+   const dates = targetRangeDates.value;
+   if (dates.length === 0) return alert('日期範圍無效！');
 
-      const allStaff = sortedValidStaffList.value;
-      if (allStaff.length === 0) return alert('門市尚無夥伴名單！');
+   isAiGeneratingRoster.value = true;
+   // ⚡ 排班前強制向雲端二次校驗最新畫假、禁休與可配班時段，確保壓線畫假 100% 納入！
+   await forceSyncRosterDataNow(false);
 
-      isAiGeneratingRoster.value = true;
+   const allStaff = sortedValidStaffList.value;
+   if (allStaff.length === 0) {
+     isAiGeneratingRoster.value = false;
+     return alert('門市尚無夥伴名單！');
+   }
       const schedulePlan = [];
       const warnings = [];
 
@@ -5497,11 +5608,11 @@ const app = createApp({
       return total.toFixed(1);
     };
 
-    const triggerPrintSchedule = (mode) => {
-      printTargetMode.value = mode;
-      nextTick(() => { window.print(); });
-    };
-
+    const triggerPrintSchedule = async (mode) => {
+   printTargetMode.value = mode;
+   await forceSyncRosterDataNow(false);
+   nextTick(() => { window.print(); });
+ };
     // ==================== 畫假、禁休、行事曆與各模組操作 ====================
     const blackoutDatesList = computed(() => {
       const data = blackoutDates.value || {};
@@ -5607,41 +5718,50 @@ const app = createApp({
       return dates;
     });
 
-    const submitVacation = () => {
-      const targetSid = isDutyOrAbove.value ? (vacationForm.value.staffId || currentPartner.value?.id || currentPartner.value?._key) : (currentPartner.value?.id || currentPartner.value?._key);
-      if (!targetSid || !vacationForm.value.date) return alert('請確認夥伴與休假日期！');
+  const submitVacation = async () => {
+   const targetSid = isDutyOrAbove.value ? (vacationForm.value.staffId || currentPartner.value?.id || currentPartner.value?._key) : (currentPartner.value?.id || currentPartner.value?._key);
+   if (!targetSid || !vacationForm.value.date) return alert('請確認夥伴與休假日期！');
 
-      if (blackoutDates.value && blackoutDates.value[vacationForm.value.date]) {
-        alert(`❌ ${vacationForm.value.date} 為門市禁休日！\n原因：${blackoutDates.value[vacationForm.value.date]}`);
-        return;
-      }
+   await forceSyncRosterDataNow(false);
 
-      if (vacationForm.value.date < allowedVacationStartStr.value && !isDutyOrAbove.value) {
-        return alert(`❌ 違反應提早兩週畫假規範！`);
-      }
+   if (blackoutDates.value && blackoutDates.value[vacationForm.value.date]) {
+     alert(`❌ ${vacationForm.value.date} 為門市禁休日！\n原因：${blackoutDates.value[vacationForm.value.date]}`);
+     return;
+   }
 
-      const id = Date.now().toString();
-      if (db) {
-        db.ref('sbux/vacations/' + id).set({
-          id, staffId: targetSid, date: vacationForm.value.date, type: vacationForm.value.type, notes: vacationForm.value.notes
-        });
-      }
-      vacationForm.value = { staffId: '', date: '', type: '無法排班', notes: '' };
-      alert('✅ 畫假成功！');
-    };
+   if (vacationForm.value.date < allowedVacationStartStr.value && !isDutyOrAbove.value) {
+     return alert(`❌ 違反應提早兩週畫假規範！`);
+   }
 
-    const promptSecureDeleteVacation = (v) => { secureDeleteModal.value = { show: true, target: v, inputName: '' }; };
-    const confirmSecureDelete = () => {
-      const modal = secureDeleteModal.value;
-      const targetStaff = staffList.value.find(s => (s.id === modal.target.staffId || s._key === modal.target.staffId));
-      if (!targetStaff || modal.inputName.trim() === targetStaff.name.trim()) {
-        if (db) db.ref('sbux/vacations/' + modal.target.id).remove();
-        modal.show = false;
-        alert('畫假已刪除！');
-      } else {
-        alert('姓名不符！');
-      }
-    };
+   const id = Date.now().toString();
+   const newVacObj = {
+     id, staffId: targetSid, date: vacationForm.value.date, type: vacationForm.value.type, notes: vacationForm.value.notes
+   };
+   if (db) {
+     await db.ref('sbux/vacations/' + id).set(newVacObj);
+     await db.ref('sbux/lastRosterSyncAt').set(Date.now());
+   }
+   await forceSyncRosterDataNow(false);
+   vacationForm.value = { staffId: '', date: '', type: '無法排班', notes: '' };
+   alert('✅ 畫假成功！已即時同步至全店所有裝置。');
+ };
+
+ const promptSecureDeleteVacation = (v) => { secureDeleteModal.value = { show: true, target: v, inputName: '' }; };
+ const confirmSecureDelete = async () => {
+   const modal = secureDeleteModal.value;
+   const targetStaff = staffList.value.find(s => (s.id === modal.target.staffId || s._key === modal.target.staffId));
+   if (!targetStaff || modal.inputName.trim() === targetStaff.name.trim()) {
+     if (db) {
+       await db.ref('sbux/vacations/' + modal.target.id).remove();
+       await db.ref('sbux/lastRosterSyncAt').set(Date.now());
+     }
+     await forceSyncRosterDataNow(false);
+     modal.show = false;
+     alert('畫假已刪除並同步更新至全店裝置！');
+   } else {
+     alert('姓名不符！');
+   }
+ };
 
     const getVacationData = (staffId, dateStr) => vacationList.value.find(item => (item.staffId === staffId) && item.date === dateStr) || null;
 
@@ -6395,7 +6515,7 @@ const app = createApp({
       secureStaffDeleteModal, promptSecureDeleteStaff, confirmSecureStaffDelete,
       availModal, openAvailabilityModal, saveAvailability, getAvailabilitySummary, getAvailabilityText, timeSlots,
       allowedVacationStartStr, scheduleStartDate, scheduleEndDate, targetRangeDates, setNextWeekRange,
-      printTargetMode, triggerPrintSchedule, clearScheduledRoster,
+      printTargetMode, triggerPrintSchedule, clearScheduledRoster,isSyncingRoster, lastVacSyncTimeStr, forceSyncRosterDataNow,
       aiRosterModal, isAiGeneratingRoster, generateAiRoster, applyAiRosterToSchedule, getScheduledShiftText, isOvertimeShift, isConsecutiveSixthDay, calculateWeeklyStaffHours,
       blackoutDates, blackoutDatesList, blackoutModal, openBlackoutModal, saveBlackoutDate, deleteBlackoutDate,
       vacationCalYear, vacationCalMonth, changeVacationMonth, resetVacationMonth, vacationCalendarDays,
