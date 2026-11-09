@@ -4285,19 +4285,25 @@ const app = createApp({
       const isMondayMorning = (now.getDay() === 1 && now.getHours() < 12);
 
       if ((isSundayNight || isMondayMorning) && lattePosts.value && lattePosts.value.length > 0) {
+        const day = now.getDay();
+        const diffToMonday = (day === 0 ? -6 : 1) - day;
+        const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday - (isMondayMorning ? 7 : 0), 0, 0, 0);
+        const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6, 23, 59, 59);
+
+        const periodRange = `${monday.getMonth() + 1}/${monday.getDate()} ~ ${sunday.getMonth() + 1}/${sunday.getDate()}`;
+        const autoKey = `${monday.getFullYear()}${String(monday.getMonth() + 1).padStart(2, '0')}${String(monday.getDate()).padStart(2, '0')}_期`;
+
+        // 🛡️ 防護 1：若上週期號 (autoKey) 已經封存過了，絕對不再重複結算，避免覆蓋歷史紀錄！
+        const alreadyArchived = latteArtArchives.value.some(a => a.key === autoKey || a.folderName === autoKey);
+        if (alreadyArchived) return;
+
+        // 🛡️ 防護 2：只篩選出屬於該結算週期 (週日 23:59:59 以前上傳) 的作品，不誤刪週一早上新上傳的作品！
+        const postsToArchive = lattePosts.value.filter(p => !p.timestamp || p.timestamp <= sunday.getTime());
+        if (postsToArchive.length === 0) return;
+
         isAutoArchivingInProgress = true;
         try {
-          const day = now.getDay();
-          const diffToMonday = (day === 0 ? -6 : 1) - day;
-          const monday = new Date(now);
-          monday.setDate(now.getDate() + diffToMonday - (isMondayMorning ? 7 : 0));
-          const sunday = new Date(monday);
-          sunday.setDate(monday.getDate() + 6);
-
-          const periodRange = `${monday.getMonth() + 1}/${monday.getDate()} ~ ${sunday.getMonth() + 1}/${sunday.getDate()}`;
-          const autoKey = `${monday.getFullYear()}${String(monday.getMonth() + 1).padStart(2, '0')}${String(monday.getDate()).padStart(2, '0')}_期`;
-
-          const sorted = [...lattePosts.value].sort((a, b) => calculateCombinedScore(b) - calculateCombinedScore(a));
+          const sorted = [...postsToArchive].sort((a, b) => calculateCombinedScore(b) - calculateCombinedScore(a));
           const finalRanked = sorted.map((item, idx) => ({
             ...item,
             rank: idx + 1,
@@ -4308,7 +4314,7 @@ const app = createApp({
           const prevWorks = latteArtArchives.value.length > 0 ? (latteArtArchives.value[0].works || []) : [];
           const improvedInfo = computeSelfImprovedAward(finalRanked, prevWorks);
           const top1 = finalRanked[0];
-          const activeInfo = computeActiveTasterAward(tastingNotesList.value, top1);
+          const activeInfo = computeActiveTasterAward(tastingNotesList.value, periodRange);
 
           await db.ref('sbux/latteArtArchives/' + autoKey).set({
             folderName: autoKey,
@@ -4322,7 +4328,11 @@ const app = createApp({
             works: finalRanked
           });
 
-          await db.ref('sbux/latte_posts').remove();
+          // 僅移除已封存之舊週期作品，保留週一新上傳的作品
+          for (const oldPost of postsToArchive) {
+            const pid = oldPost.id || oldPost._key;
+            if (pid) await db.ref('sbux/latte_posts/' + pid).remove();
+          }
         } catch (e) {
           console.error('自動結算錯誤：', e);
         } finally {
@@ -4688,7 +4698,8 @@ const app = createApp({
         progressDelta = imp.scoreText;
       }
 
-      const activeInfo = computeActiveTasterAward(tastingNotesList.value, lattePosts.value[0] || (latteArtArchives.value[0]?.works?.[0]));
+      // 傳入 null 代表僅統計「本週一 00:00 後」實際上傳的品評紀錄
+      const activeInfo = computeActiveTasterAward(tastingNotesList.value, null);
 
       return {
         champion: champName,
@@ -4781,7 +4792,7 @@ const app = createApp({
       }
     };
 
-    // ==================== 2. Tasting 品評真實 AI 評析 ====================
+    // ==================== 2. Tasting 品評真實 AI 感官校準與深度互動回饋 (徹底去模板化) ====================
     const getCleanNotesText = (text) => {
       if (!text) return '無額外備註';
       return text.replace(/^\[🍋.*?\]\s*/, '').replace(/^心得：/, '').trim() || '無額外備註';
@@ -4794,19 +4805,43 @@ const app = createApp({
 
     const submitTastingNote = async () => {
       if (!currentPartner.value) return;
+      if (!tastingForm.value.aroma.trim() && !tastingForm.value.notes.trim()) {
+        return alert('請至少填寫一點「香氣」或「風味心得」，讓 AI 咖啡大師能針對您的實際感受給出有效回饋喔！');
+      }
       isAiEvaluatingTasting.value = true;
       try {
-        const prompt = `你是星巴克黑圍裙咖啡大師。夥伴 ${currentPartner.value.name} 品評了【${tastingForm.value.coffeeName}】，感知酸度：${getIntensityLabel(tastingForm.value.acidity)}，醇度：${getIntensityLabel(tastingForm.value.body)}，香氣描述：${tastingForm.value.aroma || '未填'}，風味心得：${tastingForm.value.notes || '未填'}。
-請針對這款咖啡豆的真實產區風土與夥伴的味覺描述，給予一段約 70~100 字、具體不重複的專業回饋與門市糕點 Food Pairing 搭配建議。`;
+        // 找出該豆款的官方標準設定，提供給 AI 進行「真實感官比對與沖煮探討」
+        const beanInfo = starbucksCoreBeans.value.find(b =>
+          b.name.includes(tastingForm.value.coffeeName) ||
+          tastingForm.value.coffeeName.includes(b.name) ||
+          (b.matchKey && tastingForm.value.coffeeName.includes(b.matchKey))
+        );
+
+        const officialSpecText = beanInfo
+          ? `【官方標準參數】烘焙度：${beanInfo.roast}｜產區：${beanInfo.region}｜處理法：${beanInfo.processing}｜官方酸度：${beanInfo.acidity}｜官方醇度：${beanInfo.body}｜核心風味：${beanInfo.flavorNotes}｜官方建議搭配：${beanInfo.foodPairing}`
+          : `【豆款名稱】${tastingForm.value.coffeeName}`;
+
+        const prompt = `你是一位經驗豐富、說話自然且杜絕官腔套話的星巴克黑圍裙咖啡大師 (Coffee Master)。
+門市夥伴「${currentPartner.value.name}」剛完成了一杯【${tastingForm.value.coffeeName}】的品評：
+- 夥伴實際感知酸度：${tastingForm.value.acidity}/5 (${getIntensityLabel(tastingForm.value.acidity)})
+- 夥伴實際感知醇度：${tastingForm.value.body}/5 (${getIntensityLabel(tastingForm.value.body)})
+- 夥伴寫下的香氣：「${tastingForm.value.aroma || '未填寫'}」
+- 夥伴寫下的風味與心得：「${tastingForm.value.notes || '未填寫'}」
+- 參考對照資料：${officialSpecText}
+
+【重要指令：禁止使用固定模板或空泛讚美！】
+請直接針對這位夥伴寫的「具體字句」與「酸度/醇度落點」給出真正有價值的實戰回饋（約 80~130 字）：
+1. 感官校準與沖煮分析：比對夥伴嚐到的酸度/醇度與官方標準是否一致？
+   - 若有落差（例如低酸度豆款卻喝出高酸度，或高醇度豆款卻覺得輕盈），請具體幫夥伴分析可能是「水溫偏低、研磨度、粉水比、手沖流速，或是咖啡降溫後的酸質變化」造成的，幫助夥伴精進沖煮技巧！
+   - 若夥伴捕捉到了特殊風味或細節，請從生豆處理法或產區風土解釋為什麼會有這個味道。
+2. 門市實戰應用：針對夥伴喝出的這個風味走向，給出一個具體的「沖煮微調建議（如改用濾壓壺、冰手沖、或加一點冰塊/鮮奶）」或「向顧客介紹這支豆子的一句話話術」。
+3. 絕對不要用「【大師風味回饋】」或「觀察非常入微！」這類罐頭開頭，每次請根據內容直接切入重點，語氣像在吧台邊一起喝咖啡聊天的資深前輩。`;
 
         let aiComment = '';
         try {
-          aiComment = await callGeminiApi([{ text: prompt }], false, 0.6);
+          aiComment = await callGeminiApi([{ text: prompt }], false, 0.78);
         } catch (apiErr) {
-          const beanInfo = starbucksCoreBeans.value.find(b => b.name.includes(tastingForm.value.coffeeName) || tastingForm.value.coffeeName.includes(b.name));
-          aiComment = beanInfo
-            ? `【大師風味回饋】能敏銳捕捉到「${beanInfo.name}」的${beanInfo.flavorNotes}特質！其產自${beanInfo.region}並採${beanInfo.processing}，酸度${getIntensityLabel(tastingForm.value.acidity)}與醇度${getIntensityLabel(tastingForm.value.body)}的平衡極佳，非常推薦搭配「${beanInfo.foodPairing}」一起進行顧客分享！`
-            : `【大師風味回饋】對「${tastingForm.value.coffeeName}」的香氣（${tastingForm.value.aroma || '細膩前調'}）與口感層次觀察非常入微！酸度與醇度的定位精準，推薦搭配門市奶油可頌或巧克力點心提升餘韻。`;
+          throw new Error(`AI 評析連線失敗 (${apiErr.message})，請確認網路或個人設定中的 API Key。`);
         }
 
         const newNote = {
@@ -4825,13 +4860,15 @@ const app = createApp({
         };
         if (db) await db.ref('sbux/tasting_notes/' + newNote.id).set(newNote);
         tastingForm.value = { coffeeName: '星巴克家常咖啡豆', acidity: 3, body: 3, aroma: '', flavor: '', notes: '' };
-        alert('🎉 Tasting 品評已發布！');
+        alert('🎉 Tasting 品評與 AI 專屬感官分析已發布！');
+      } catch (err) {
+        alert(`⚠️ ${err.message}`);
       } finally {
         isAiEvaluatingTasting.value = false;
       }
     };
 
-    // ==================== 3. 拉花擂台賽 AI 視覺真實評審 ====================
+    // ==================== 3. 拉花擂台賽 AI 視覺實戰教練評審 (打破固定句型，給出具體手法建議) ====================
     const handleLattePhotoUpload = (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -4848,13 +4885,21 @@ const app = createApp({
       try {
         const base64Data = latteForm.value.photoUrl.split(',')[1];
         const mimeType = latteForm.value.photoUrl.split(';')[0].split(':')[1] || 'image/jpeg';
-        const prompt = `你是一位嚴格且專業的星巴克拉花大賽視覺評審。夥伴宣稱挑戰的圖案為【${latteForm.value.pattern}】。
-請仔細觀察這張圖片的實際畫面：
-1. 若這張圖片根本不是咖啡或沒有拉花（例如風景、人物、空白、無關物品），請將 isLatteArt 設為 false，score 設為 0，並在 feedback 說明「圖片非拉花作品」。
-2. 若是咖啡拉花，請根據實際影像中的：(A)奶泡細緻度與光澤（有無粗大氣泡）、(B)圖形與杯面置中對稱度、(C)濃縮基底與白奶泡的黑白對比清晰度、(D)收尾切線與圖案辨識度（是否符合所選的 ${latteForm.value.pattern}），給出真實有鑑別度的分數（範圍 60 到 96 分，不可固定給同一個數字）。
-3. feedback 必須具體描述你在這張照片裡看到的實際畫面細節（例如葉片層數、愛心包覆感、杯緣融合乾淨度或哪裡歪斜/氣泡偏多），約 60~100 字。
+        const prompt = `你是一位在吧台實戰經驗豐富的星巴克拉花教練。夥伴上傳了一張照片，挑戰圖案為【${latteForm.value.pattern}】。
+請仔細觀察這張照片的實際視覺細節，並嚴格遵守以下評審原則：
+
+1. 防偽檢查：若照片根本不是咖啡或沒有拉花（例如風景、人物、飲料杯蓋蓋著、無關物品），請將 isLatteArt 設為 false，score 設為 0，feedback 說明「照片非拉花作品」。
+2. 真實鑑別度評分 (score 範圍 55 ~ 96 分，請精確給出個位數如 73、84、91，切勿總是給整數或同一個分數)：
+   - 55~74分：圖案歪斜明顯、奶泡過厚結塊或有大氣泡、黑白融合混濁、圖形未成形。
+   - 75~84分：圖形可辨識但位置偏離中心、包覆感不足、收尾拉線太粗或把圖案拉變形。
+   - 85~96分：奶泡如絲絨反光無氣泡、Crema底色乾淨對比強烈、葉片/心形層次分明且置中對稱。
+3. 拒絕罐頭模板的實戰教練回饋 (feedback 約 70~110 字)：
+   - 【禁止】使用「這是一幅非常優質的...奶泡質地...左右對稱...」這種千篇一律的填空句型！
+   - 請直接點出你在這張照片裡看到的「具體畫面特徵」（例如：杯口幾點鐘方向的融合、愛心/鬱金香第幾層的推擠包覆、葉片左右晃動的間距、收尾直線是否偏左/偏右、或是表面有無微小氣泡與液面高度）。
+   - 接著給出 1~2 個「下次站在吧台馬上能用的具體動作調整建議」（例如：蒸奶打發/打綿切換時機、融合時水柱高低、下點位置往杯心推一點、或是收尾提拉鋼杯的速度與水量控制）。
+
 請只輸出純 JSON 格式（不要加 markdown 符號）：
-{"isLatteArt": true, "score": 整數, "feedback": "具體視覺評析與改進建議"}`;
+{"isLatteArt": true, "score": 整數, "feedback": "針對這杯照片的視覺觀察與吧台手法調整建議"}`;
 
         let evalScore = 0;
         let evalFeedback = '';
@@ -4863,7 +4908,7 @@ const app = createApp({
           const rawRes = await callGeminiApi([
             { text: prompt },
             { inline_data: { mime_type: mimeType, data: base64Data } }
-          ], true, 0.4);
+          ], true, 0.65);
 
           const match = rawRes.match(/\{[\s\S]*\}/);
           const cleanRes = match ? match[0] : rawRes.replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
@@ -4898,7 +4943,7 @@ const app = createApp({
         };
         if (db) await db.ref('sbux/latte_posts/' + newPost.id).set(newPost);
         latteForm.value = { pattern: '心形 (Heart)', photoUrl: '' };
-        alert(`🎉 作品已通過 AI 視覺評鑑！\n獲得分數：${newPost.aiScore} 分\n評語：${newPost.aiFeedback}`);
+        alert(`🎉 作品已通過 AI 視覺評鑑！\n獲得分數：${newPost.aiScore} 分\n教練回饋：${newPost.aiFeedback}`);
       } finally {
         isAiEvaluating.value = false;
       }
@@ -6417,8 +6462,7 @@ const app = createApp({
     const birthdayAlerts = computed(() => {
       const alerts = [];
       const now = new Date();
-      const m = now.getMonth() + 1;
-      const d = now.getDate();
+      const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
       staffList.value.forEach(s => {
         if (s.birthday) {
@@ -6426,9 +6470,13 @@ const app = createApp({
           if (cleanBday.length >= 4) {
             const bMonth = parseInt(cleanBday.slice(0, 2));
             const bDay = parseInt(cleanBday.slice(2, 4));
-            const bDate = new Date(now.getFullYear(), bMonth - 1, bDay);
-            const todayDate = new Date(now.getFullYear(), m - 1, d);
-            const diffDays = Math.ceil((bDate - todayDate) / (1000 * 60 * 60 * 24));
+            let bDate = new Date(now.getFullYear(), bMonth - 1, bDay);
+            let diffDays = Math.round((bDate - todayDate) / 86400000);
+            // 支援跨年判斷（例如 12/30 提醒 01/01 壽星）
+            if (diffDays < -300) {
+              bDate = new Date(now.getFullYear() + 1, bMonth - 1, bDay);
+              diffDays = Math.round((bDate - todayDate) / 86400000);
+            }
             if (diffDays >= 0 && diffDays <= 2) {
               alerts.push(`${s.name} (${bMonth}/${bDay})`);
             }
