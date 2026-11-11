@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" class="font-size-normal">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>永和永安門市管理系統 (011218)</title>
+
   <!-- PWA 與 iOS 全螢幕獨立 App 設定 -->
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#064e3b">
@@ -11,6 +12,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="永安門市">
   <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23064e3b'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='260'>☕</text></svg>">
+
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -134,12 +136,11 @@
     }
     .modal-enter-from, .modal-leave-to { opacity: 0; transform: scale(0.95); }
 
-        /* ==================== 🔠 動態字體大小縮放與手機按鈕防擠壓保護 ==================== */
+    /* ==================== 🔠 動態字體大小縮放與手機按鈕防擠壓保護 ==================== */
     html.font-size-normal { font-size: 16px; }
     html.font-size-large { font-size: 18px; }
     html.font-size-xlarge { font-size: 20px; }
 
-    /* 讓微字級標籤也隨大字模式等比例放大，同時保持行高舒適 */
     html.font-size-large .text-\[9px\],
     html.font-size-large .text-\[10px\] { font-size: 12px !important; line-height: 1.4 !important; }
     html.font-size-large .text-\[11px\] { font-size: 13.5px !important; line-height: 1.45 !important; }
@@ -148,15 +149,9 @@
     html.font-size-xlarge .text-\[10px\] { font-size: 13.5px !important; line-height: 1.45 !important; }
     html.font-size-xlarge .text-\[11px\] { font-size: 15px !important; line-height: 1.5 !important; }
 
-    /* 手機按鈕防擠壓保護：禁止按鈕內部文字異常斷行，確保觸控面積 */
     button, label.cursor-pointer {
       flex-shrink: 0;
       word-break: keep-all;
-    }
-    @media print {
-      html.font-size-normal, html.font-size-large, html.font-size-xlarge {
-        font-size: 16px !important;
-      }
     }
 
     /* ==================== A4 直式單頁滿版列印 CSS ==================== */
@@ -164,6 +159,9 @@
       .print-only-container { display: none !important; }
     }
     @media print {
+      html.font-size-normal, html.font-size-large, html.font-size-xlarge {
+        font-size: 16px !important;
+      }
       html, body {
         background: white !important;
         color: black !important;
@@ -240,7 +238,7 @@
 
 <div id="app" v-cloak class="min-h-screen flex flex-col justify-between">
 
-  <!-- ==================== 1. 門市工號登入畫面 (支援 0.1 秒極速預載與同步狀態顯示) ==================== -->
+  <!-- ==================== 1. 門市工號登入畫面 (支援 0.001 秒極速預載與同步狀態顯示) ==================== -->
   <div v-if="!currentPartner" class="min-h-screen flex items-center justify-center p-4 bg-slate-900">
     <div class="w-full max-w-sm bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-2xl space-y-4 border border-slate-200 dark:border-slate-700 transition-all">
       <div class="text-center space-y-1">
@@ -289,7 +287,7 @@
   <!-- ==================== 2. 登入後主容器 ==================== -->
   <div v-else class="app-screen max-w-md mx-auto w-full min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col shadow-lg border-x border-slate-200 dark:border-slate-800 relative">
 
-        <header class="fixed top-0 left-0 right-0 z-50 ios-header-glass text-white shadow-md">
+    <header class="fixed top-0 left-0 right-0 z-50 ios-header-glass text-white shadow-md">
       <div class="max-w-md mx-auto px-3 py-2.5 flex items-center justify-between gap-1.5">
         <div class="flex items-center space-x-2 min-w-0 flex-1">
           <span class="text-xl flex-shrink-0">☕</span>
@@ -301,7 +299,9 @@
           </div>
         </div>
         <div class="flex items-center gap-1.5 flex-shrink-0">
-          <!-- 🔔 通知中心鈴鐺按鈕 -->
+          <button v-if="!isRunningStandalone" @click="triggerInstallApp" class="px-2 py-0.5 bg-amber-400 hover:bg-amber-300 text-black font-black rounded-full text-[10px] shadow active:scale-95 transition flex items-center gap-0.5 whitespace-nowrap">
+            <span>📲</span> 安裝App
+          </button>
           <button @click="openNotificationDrawer" class="relative p-1.5 text-emerald-100 hover:text-white active:scale-95 transition" title="通知中心">
             <span class="text-base">🔔</span>
             <span v-if="unreadNotificationCount > 0" class="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 bg-rose-500 text-white font-black text-[9px] rounded-full flex items-center justify-center shadow">
@@ -334,7 +334,6 @@
       </transition>
     </header>
 
-
     <!-- 主要內容區 -->
     <main class="flex-1 p-4 space-y-4">
       <transition name="fade" mode="out-in">
@@ -354,7 +353,7 @@
               <div class="absolute -right-3 -bottom-3 text-white/10 text-8xl select-none font-serif z-0 pointer-events-none">SBUX</div>
               
               <div class="relative z-10">
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between items-center flex-wrap gap-1">
                   <span class="px-2.5 py-0.5 bg-white/20 text-white text-[10px] font-bold rounded-full uppercase tracking-wider backdrop-blur-sm">
                     永安門市 Hub
                   </span>
@@ -366,7 +365,7 @@
                 <p class="text-xs text-white/90 mt-0.5">{{ weatherGreeting }}</p>
               </div>
 
-              <div class="relative z-10 flex justify-between items-center text-[11px] text-white/80 border-t border-white/20 pt-2.5">
+              <div class="relative z-10 flex justify-between items-center text-[11px] text-white/80 border-t border-white/20 pt-2.5 flex-wrap gap-1">
                 <span>📅 {{ currentDateTimeDisplay }}</span>
                 <span>門市營業 07:00-21:30</span>
               </div>
@@ -400,20 +399,20 @@
               </div>
             </div>
 
-            <!-- 📌 門市公告欄 (內含上週榮譽得獎夥伴：僅顯示拉花冠軍、最佳進步獎、品評活躍獎，含真實姓名與分數) -->
+            <!-- 📌 門市公告欄 (內含上週榮譽得獎夥伴：僅顯示拉花冠軍、最佳進步獎、品評活躍獎) -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
-              <div class="flex justify-between items-center">
+              <div class="flex justify-between items-center flex-wrap gap-1">
                 <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <span>📌</span> 門市公告欄
                 </h3>
-                <button v-if="isManager" @click="openBulletinModal" class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                <button v-if="isManager" @click="openBulletinModal" class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800 whitespace-nowrap">
                   + 發布公告
                 </button>
               </div>
 
-              <!-- 🏆 上週榮譽得獎夥伴表揚 (精準顯示夥伴真實姓名與分數，僅保留三大核心獎項) -->
+              <!-- 🏆 上週榮譽得獎夥伴表揚 -->
               <div v-if="lastWeekHonorBoard" class="p-3.5 bg-gradient-to-br from-amber-50 via-yellow-50/80 to-orange-50 dark:from-amber-950/50 dark:via-yellow-950/30 dark:to-orange-950/40 rounded-2xl border border-amber-300 dark:border-amber-700/80 shadow-sm space-y-2 relative overflow-hidden">
-                <div class="flex justify-between items-center border-b border-amber-200/80 dark:border-amber-800/60 pb-1.5">
+                <div class="flex justify-between items-center border-b border-amber-200/80 dark:border-amber-800/60 pb-1.5 flex-wrap gap-1">
                   <div class="font-black text-xs text-amber-900 dark:text-amber-300 flex items-center gap-1">
                     <span>🏆</span> 上週榮譽得獎夥伴
                   </div>
@@ -484,7 +483,7 @@
 
             <!-- 📝 班次交接與待辦事項 -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
-              <div class="flex justify-between items-center">
+              <div class="flex justify-between items-center flex-wrap gap-1">
                 <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <span>📝</span> 班次交接與待辦事項
                 </h3>
@@ -545,15 +544,15 @@
               <div class="flex items-start gap-2.5">
                 <span class="text-2xl mt-0.5 flex-shrink-0">💡</span>
                 <div class="space-y-1.5 flex-1">
-                  <div class="flex items-center justify-between">
+                  <div class="flex items-center justify-between flex-wrap gap-1">
                     <span class="text-[11px] font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1">
                       每日咖啡知識 · {{ todayTrivia.level }}
                     </span>
                     <div class="flex items-center gap-2">
-                      <button @click="fetchDynamicWebTrivia" :disabled="isFetchingTrivia" class="text-[10px] px-2 py-0.5 bg-amber-200/70 hover:bg-amber-300/70 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 rounded-full font-bold transition flex items-center gap-0.5">
+                      <button @click="fetchDynamicWebTrivia" :disabled="isFetchingTrivia" class="text-[10px] px-2 py-0.5 bg-amber-200/70 hover:bg-amber-300/70 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 rounded-full font-bold transition flex items-center gap-0.5 whitespace-nowrap">
                         <span :class="isFetchingTrivia ? 'animate-spin' : ''">🔄</span> 換一則
                       </button>
-                      <a :href="todayTrivia.searchUrl" target="_blank" class="text-[10px] text-amber-700 dark:text-amber-400 hover:underline flex items-center gap-0.5 font-bold">
+                      <a :href="todayTrivia.searchUrl" target="_blank" class="text-[10px] text-amber-700 dark:text-amber-400 hover:underline flex items-center gap-0.5 font-bold whitespace-nowrap">
                         深入學習 ↗
                       </a>
                     </div>
@@ -565,16 +564,16 @@
               </div>
             </div>
 
-            <!-- 🏆 門市榮譽殿堂 (當週即時榜：同樣顯示拉花冠軍、最佳進步獎、品評活躍獎之姓名與分數) -->
+            <!-- 🏆 門市榮譽殿堂 (當週即時榜：嚴格只計本週新作品，不拿舊分數連勝) -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
-              <div class="flex justify-between items-center">
+              <div class="flex justify-between items-center flex-wrap gap-1">
                 <div>
                   <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                     <span>🏆</span> 門市榮譽殿堂
                   </h3>
                   <p class="text-[9px] text-slate-400 mt-0.5">{{ settledPeriodStr }}</p>
                 </div>
-                <span class="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                <span class="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800 whitespace-nowrap">
                   週日 23:30 結算
                 </span>
               </div>
@@ -608,11 +607,18 @@
                 </span>
               </div>
 
-              <button 
-                @click="currentTab = 'other'; otherSubTab = 'latteArt'"
-                class="w-full py-2 bg-emerald-50/70 dark:bg-emerald-950/40 active:bg-emerald-100 text-emerald-800 dark:text-emerald-300 text-xs font-bold rounded-xl border border-emerald-200 dark:border-emerald-800 transition flex items-center justify-center gap-1">
-                <span>🎨</span> 上傳作品 / 參與投票
-              </button>
+              <div class="grid grid-cols-2 gap-2">
+                <button 
+                  @click="currentTab = 'other'; otherSubTab = 'latteArt'"
+                  class="py-2 bg-emerald-50/70 dark:bg-emerald-950/40 active:bg-emerald-100 text-emerald-800 dark:text-emerald-300 text-xs font-bold rounded-xl border border-emerald-200 dark:border-emerald-800 transition flex items-center justify-center gap-1">
+                  <span>🎨</span> 拉花擂台
+                </button>
+                <button 
+                  @click="currentTab = 'other'; otherSubTab = 'passport'"
+                  class="py-2 bg-amber-50/80 dark:bg-amber-950/40 active:bg-amber-100 text-amber-900 dark:text-amber-300 text-xs font-bold rounded-xl border border-amber-300 dark:border-amber-800 transition flex items-center justify-center gap-1">
+                  <span>🛂</span> 咖啡護照與成就
+                </button>
+              </div>
             </div>
 
             <!-- 常用功能快速入口 -->
@@ -682,8 +688,8 @@
           <!-- ==================== 頁籤 1：物料效期查詢 ==================== -->
           <section v-if="currentTab === 'materials'" class="space-y-4">
             <div class="bg-white dark:bg-slate-800 p-3 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-2.5">
-              <div class="flex gap-2 items-center">
-                <div class="relative flex-1">
+              <div class="flex gap-2 items-center flex-wrap">
+                <div class="relative flex-1 min-w-[160px]">
                   <input 
                     v-model="matSearchQuery" 
                     type="text" 
@@ -700,8 +706,7 @@
                 </button>
               </div>
 
-              <!-- 溫層快速篩選 -->
-              <div class="flex gap-1.5 text-[11px] font-bold">
+              <div class="flex gap-1.5 text-[11px] font-bold flex-wrap">
                 <button @click="matTempFilter = 'all'" :class="matTempFilter === 'all' ? 'bg-emerald-800 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="px-3 py-1 rounded-lg transition">全部 ({{ materials.length }})</button>
                 <button @click="matTempFilter = '常溫'" :class="matTempFilter === '常溫' ? 'bg-amber-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="px-3 py-1 rounded-lg transition">常溫</button>
                 <button @click="matTempFilter = '冷藏'" :class="matTempFilter === '冷藏' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="px-3 py-1 rounded-lg transition">冷藏</button>
@@ -712,17 +717,17 @@
               <div 
                 v-for="mat in filteredMaterials" :key="mat._key || mat.id || (mat.code + mat.name)" 
                 class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2">
-                <div class="flex justify-between items-start">
+                <div class="flex justify-between items-start gap-2">
                   <div>
                     <span class="px-2 py-0.5 text-xs font-bold rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-mono">
                       {{ mat.code }}
                     </span>
                     <h3 class="text-base font-bold text-slate-900 dark:text-white mt-1">{{ mat.name }}</h3>
                   </div>
-                  <div class="flex items-center gap-1.5">
+                  <div class="flex items-center gap-1.5 flex-shrink-0">
                     <span 
                       :class="mat.temp === '冷藏' ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300' : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300'" 
-                      class="px-2 py-0.5 text-xs font-bold rounded-full">
+                      class="px-2 py-0.5 text-xs font-bold rounded-full whitespace-nowrap">
                       {{ mat.temp || '常溫' }}
                     </span>
                     <button v-if="isManager" @click="editMaterial(mat)" class="p-1 text-slate-400 hover:text-emerald-700 text-xs" title="編輯">✏️</button>
@@ -754,7 +759,7 @@
             
             <!-- 1. 獨立置頂顯示：下架排程行事曆 -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-              <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center justify-between mb-3 flex-wrap gap-1">
                 <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                   <span>🗓️</span> {{ calYear }} 年 {{ calMonth + 1 }} 月 下架行事曆
                 </h3>
@@ -813,13 +818,13 @@
 
             <!-- 3. 登記進貨品項與開啟標準庫按鈕 -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3 overflow-hidden">
-              <div class="flex justify-between items-center">
+              <div class="flex justify-between items-center flex-wrap gap-2">
                 <h2 class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                   <span>📦</span> 登記進貨品項
                 </h2>
                 <button 
                   @click="showRulesLibrary = !showRulesLibrary" 
-                  class="px-2.5 py-1 rounded-full text-[10px] font-bold border transition flex items-center gap-1"
+                  class="px-2.5 py-1 rounded-full text-[10px] font-bold border transition flex items-center gap-1 whitespace-nowrap"
                   :class="showRulesLibrary ? 'bg-emerald-800 text-white border-emerald-800' : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'">
                   <span>📋</span> {{ showRulesLibrary ? '隱藏下架標準庫' : '開啟下架標準庫 (' + rules.length + ')' }}
                 </button>
@@ -896,7 +901,6 @@
                     </label>
                   </div>
                 </div>
-
                 
                 <div v-if="isAiRecognizingRules" class="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-pulse">
                   <span class="animate-spin text-sm">🔄</span>
@@ -979,7 +983,7 @@
 
                 <!-- 本週指定值班主管 -->
                 <div class="p-3 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-600 space-y-2 text-xs">
-                  <div class="flex items-center justify-between">
+                  <div class="flex items-center justify-between flex-wrap gap-1">
                     <span class="font-bold text-slate-800 dark:text-slate-200">🎯 本週指定值班主管</span>
                     <button 
                       type="button"
@@ -1048,7 +1052,7 @@
 
             <!-- 【全體夥伴皆可使用】：畫假登記與畫假行事曆 -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
-              <div class="flex justify-between items-center flex-wrap gap-1">
+              <div class="flex justify-between items-center flex-wrap gap-1.5">
                 <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <span>📅</span> 門市畫假行事曆
                 </h3>
@@ -1161,11 +1165,11 @@
 
             <!-- 🔄 班次互調／代班媒合板 -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
-              <div class="flex justify-between items-center">
+              <div class="flex justify-between items-center flex-wrap gap-1">
                 <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <span>🔄</span> 班次互調與代班媒合
                 </h3>
-                <button @click="showSwapForm = !showSwapForm" class="text-[10px] font-bold px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-full border border-emerald-200 dark:border-emerald-800">
+                <button @click="showSwapForm = !showSwapForm" class="text-[10px] font-bold px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-full border border-emerald-200 dark:border-emerald-800">
                   {{ showSwapForm ? '收起表單' : '+ 發布換班需求' }}
                 </button>
               </div>
@@ -1239,7 +1243,7 @@
                     <span>☕</span> Master
                   </div>
 
-                  <div class="flex justify-between items-center">
+                  <div class="flex justify-between items-center gap-2">
                     <div class="flex items-center flex-wrap gap-1.5">
                       <span :class="isSpecialCoffeeMaster(s) ? 'text-amber-400/80' : 'text-slate-400'" class="font-mono text-[10px]">{{ s.empId }}</span>
                       <span :class="isSpecialCoffeeMaster(s) ? 'text-amber-200 font-black text-sm' : 'text-slate-900 dark:text-white font-bold'">{{ s.name }}</span>
@@ -1252,7 +1256,7 @@
                       </span>
                     </div>
 
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 flex-shrink-0">
                       <button @click="openAvailabilityModal(s)" :class="isSpecialCoffeeMaster(s) ? 'text-amber-400 hover:text-amber-300' : 'text-emerald-700 dark:text-emerald-400'" class="hover:underline text-[11px] font-bold">時段</button>
                       <button @click="editStaff(s)" class="text-slate-400 hover:text-emerald-700">✏️</button>
                       <button @click="promptSecureDeleteStaff(s)" class="text-slate-400 hover:text-red-500">🗑️</button>
@@ -1268,15 +1272,15 @@
 
           </section>
 
-          <!-- ==================== 頁籤 4：【其他】 ==================== -->
+          <!-- ==================== 頁籤 4：【其他】(3x2 對稱六宮格選單) ==================== -->
           <section v-if="currentTab === 'other'" class="space-y-4">
             
-          <!-- 子頁籤選單：升級為 6 欄雙層宮格 (上 3 下 2)，無須左右滑動、絕不截斷文字 -->
-            <div class="bg-white dark:bg-slate-800 p-2 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 grid grid-cols-6 gap-1.5 text-xs font-bold">
+            <!-- 子頁籤選單：3x2 對稱六宮格，一目了然、不需左右滑動、絕不截斷文字 -->
+            <div class="bg-white dark:bg-slate-800 p-2 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 grid grid-cols-3 gap-1.5 text-xs font-bold">
               <button 
                 @click="otherSubTab = 'academy'" 
                 :class="otherSubTab === 'academy' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200/70'" 
-                class="col-span-2 py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
                 <span class="text-base leading-none">🎓</span>
                 <span class="text-[11px] tracking-tight whitespace-nowrap">黑圍裙課程</span>
               </button>
@@ -1284,7 +1288,7 @@
               <button 
                 @click="otherSubTab = 'coffee'" 
                 :class="otherSubTab === 'coffee' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200/70'" 
-                class="col-span-2 py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
                 <span class="text-base leading-none">☕</span>
                 <span class="text-[11px] tracking-tight whitespace-nowrap">沖煮與豆寶典</span>
               </button>
@@ -1292,7 +1296,7 @@
               <button 
                 @click="otherSubTab = 'tasting'" 
                 :class="otherSubTab === 'tasting' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200/70'" 
-                class="col-span-2 py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
                 <span class="text-base leading-none">📝</span>
                 <span class="text-[11px] tracking-tight whitespace-nowrap">品評 Tasting</span>
               </button>
@@ -1300,17 +1304,25 @@
               <button 
                 @click="otherSubTab = 'latteArt'" 
                 :class="otherSubTab === 'latteArt' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200/70'" 
-                class="col-span-3 py-2 px-2 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95">
+                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
                 <span class="text-base leading-none">🎨</span>
-                <span class="text-xs tracking-tight whitespace-nowrap">拉花擂台賽</span>
+                <span class="text-[11px] tracking-tight whitespace-nowrap">拉花擂台賽</span>
               </button>
 
               <button 
                 @click="otherSubTab = 'quiz'" 
                 :class="otherSubTab === 'quiz' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200/70'" 
-                class="col-span-3 py-2 px-2 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95">
+                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
                 <span class="text-base leading-none">📖</span>
-                <span class="text-xs tracking-tight whitespace-nowrap">永安小學堂</span>
+                <span class="text-[11px] tracking-tight whitespace-nowrap">永安小學堂</span>
+              </button>
+
+              <button 
+                @click="otherSubTab = 'passport'" 
+                :class="otherSubTab === 'passport' ? 'bg-amber-600 text-white shadow-sm ring-1 ring-amber-500' : 'bg-amber-50/90 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60'" 
+                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                <span class="text-base leading-none">🛂</span>
+                <span class="text-[11px] tracking-tight whitespace-nowrap">護照與成就</span>
               </button>
             </div>
 
@@ -1629,7 +1641,7 @@
                     :disabled="isAiEvaluatingTasting" 
                     class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 disabled:bg-slate-300 transition flex items-center justify-center gap-1.5">
                     <span v-if="isAiEvaluatingTasting" class="animate-spin">🔄</span>
-                    <span>{{ isAiEvaluatingTasting ? 'AI 分析中...' : '發布品評' }}</span>
+                    <span>{{ isAiEvaluatingTasting ? 'AI 感官校準分析中...' : '發布品評 (同步點亮咖啡護照)' }}</span>
                   </button>
                 </div>
               </div>
@@ -1641,12 +1653,12 @@
                   <div 
                     v-for="item in tastingNotesList" :key="item.id || item._key" 
                     class="rounded-2xl p-3.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm space-y-2 text-xs relative">
-                    <div class="flex justify-between items-center">
-                      <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <div class="flex justify-between items-center gap-2">
+                      <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap">
                         <span class="px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 rounded text-[10px]">{{ item.coffeeName }}</span>
                         <span>{{ resolveWorkPartnerName(item) }}</span>
                       </div>
-                      <div class="flex items-center gap-2">
+                      <div class="flex items-center gap-2 flex-shrink-0">
                         <span class="text-[10px] text-slate-400">{{ item.dateStr }}</span>
                         <button 
                           v-if="isDutyOrAbove || item.authorStaffId === currentPartner?.id || item.authorStaffId === currentPartner?._key" 
@@ -1657,7 +1669,7 @@
                       </div>
                     </div>
 
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 flex-wrap">
                       <span class="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 rounded-lg text-[10px] font-bold border border-amber-200 dark:border-amber-900/40">
                         🍋 酸度：{{ getIntensityLabel(item.acidity) }}
                       </span>
@@ -1671,7 +1683,7 @@
                     </div>
 
                     <div class="bg-emerald-50/80 dark:bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800 text-[10px] text-emerald-800 dark:text-emerald-300 leading-relaxed whitespace-pre-line">
-                      🤖 <b>AI 風味評析：</b>{{ item.aiComment }}
+                      🤖 <b>AI 感官評析：</b>{{ item.aiComment }}
                     </div>
                   </div>
                 </div>
@@ -1686,7 +1698,7 @@
               <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
                 <div class="flex justify-between items-center">
                   <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <span>📸</span> 上傳拉花作品
+                    <span>📸</span> 上傳本週拉花作品
                   </h3>
                 </div>
 
@@ -1727,17 +1739,18 @@
                     :disabled="isAiEvaluating || !latteForm.photoUrl" 
                     class="w-full py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 disabled:bg-slate-300 transition flex items-center justify-center gap-1.5">
                     <span v-if="isAiEvaluating" class="animate-spin">🔄</span>
-                    <span>{{ isAiEvaluating ? 'AI 評分中...' : '提交作品' }}</span>
+                    <span>{{ isAiEvaluating ? 'AI 教練評分中...' : '提交本週作品' }}</span>
                   </button>
                 </div>
               </div>
 
-              <!-- 本週展示牆 -->
+              <!-- 本週展示牆 (嚴格只顯示本週一 00:00 後上傳之作品) -->
               <div class="space-y-3">
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between items-center flex-wrap gap-1">
                   <h4 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                     <span>🔥</span> 本週參賽作品 ({{ weeklyLattePosts.length }})
                   </h4>
+                  <span class="text-[10px] text-slate-400">跨週舊作品已自動歸檔至底部歷史集錦</span>
                 </div>
 
                 <div v-if="weeklyLattePosts.length > 0" class="space-y-3">
@@ -1767,10 +1780,10 @@
                     </div>
 
                     <div 
-                      @click="openPhotoLightbox(post.photoUrl, post.pattern + ' - ' + resolveWorkPartnerName(post))"
+                      @click="post.photoUrl && post.photoUrl !== '__LAZY_IMG__' && openPhotoLightbox(post.photoUrl, post.pattern + ' - ' + resolveWorkPartnerName(post))"
                       class="rounded-xl overflow-hidden bg-black/5 border border-slate-100 dark:border-slate-700 max-h-64 flex items-center justify-center cursor-zoom-in relative group">
                       <div v-if="post.photoUrl === '__LAZY_IMG__'" class="py-12 text-xs text-slate-400 font-bold flex items-center gap-1.5">
-                        <span class="animate-spin">🔄</span> 正在載入高畫質拉花作品...
+                        <span class="animate-spin">🔄</span> 正在載入拉花作品...
                       </div>
                       <img v-else :src="post.photoUrl" class="w-full object-cover">
                       <span class="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition">🔍 點擊放大</span>
@@ -1839,7 +1852,7 @@
                 </div>
 
                 <div v-else class="text-xs text-slate-400 py-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-dashed">
-                  本週擂台尚無作品上傳。
+                  本週擂台尚無作品上傳，快來搶下本週頭香！
                 </div>
               </div>
 
@@ -1852,22 +1865,22 @@
                 </div>
 
                 <div v-for="arch in latteArtArchives" :key="arch.folderName || arch.key" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
-                  <div @click="arch.expanded = !arch.expanded" class="p-3.5 flex justify-between items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-750 transition">
-                    <div class="flex items-center gap-2.5">
-                      <span class="text-xl">📂</span>
-                      <div>
-                        <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                          {{ arch.folderName }}
+                  <div @click="arch.expanded = !arch.expanded" class="p-3.5 flex justify-between items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-750 transition gap-2">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <span class="text-xl flex-shrink-0">📂</span>
+                      <div class="min-w-0">
+                        <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap">
+                          <span>{{ arch.periodRange || arch.folderName }}</span>
                           <span class="text-[10px] px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full font-bold">
                             👑 冠軍：{{ resolveArchiveWinner(arch) }}
                           </span>
                         </div>
                         <div class="text-[10px] text-slate-400 mt-0.5">
-                          共 {{ arch.totalWorks || 0 }} 幅作品
+                          共 {{ (arch.works && arch.works.length) || arch.totalWorks || 0 }} 幅作品
                         </div>
                       </div>
                     </div>
-                    <span class="text-xs text-slate-400 font-bold">
+                    <span class="text-xs text-slate-400 font-bold whitespace-nowrap flex-shrink-0">
                       {{ arch.expanded ? '▲ 收合' : '▼ 展開' }}
                     </span>
                   </div>
@@ -1875,17 +1888,21 @@
                   <div v-if="arch.expanded" class="p-3 bg-slate-50/70 dark:bg-slate-900/60 grid grid-cols-2 sm:grid-cols-3 gap-2.5 border-t">
                     <div 
                       v-for="work in arch.works" :key="work.id || work.key" 
-                      @click="openPhotoLightbox(work.photoUrl, work.pattern + ' - ' + resolveWorkPartnerName(work))"
+                      @click="work.photoUrl && openPhotoLightbox(work.photoUrl, work.pattern + ' - ' + resolveWorkPartnerName(work))"
                       class="rounded-xl overflow-hidden border bg-white dark:bg-slate-800 shadow-sm flex flex-col cursor-zoom-in">
                       <div class="relative w-full pt-[100%] bg-slate-100">
-                        <img :src="work.photoUrl" class="absolute inset-0 w-full h-full object-cover">
+                        <img v-if="work.photoUrl" :src="work.photoUrl" class="absolute inset-0 w-full h-full object-cover">
+                        <div v-else class="absolute inset-0 flex items-center justify-center text-xs text-slate-400">載入影像中...</div>
                         <div class="absolute top-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
-                          第 {{ work.rank }} 名 ({{ work.finalScore }}分)
+                          第 {{ work.rank }} 名 ({{ calculateCombinedScore(work) }}分)
                         </div>
                       </div>
                       <div class="p-2 text-[10px]">
                         <div class="font-bold text-slate-800 dark:text-slate-200 truncate">{{ work.pattern }}</div>
-                        <div class="text-slate-500">{{ resolveWorkPartnerName(work) }}</div>
+                        <div class="text-slate-500 flex justify-between items-center">
+                          <span class="truncate">{{ resolveWorkPartnerName(work) }}</span>
+                          <span class="text-[9px] text-slate-400">{{ work.dateStr }}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1909,14 +1926,14 @@
                   </span>
                 </div>
 
-                <div class="bg-white/10 rounded-xl p-3 text-xs flex justify-between items-center">
+                <div class="bg-white/10 rounded-xl p-3 text-xs flex justify-between items-center gap-2">
                   <div>
                     <div class="font-bold">作答狀態：
                       <span v-if="myQuizResult" class="text-emerald-300">已完成 ({{ myQuizResult.score }} / 5 分)</span>
                       <span v-else class="text-amber-300">尚未測驗</span>
                     </div>
                   </div>
-                  <button @click="startWeeklyQuiz" class="px-3 py-1.5 bg-white text-emerald-900 rounded-lg font-bold text-xs shadow-sm active:scale-95 transition">
+                  <button @click="startWeeklyQuiz" class="px-3 py-1.5 bg-white text-emerald-900 rounded-lg font-bold text-xs shadow-sm active:scale-95 transition whitespace-nowrap">
                     {{ myQuizResult ? '查看解析' : '開始測驗' }}
                   </button>
                 </div>
@@ -1970,476 +1987,6 @@
               </div>
             </div>
 
-            <!-- ==================== 子頁籤：🥤 飲品配方速查 ＆ 官方配方卡表格 ==================== -->
-            <div v-if="otherSubTab === 'recipe'" class="space-y-4">
-              
-              <!-- 1. 頂部工具列：選擇配方卡 ＋ AI 拍照匯入 ＋ 人工新增 -->
-              <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
-                <div class="flex justify-between items-center flex-wrap gap-1.5">
-                  <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <span>🥤</span> 門市飲品配方卡 ({{ allInteractiveRecipes.length }}款)
-                  </h3>
-                  <div class="flex items-center gap-1.5">
-                    <button @click="openNewSeasonalForm" class="text-[10px] px-2.5 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-lg transition active:scale-95">
-                      + 手動新增
-                    </button>
-                    <label class="text-[10px] px-2.5 py-1 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg cursor-pointer transition flex items-center gap-1 shadow-sm active:scale-95">
-                      <span>📸</span> AI 拍配方卡匯入
-                      <input type="file" accept="image/*,application/pdf" @change="handleAiRecipeImageUpload" class="hidden" :disabled="isAiRecognizingRecipe">
-                    </label>
-                  </div>
-                </div>
-
-                <!-- AI 辨識配方卡進度提示 -->
-                <div v-if="isAiRecognizingRecipe" class="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-pulse">
-                  <span class="animate-spin text-sm">🔄</span>
-                  <span class="font-bold">AI 正在解析配方卡步驟表格、T/G/V 數量與注意事項...</span>
-                </div>
-
-                <!-- 飲品下拉選擇器與尺寸高亮切換 -->
-                <div class="space-y-2 text-xs">
-                  <select v-model="recipeState.drinkKey" class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white font-bold text-xs">
-                    <option v-for="d in allInteractiveRecipes" :key="d.id" :value="d.id">
-                      {{ d.name }}{{ d.marking ? ' (' + d.marking + ')' : '' }}
-                    </option>
-                  </select>
-
-                  <!-- 尺寸快速聚焦列 (若無小杯則顯示「S 無小杯」) -->
-                  <div v-if="currentDrinkRecipe" class="flex items-center gap-1 bg-slate-100 dark:bg-slate-700/70 p-1 rounded-xl text-[11px] font-bold">
-                    <button 
-                      @click="recipeState.highlightSize = 'ALL'"
-                      :class="recipeState.highlightSize === 'ALL' ? 'bg-emerald-800 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300'"
-                      class="px-2.5 py-1.5 rounded-lg transition whitespace-nowrap">
-                      📋 完整表格
-                    </button>
-
-                    <!-- 小杯 S 按鈕：若配方無小杯則顯示「S 無小杯」 -->
-                    <button 
-                      v-if="currentDrinkRecipe.hasShort"
-                      @click="recipeState.highlightSize = 'S'"
-                      :class="recipeState.highlightSize === 'S' ? 'bg-amber-500 text-black shadow-sm font-black' : 'text-slate-600 dark:text-slate-300'"
-                      class="flex-1 py-1.5 rounded-lg transition">
-                      S 小杯
-                    </button>
-                    <div 
-                      v-else 
-                      @click="editSeasonalRecipe(currentDrinkRecipe)"
-                      title="點擊可進入人工修正開啟小杯尺寸"
-                      class="flex-1 py-1.5 rounded-lg text-center text-[10px] text-slate-400 dark:text-slate-500 bg-slate-200/60 dark:bg-slate-800/50 cursor-pointer select-none">
-                      S 無小杯
-                    </div>
-
-                    <button 
-                      v-for="sz in ['T', 'G', 'V']" :key="sz"
-                      @click="recipeState.highlightSize = sz"
-                      :class="recipeState.highlightSize === sz ? 'bg-amber-500 text-black shadow-sm font-black' : 'text-slate-600 dark:text-slate-300'"
-                      class="flex-1 py-1.5 rounded-lg transition">
-                      {{ sz }}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 2. ✏️ 人工修正 / 新增配方卡結構化編輯器 (隨時可修改任何欄位與步驟) -->
-              <div v-if="showSeasonalForm" class="bg-amber-50/90 dark:bg-slate-800 p-4 rounded-2xl shadow-md border-2 border-amber-400 dark:border-amber-600 space-y-3 text-xs">
-                <div class="flex justify-between items-center border-b border-amber-200 dark:border-slate-700 pb-2">
-                  <h4 class="font-black text-amber-950 dark:text-amber-300 text-sm flex items-center gap-1.5">
-                    <span>✏️</span> {{ seasonalForm.id ? '人工修正配方卡：' + seasonalForm.name : '手動建立新配方卡' }}
-                  </h4>
-                  <button @click="showSeasonalForm = false" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
-                </div>
-
-                <form @submit.prevent="submitSeasonalRecipe" class="space-y-3">
-                  <!-- 基本名稱與英文代號 (代號可空白) -->
-                  <div class="grid grid-cols-3 gap-2">
-                    <div class="col-span-2">
-                      <label class="text-[10px] text-slate-600 dark:text-slate-300 font-bold block mb-0.5">飲品中文名稱 *</label>
-                      <input v-model="seasonalForm.name" required placeholder="例：冰香草風味蛋白雲朵那堤" class="w-full px-2.5 py-1.5 rounded-lg border bg-white dark:bg-slate-700 dark:text-white font-bold">
-                    </div>
-                    <div>
-                      <label class="text-[10px] text-slate-600 dark:text-slate-300 font-bold block mb-0.5">英文代號 (可空白)</label>
-                      <input v-model="seasonalForm.marking" placeholder="無可留空 (如 VCPL)" class="w-full px-2.5 py-1.5 rounded-lg border font-mono uppercase bg-white dark:bg-slate-700 dark:text-white">
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-2 gap-2">
-                    <div>
-                      <label class="text-[10px] text-slate-600 dark:text-slate-300 font-bold block mb-0.5">英文名稱 (選填)</label>
-                      <input v-model="seasonalForm.enName" placeholder="例：Iced Vanilla Cream Protein Latte" class="w-full px-2.5 py-1.5 rounded-lg border bg-white dark:bg-slate-700 dark:text-white">
-                    </div>
-                    <div>
-                      <label class="text-[10px] text-slate-600 dark:text-slate-300 font-bold block mb-0.5">外送服務說明 (選填)</label>
-                      <input v-model="seasonalForm.deliveryNote" placeholder="例：此飲品提供外送服務" class="w-full px-2.5 py-1.5 rounded-lg border bg-white dark:bg-slate-700 dark:text-white">
-                    </div>
-                  </div>
-
-                  <!-- 小杯 (S) 尺寸彈性開關 -->
-                  <div class="p-2.5 bg-white dark:bg-slate-700/60 rounded-xl border border-amber-200 dark:border-slate-600 flex items-center justify-between">
-                    <div>
-                      <div class="font-bold text-slate-800 dark:text-slate-200">📏 小杯 (Short) 尺寸設定</div>
-                      <div class="text-[10px] text-slate-500 dark:text-slate-400">台灣多數飲品僅 T/G/V；若此飲品有小杯可開啟並填入數值</div>
-                    </div>
-                    <label class="flex items-center gap-1.5 cursor-pointer font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                      <input type="checkbox" v-model="seasonalForm.hasShort" class="rounded text-emerald-800">
-                      <span>{{ seasonalForm.hasShort ? '✅ 已開啟小杯 (S)' : '無小杯 (僅 T/G/V)' }}</span>
-                    </label>
-                  </div>
-
-                  <!-- 主要步驟表格編輯器 -->
-                  <div class="space-y-2">
-                    <div class="flex justify-between items-center">
-                      <label class="text-[11px] font-black text-slate-800 dark:text-slate-200">📋 主要步驟表格 (可逐行修正文字與各尺寸數字)</label>
-                      <button type="button" @click="addStepRow" class="px-2.5 py-1 bg-emerald-800 text-white rounded-lg text-[10px] font-bold">+ 新增步驟</button>
-                    </div>
-
-                    <div v-for="(st, sIdx) in seasonalForm.stepsList" :key="sIdx" class="p-2.5 bg-white dark:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-600 space-y-2">
-                      <div class="flex items-center justify-between gap-1.5">
-                        <div class="flex items-center gap-1.5 flex-1">
-                          <span class="w-6 h-6 rounded-full bg-emerald-900 text-white font-mono font-bold text-[11px] flex items-center justify-center flex-shrink-0">{{ sIdx + 1 }}</span>
-                          <input v-model="st.title" required placeholder="步驟標題 (如：準備濃縮咖啡 / 添加配料)" class="flex-1 px-2 py-1 rounded border text-xs font-bold dark:bg-slate-800 dark:text-white">
-                        </div>
-                        <div class="flex items-center gap-1">
-                          <label class="text-[10px] flex items-center gap-1 bg-slate-100 dark:bg-slate-600 px-2 py-1 rounded cursor-pointer font-bold">
-                            <input type="checkbox" v-model="st.isSplitSize">
-                            <span>分尺寸填數字</span>
-                          </label>
-                          <button type="button" @click="moveStepRow(sIdx, -1)" v-if="sIdx > 0" class="px-1 text-slate-400 hover:text-slate-700">▲</button>
-                          <button type="button" @click="moveStepRow(sIdx, 1)" v-if="sIdx < seasonalForm.stepsList.length - 1" class="px-1 text-slate-400 hover:text-slate-700">▼</button>
-                          <button type="button" @click="removeStepRow(sIdx)" class="px-1 text-rose-500 font-bold" title="刪除此步驟">✕</button>
-                        </div>
-                      </div>
-
-                      <!-- 步驟共用說明文字 -->
-                      <textarea v-model="st.desc" rows="1" placeholder="步驟操作說明 (如：添加蜂蜜紅柚醬(15ml湯匙)加入攪拌壺中，可換行)" class="w-full px-2 py-1 rounded border text-[11px] dark:bg-slate-800 dark:text-white"></textarea>
-
-                      <!-- 若勾選「分尺寸填數字」，顯示 (S) / T / G / V 獨立輸入框 -->
-                      <div v-if="st.isSplitSize" class="grid gap-1.5 pt-1" :class="seasonalForm.hasShort ? 'grid-cols-4' : 'grid-cols-3'">
-                        <div v-if="seasonalForm.hasShort">
-                          <span class="text-[9px] font-bold text-slate-400 block text-center">S 小杯</span>
-                          <input v-model="st.valS" placeholder="S 數值" class="w-full px-2 py-1 text-center font-mono font-bold rounded border dark:bg-slate-800 dark:text-white">
-                        </div>
-                        <div>
-                          <span class="text-[9px] font-bold text-emerald-700 dark:text-emerald-300 block text-center">T 中杯</span>
-                          <input v-model="st.valT" placeholder="T 數值" class="w-full px-2 py-1 text-center font-mono font-bold rounded border dark:bg-slate-800 dark:text-white">
-                        </div>
-                        <div>
-                          <span class="text-[9px] font-bold text-emerald-700 dark:text-emerald-300 block text-center">G 大杯</span>
-                          <input v-model="st.valG" placeholder="G 數值" class="w-full px-2 py-1 text-center font-mono font-bold rounded border dark:bg-slate-800 dark:text-white">
-                        </div>
-                        <div>
-                          <span class="text-[9px] font-bold text-emerald-700 dark:text-emerald-300 block text-center">V 特大杯</span>
-                          <input v-model="st.valV" placeholder="V 數值" class="w-full px-2 py-1 text-center font-mono font-bold rounded border dark:bg-slate-800 dark:text-white">
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- 服務注意事項 -->
-                  <div>
-                    <label class="text-[10px] text-slate-600 dark:text-slate-300 font-bold block mb-0.5">📌 服務注意事項 (每行一條)</label>
-                    <textarea v-model="seasonalForm.serviceNotes" rows="3" placeholder="例：&#10;1. 蛋白粉用量：每份使用 4 匙蛋白粉(15ml平匙)。&#10;2. 乳製品基底：使用長春烘焙專用脂取代低脂牛奶。" class="w-full px-2.5 py-1.5 rounded-lg border bg-white dark:bg-slate-700 dark:text-white text-[11px]"></textarea>
-                  </div>
-
-                  <div class="flex gap-2 pt-1">
-                    <button type="submit" class="flex-1 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white font-black rounded-xl shadow active:scale-95 transition">
-                      💾 儲存人工修正
-                    </button>
-                    <button type="button" @click="showSeasonalForm = false" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold">
-                      取消
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              <!-- 3. 📋 台灣星巴克官方標準配方卡呈現區塊 (還原實體表格樣式) -->
-              <div v-if="currentDrinkRecipe" class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-300 dark:border-slate-700 overflow-hidden">
-                
-                <!-- 配方卡頂部深色標題列 (若無英文代號則自動留空不顯示) -->
-                <div class="bg-zinc-900 text-white p-4 flex justify-between items-center gap-3 border-b-4 border-emerald-700">
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <span v-if="!currentDrinkRecipe.hasShort" class="px-2 py-0.5 bg-zinc-700 text-amber-300 text-[10px] font-bold rounded">
-                        無小杯 (僅 T / G / V)
-                      </span>
-                      <span v-else class="px-2 py-0.5 bg-emerald-800 text-emerald-200 text-[10px] font-bold rounded">
-                        含小杯 (S / T / G / V)
-                      </span>
-                      <span v-if="currentDrinkRecipe.deliveryNote" class="px-2 py-0.5 bg-teal-900/80 text-teal-200 text-[10px] font-bold rounded border border-teal-700">
-                        🛵 {{ currentDrinkRecipe.deliveryNote }}
-                      </span>
-                    </div>
-                    <h4 class="text-base font-black tracking-wide mt-1.5 text-white">{{ currentDrinkRecipe.name }}</h4>
-                    <p v-if="currentDrinkRecipe.enName" class="text-[11px] text-zinc-300 font-medium">{{ currentDrinkRecipe.enName }}</p>
-                  </div>
-
-                  <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
-                    <!-- 有英文代號才顯示白底黑字方框，未拍到或空白則不顯示 -->
-                    <div v-if="currentDrinkRecipe.marking && currentDrinkRecipe.marking.trim() !== ''" class="bg-white text-black px-3 py-1 rounded font-mono font-black text-sm tracking-wider shadow border border-zinc-300">
-                      {{ currentDrinkRecipe.marking }}
-                    </div>
-                    <div v-else class="text-[10px] text-zinc-400 italic">
-                      (未設定英文代號)
-                    </div>
-
-                    <div class="flex items-center gap-1.5 mt-0.5">
-                      <button 
-                        @click="editSeasonalRecipe(currentDrinkRecipe)" 
-                        class="px-2.5 py-1 bg-amber-400 hover:bg-amber-300 text-black font-black rounded-lg text-[10px] shadow transition active:scale-95 flex items-center gap-1">
-                        <span>✏️</span> 人工修正
-                      </button>
-                      <button 
-                        v-if="allInteractiveRecipes.length > 1"
-                        @click="deleteSeasonalRecipe(currentDrinkRecipe.id)" 
-                        class="px-2 py-1 bg-zinc-800 hover:bg-rose-700 text-zinc-300 hover:text-white rounded-lg text-[10px] transition" title="刪除此配方卡">
-                        🗑️
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 官方配方卡主表格：主要步驟 | (S) | T | G | V -->
-                <div class="overflow-x-auto">
-                  <table class="w-full border-collapse text-xs">
-                    <thead>
-                      <tr class="bg-emerald-900 text-white font-black text-center">
-                        <th class="py-2 px-2.5 border border-slate-300 dark:border-slate-600 text-left w-[38%]" colspan="2">主要步驟</th>
-                        <th v-if="currentDrinkRecipe.hasShort && (recipeState.highlightSize === 'ALL' || recipeState.highlightSize === 'S')" 
-                            class="py-2 px-2 border border-slate-300 dark:border-slate-600 w-[15%]"
-                            :class="recipeState.highlightSize === 'S' ? 'bg-amber-500 text-black' : ''">
-                          S
-                        </th>
-                        <th v-if="recipeState.highlightSize === 'ALL' || recipeState.highlightSize === 'T'" 
-                            class="py-2 px-2 border border-slate-300 dark:border-slate-600"
-                            :class="recipeState.highlightSize === 'T' ? 'bg-amber-500 text-black text-sm' : ''">
-                          T
-                        </th>
-                        <th v-if="recipeState.highlightSize === 'ALL' || recipeState.highlightSize === 'G'" 
-                            class="py-2 px-2 border border-slate-300 dark:border-slate-600"
-                            :class="recipeState.highlightSize === 'G' ? 'bg-amber-500 text-black text-sm' : ''">
-                          G
-                        </th>
-                        <th v-if="recipeState.highlightSize === 'ALL' || recipeState.highlightSize === 'V'" 
-                            class="py-2 px-2 border border-slate-300 dark:border-slate-600"
-                            :class="recipeState.highlightSize === 'V' ? 'bg-amber-500 text-black text-sm' : ''">
-                          V
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
-                      <tr v-for="(step, idx) in currentDrinkRecipe.stepsList" :key="idx" class="hover:bg-slate-50/80 dark:hover:bg-slate-750">
-                        <!-- 步驟編號 -->
-                        <td class="py-2.5 px-2 border border-slate-200 dark:border-slate-700 text-center font-mono font-black text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/80 w-[8%]">
-                          {{ idx + 1 }}
-                        </td>
-                        <!-- 步驟標題 -->
-                        <td class="py-2.5 px-2.5 border border-slate-200 dark:border-slate-700 font-bold text-slate-900 dark:text-white bg-slate-50/50 dark:bg-slate-800/40 w-[30%] leading-snug">
-                          {{ step.title }}
-                        </td>
-
-                        <!-- 情況 A：不分尺寸的共用步驟說明 (自動跨欄合併) -->
-                        <td v-if="!step.isSplitSize" 
-                            :colspan="visibleSizeColumnsCount" 
-                            class="py-2.5 px-3 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 whitespace-pre-line leading-relaxed"
-                            :class="/^[0-9]+$/.test(String(step.desc || '').trim()) ? 'text-center font-mono font-black text-base text-emerald-900 dark:text-amber-300' : 'text-left'">
-                          {{ step.desc }}
-                        </td>
-
-                        <!-- 情況 B：依尺寸區分數值 (S / T / G / V 獨立格，支援上方附帶說明文字) -->
-                        <template v-else>
-                          <td v-if="currentDrinkRecipe.hasShort && (recipeState.highlightSize === 'ALL' || recipeState.highlightSize === 'S')" 
-                              class="py-2 px-2 border border-slate-200 dark:border-slate-700 text-center align-middle"
-                              :class="recipeState.highlightSize === 'S' ? 'bg-amber-50/70 dark:bg-amber-950/30' : ''">
-                            <div v-if="step.desc" class="text-[10px] text-slate-500 dark:text-slate-400 mb-1 leading-tight">{{ step.desc }}</div>
-                            <span class="font-mono font-black text-base text-slate-900 dark:text-amber-300">{{ step.valS || '-' }}</span>
-                          </td>
-                          <td v-if="recipeState.highlightSize === 'ALL' || recipeState.highlightSize === 'T'" 
-                              class="py-2 px-2 border border-slate-200 dark:border-slate-700 text-center align-middle"
-                              :class="recipeState.highlightSize === 'T' ? 'bg-amber-50/70 dark:bg-amber-950/30' : ''">
-                            <div v-if="step.desc && recipeState.highlightSize === 'T'" class="text-[10px] text-slate-500 dark:text-slate-400 mb-1 leading-tight">{{ step.desc }}</div>
-                            <div v-else-if="step.desc && recipeState.highlightSize === 'ALL'" class="text-[10px] text-slate-500 dark:text-slate-400 mb-1 leading-tight">{{ step.desc }}</div>
-                            <span class="font-mono font-black text-base text-slate-900 dark:text-amber-300">{{ step.valT }}</span>
-                          </td>
-                          <td v-if="recipeState.highlightSize === 'ALL' || recipeState.highlightSize === 'G'" 
-                              class="py-2 px-2 border border-slate-200 dark:border-slate-700 text-center align-middle"
-                              :class="recipeState.highlightSize === 'G' ? 'bg-amber-50/70 dark:bg-amber-950/30' : ''">
-                            <div v-if="step.desc" class="text-[10px] text-slate-500 dark:text-slate-400 mb-1 leading-tight">{{ step.desc }}</div>
-                            <span class="font-mono font-black text-base text-slate-900 dark:text-amber-300">{{ step.valG }}</span>
-                          </td>
-                          <td v-if="recipeState.highlightSize === 'ALL' || recipeState.highlightSize === 'V'" 
-                              class="py-2 px-2 border border-slate-200 dark:border-slate-700 text-center align-middle"
-                              :class="recipeState.highlightSize === 'V' ? 'bg-amber-50/70 dark:bg-amber-950/30' : ''">
-                            <div v-if="step.desc" class="text-[10px] text-slate-500 dark:text-slate-400 mb-1 leading-tight">{{ step.desc }}</div>
-                            <span class="font-mono font-black text-base text-slate-900 dark:text-amber-300">{{ step.valV }}</span>
-                          </td>
-                        </template>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <!-- 服務注意事項區塊 (對應配方卡左側注意事項) -->
-                <div v-if="currentDrinkRecipe.serviceNotes" class="p-3.5 bg-emerald-950 text-emerald-50 text-xs space-y-1 border-t border-emerald-800">
-                  <div class="font-black text-amber-300 text-[11px] flex items-center gap-1">
-                    <span>📌</span> 服務注意事項：
-                  </div>
-                  <div class="text-[11px] leading-relaxed whitespace-pre-line text-emerald-100/95">{{ currentDrinkRecipe.serviceNotes }}</div>
-                </div>
-              </div>
-
-              <!-- 4. 🤖 AI 吧台客製化點單模擬考機 (100% 依據門市現有配方卡出題與批改) -->
-              <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
-                <div class="flex justify-between items-center">
-                  <div>
-                    <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <span>🤖</span> AI 吧台配方與客製化抽考
-                    </h3>
-                    <p class="text-[10px] text-slate-400 mt-0.5">嚴格依據上方已建檔之門市配方卡進行抽考</p>
-                  </div>
-                  <button 
-                    @click="generateBaristaChallenge" 
-                    :disabled="baristaChallenge.isGenerating"
-                    class="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 transition flex items-center gap-1">
-                    <span :class="baristaChallenge.isGenerating ? 'animate-spin' : ''">🎲</span>
-                    <span>{{ baristaChallenge.question ? '換一題' : '隨機出題' }}</span>
-                  </button>
-                </div>
-
-                <div v-if="baristaChallenge.question" class="space-y-2.5 text-xs">
-                  <div class="p-3 bg-slate-100 dark:bg-slate-900/70 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-slate-100 leading-relaxed">
-                    🗣️ 考題：「{{ baristaChallenge.question }}」
-                  </div>
-
-                  <div class="flex gap-2">
-                    <input 
-                      v-model="baristaChallenge.userReply" 
-                      type="text" 
-                      placeholder="輸入您的作答（如匙數、壓頭下數、濃縮份數或按鈕號）..." 
-                      class="flex-1 px-3 py-2 rounded-xl border dark:bg-slate-700 dark:text-white text-xs">
-                    <button 
-                      @click="checkBaristaChallengeAnswer" 
-                      :disabled="baristaChallenge.isChecking || !baristaChallenge.userReply"
-                      class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl whitespace-nowrap active:scale-95 transition">
-                      {{ baristaChallenge.isChecking ? '批改中...' : '送出對答案' }}
-                    </button>
-                  </div>
-
-                  <div v-if="baristaChallenge.feedback" class="p-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-300 dark:border-emerald-800 rounded-xl text-[11px] text-emerald-950 dark:text-emerald-200 whitespace-pre-line leading-relaxed">
-                    {{ baristaChallenge.feedback }}
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            <!-- ==================== 子頁籤：🏅 夥伴數位咖啡護照與成就徽章 ==================== -->
-            <div v-if="otherSubTab === 'passport'" class="space-y-4">
-              
-              <!-- 1. 個人數位護照總覽卡片 -->
-              <div class="bg-gradient-to-br from-zinc-900 via-stone-900 to-emerald-950 text-white p-5 rounded-3xl shadow-lg border border-amber-500/40 space-y-3">
-                <div class="flex justify-between items-start">
-                  <div>
-                    <span class="px-2.5 py-0.5 bg-amber-400/20 text-amber-300 border border-amber-400/40 rounded-full text-[10px] font-bold">
-                      COFFEE PASSPORT · 011218
-                    </span>
-                    <h3 class="text-base font-black mt-1.5">{{ currentPartner?.name }} ({{ currentPartner?.nickname }}) 的咖啡護照</h3>
-                  </div>
-                  <span class="text-3xl">📕</span>
-                </div>
-
-                <!-- 收集進度條 -->
-                <div class="space-y-1">
-                  <div class="flex justify-between text-xs font-bold">
-                    <span class="text-emerald-300">☕ 咖啡豆品鑑收集進度</span>
-                    <span class="font-mono text-amber-300">{{ myPassportStats.tastedCount }} / {{ starbucksCoreBeans.length }} 款 ({{ myPassportStats.percent }}%)</span>
-                  </div>
-                  <div class="w-full h-2.5 bg-white/10 rounded-full overflow-hidden">
-                    <div class="h-full bg-gradient-to-r from-emerald-400 to-amber-400 transition-all duration-500" :style="{ width: myPassportStats.percent + '%' }"></div>
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-3 gap-2 pt-1 text-center text-[11px]">
-                  <div class="bg-white/10 rounded-xl p-2">
-                    <div class="text-white/60 text-[10px]">累計品評</div>
-                    <div class="font-black text-amber-300 text-sm">{{ myPassportStats.totalTastingPosts }} 篇</div>
-                  </div>
-                  <div class="bg-white/10 rounded-xl p-2">
-                    <div class="text-white/60 text-[10px]">拉花最高分</div>
-                    <div class="font-black text-amber-300 text-sm">{{ myPassportStats.bestLatteScore }} 分</div>
-                  </div>
-                  <div class="bg-white/10 rounded-xl p-2">
-                    <div class="text-white/60 text-[10px]">已解鎖徽章</div>
-                    <div class="font-black text-amber-300 text-sm">{{ myUnlockedBadgesCount }} / {{ partnerBadgesList.length }} 枚</div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 2. 🎖️ 成就徽章館 -->
-              <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
-                <h4 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                  <span>🎖️</span> 個人榮譽成就徽章
-                </h4>
-                <div class="grid grid-cols-2 gap-2.5">
-                  <div 
-                    v-for="bg in partnerBadgesList" :key="bg.id"
-                    :class="bg.unlocked ? 'bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/40 dark:to-yellow-950/20 border-amber-300 dark:border-amber-700 shadow-sm' : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 opacity-50 grayscale'"
-                    class="p-3 rounded-2xl border flex items-start gap-2.5 transition">
-                    <span class="text-2xl flex-shrink-0">{{ bg.icon }}</span>
-                    <div class="min-w-0 flex-1">
-                      <div class="flex items-center justify-between gap-1">
-                        <span class="text-xs font-black text-slate-900 dark:text-white truncate">{{ bg.title }}</span>
-                        <span v-if="bg.unlocked" class="text-[9px] px-1.5 py-0.2 bg-amber-400 text-black font-black rounded">已解鎖</span>
-                      </div>
-                      <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">{{ bg.desc }}</p>
-                      <div class="text-[9px] font-mono font-bold text-emerald-700 dark:text-emerald-400 mt-1">{{ bg.progressText }}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 3. ☕ 咖啡豆集章冊 (點亮已品評豆款，未品評可一鍵前往品評) -->
-              <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
-                <div class="flex justify-between items-center">
-                  <h4 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <span>📖</span> 咖啡豆集章冊
-                  </h4>
-                  <span class="text-[10px] text-slate-400">點擊未集章豆款可直接前往撰寫品評</span>
-                </div>
-
-                <div class="grid grid-cols-1 gap-2">
-                  <div 
-                    v-for="bean in myPassportBeanStampList" :key="bean.name"
-                    @click="!bean.isTasted && jumpToTastingWithBean(bean.name)"
-                    :class="bean.isTasted ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 cursor-pointer hover:border-emerald-500'"
-                    class="p-3 rounded-xl border flex justify-between items-center gap-2 transition">
-                    <div class="min-w-0 flex-1">
-                      <div class="flex items-center gap-1.5">
-                        <span class="text-[9px] px-1.5 py-0.2 rounded font-bold"
-                              :class="bean.roast.includes('黃金') ? 'bg-amber-100 text-amber-900' : (bean.roast.includes('中度') ? 'bg-orange-100 text-orange-900' : 'bg-stone-800 text-amber-200')">
-                          {{ bean.roast }}
-                        </span>
-                        <span class="text-xs font-bold text-slate-900 dark:text-white truncate">{{ bean.name }}</span>
-                      </div>
-                      <div v-if="bean.isTasted" class="text-[10px] text-emerald-800 dark:text-emerald-300 mt-1 truncate">
-                        📝 品鑑紀錄 ({{ bean.lastDate }})：{{ bean.lastNotes }}
-                      </div>
-                      <div v-else class="text-[10px] text-slate-400 mt-0.5">
-                        尚未品鑑 · 點擊前往記錄第一杯風味 ➔
-                      </div>
-                    </div>
-
-                    <div class="flex-shrink-0">
-                      <span v-if="bean.isTasted" class="px-2.5 py-1 bg-emerald-700 text-white text-[10px] font-black rounded-full shadow-sm flex items-center gap-1">
-                        ✓ 已集章 ({{ bean.tastedTimes }})
-                      </span>
-                      <span v-else class="px-2 py-1 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-[10px] font-bold rounded-full">
-                        未解鎖
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
             <!-- 週測驗 Modal -->
             <div v-if="showQuizModal" class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
               <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-5 space-y-3 shadow-xl">
@@ -2463,6 +2010,200 @@
               </div>
             </div>
 
+            <!-- 🛂 子頁籤 6：個人數位咖啡護照 ＆ 成就激勵徽章 (自動回溯歷史品評、同步新季節豆、多次品評收合時間軸) -->
+            <div v-if="otherSubTab === 'passport'" class="space-y-4">
+              
+              <!-- 夥伴切換與個人成就黑金總覽卡 -->
+              <div class="black-gold-card rounded-3xl p-5 text-amber-100 space-y-3.5 relative overflow-hidden">
+                <div class="flex justify-between items-center flex-wrap gap-2">
+                  <div>
+                    <span class="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-bold border border-amber-400/30">
+                      COFFEE PASSPORT & BADGES
+                    </span>
+                    <h3 class="text-base font-black text-white mt-1.5 flex items-center gap-1.5">
+                      <span>🛂</span> {{ passportTargetStaffName }} 的咖啡護照
+                    </h3>
+                  </div>
+                  <select 
+                    v-model="passportSelectedStaffId" 
+                    class="px-2.5 py-1.5 rounded-xl bg-zinc-900/90 border border-amber-500/50 text-amber-200 text-xs font-bold">
+                    <option value="">查看自己 ({{ currentPartner?.name }})</option>
+                    <option v-for="s in sortedValidStaffList" :key="s._key || s.id" :value="s.id || s._key">
+                      {{ s.name }} ({{ s.nickname }})
+                    </option>
+                  </select>
+                </div>
+
+                <!-- 四大生涯數據指標 -->
+                <div class="grid grid-cols-4 gap-2 pt-1 text-center">
+                  <div class="bg-white/5 border border-amber-500/20 rounded-2xl p-2">
+                    <div class="text-lg font-black text-amber-300">{{ unlockedBadgeCount }}<span class="text-[10px] text-amber-200/60">/{{ partnerBadges.length }}</span></div>
+                    <div class="text-[10px] text-amber-100/70">成就徽章</div>
+                  </div>
+                  <div class="bg-white/5 border border-amber-500/20 rounded-2xl p-2">
+                    <div class="text-lg font-black text-emerald-400">{{ tastedBeanCount }}<span class="text-[10px] text-amber-200/60">/{{ totalPassportBeanCount }}</span></div>
+                    <div class="text-[10px] text-amber-100/70">點亮豆款</div>
+                  </div>
+                  <div class="bg-white/5 border border-amber-500/20 rounded-2xl p-2">
+                    <div class="text-lg font-black text-sky-300">{{ partnerCareerStats.totalLatteCount }}</div>
+                    <div class="text-[10px] text-amber-100/70">拉花作品</div>
+                  </div>
+                  <div class="bg-white/5 border border-amber-500/20 rounded-2xl p-2">
+                    <div class="text-lg font-black text-pink-300">{{ partnerCareerStats.bravoReceived }}</div>
+                    <div class="text-[10px] text-amber-100/70">獲讚小卡</div>
+                  </div>
+                </div>
+
+                <!-- 護照收集進度條 -->
+                <div class="space-y-1 pt-1">
+                  <div class="flex justify-between text-[11px] font-bold">
+                    <span class="text-amber-200">☕ 咖啡豆探索進度 (含官網最新季節豆與自訂豆)</span>
+                    <span class="text-amber-300 font-mono">{{ Math.round((tastedBeanCount / (totalPassportBeanCount || 1)) * 100) }}%</span>
+                  </div>
+                  <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden border border-amber-500/30">
+                    <div class="h-full bg-gradient-to-r from-emerald-500 via-amber-400 to-yellow-300 transition-all duration-500"
+                         :style="{ width: Math.min(100, Math.round((tastedBeanCount / (totalPassportBeanCount || 1)) * 100)) + '%' }"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 🏅 8 大門市實戰成就激勵徽章牆 -->
+              <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
+                <div class="flex justify-between items-center flex-wrap gap-1">
+                  <h4 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <span>🏅</span> 夥伴生涯成就徽章 ({{ unlockedBadgeCount }} / {{ partnerBadges.length }} 已點亮)
+                  </h4>
+                  <span class="text-[10px] text-slate-400">依門市歷史紀錄自動解鎖</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                  <div 
+                    v-for="badge in partnerBadges" :key="badge.id"
+                    class="p-3 rounded-2xl border transition flex items-start gap-2.5 relative overflow-hidden"
+                    :class="badge.unlocked ? 'bg-gradient-to-br from-amber-50/90 to-orange-50/60 dark:from-amber-950/40 dark:to-orange-950/20 border-amber-300 dark:border-amber-700 shadow-sm' : 'bg-slate-50/60 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 opacity-50 grayscale'">
+                    <span class="text-2xl flex-shrink-0">{{ badge.icon }}</span>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center justify-between gap-1">
+                        <span class="text-xs font-black text-slate-900 dark:text-white truncate">{{ badge.title }}</span>
+                        <span v-if="badge.unlocked" class="text-[9px] px-1.5 py-0.2 bg-amber-500 text-black font-black rounded-full flex-shrink-0">已達成</span>
+                      </div>
+                      <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">{{ badge.desc }}</p>
+                      <div class="text-[9px] font-bold mt-1" :class="badge.unlocked ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400'">
+                        進度：{{ badge.progressText }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 🛂 數位咖啡護照：咖啡豆品鑑印章冊 (多次紀錄同一款豆子自動整合為時間軸) -->
+              <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
+                <div class="flex justify-between items-center flex-wrap gap-2">
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <span>📖</span> 星巴克咖啡豆品鑑印章冊
+                    </h4>
+                    <p class="text-[10px] text-slate-400 mt-0.5">自動整合過去所有品評紀錄，同豆款多次品評可展開時間軸</p>
+                  </div>
+                  <div class="flex gap-1 text-[10px] font-bold flex-wrap">
+                    <button @click="passportFilter = 'all'" :class="passportFilter === 'all' ? 'bg-emerald-800 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="px-2.5 py-1 rounded-lg">全部 ({{ totalPassportBeanCount }})</button>
+                    <button @click="passportFilter = 'unlocked'" :class="passportFilter === 'unlocked' ? 'bg-amber-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="px-2.5 py-1 rounded-lg">已點亮 ({{ tastedBeanCount }})</button>
+                    <button @click="passportFilter = 'locked'" :class="passportFilter === 'locked' ? 'bg-slate-800 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="px-2.5 py-1 rounded-lg">待探索</button>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-2.5">
+                  <div 
+                    v-for="bean in filteredPassportBeans" :key="bean.name"
+                    class="p-3.5 rounded-2xl border transition flex flex-col justify-between gap-2.5 relative"
+                    :class="bean.isTasted ? 'bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800 shadow-sm' : 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800'">
+                    
+                    <div class="flex justify-between items-start gap-2">
+                      <div class="min-w-0">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                          <span class="text-sm">{{ bean.isTasted ? '✅' : '🔒' }}</span>
+                          <span class="text-xs font-black text-slate-900 dark:text-white">{{ bean.name }}</span>
+                          <span :class="bean.category === '季節限定豆' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-slate-100 text-slate-700 border-slate-300'" class="px-1.5 py-0.2 text-[9px] font-bold rounded border">
+                            {{ bean.category || '常態經典豆' }}
+                          </span>
+                        </div>
+                        <span class="text-[10px] text-slate-400 block mt-0.5">{{ bean.roast }} · {{ bean.region }}</span>
+                      </div>
+
+                      <div class="text-right flex-shrink-0">
+                        <span v-if="bean.isTasted" class="px-2 py-0.5 bg-amber-400 text-black text-[9px] font-black rounded-full whitespace-nowrap shadow-sm inline-block">
+                          ★ 已品鑑 ({{ bean.tastedCount }}次)
+                        </span>
+                        <span v-else class="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-500 text-[9px] font-bold rounded-full whitespace-nowrap inline-block">
+                          尚未品鑑
+                        </span>
+                        <div v-if="bean.allNotes && bean.allNotes.length > 0" class="text-[9px] text-emerald-700 dark:text-emerald-400 font-bold mt-0.5">
+                          平均酸度 {{ bean.avgAcidity }} / 醇度 {{ bean.avgBody }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 最新一篇品評摘要與「展開歷次品評時間軸」 -->
+                    <div v-if="bean.latestNote" class="space-y-2">
+                      <div class="p-2.5 bg-white/95 dark:bg-slate-800/95 rounded-xl border border-emerald-200/80 dark:border-emerald-900/60 text-[11px] text-slate-700 dark:text-slate-200 space-y-1">
+                        <div class="flex justify-between items-center text-[10px] font-bold text-emerald-800 dark:text-emerald-400">
+                          <span>📌 最新品鑑 ({{ bean.latestNote.dateStr }})</span>
+                          <span>🍋 酸度 {{ bean.latestNote.acidity }} ｜ 🧈 醇度 {{ bean.latestNote.body }}</span>
+                        </div>
+                        <div><b>香氣：</b>{{ bean.latestNote.aroma || '未標註' }} ｜ <b>心得：</b>{{ getCleanNotesText(bean.latestNote.notes || bean.latestNote.flavor) }}</div>
+                      </div>
+
+                      <!-- 當同一款豆子有 2 篇以上品評時，提供收合展開按鈕整理在一起 -->
+                      <div v-if="bean.allNotes && bean.allNotes.length > 1">
+                        <button 
+                          type="button"
+                          @click="toggleBeanHistory(bean.name)"
+                          class="w-full py-1.5 px-3 bg-emerald-100/70 hover:bg-emerald-200/70 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 rounded-xl text-[10px] font-bold flex justify-between items-center transition">
+                          <span>📂 展開歷次品評時間軸 (共 {{ bean.allNotes.length }} 篇紀錄整理)</span>
+                          <span>{{ isBeanHistoryExpanded(bean.name) ? '▲ 收起' : '▼ 展開' }}</span>
+                        </button>
+
+                        <div v-if="isBeanHistoryExpanded(bean.name)" class="mt-2 pl-3 border-l-2 border-emerald-400 space-y-2">
+                          <div 
+                            v-for="(histNote, hIdx) in bean.allNotes" :key="histNote.id || hIdx"
+                            class="p-2 bg-white/80 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 text-[10px] space-y-1">
+                            <div class="flex justify-between items-center font-bold text-slate-800 dark:text-slate-200">
+                              <span>第 {{ bean.allNotes.length - hIdx }} 次品鑑 · {{ histNote.dateStr }}</span>
+                              <span class="text-amber-700 dark:text-amber-400">酸度{{ histNote.acidity }} / 醇度{{ histNote.body }}</span>
+                            </div>
+                            <div class="text-slate-600 dark:text-slate-300">香氣：{{ histNote.aroma }} ｜ 心得：{{ getCleanNotesText(histNote.notes || histNote.flavor) }}</div>
+                            <div v-if="histNote.aiComment" class="text-[9.5px] text-emerald-700 dark:text-emerald-400 bg-emerald-50/60 dark:bg-emerald-950/40 p-1.5 rounded-lg">
+                              🤖 {{ histNote.aiComment }}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else class="text-[10px] text-slate-400">
+                      ✨ 官方風味特色：{{ bean.flavorNotes }}（適合搭配：{{ bean.foodPairing }}）
+                    </div>
+
+                    <div class="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700/60 gap-2">
+                      <button 
+                        @click="jumpToTastingWithBean(bean.name)"
+                        class="flex-1 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-bold transition active:scale-95">
+                        ✍️ 新增此豆款品評
+                      </button>
+                      <button 
+                        v-if="!passportSelectedStaffId || passportSelectedStaffId === (currentPartner?.id || currentPartner?._key)"
+                        @click="toggleManualBeanStamp(bean.name)"
+                        class="px-2.5 py-1.5 rounded-xl border text-[10px] font-bold transition active:scale-95 whitespace-nowrap"
+                        :class="bean.isManualStamped ? 'bg-amber-100 border-amber-300 text-amber-900' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300'">
+                        {{ bean.isManualStamped ? '✓ 已蓋印章' : '💮 手動蓋章' }}
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
           </section>
 
           <!-- ==================== 頁籤 5：【關於】 ==================== -->
@@ -2478,9 +2219,9 @@
               </div>
 
               <div class="text-xs space-y-2.5 text-slate-600 dark:text-slate-300 border-t pt-3">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-2">
                   <span>📍 新北市永和區安樂路 248-7 號 1F</span>
-                  <a href="https://maps.google.com/?q=星巴克+永和永安門市" target="_blank" class="px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded text-[10px] font-bold">導航 ↗</a>
+                  <a href="https://maps.google.com/?q=星巴克+永和永安門市" target="_blank" class="px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded text-[10px] font-bold whitespace-nowrap">導航 ↗</a>
                 </div>
                 <div>📞 02-8921-5223</div>
                 <div>⏰ 每日 07:00 ~ 21:30</div>
@@ -2489,7 +2230,7 @@
 
             <!-- 📷 門市相簿庫 -->
             <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3.5">
-              <div class="flex justify-between items-center">
+              <div class="flex justify-between items-center flex-wrap gap-1">
                 <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <span>📷</span> 門市相簿
                 </h3>
@@ -2528,7 +2269,7 @@
                   
                   <div 
                     @click="toggleAlbumFolder(folder.name)" 
-                    class="p-3 flex justify-between items-center cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-800 transition select-none">
+                    class="p-3 flex justify-between items-center cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-800 transition select-none gap-2">
                     <div class="flex items-center gap-3 min-w-0">
                       <div class="w-11 h-11 rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 flex items-center justify-center flex-shrink-0">
                         <img v-if="folder.coverUrl" :src="folder.coverUrl" class="w-full h-full object-cover">
@@ -2551,7 +2292,7 @@
                         class="text-slate-400 hover:text-rose-500 text-xs px-1.5 py-0.5" title="刪除相簿">
                         🗑️
                       </button>
-                      <span class="text-[11px] font-bold text-emerald-800 dark:text-emerald-400 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                      <span class="text-[11px] font-bold text-emerald-800 dark:text-emerald-400 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 rounded-lg border border-emerald-200 dark:border-emerald-800 whitespace-nowrap">
                         {{ isAlbumExpanded(folder.name) ? '▲ 收合' : '▼ 展開' }}
                       </span>
                     </div>
@@ -2594,7 +2335,7 @@
 
             <!-- Bravo 感謝小卡 -->
             <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
-              <div class="flex justify-between items-center">
+              <div class="flex justify-between items-center flex-wrap gap-1">
                 <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <span>💌</span> Bravo 感謝牆
                 </h3>
@@ -2722,6 +2463,82 @@
 
       <div v-if="lightboxModal.list && lightboxModal.list.length > 1" class="text-[11px] text-white/70 mt-3 font-mono">
         {{ lightboxModal.index + 1 }} / {{ lightboxModal.list.length }}
+      </div>
+    </div>
+  </transition>
+
+  <!-- 📲 安裝門市專屬 App 引導 Modal -->
+  <transition name="modal">
+    <div v-if="installAppModal.show" class="fixed inset-0 bg-black/60 z-[99999] flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-4 border border-slate-200 dark:border-slate-700">
+        <div class="flex justify-between items-center border-b dark:border-slate-700 pb-2">
+          <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+            <span>📲</span> 安裝「永安門市 App」至手機桌面
+          </h3>
+          <button @click="installAppModal.show = false" class="text-slate-400 text-sm">✕</button>
+        </div>
+
+        <div class="space-y-3 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+          <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border border-emerald-200 dark:border-emerald-800 space-y-1.5">
+            <div class="font-black text-emerald-900 dark:text-emerald-300">🍎 iPhone / iPad (Safari 瀏覽器) 安裝步驟：</div>
+            <p>1. 點擊螢幕底部正中央的 <b>「分享」圖示</b>（方框向上箭頭 📤）。</p>
+            <p>2. 往下滑動選單，點選 <b>「加入主畫面 (Add to Home Screen)」</b>。</p>
+            <p>3. 點擊右上角 <b>「新增」</b>，桌面就會出現專屬的「永安門市」App 圖示！</p>
+          </div>
+
+          <div class="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-200 dark:border-slate-600 space-y-1.5">
+            <div class="font-black text-slate-900 dark:text-white">🤖 Android (Chrome 瀏覽器) 安裝步驟：</div>
+            <p>1. 點擊瀏覽器右上角的 <b>「⋮」選單</b>。</p>
+            <p>2. 點選 <b>「安裝應用程式」</b> 或 <b>「加到主畫面」</b> 即可完成安裝！</p>
+          </div>
+        </div>
+
+        <button @click="installAppModal.show = false" class="w-full py-2.5 bg-emerald-800 text-white rounded-xl text-xs font-bold">
+          我知道了
+        </button>
+      </div>
+    </div>
+  </transition>
+
+  <!-- 🔔 門市通知中心 Modal -->
+  <transition name="modal">
+    <div v-if="notificationDrawer.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-3.5 border border-slate-200 dark:border-slate-700 max-h-[85vh] flex flex-col">
+        <div class="flex justify-between items-center border-b dark:border-slate-700 pb-2 flex-shrink-0">
+          <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+            <span>🔔</span> 個人通知中心
+          </h3>
+          <div class="flex items-center gap-2">
+            <button @click="markAllNotificationsRead" class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold hover:underline">
+              全部標為已讀
+            </button>
+            <button @click="notificationDrawer.show = false" class="text-slate-400 text-sm px-1">✕</button>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto space-y-2 pr-1 text-xs">
+          <div 
+            v-for="n in partnerNotifications" :key="n.id"
+            @click="handleToastClick(n); notificationDrawer.show = false"
+            class="p-3 rounded-2xl border transition cursor-pointer flex items-start gap-2.5"
+            :class="n.isRead ? 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200 dark:border-slate-700 opacity-75' : 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 shadow-sm'">
+            <span class="text-lg flex-shrink-0 mt-0.5">{{ n.icon }}</span>
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-center gap-1">
+                <span class="font-black text-slate-900 dark:text-white truncate">{{ n.title }}</span>
+                <span class="text-[9px] text-slate-400 whitespace-nowrap">{{ n.dateStr }}</span>
+              </div>
+              <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5 leading-snug">{{ n.body }}</p>
+            </div>
+          </div>
+          <p v-if="partnerNotifications.length === 0" class="text-slate-400 text-center py-8">
+            目前尚無新通知（可在 ⚙️ 個人設定調整通知項目）。
+          </p>
+        </div>
+
+        <button @click="notificationDrawer.show = false; openSettingsModal()" class="w-full py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex-shrink-0">
+          ⚙️ 設定通知偏好與字體大小
+        </button>
       </div>
     </div>
   </transition>
@@ -2872,81 +2689,6 @@
         </div>
 
         <button @click="vacationDetailModal.show = false" class="w-full py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold">關閉</button>
-      </div>
-    </div>
-  </transition>
-
-    <!-- 📲 安裝門市專屬 App 引導 Modal -->
-  <transition name="modal">
-    <div v-if="installAppModal.show" class="fixed inset-0 bg-black/60 z-[99999] flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-4 border border-slate-200 dark:border-slate-700">
-        <div class="flex justify-between items-center border-b dark:border-slate-700 pb-2">
-          <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
-            <span>📲</span> 安裝「永安門市 App」至手機桌面
-          </h3>
-          <button @click="installAppModal.show = false" class="text-slate-400 text-sm">✕</button>
-        </div>
-
-        <div class="space-y-3 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-          <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border border-emerald-200 dark:border-emerald-800 space-y-1.5">
-            <div class="font-black text-emerald-900 dark:text-emerald-300">🍎 iPhone / iPad (Safari 瀏覽器) 安裝步驟：</div>
-            <p>1. 點擊螢幕底部正中央的 <b>「分享」圖示</b>（方框向上箭頭 📤）。</p>
-            <p>2. 往下滑動選單，點選 <b>「加入主畫面 (Add to Home Screen)」</b>。</p>
-            <p>3. 點擊右上角 <b>「新增」</b>，桌面就會出現專屬的「永安門市」App 圖示！</p>
-          </div>
-
-          <div class="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-200 dark:border-slate-600 space-y-1.5">
-            <div class="font-black text-slate-900 dark:text-white">🤖 Android (Chrome 瀏覽器) 安裝步驟：</div>
-            <p>1. 點擊瀏覽器右上角的 <b>「⋮」選單</b>。</p>
-            <p>2. 點選 <b>「安裝應用程式」</b> 或 <b>「加到主畫面」</b> 即可完成安裝！</p>
-          </div>
-        </div>
-
-        <button @click="installAppModal.show = false" class="w-full py-2.5 bg-emerald-800 text-white rounded-xl text-xs font-bold">
-          我知道了
-        </button>
-      </div>
-    </div>
-  </transition>
-    <!-- 🔔 門市通知中心 Modal -->
-  <transition name="modal">
-    <div v-if="notificationDrawer.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-3.5 border border-slate-200 dark:border-slate-700 max-h-[85vh] flex flex-col">
-        <div class="flex justify-between items-center border-b dark:border-slate-700 pb-2 flex-shrink-0">
-          <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
-            <span>🔔</span> 個人通知中心
-          </h3>
-          <div class="flex items-center gap-2">
-            <button @click="markAllNotificationsRead" class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold hover:underline">
-              全部標為已讀
-            </button>
-            <button @click="notificationDrawer.show = false" class="text-slate-400 text-sm px-1">✕</button>
-          </div>
-        </div>
-
-        <div class="flex-1 overflow-y-auto space-y-2 pr-1 text-xs">
-          <div 
-            v-for="n in partnerNotifications" :key="n.id"
-            @click="handleToastClick(n); notificationDrawer.show = false"
-            class="p-3 rounded-2xl border transition cursor-pointer flex items-start gap-2.5"
-            :class="n.isRead ? 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200 dark:border-slate-700 opacity-75' : 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 shadow-sm'">
-            <span class="text-lg flex-shrink-0 mt-0.5">{{ n.icon }}</span>
-            <div class="flex-1 min-w-0">
-              <div class="flex justify-between items-center gap-1">
-                <span class="font-black text-slate-900 dark:text-white truncate">{{ n.title }}</span>
-                <span class="text-[9px] text-slate-400 whitespace-nowrap">{{ n.dateStr }}</span>
-              </div>
-              <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5 leading-snug">{{ n.body }}</p>
-            </div>
-          </div>
-          <p v-if="partnerNotifications.length === 0" class="text-slate-400 text-center py-8">
-            目前尚無新通知（可在 ⚙️ 個人設定調整通知項目）。
-          </p>
-        </div>
-
-        <button @click="notificationDrawer.show = false; openSettingsModal()" class="w-full py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex-shrink-0">
-          ⚙️ 設定通知偏好與字體大小
-        </button>
       </div>
     </div>
   </transition>
@@ -3881,6 +3623,39 @@ const app = createApp({
     const isTestingApiKey = ref(false);
     const apiKeyTestResult = ref('');
 
+    // PWA 獨立 App 模式偵測、安裝引導與吧台螢幕常亮鎖
+    const isRunningStandalone = ref(
+      window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+    );
+    const deferredInstallPrompt = ref(null);
+    const installAppModal = ref({ show: false });
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt.value = e;
+    });
+
+    const triggerInstallApp = async () => {
+      if (deferredInstallPrompt.value) {
+        deferredInstallPrompt.value.prompt();
+        const { outcome } = await deferredInstallPrompt.value.userChoice;
+        if (outcome === 'accepted') {
+          deferredInstallPrompt.value = null;
+          isRunningStandalone.value = true;
+        }
+      } else {
+        installAppModal.value.show = true;
+      }
+    };
+
+    const requestScreenWakeLock = async () => {
+      try {
+        if ('wakeLock' in navigator) {
+          await navigator.wakeLock.request('screen');
+        }
+      } catch (e) {}
+    };
+
     // 2. 資料庫核心陣列與物件
     const starbucksCoreBeans = ref([...initialStarbucksBeans]);
     const materials = ref([]);
@@ -3963,39 +3738,6 @@ const app = createApp({
     const blackoutModal = ref({ show: false, form: { date: '', reason: '' } });
     const vacationDetailModal = ref({ show: false, dateStr: '', isBlackout: false, blackoutReason: '', vacations: [] });
     const settingsModal = ref({ show: false, newPassword: '', birthday: '', geminiApiKey: '' });
-    // PWA 獨立 App 模式偵測、安裝引導與吧台螢幕常亮鎖
-    const isRunningStandalone = ref(
-      window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
-    );
-    const deferredInstallPrompt = ref(null);
-    const installAppModal = ref({ show: false });
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredInstallPrompt.value = e;
-    });
-
-    const triggerInstallApp = async () => {
-      if (deferredInstallPrompt.value) {
-        deferredInstallPrompt.value.prompt();
-        const { outcome } = await deferredInstallPrompt.value.userChoice;
-        if (outcome === 'accepted') {
-          deferredInstallPrompt.value = null;
-          isRunningStandalone.value = true;
-        }
-      } else {
-        installAppModal.value.show = true;
-      }
-    };
-
-    // 吧台作業防休眠：當夥伴開著系統查效期或沖煮參數時，保持螢幕常亮不自動黑屏
-    const requestScreenWakeLock = async () => {
-      try {
-        if ('wakeLock' in navigator) {
-          await navigator.wakeLock.request('screen');
-        }
-      } catch (e) {}
-    };
     const addRuleModal = ref({ show: false, isEdit: false, form: { id: '', keyword: '', advance_days: 7 } });
     const calcModal = ref({ show: false, item: {}, targetTimeStr: '', pullDate: '', timing: '', isAdjustedForClose: false });
     const matEditModal = ref({ show: false, isNew: true, form: {} });
@@ -4007,11 +3749,15 @@ const app = createApp({
     const createAlbumModal = ref({ show: false, name: '' });
     const bravoModal = ref({ show: false, form: { targetStaffId: '', message: '' } });
 
-        // ==================== ⚡ 0.001 秒瞬間載入引擎：SWR 全域快照 + 圖文分離 + 平行預熱 ====================
-        // ==================== ⚡ 0.001 秒瞬間載入引擎 + 🔠 字體縮放 + 🔔 智慧通知中心 ====================
+    // ==================== ⚡ 0.001 秒瞬間載入引擎 + 🔠 字體縮放 + 🔔 智慧通知中心 ====================
     const isSyncingRoster = ref(false);
     const lastVacSyncTimeStr = ref('已就緒');
     const SNAPSHOT_STORAGE_KEY = 'sbux_instant_snapshot_v2';
+
+    const updateSyncTimestampDisplay = () => {
+      const now = new Date();
+      lastVacSyncTimeStr.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    };
 
     // 🔠 字體大小偏好控制 ('normal' | 'large' | 'xlarge')
     const fontSizePref = ref(localStorage.getItem('sbux_font_size_pref') || 'normal');
@@ -4042,27 +3788,97 @@ const app = createApp({
     const readNotifIds = ref(new Set(JSON.parse(localStorage.getItem('sbux_read_notifs_v1') || '[]')));
     const pushedNotifIds = new Set(JSON.parse(localStorage.getItem('sbux_pushed_notifs_v1') || '[]'));
 
-    const saveNotifPrefs = () => {
-      localStorage.setItem('sbux_notif_prefs_v1', JSON.stringify(notifPrefs.value));
-    };
-
     const requestSystemNotificationPermission = async () => {
       if (!('Notification' in window)) {
-        alert('您的瀏覽器目前僅支援 App 內建頂部動態島橫幅通知！');
+        alert('您的裝置目前支援 App 內建頂部動態島橫幅通知（若使用 iPhone，請先點選分享 ➔ 加入主畫面，從桌面打開即可開啟系統推播）！');
         return;
       }
       try {
         const perm = await Notification.requestPermission();
         systemNotifPermission.value = perm;
         if (perm === 'granted') {
-          new Notification('☕ 永和永安門市 (011218)', {
-            body: '系統通知已開啟！當有換班媒合、得獎或收到 Bravo 小卡時將即時通知您。'
-          });
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then(reg => {
+              reg.showNotification('☕ 永和永安門市 (011218)', {
+                body: '桌面推播通知已成功開啟！有換班需求、得獎或收到 Bravo 小卡時將即時通知您。'
+              });
+            }).catch(() => {
+              new Notification('☕ 永和永安門市 (011218)', { body: '系統通知已開啟！' });
+            });
+          } else {
+            new Notification('☕ 永和永安門市 (011218)', { body: '系統通知已開啟！' });
+          }
         } else {
-          alert('請於手機或瀏覽器設定中允許「通知」權限。');
+          alert('請於手機「設定 ➔ 通知」或瀏覽器網址列旁允許「通知」權限。');
         }
       } catch (e) {}
     };
+
+    const saveNotifPrefs = () => {
+      localStorage.setItem('sbux_notif_prefs_v1', JSON.stringify(notifPrefs.value));
+      if ('Notification' in window && Notification.permission === 'default') {
+        requestSystemNotificationPermission();
+      }
+    };
+
+    // 🚀 IndexedDB 500MB 超大容量本機圖片快取引擎 (讓拉花照、歷屆集錦、門市相簿在 0.02 秒內瞬間載入)
+    const IDB_NAME = 'sbux_011218_photo_cache_db';
+    const IDB_STORE = 'photo_collections';
+
+    const openPhotoIdb = () => {
+      return new Promise((resolve, reject) => {
+        if (!('indexedDB' in window)) return reject('No IDB');
+        const req = indexedDB.open(IDB_NAME, 1);
+        req.onupgradeneeded = (e) => {
+          const idb = e.target.result;
+          if (!idb.objectStoreNames.contains(IDB_STORE)) {
+            idb.createObjectStore(IDB_STORE);
+          }
+        };
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = (e) => reject(e);
+      });
+    };
+
+    const savePhotosToIdb = async (key, dataVal) => {
+      try {
+        const idb = await openPhotoIdb();
+        const tx = idb.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).put(JSON.parse(JSON.stringify(dataVal)), key);
+      } catch (e) {}
+    };
+
+    const loadPhotosFromIdb = async (key) => {
+      try {
+        const idb = await openPhotoIdb();
+        return await new Promise((resolve) => {
+          const tx = idb.transaction(IDB_STORE, 'readonly');
+          const req = tx.objectStore(IDB_STORE).get(key);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        });
+      } catch (e) {
+        return null;
+      }
+    };
+
+    const hydratePhotosFromIdbInstantly = async () => {
+      const [cachedLatte, cachedArchives, cachedStorePhotos] = await Promise.all([
+        loadPhotosFromIdb('lattePosts'),
+        loadPhotosFromIdb('latteArtArchives'),
+        loadPhotosFromIdb('storePhotos')
+      ]);
+      if (Array.isArray(cachedLatte) && cachedLatte.length > 0) {
+        lattePosts.value = cachedLatte;
+      }
+      if (Array.isArray(cachedArchives) && cachedArchives.length > 0) {
+        latteArtArchives.value = cachedArchives;
+      }
+      if (Array.isArray(cachedStorePhotos) && cachedStorePhotos.length > 0) {
+        storePhotos.value = cachedStorePhotos;
+      }
+    };
+    hydratePhotosFromIdbInstantly();
 
     let toastTimer = null;
     const triggerNotificationAlert = (notifItem) => {
@@ -4072,7 +3888,6 @@ const app = createApp({
         localStorage.setItem('sbux_pushed_notifs_v1', JSON.stringify(Array.from(pushedNotifIds).slice(-80)));
       } catch (e) {}
 
-      // 1. 顯示 App 內建頂部動態島橫幅
       activeToastNotification.value = notifItem;
       if (toastTimer) clearTimeout(toastTimer);
       toastTimer = setTimeout(() => {
@@ -4081,155 +3896,24 @@ const app = createApp({
         }
       }, 6000);
 
-      // 2. 若已授權系統推播，同步發送手機/電腦原生通知
       if ('Notification' in window && Notification.permission === 'granted') {
         try {
-          new Notification(notifItem.title, { body: notifItem.body });
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then((reg) => {
+              reg.showNotification(notifItem.title, {
+                body: notifItem.body,
+                tag: notifItem.id,
+                renotify: true
+              });
+            }).catch(() => {
+              new Notification(notifItem.title, { body: notifItem.body });
+            });
+          } else {
+            new Notification(notifItem.title, { body: notifItem.body });
+          }
         } catch (e) {}
       }
     };
-
-    // 智慧彙整與目前登入夥伴相關的四大類通知
-    const partnerNotifications = computed(() => {
-      if (!currentPartner.value) return [];
-      const myId = currentPartner.value.id || currentPartner.value._key;
-      const myName = currentPartner.value.name || '';
-      const list = [];
-
-      // (1) 💌 收到 Bravo 感謝小卡通知
-      if (notifPrefs.value.bravo && Array.isArray(bravoCardsList.value)) {
-        bravoCardsList.value.slice(0, 15).forEach(b => {
-          const isForMe = (b.targetStaffId === myId || getStaffName(b.targetStaffId).includes(myName));
-          if (isForMe) {
-            list.push({
-              id: 'notif_bravo_' + b.id,
-              type: 'bravo',
-              icon: '💌',
-              title: '您收到一張 Bravo 感謝小卡！',
-              body: `來自 ${getStaffName(b.senderStaffId)}：「${b.message}」`,
-              dateStr: b.dateStr || '最新',
-              timestamp: b.timestamp || Date.now(),
-              targetTab: 'about',
-              isRead: readNotifIds.value.has('notif_bravo_' + b.id)
-            });
-          }
-        });
-      }
-
-      // (2) 🔄 換班與代班媒合需求通知
-      if (notifPrefs.value.shiftSwap && Array.isArray(shiftSwapsList.value)) {
-        shiftSwapsList.value.slice(0, 10).forEach(sw => {
-          if (sw.requesterId === myId && sw.helperName) {
-            list.push({
-              id: 'notif_swap_helped_' + sw.id + '_' + sw.helperName,
-              type: 'shiftSwap',
-              icon: '🤝',
-              title: '您的換班需求已被認領支援！',
-              body: `${sw.helperName} 已認領您 ${sw.date} (${sw.shiftTime}) 的班次。`,
-              dateStr: sw.date,
-              timestamp: (sw.timestamp || Date.now()) + 1,
-              targetTab: 'roster',
-              isRead: readNotifIds.value.has('notif_swap_helped_' + sw.id + '_' + sw.helperName)
-            });
-          } else if (sw.requesterId !== myId && !sw.helperName) {
-            list.push({
-              id: 'notif_swap_new_' + sw.id,
-              type: 'shiftSwap',
-              icon: '🔄',
-              title: '門市新換班／代班支援需求',
-              body: `${sw.requesterName} 發布了 ${sw.date} (${sw.shiftTime})：${sw.reason}`,
-              dateStr: sw.date,
-              timestamp: sw.timestamp || Date.now(),
-              targetTab: 'roster',
-              isRead: readNotifIds.value.has('notif_swap_new_' + sw.id)
-            });
-          }
-        });
-      }
-
-      // (3) 🏆 榮譽殿堂與上週得名通知
-      if (notifPrefs.value.honor && lastWeekHonorBoard.value) {
-        const hb = lastWeekHonorBoard.value;
-        const myAwards = [];
-        if (hb.championName && hb.championName.includes(myName)) myAwards.push(`🥇拉花冠軍(${hb.championScore})`);
-        if (hb.mostImprovedName && hb.mostImprovedName.includes(myName)) myAwards.push(`🌟最佳進步獎(${hb.mostImprovedScore})`);
-        if (hb.activePartnerName && hb.activePartnerName.includes(myName)) myAwards.push(`☕品評活躍獎(${hb.activePartnerScore})`);
-
-        if (myAwards.length > 0) {
-          const hid = 'notif_honor_me_' + hb.periodStr;
-          list.push({
-            id: hid,
-            type: 'honor',
-            icon: '🏆',
-            title: `恭喜榮登 (${hb.periodStr}) 門市榮譽榜！`,
-            body: `您獲得了：${myAwards.join('、')}，太棒了！`,
-            dateStr: hb.periodStr,
-            timestamp: Date.now() - 3600000,
-            targetTab: 'home',
-            isRead: readNotifIds.value.has(hid)
-          });
-        }
-      }
-
-      // (4) 📢 門市最新公告通知
-      if (notifPrefs.value.bulletin && Array.isArray(filteredBulletinList.value)) {
-        filteredBulletinList.value.slice(0, 5).forEach(bul => {
-          list.push({
-            id: 'notif_bul_' + bul.id,
-            type: 'bulletin',
-            icon: '📢',
-            title: `門市公告：${bul.title}`,
-            body: bul.content,
-            dateStr: bul.dateStr || '公告',
-            timestamp: bul.timestamp || Date.now(),
-            targetTab: 'home',
-            isRead: readNotifIds.value.has('notif_bul_' + bul.id)
-          });
-        });
-      }
-
-      return list.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-    });
-
-    const unreadNotificationCount = computed(() => {
-      return partnerNotifications.value.filter(n => !n.isRead).length;
-    });
-
-    // 當有新的未讀通知產生時，自動彈出頂部動態島通知與系統推播
-    watch(partnerNotifications, (newList) => {
-      if (!currentPartner.value || !Array.isArray(newList) || newList.length === 0) return;
-      const latestUnread = newList.find(n => !n.isRead && !pushedNotifIds.has(n.id));
-      if (latestUnread) {
-        triggerNotificationAlert(latestUnread);
-      }
-    }, { deep: true });
-
-    const markAllNotificationsRead = () => {
-      partnerNotifications.value.forEach(n => readNotifIds.value.add(n.id));
-      try {
-        localStorage.setItem('sbux_read_notifs_v1', JSON.stringify(Array.from(readNotifIds.value).slice(-100)));
-      } catch (e) {}
-    };
-
-    const openNotificationDrawer = () => {
-      notificationDrawer.value.show = true;
-    };
-
-    const handleToastClick = (notif) => {
-      if (!notif) return;
-      readNotifIds.value.add(notif.id);
-      try {
-        localStorage.setItem('sbux_read_notifs_v1', JSON.stringify(Array.from(readNotifIds.value).slice(-100)));
-      } catch (e) {}
-      if (notif.targetTab) currentTab.value = notif.targetTab;
-      activeToastNotification.value = null;
-    };
-
-    const updateSyncTimestampDisplay = () => {
-      const now = new Date();
-      lastVacSyncTimeStr.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-    };
-
 
     const applyRawStaffData = (data) => {
       if (!data || typeof data !== 'object') return;
@@ -4249,15 +3933,13 @@ const app = createApp({
       }
     };
 
-    // 將全店輕量資料與「抽離圖片後的拉花榮譽榜數據」存入本機快照 (僅約 20KB，讀取只需 0.001 秒)
     let snapshotSaveTimer = null;
     const saveInstantSnapshot = () => {
       if (snapshotSaveTimer) clearTimeout(snapshotSaveTimer);
       snapshotSaveTimer = setTimeout(() => {
         try {
-          // 僅保留拉花與歷屆集錦的「文字與分數」，剔除肥大的 Base64 圖片，讓首頁榮譽榜 0 秒瞬開！
           const lightLattePosts = (lattePosts.value || []).map(p => ({ ...p, photoUrl: p.photoUrl ? '__LAZY_IMG__' : '' }));
-          const lightArchives = (latteArtArchives.value || []).slice(0, 3).map(a => ({
+          const lightArchives = (latteArtArchives.value || []).slice(0, 4).map(a => ({
             ...a,
             works: (a.works || []).map(w => ({ ...w, photoUrl: '' }))
           }));
@@ -4273,7 +3955,7 @@ const app = createApp({
             bulletinList: bulletinList.value,
             shiftTasksList: shiftTasksList.value,
             shiftSwapsList: shiftSwapsList.value,
-            tastingNotesList: (tastingNotesList.value || []).slice(0, 20),
+            tastingNotesList: (tastingNotesList.value || []).slice(0, 40),
             bravoCardsList: (bravoCardsList.value || []).slice(0, 20),
             coffeeKnowledgeList: (coffeeKnowledgeList.value || []).slice(0, 15),
             lightLattePosts,
@@ -4285,7 +3967,6 @@ const app = createApp({
       }, 300);
     };
 
-    // 步驟 1：網頁開啟第 0.001 秒，立即從本機快照瞬間填滿所有模組資料 (達成 0 等待秒開)
     const loadInstantSnapshot = () => {
       try {
         const raw = localStorage.getItem(SNAPSHOT_STORAGE_KEY);
@@ -4319,7 +4000,6 @@ const app = createApp({
     };
     loadInstantSnapshot();
 
-    // 步驟 2：單獨極速拉取名冊 (供登入瞬間驗證)
     const fetchStaffFastRest = async () => {
       try {
         const res = await fetch(`${firebaseConfig.databaseURL}/sbux/staff.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -4333,13 +4013,12 @@ const app = createApp({
       } catch (e) {}
     };
 
-    // 步驟 3：全店輕量資料「平行極速預載引擎」(在登入畫面輸入工號時，背景 0.15 秒全部同步到位)
     const forceSyncRosterDataNow = async (showToast = false) => {
       isSyncingRoster.value = true;
       try {
         const ts = Date.now();
         const baseUrl = firebaseConfig.databaseURL;
-        const [staffRes, vacRes, blackRes, rosterRes, invRes, rulesRes, matRes, taskRes, bulRes] = await Promise.all([
+        const [staffRes, vacRes, blackRes, rosterRes, invRes, rulesRes, matRes, taskRes, bulRes, swapRes, tasteRes] = await Promise.all([
           fetch(`${baseUrl}/sbux/staff.json?t=${ts}`, { cache: 'no-store' }),
           fetch(`${baseUrl}/sbux/vacations.json?t=${ts}`, { cache: 'no-store' }),
           fetch(`${baseUrl}/sbux/blackout_dates.json?t=${ts}`, { cache: 'no-store' }),
@@ -4348,7 +4027,9 @@ const app = createApp({
           fetch(`${baseUrl}/sbux/rules.json?t=${ts}`, { cache: 'no-store' }),
           fetch(`${baseUrl}/sbux/materials.json?t=${ts}`, { cache: 'no-store' }),
           fetch(`${baseUrl}/sbux/shift_tasks.json?t=${ts}`, { cache: 'no-store' }),
-          fetch(`${baseUrl}/sbux/bulletins.json?t=${ts}`, { cache: 'no-store' })
+          fetch(`${baseUrl}/sbux/bulletins.json?t=${ts}`, { cache: 'no-store' }),
+          fetch(`${baseUrl}/sbux/shift_swaps.json?t=${ts}`, { cache: 'no-store' }),
+          fetch(`${baseUrl}/sbux/tasting_notes.json?t=${ts}`, { cache: 'no-store' })
         ]);
 
         if (staffRes.ok) {
@@ -4389,6 +4070,14 @@ const app = createApp({
           const blData = await bulRes.json();
           bulletinList.value = blData ? Object.values(blData).sort((a,b) => b.timestamp - a.timestamp) : [];
         }
+        if (swapRes.ok) {
+          const swData = await swapRes.json();
+          shiftSwapsList.value = swData ? Object.values(swData).sort((a,b) => b.timestamp - a.timestamp) : [];
+        }
+        if (tasteRes.ok) {
+          const tsData = await tasteRes.json();
+          tastingNotesList.value = tsData ? Object.keys(tsData).map(k => ({ id: k, _key: k, ...tsData[k] })).sort((a,b) => b.timestamp - a.timestamp) : [];
+        }
 
         updateSyncTimestampDisplay();
         saveInstantSnapshot();
@@ -4402,10 +4091,8 @@ const app = createApp({
       }
     };
 
-    // 網頁啟動瞬間立即平行同步所有核心文字資料
     forceSyncRosterDataNow(false);
 
-    // 監聽頁籤切換：切到「排班」強制同步最新畫假；切到「其他」才載入拉花高畫質原圖；切到「關於」才載入相簿大圖
     watch(currentTab, (newTab) => {
       if (newTab === 'roster') {
         forceSyncRosterDataNow(false);
@@ -4416,13 +4103,11 @@ const app = createApp({
       }
     });
 
-    // 當手機或電腦從背景切回前台喚醒時，自動強制拉取最新畫假紀錄
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         forceSyncRosterDataNow(false);
       }
     });
-
 
     // ==================== 🔗 台灣星巴克官網「全自動新檔期季節豆爬蟲與同步引擎」 ====================
     const fetchHtmlViaCorsProxy = async (targetUrl) => {
@@ -4930,7 +4615,7 @@ const app = createApp({
       return Number(((post.aiScore || 0) * 0.7 + (post.votes || 0) * 5).toFixed(1));
     };
 
-    // ==================== 🔍 智慧夥伴姓名動態還原器 (徹底解決「門市夥伴」顯示問題) ====================
+    // ==================== 🔍 智慧夥伴姓名動態還原器 ====================
     const findStaffByAnyId = (rawId) => {
       if (!rawId) return null;
       const clean = String(rawId).trim();
@@ -4951,7 +4636,6 @@ const app = createApp({
       return '門市夥伴';
     };
 
-    // 針對拉花作品、封存作品或品評紀錄，動態解析出真實夥伴姓名（即使舊紀錄寫了「門市夥伴」也能透過 authorStaffId 自動修復！）
     const resolveWorkPartnerName = (work) => {
       if (!work) return '尚無紀錄';
       const byAuthorId = findStaffByAnyId(work.authorStaffId || work.empId || work.staffId);
@@ -4969,7 +4653,6 @@ const app = createApp({
       return '門市夥伴';
     };
 
-    // 取得作品所屬夥伴的唯一識別鍵（用於「自己跟自己比」跨週統計）
     const resolveWorkPartnerKey = (work) => {
       if (!work) return '';
       const s = findStaffByAnyId(work.authorStaffId || work.empId || work.staffId || work.partnerName);
@@ -4995,9 +4678,7 @@ const app = createApp({
       const currArr = Array.isArray(currentWorks) ? currentWorks : [];
       const prevArr = Array.isArray(prevWorks) ? prevWorks : [];
 
-      // 1. 整理當週每位夥伴的「個人最高分」與姓名
       const currMaxByPartner = {};
-      // 同時紀錄當週每位夥伴的「個人最低分（初次上傳分）」，作為無跨週重疊時的同週自我成長備援
       const currMinByPartner = {};
 
       currArr.forEach(w => {
@@ -5019,7 +4700,6 @@ const app = createApp({
         }
       });
 
-      // 2. 整理前一週每位夥伴的「個人最高分」
       const prevMaxByPartner = {};
       prevArr.forEach(w => {
         const pKey = resolveWorkPartnerKey(w);
@@ -5030,7 +4710,6 @@ const app = createApp({
         }
       });
 
-      // 3. 優先比對「當週最高分 vs 前一週最高分」（自己跟自己跨週比）
       let bestPartnerName = '';
       let bestDelta = -9999;
       let bestCurrMax = 0;
@@ -5058,7 +4737,6 @@ const app = createApp({
         };
       }
 
-      // 4. 次要比對：若前一週尚無該夥伴紀錄，檢查當週內「自己跟自己比（當週個人最高分 vs 當週個人最低分）」成長幅度最大者
       let intraWeekBestName = '';
       let intraWeekBestDelta = 0;
       let intraCurrMax = 0;
@@ -5087,7 +4765,6 @@ const app = createApp({
         };
       }
 
-      // 5. 若有跨週同分或微幅變化者，仍顯示該夥伴與其當週最高分
       if (bestPartnerName) {
         const sign = bestDelta >= 0 ? '+' : '';
         return {
@@ -5097,7 +4774,6 @@ const app = createApp({
         };
       }
 
-      // 6. 若為第一週尚無前期歷史可比對，顯示當週最高分突破者
       const allCurrKeys = Object.keys(currMaxByPartner);
       if (allCurrKeys.length > 0) {
         allCurrKeys.sort((a, b) => currMaxByPartner[b].maxScore - currMaxByPartner[a].maxScore);
@@ -5117,10 +4793,8 @@ const app = createApp({
       const rawList = Array.isArray(notesArr) ? notesArr : [];
       const isArchiveMode = (typeof targetPeriodStr === 'string' && targetPeriodStr.includes('~'));
 
-      // 依週期過濾品評紀錄（區分「上週結算區間」與「本週即時區間」）
       let validNotes = [];
       if (isArchiveMode) {
-        // 解析如 "11/2 ~ 11/8" 的 7 天日期字串集合
         const parts = targetPeriodStr.split('~').map(s => s.trim());
         const startMD = parts[0] ? parts[0].split('/').map(Number) : [];
         if (startMD.length === 2) {
@@ -5141,7 +4815,6 @@ const app = createApp({
           });
         }
       } else {
-        // 本週即時榜：只統計本週一 00:00 之後上傳的品評紀錄
         const now = new Date();
         const day = now.getDay();
         const diffToMonday = (day === 0 ? -6 : 1) - day;
@@ -5160,7 +4833,6 @@ const app = createApp({
         });
       }
 
-      // 統計有效品評篇數最高者
       if (validNotes.length > 0) {
         const countMap = {};
         validNotes.forEach(n => {
@@ -5181,13 +4853,12 @@ const app = createApp({
         }
       }
 
-      // 若該週期內無人上傳品評，直接回傳從缺 / 尚無紀錄（絕不借用拉花成績）
       return isArchiveMode
         ? { name: '從缺 (尚無品評)', scoreText: '0 篇' }
         : { name: '虛位以待', scoreText: '尚無品評' };
     };
 
-    // ==================== 🏆 首頁公告欄：上週榮譽得獎夥伴（僅顯示三大獎項 + 真實姓名與分數） ====================
+    // ==================== 🏆 首頁公告欄：上週榮譽得獎夥伴 ====================
     const lastWeekHonorBoard = computed(() => {
       if (!latteArtArchives.value || latteArtArchives.value.length === 0) return null;
       const latestArch = latteArtArchives.value[0];
@@ -5214,7 +4885,6 @@ const app = createApp({
       };
     });
 
-    // 過濾掉舊版曾誤寫入「門市夥伴」或包含亞軍/季軍的自動結算文字公告，避免與上方精美榮譽卡重複
     const filteredBulletinList = computed(() => {
       return bulletinList.value.filter(b => {
         if (!b) return false;
@@ -5225,52 +4895,253 @@ const app = createApp({
       });
     });
 
-    // ==================== 🌟 自動結算與封存引擎 + 舊封存「門市夥伴」自動修復 ====================
+    // 智慧彙整與目前登入夥伴相關的四大類通知
+    const partnerNotifications = computed(() => {
+      if (!currentPartner.value) return [];
+      const myId = currentPartner.value.id || currentPartner.value._key;
+      const myName = currentPartner.value.name || '';
+      const list = [];
+
+      if (notifPrefs.value.bravo && Array.isArray(bravoCardsList.value)) {
+        bravoCardsList.value.slice(0, 15).forEach(b => {
+          const isForMe = (b.targetStaffId === myId || getStaffName(b.targetStaffId).includes(myName));
+          if (isForMe) {
+            list.push({
+              id: 'notif_bravo_' + b.id,
+              type: 'bravo',
+              icon: '💌',
+              title: '您收到一張 Bravo 感謝小卡！',
+              body: `來自 ${getStaffName(b.senderStaffId)}：「${b.message}」`,
+              dateStr: b.dateStr || '最新',
+              timestamp: b.timestamp || Date.now(),
+              targetTab: 'about',
+              isRead: readNotifIds.value.has('notif_bravo_' + b.id)
+            });
+          }
+        });
+      }
+
+      if (notifPrefs.value.shiftSwap && Array.isArray(shiftSwapsList.value)) {
+        shiftSwapsList.value.slice(0, 10).forEach(sw => {
+          if (sw.requesterId === myId && sw.helperName) {
+            list.push({
+              id: 'notif_swap_helped_' + sw.id + '_' + sw.helperName,
+              type: 'shiftSwap',
+              icon: '🤝',
+              title: '您的換班需求已被認領支援！',
+              body: `${sw.helperName} 已認領您 ${sw.date} (${sw.shiftTime}) 的班次。`,
+              dateStr: sw.date,
+              timestamp: (sw.timestamp || Date.now()) + 1,
+              targetTab: 'roster',
+              isRead: readNotifIds.value.has('notif_swap_helped_' + sw.id + '_' + sw.helperName)
+            });
+          } else if (sw.requesterId !== myId && !sw.helperName) {
+            list.push({
+              id: 'notif_swap_new_' + sw.id,
+              type: 'shiftSwap',
+              icon: '🔄',
+              title: '門市新換班／代班支援需求',
+              body: `${sw.requesterName} 發布了 ${sw.date} (${sw.shiftTime})：${sw.reason}`,
+              dateStr: sw.date,
+              timestamp: sw.timestamp || Date.now(),
+              targetTab: 'roster',
+              isRead: readNotifIds.value.has('notif_swap_new_' + sw.id)
+            });
+          }
+        });
+      }
+
+      if (notifPrefs.value.honor && lastWeekHonorBoard.value) {
+        const hb = lastWeekHonorBoard.value;
+        const myAwards = [];
+        if (hb.championName && hb.championName.includes(myName)) myAwards.push(`🥇拉花冠軍(${hb.championScore})`);
+        if (hb.mostImprovedName && hb.mostImprovedName.includes(myName)) myAwards.push(`🌟最佳進步獎(${hb.mostImprovedScore})`);
+        if (hb.activePartnerName && hb.activePartnerName.includes(myName)) myAwards.push(`☕品評活躍獎(${hb.activePartnerScore})`);
+
+        if (myAwards.length > 0) {
+          const hid = 'notif_honor_me_' + hb.periodStr;
+          list.push({
+            id: hid,
+            type: 'honor',
+            icon: '🏆',
+            title: `恭喜榮登 (${hb.periodStr}) 門市榮譽榜！`,
+            body: `您獲得了：${myAwards.join('、')}，太棒了！`,
+            dateStr: hb.periodStr,
+            timestamp: Date.now() - 3600000,
+            targetTab: 'home',
+            isRead: readNotifIds.value.has(hid)
+          });
+        }
+      }
+
+      if (notifPrefs.value.bulletin && Array.isArray(filteredBulletinList.value)) {
+        filteredBulletinList.value.slice(0, 5).forEach(bul => {
+          list.push({
+            id: 'notif_bul_' + bul.id,
+            type: 'bulletin',
+            icon: '📢',
+            title: `門市公告：${bul.title}`,
+            body: bul.content,
+            dateStr: bul.dateStr || '公告',
+            timestamp: bul.timestamp || Date.now(),
+            targetTab: 'home',
+            isRead: readNotifIds.value.has('notif_bul_' + bul.id)
+          });
+        });
+      }
+
+      return list.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    });
+
+    const unreadNotificationCount = computed(() => {
+      return partnerNotifications.value.filter(n => !n.isRead).length;
+    });
+
+    watch(partnerNotifications, (newList) => {
+      if (!currentPartner.value || !Array.isArray(newList) || newList.length === 0) return;
+      const latestUnread = newList.find(n => !n.isRead && !pushedNotifIds.has(n.id));
+      if (latestUnread) {
+        triggerNotificationAlert(latestUnread);
+      }
+    }, { deep: true });
+
+    const markAllNotificationsRead = () => {
+      partnerNotifications.value.forEach(n => readNotifIds.value.add(n.id));
+      try {
+        localStorage.setItem('sbux_read_notifs_v1', JSON.stringify(Array.from(readNotifIds.value).slice(-100)));
+      } catch (e) {}
+    };
+
+    const openNotificationDrawer = () => {
+      notificationDrawer.value.show = true;
+    };
+
+    const handleToastClick = (notif) => {
+      if (!notif) return;
+      readNotifIds.value.add(notif.id);
+      try {
+        localStorage.setItem('sbux_read_notifs_v1', JSON.stringify(Array.from(readNotifIds.value).slice(-100)));
+      } catch (e) {}
+      if (notif.targetTab) currentTab.value = notif.targetTab;
+      activeToastNotification.value = null;
+    };
+
+    // ==================== 🌟 全時段智慧分週歸檔引擎 (自動將非本週舊照片依實際上傳日期移入對應週期歷史集錦) ====================
+    const parseWorkActualDate = (work) => {
+      const now = new Date();
+      let baseDate = null;
+      if (work && work.timestamp && !isNaN(Number(work.timestamp))) {
+        baseDate = new Date(Number(work.timestamp));
+      } else if (work && work.id && /^\d{12,14}/.test(String(work.id))) {
+        baseDate = new Date(Number(String(work.id).slice(0, 13)));
+      }
+      if (work && work.dateStr && typeof work.dateStr === 'string') {
+        const m = work.dateStr.trim().match(/^(\d{1,2})\/(\d{1,2})$/);
+        if (m) {
+          const month = parseInt(m[1], 10);
+          const day = parseInt(m[2], 10);
+          let year = baseDate ? baseDate.getFullYear() : now.getFullYear();
+          if (!baseDate && month > now.getMonth() + 2) year -= 1;
+          return new Date(year, month - 1, day, 12, 0, 0);
+        }
+      }
+      return baseDate || now;
+    };
+
+    const getWeekBucketFromDate = (dateObj) => {
+      const d = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+      const day = d.getDay();
+      const diffToMonday = (day === 0 ? -6 : 1) - day;
+      const monday = new Date(d.getFullYear(), d.getMonth(), d.getDate() + diffToMonday, 0, 0, 0, 0);
+      const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6, 23, 59, 59, 999);
+      const key = `${monday.getFullYear()}${String(monday.getMonth() + 1).padStart(2, '0')}${String(monday.getDate()).padStart(2, '0')}_期`;
+      const periodRange = `${monday.getMonth() + 1}/${monday.getDate()} ~ ${sunday.getMonth() + 1}/${sunday.getDate()}`;
+      return { key, periodRange, mondayTime: monday.getTime(), sundayTime: sunday.getTime() };
+    };
+
+    const getCurrentWeekBucket = () => {
+      const now = new Date();
+      const isSundayAfterCutoff = (now.getDay() === 0 && (now.getHours() > 23 || (now.getHours() === 23 && now.getMinutes() >= 30)));
+      const refDate = isSundayAfterCutoff ? new Date(now.getTime() + 3600000) : now;
+      return getWeekBucketFromDate(refDate);
+    };
+
     let isAutoArchivingInProgress = false;
     const checkAndAutoArchiveLatteArt = async () => {
-      // 必須確保 staffList 已經載入完成，才允許執行自動結算，徹底杜絕寫入「門市夥伴」！
       if (!db || isAutoArchivingInProgress || staffList.value.length === 0) return;
-      const now = new Date();
-      const isSundayNight = (now.getDay() === 0 && (now.getHours() > 23 || (now.getHours() === 23 && now.getMinutes() >= 30)));
-      const isMondayMorning = (now.getDay() === 1 && now.getHours() < 12);
 
-      if ((isSundayNight || isMondayMorning) && lattePosts.value && lattePosts.value.length > 0) {
-        const day = now.getDay();
-        const diffToMonday = (day === 0 ? -6 : 1) - day;
-        const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday - (isMondayMorning ? 7 : 0), 0, 0, 0);
-        const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6, 23, 59, 59);
+      const currentBucket = getCurrentWeekBucket();
+      const pastPostsInLiveWall = (lattePosts.value || []).filter(p => {
+        if (!p || p.photoUrl === '__LAZY_IMG__') return false;
+        const pBucket = getWeekBucketFromDate(parseWorkActualDate(p));
+        return pBucket.mondayTime < currentBucket.mondayTime;
+      });
 
-        const periodRange = `${monday.getMonth() + 1}/${monday.getDate()} ~ ${sunday.getMonth() + 1}/${sunday.getDate()}`;
-        const autoKey = `${monday.getFullYear()}${String(monday.getMonth() + 1).padStart(2, '0')}${String(monday.getDate()).padStart(2, '0')}_期`;
+      let hasMisplacedInArchives = false;
+      (latteArtArchives.value || []).forEach(arch => {
+        if (!arch || !Array.isArray(arch.works)) return;
+        arch.works.forEach(w => {
+          if (!w || !w.photoUrl) return;
+          const wBucket = getWeekBucketFromDate(parseWorkActualDate(w));
+          if (wBucket.key !== arch.key && wBucket.key !== arch.folderName) {
+            hasMisplacedInArchives = true;
+          }
+        });
+      });
 
-        // 🛡️ 防護 1：若上週期號 (autoKey) 已經封存過了，絕對不再重複結算，避免覆蓋歷史紀錄！
-        const alreadyArchived = latteArtArchives.value.some(a => a.key === autoKey || a.folderName === autoKey);
-        if (alreadyArchived) return;
+      if (pastPostsInLiveWall.length === 0 && !hasMisplacedInArchives) return;
 
-        // 🛡️ 防護 2：只篩選出屬於該結算週期 (週日 23:59:59 以前上傳) 的作品，不誤刪週一早上新上傳的作品！
-        const postsToArchive = lattePosts.value.filter(p => !p.timestamp || p.timestamp <= sunday.getTime());
-        if (postsToArchive.length === 0) return;
+      isAutoArchivingInProgress = true;
+      try {
+        const bucketsMap = {};
 
-        isAutoArchivingInProgress = true;
-        try {
-          const sorted = [...postsToArchive].sort((a, b) => calculateCombinedScore(b) - calculateCombinedScore(a));
-          const finalRanked = sorted.map((item, idx) => ({
+        (latteArtArchives.value || []).forEach(arch => {
+          (arch.works || []).forEach(w => {
+            if (!w || !w.photoUrl) return;
+            const b = getWeekBucketFromDate(parseWorkActualDate(w));
+            if (b.mondayTime >= currentBucket.mondayTime) return;
+            if (!bucketsMap[b.key]) {
+              bucketsMap[b.key] = { ...b, worksMap: {} };
+            }
+            const wid = w.id || w._key || `${w.authorStaffId}_${w.dateStr}_${w.aiScore}`;
+            bucketsMap[b.key].worksMap[wid] = w;
+          });
+        });
+
+        pastPostsInLiveWall.forEach(p => {
+          const b = getWeekBucketFromDate(parseWorkActualDate(p));
+          if (!bucketsMap[b.key]) {
+            bucketsMap[b.key] = { ...b, worksMap: {} };
+          }
+          const pid = p.id || p._key || `${p.authorStaffId}_${p.dateStr}_${p.aiScore}`;
+          bucketsMap[b.key].worksMap[pid] = p;
+        });
+
+        const sortedBucketKeys = Object.keys(bucketsMap).sort((a, b) => bucketsMap[a].mondayTime - bucketsMap[b].mondayTime);
+        let previousWeekWorks = [];
+
+        for (const bKey of sortedBucketKeys) {
+          const bucket = bucketsMap[bKey];
+          const rawWorks = Object.values(bucket.worksMap);
+          if (rawWorks.length === 0) continue;
+
+          const sortedWorks = [...rawWorks].sort((a, b) => calculateCombinedScore(b) - calculateCombinedScore(a));
+          const finalRanked = sortedWorks.map((item, idx) => ({
             ...item,
             rank: idx + 1,
             finalScore: calculateCombinedScore(item),
             partnerName: resolveWorkPartnerName(item)
           }));
 
-          const prevWorks = latteArtArchives.value.length > 0 ? (latteArtArchives.value[0].works || []) : [];
-          const improvedInfo = computeSelfImprovedAward(finalRanked, prevWorks);
           const top1 = finalRanked[0];
-          const activeInfo = computeActiveTasterAward(tastingNotesList.value, periodRange);
+          const improvedInfo = computeSelfImprovedAward(finalRanked, previousWeekWorks);
+          const activeInfo = computeActiveTasterAward(tastingNotesList.value, bucket.periodRange);
 
-          await db.ref('sbux/latteArtArchives/' + autoKey).set({
-            folderName: autoKey,
-            periodRange,
-            archivedAt: new Date().toISOString(),
-            archivedBy: '系統自動結算',
+          await db.ref('sbux/latteArtArchives/' + bKey).set({
+            folderName: bKey,
+            periodRange: bucket.periodRange,
+            archivedAt: new Date(bucket.sundayTime).toISOString(),
+            archivedBy: '系統依實際上傳週期歸檔',
             totalWorks: finalRanked.length,
             winner: top1 ? top1.partnerName : '無',
             mostImproved: `${improvedInfo.name} (${improvedInfo.scoreText})`,
@@ -5278,20 +5149,27 @@ const app = createApp({
             works: finalRanked
           });
 
-          // 僅移除已封存之舊週期作品，保留週一新上傳的作品
-          for (const oldPost of postsToArchive) {
-            const pid = oldPost.id || oldPost._key;
-            if (pid) await db.ref('sbux/latte_posts/' + pid).remove();
-          }
-        } catch (e) {
-          console.error('自動結算錯誤：', e);
-        } finally {
-          isAutoArchivingInProgress = false;
+          previousWeekWorks = finalRanked;
         }
+
+        for (const arch of (latteArtArchives.value || [])) {
+          const aKey = arch.key || arch.folderName;
+          if (aKey && !bucketsMap[aKey]) {
+            await db.ref('sbux/latteArtArchives/' + aKey).remove();
+          }
+        }
+
+        for (const oldPost of pastPostsInLiveWall) {
+          const pid = oldPost.id || oldPost._key;
+          if (pid) await db.ref('sbux/latte_posts/' + pid).remove();
+        }
+      } catch (e) {
+        console.error('智慧分週歸檔錯誤：', e);
+      } finally {
+        isAutoArchivingInProgress = false;
       }
     };
 
-    // 當夥伴名冊與歷屆集錦都載入後，自動檢查並修復雲端曾被寫成「門市夥伴」的歷史紀錄
     const repairArchivedPartnerNamesIfNeeded = () => {
       if (!db || staffList.value.length === 0 || latteArtArchives.value.length === 0) return;
       latteArtArchives.value.forEach(arch => {
@@ -5318,13 +5196,324 @@ const app = createApp({
       });
     };
 
-        // ==================== Firebase 即時同步監聽 (輕量資料即時寫入快照，肥大圖片按需載入) ====================
+    // ==================== 🛂 個人數位咖啡護照 ＆ 🏅 8 大實戰成就激勵徽章引擎 ====================
+    const passportSelectedStaffId = ref('');
+    const passportFilter = ref('all');
+    const manualBeanStamps = ref(JSON.parse(localStorage.getItem('sbux_manual_bean_stamps_v1') || '{}'));
+    const expandedBeanHistory = ref({});
+
+    const toggleBeanHistory = (beanName) => {
+      expandedBeanHistory.value[beanName] = !expandedBeanHistory.value[beanName];
+    };
+    const isBeanHistoryExpanded = (beanName) => {
+      return !!expandedBeanHistory.value[beanName];
+    };
+
+    const targetPassportPartner = computed(() => {
+      if (passportSelectedStaffId.value) {
+        const found = findStaffByAnyId(passportSelectedStaffId.value);
+        if (found) return found;
+      }
+      return currentPartner.value;
+    });
+
+    const passportTargetStaffName = computed(() => {
+      const p = targetPassportPartner.value;
+      return p ? `${p.name} (${p.nickname || ''})` : '夥伴';
+    });
+
+    const partnerCareerStats = computed(() => {
+      const p = targetPassportPartner.value;
+      if (!p) return { totalLatteCount: 0, maxLatteScore: 0, championCount: 0, hasSelfImproved: false, tastingCount: 0, myTastings: [], bravoReceived: 0, bravoSent: 0, quizPerfectCount: 0 };
+
+      const pKey = String(p.empId || p.id || p._key);
+      const pName = p.name;
+
+      const allMyLatteWorks = [];
+      let championCount = 0;
+
+      (lattePosts.value || []).forEach(w => {
+        if (resolveWorkPartnerKey(w) === pKey || resolveWorkPartnerName(w).includes(pName)) {
+          allMyLatteWorks.push(w);
+        }
+      });
+
+      (latteArtArchives.value || []).forEach(arch => {
+        const archWinner = resolveArchiveWinner(arch);
+        if (archWinner && archWinner.includes(pName)) championCount += 1;
+        (arch.works || []).forEach(w => {
+          if (resolveWorkPartnerKey(w) === pKey || resolveWorkPartnerName(w).includes(pName)) {
+            allMyLatteWorks.push(w);
+          }
+        });
+      });
+
+      let maxLatteScore = 0;
+      let minLatteScore = 999;
+      allMyLatteWorks.forEach(w => {
+        const sc = calculateCombinedScore(w);
+        if (sc > maxLatteScore) maxLatteScore = sc;
+        if (sc > 0 && sc < minLatteScore) minLatteScore = sc;
+      });
+      const hasSelfImproved = (allMyLatteWorks.length >= 2 && maxLatteScore > minLatteScore);
+
+      // 自動回溯過去所有品評紀錄 (依時間由新到舊排序)
+      const myTastings = (tastingNotesList.value || []).filter(n =>
+        resolveWorkPartnerKey(n) === pKey || resolveWorkPartnerName(n).includes(pName)
+      ).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+      const bravoReceived = (bravoCardsList.value || []).filter(b =>
+        b.targetStaffId === p.id || b.targetStaffId === p._key || getStaffName(b.targetStaffId).includes(pName)
+      ).length;
+      const bravoSent = (bravoCardsList.value || []).filter(b =>
+        b.senderStaffId === p.id || b.senderStaffId === p._key || getStaffName(b.senderStaffId).includes(pName)
+      ).length;
+
+      const qRec = weeklyQuizRecords.value ? weeklyQuizRecords.value[pName] : null;
+      const quizPerfectCount = (qRec && qRec.score === 5) ? 1 : 0;
+
+      return {
+        totalLatteCount: allMyLatteWorks.length,
+        maxLatteScore,
+        championCount,
+        hasSelfImproved,
+        tastingCount: myTastings.length,
+        myTastings,
+        bravoReceived,
+        bravoSent,
+        quizPerfectCount
+      };
+    });
+
+    // 計算護照中所有咖啡豆狀態（包含官網自動偵測到的新季節豆 ＋ 夥伴過去曾自訂品評過的特殊豆，且同豆款多次紀錄自動歸納在一起）
+    const passportBeansWithStatus = computed(() => {
+      const p = targetPassportPartner.value;
+      const pEmp = p ? String(p.empId || p.id) : 'me';
+      const myStamps = manualBeanStamps.value[pEmp] || {};
+      const myTastings = partnerCareerStats.value.myTastings || [];
+      const usedNoteIds = new Set();
+
+      const catalogList = starbucksCoreBeans.value.map(bean => {
+        const matchedNotes = myTastings.filter(n => {
+          if (!n || !n.coffeeName) return false;
+          const cName = n.coffeeName.trim();
+          const isMatch = (
+            cName === bean.name ||
+            cName.includes(bean.name) ||
+            bean.name.includes(cName) ||
+            (bean.matchKey && cName.includes(bean.matchKey))
+          );
+          if (isMatch) usedNoteIds.add(n.id || n._key);
+          return isMatch;
+        });
+
+        const isManualStamped = !!myStamps[bean.name];
+        const isTasted = matchedNotes.length > 0 || isManualStamped;
+
+        let avgAcidity = '-';
+        let avgBody = '-';
+        if (matchedNotes.length > 0) {
+          const sumA = matchedNotes.reduce((acc, cur) => acc + (Number(cur.acidity) || 3), 0);
+          const sumB = matchedNotes.reduce((acc, cur) => acc + (Number(cur.body) || 3), 0);
+          avgAcidity = (sumA / matchedNotes.length).toFixed(1);
+          avgBody = (sumB / matchedNotes.length).toFixed(1);
+        }
+
+        return {
+          ...bean,
+          isTasted,
+          isManualStamped,
+          tastedCount: matchedNotes.length + (isManualStamped && matchedNotes.length === 0 ? 1 : 0),
+          latestNote: matchedNotes[0] || null,
+          allNotes: matchedNotes,
+          avgAcidity,
+          avgBody
+        };
+      });
+
+      // 若夥伴過去曾品評過不在預設清單中的自訂／特殊季節豆，也自動按豆名歸納並加入護照中！
+      const customBeanGroups = {};
+      myTastings.forEach(n => {
+        const nid = n.id || n._key;
+        if (!usedNoteIds.has(nid) && n.coffeeName) {
+          const cleanName = n.coffeeName.trim();
+          if (!customBeanGroups[cleanName]) customBeanGroups[cleanName] = [];
+          customBeanGroups[cleanName].push(n);
+        }
+      });
+
+      Object.keys(customBeanGroups).forEach(cName => {
+        const notes = customBeanGroups[cName];
+        const sumA = notes.reduce((acc, cur) => acc + (Number(cur.acidity) || 3), 0);
+        const sumB = notes.reduce((acc, cur) => acc + (Number(cur.body) || 3), 0);
+        catalogList.unshift({
+          id: 'custom_' + cName,
+          name: cName,
+          enName: 'Partner Custom Tasting Bean',
+          category: '季節限定豆',
+          roast: '門市品鑑豆款',
+          region: '精選產區',
+          flavorNotes: notes[0]?.aroma || '夥伴專屬品鑑紀錄',
+          foodPairing: '門市精選糕點',
+          isTasted: true,
+          isManualStamped: !!myStamps[cName],
+          tastedCount: notes.length,
+          latestNote: notes[0],
+          allNotes: notes,
+          avgAcidity: (sumA / notes.length).toFixed(1),
+          avgBody: (sumB / notes.length).toFixed(1)
+        });
+      });
+
+      return catalogList;
+    });
+
+    const totalPassportBeanCount = computed(() => passportBeansWithStatus.value.length);
+
+    const tastedBeanCount = computed(() => {
+      return passportBeansWithStatus.value.filter(b => b.isTasted).length;
+    });
+
+    const filteredPassportBeans = computed(() => {
+      if (passportFilter.value === 'unlocked') return passportBeansWithStatus.value.filter(b => b.isTasted);
+      if (passportFilter.value === 'locked') return passportBeansWithStatus.value.filter(b => !b.isTasted);
+      return passportBeansWithStatus.value;
+    });
+
+    const toggleManualBeanStamp = (beanName) => {
+      const p = targetPassportPartner.value;
+      const pEmp = p ? String(p.empId || p.id) : 'me';
+      if (!manualBeanStamps.value[pEmp]) manualBeanStamps.value[pEmp] = {};
+      manualBeanStamps.value[pEmp][beanName] = !manualBeanStamps.value[pEmp][beanName];
+      localStorage.setItem('sbux_manual_bean_stamps_v1', JSON.stringify(manualBeanStamps.value));
+      if (db && p) {
+        db.ref(`sbux/passportStamps/${pEmp}`).set(manualBeanStamps.value[pEmp]);
+      }
+    };
+
+    const jumpToTastingWithBean = (beanName) => {
+      tastingForm.value.coffeeName = beanName;
+      otherSubTab.value = 'tasting';
+    };
+
+    const partnerBadges = computed(() => {
+      const st = partnerCareerStats.value;
+      const beansCnt = tastedBeanCount.value;
+      return [
+        {
+          id: 'first_step',
+          icon: '🌱',
+          title: '初試啼聲',
+          desc: '完成首次拉花作品上傳或發布第 1 篇咖啡品評',
+          unlocked: (st.totalLatteCount + st.tastingCount) >= 1,
+          progressText: `${Math.min(1, st.totalLatteCount + st.tastingCount)} / 1 次參與`
+        },
+        {
+          id: 'latte_craftsman',
+          icon: '🎨',
+          title: '永安拉花匠人',
+          desc: '累計上傳滿 3 幅拉花作品，持續精進奶泡工藝',
+          unlocked: st.totalLatteCount >= 3,
+          progressText: `累計 ${st.totalLatteCount} / 3 幅 (最高 ${st.maxLatteScore}分)`
+        },
+        {
+          id: 'latte_champion',
+          icon: '👑',
+          title: '擂台霸主',
+          desc: '曾於週度拉花擂台賽奪得第 1 名冠軍殊榮',
+          unlocked: st.championCount >= 1,
+          progressText: st.championCount >= 1 ? `已奪冠 ${st.championCount} 次` : '0 / 1 次奪冠'
+        },
+        {
+          id: 'self_improver',
+          icon: '🚀',
+          title: '自我超越者',
+          desc: '拉花個人最高分較過去自己作品成長突破',
+          unlocked: st.hasSelfImproved,
+          progressText: st.hasSelfImproved ? `個人最高達 ${st.maxLatteScore} 分` : '上傳 2 幅以上比對成長'
+        },
+        {
+          id: 'sensory_master',
+          icon: '☕',
+          title: '感官品鑑師',
+          desc: '累計於 Tasting 動態牆發布滿 3 篇咖啡品評',
+          unlocked: st.tastingCount >= 3,
+          progressText: `${st.tastingCount} / 3 篇品評`
+        },
+        {
+          id: 'bean_explorer',
+          icon: '🌍',
+          title: '產區探索家',
+          desc: '於個人咖啡護照點亮滿 8 款星巴克咖啡豆',
+          unlocked: beansCnt >= 8,
+          progressText: `${beansCnt} / 8 款咖啡豆`
+        },
+        {
+          id: 'quiz_ace',
+          icon: '🎓',
+          title: '永安學霸',
+          desc: '於永安咖啡小學堂週測驗獲得 5 / 5 滿分',
+          unlocked: st.quizPerfectCount >= 1,
+          progressText: st.quizPerfectCount >= 1 ? '已獲 5/5 滿分' : '挑戰本週 5 題滿分'
+        },
+        {
+          id: 'bravo_star',
+          icon: '💖',
+          title: '最佳神隊友',
+          desc: '累計收到或送出滿 3 張 Bravo 感謝小卡',
+          unlocked: (st.bravoReceived + st.bravoSent) >= 3,
+          progressText: `收到 ${st.bravoReceived} 張 · 送出 ${st.bravoSent} 張`
+        }
+      ];
+    });
+
+    const unlockedBadgeCount = computed(() => {
+      return partnerBadges.value.filter(b => b.unlocked).length;
+    });
+
+    // ==================== Firebase 即時同步監聽 + 雲端肥大圖片自動瘦身與 IndexedDB 快取 ====================
+    const slimBase64Image = (dataUrl, maxDim = 960, quality = 0.80) => {
+      return new Promise((resolve) => {
+        if (!dataUrl || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image')) {
+          return resolve(dataUrl);
+        }
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width, h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+            else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+      });
+    };
+
     let isStorePhotosLoaded = false;
     const loadStorePhotosLazy = () => {
       if (!db || isStorePhotosLoaded) return;
       isStorePhotosLoaded = true;
-      db.ref('sbux/store_photos').on('value', snap => {
-        storePhotos.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
+      db.ref('sbux/store_photos').on('value', async (snap) => {
+        const val = snap.val();
+        const arr = val ? Object.values(val).sort((a,b) => b.timestamp - a.timestamp) : [];
+        storePhotos.value = arr;
+        savePhotosToIdb('storePhotos', arr);
+
+        for (const p of arr) {
+          if (p && p.id && p.url && p.url.length > 450000) {
+            const slimmed = await slimBase64Image(p.url, 1200, 0.82);
+            if (slimmed && slimmed.length < p.url.length) {
+              db.ref('sbux/store_photos/' + p.id + '/url').set(slimmed);
+            }
+          }
+        }
       });
     };
 
@@ -5333,17 +5522,29 @@ const app = createApp({
       if (!db || isLatteArtLoaded) return;
       isLatteArtLoaded = true;
 
-      db.ref('sbux/latte_posts').on('value', snap => {
+      db.ref('sbux/latte_posts').on('value', async (snap) => {
         const val = snap.val();
-        lattePosts.value = val ? Object.keys(val).map(k => ({ id: k, _key: k, ...val[k] })) : [];
+        const arr = val ? Object.keys(val).map(k => ({ id: k, _key: k, ...val[k] })) : [];
+        lattePosts.value = arr;
+        savePhotosToIdb('lattePosts', arr);
         saveInstantSnapshot();
         checkAndAutoArchiveLatteArt();
+
+        for (const post of arr) {
+          const pid = post.id || post._key;
+          if (pid && post.photoUrl && post.photoUrl.length > 350000) {
+            const slimmed = await slimBase64Image(post.photoUrl, 960, 0.80);
+            if (slimmed && slimmed.length < post.photoUrl.length) {
+              db.ref('sbux/latte_posts/' + pid + '/photoUrl').set(slimmed);
+            }
+          }
+        }
       });
 
-      db.ref('sbux/latteArtArchives').on('value', (snapshot) => {
+      db.ref('sbux/latteArtArchives').on('value', async (snapshot) => {
         const val = snapshot.val();
         if (val) {
-          latteArtArchives.value = Object.keys(val).map(key => {
+          const parsedArchives = Object.keys(val).map(key => {
             const data = val[key] || {};
             let worksArr = [];
             if (Array.isArray(data.works)) worksArr = data.works;
@@ -5362,8 +5563,32 @@ const app = createApp({
               works: worksArr
             };
           }).sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
+
+          latteArtArchives.value = parsedArchives;
+          savePhotosToIdb('latteArtArchives', parsedArchives);
           repairArchivedPartnerNamesIfNeeded();
+          checkAndAutoArchiveLatteArt();
           saveInstantSnapshot();
+
+          for (const arch of parsedArchives) {
+            if (!arch.key || !Array.isArray(arch.works)) continue;
+            let modified = false;
+            const slimWorks = [];
+            for (const w of arch.works) {
+              if (w && w.photoUrl && w.photoUrl.length > 350000) {
+                const sUrl = await slimBase64Image(w.photoUrl, 800, 0.78);
+                if (sUrl && sUrl.length < w.photoUrl.length) {
+                  slimWorks.push({ ...w, photoUrl: sUrl });
+                  modified = true;
+                  continue;
+                }
+              }
+              slimWorks.push(w);
+            }
+            if (modified) {
+              db.ref('sbux/latteArtArchives/' + arch.key + '/works').set(slimWorks);
+            }
+          }
         } else {
           latteArtArchives.value = [];
         }
@@ -5375,7 +5600,6 @@ const app = createApp({
         isCloudConnected.value = snap.val() === true;
       });
 
-      // ⚡ 第一優先監聽：全店輕量文字資料，一有變動立即更新畫面並寫入 0.001 秒本機快照
       db.ref('sbux/staff').on('value', snap => {
         const data = snap.val();
         if (data) {
@@ -5418,6 +5642,13 @@ const app = createApp({
       db.ref('sbux/officialCoffeeBeans').on('value', snap => {
         if (snap.val()) {
           mergeBeansIntoCatalog(snap.val());
+        }
+      });
+
+      db.ref('sbux/passportStamps').on('value', snap => {
+        if (snap.val()) {
+          manualBeanStamps.value = { ...manualBeanStamps.value, ...snap.val() };
+          localStorage.setItem('sbux_manual_bean_stamps_v1', JSON.stringify(manualBeanStamps.value));
         }
       });
 
@@ -5479,12 +5710,11 @@ const app = createApp({
         weeklyQuizRecords.value = snap.val() || {};
       });
 
-      // 待所有核心畫面與登入完成 2.5 秒後，才在背景閒置時靜默同步拉花榮譽榜數據，完全不佔用登入頻寬
       setTimeout(() => {
         loadLatteArtPhotosLazy();
-      }, 2500);
+        loadStorePhotosLazy();
+      }, 300);
     }
-
 
     // ==================== 📝 班次交接與待辦事項邏輯 ====================
     const addShiftTask = () => {
@@ -5634,54 +5864,41 @@ const app = createApp({
       fetchYongheWeather();
       fetchDynamicWebTrivia();
       syncStarbucksTaiwanBeanUrls();
-      updateCountdown();
-      setInterval(updateCountdown, 1000);
-      nextTick(() => { if (window.lucide) lucide.createIcons(); });
       requestScreenWakeLock();
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(() => {});
       }
+      updateCountdown();
+      setInterval(updateCountdown, 1000);
+      nextTick(() => { if (window.lucide) lucide.createIcons(); });
     });
 
     const settledPeriodStr = computed(() => {
-      if (latteArtArchives.value && latteArtArchives.value.length > 0) {
-        return `上期冠軍：${resolveArchiveWinner(latteArtArchives.value[0])}`;
-      }
-      const now = new Date();
-      return `${now.getMonth() + 1}/${now.getDate()} 當期評選中`;
+      const currentBucket = getCurrentWeekBucket();
+      return `當週賽期：${currentBucket.periodRange}`;
     });
 
-    // 🏆 門市榮譽殿堂 (當週即時戰況：同步採用真實姓名解析 + 自己跟自己比最佳進步獎)
+    // 🏆 門市榮譽殿堂 (嚴格忠實呈現「本週」即時競賽戰況，不拿以前上傳的舊分數連勝)
     const settledHonors = computed(() => {
       let champName = '虛位以待';
-      let champScore = '-';
+      let champScore = '本週尚無作品';
       let progressName = '虛位以待';
-      let progressDelta = '-';
+      let progressDelta = '本週尚無作品';
 
       const prevArchWorks = (latteArtArchives.value && latteArtArchives.value.length > 0)
         ? (latteArtArchives.value[0].works || [])
         : [];
 
-      if (lattePosts.value && lattePosts.value.length > 0) {
-        const sortedCurrent = [...lattePosts.value].sort((a, b) => calculateCombinedScore(b) - calculateCombinedScore(a));
+      if (weeklyLattePosts.value && weeklyLattePosts.value.length > 0) {
+        const sortedCurrent = [...weeklyLattePosts.value].sort((a, b) => calculateCombinedScore(b) - calculateCombinedScore(a));
         champName = resolveWorkPartnerName(sortedCurrent[0]);
-        champScore = `${calculateCombinedScore(sortedCurrent[0])} 分`;
+        champScore = `${calculateCombinedScore(sortedCurrent[0])} 分領先`;
 
         const imp = computeSelfImprovedAward(sortedCurrent, prevArchWorks);
         progressName = imp.name;
         progressDelta = imp.scoreText;
-      } else if (latteArtArchives.value && latteArtArchives.value.length > 0) {
-        const latestArch = latteArtArchives.value[0];
-        const prevArch2 = latteArtArchives.value.length > 1 ? (latteArtArchives.value[1].works || []) : [];
-        champName = resolveArchiveWinner(latestArch);
-        champScore = latestArch.works && latestArch.works[0] ? `${calculateCombinedScore(latestArch.works[0])} 分` : '上期冠軍';
-
-        const imp = computeSelfImprovedAward(latestArch.works || [], prevArch2);
-        progressName = imp.name;
-        progressDelta = imp.scoreText;
       }
 
-      // 傳入 null 代表僅統計「本週一 00:00 後」實際上傳的品評紀錄
       const activeInfo = computeActiveTasterAward(tastingNotesList.value, null);
 
       return {
@@ -5775,7 +5992,7 @@ const app = createApp({
       }
     };
 
-    // ==================== 2. Tasting 品評真實 AI 感官校準與深度互動回饋 (徹底去模板化) ====================
+    // ==================== 2. Tasting 品評真實 AI 感官校準與深度互動回饋 ====================
     const getCleanNotesText = (text) => {
       if (!text) return '無額外備註';
       return text.replace(/^\[🍋.*?\]\s*/, '').replace(/^心得：/, '').trim() || '無額外備註';
@@ -5793,7 +6010,6 @@ const app = createApp({
       }
       isAiEvaluatingTasting.value = true;
       try {
-        // 找出該豆款的官方標準設定，提供給 AI 進行「真實感官比對與沖煮探討」
         const beanInfo = starbucksCoreBeans.value.find(b =>
           b.name.includes(tastingForm.value.coffeeName) ||
           tastingForm.value.coffeeName.includes(b.name) ||
@@ -5814,11 +6030,9 @@ const app = createApp({
 
 【重要指令：禁止使用固定模板或空泛讚美！】
 請直接針對這位夥伴寫的「具體字句」與「酸度/醇度落點」給出真正有價值的實戰回饋（約 80~130 字）：
-1. 感官校準與沖煮分析：比對夥伴嚐到的酸度/醇度與官方標準是否一致？
-   - 若有落差（例如低酸度豆款卻喝出高酸度，或高醇度豆款卻覺得輕盈），請具體幫夥伴分析可能是「水溫偏低、研磨度、粉水比、手沖流速，或是咖啡降溫後的酸質變化」造成的，幫助夥伴精進沖煮技巧！
-   - 若夥伴捕捉到了特殊風味或細節，請從生豆處理法或產區風土解釋為什麼會有這個味道。
-2. 門市實戰應用：針對夥伴喝出的這個風味走向，給出一個具體的「沖煮微調建議（如改用濾壓壺、冰手沖、或加一點冰塊/鮮奶）」或「向顧客介紹這支豆子的一句話話術」。
-3. 絕對不要用「【大師風味回饋】」或「觀察非常入微！」這類罐頭開頭，每次請根據內容直接切入重點，語氣像在吧台邊一起喝咖啡聊天的資深前輩。`;
+1. 感官校準與沖煮分析：比對夥伴嚐到的酸度/醇度與官方標準是否一致？若有落差，請具體幫夥伴分析可能是「水溫偏低、研磨度、粉水比、手沖流速，或是咖啡降溫後的酸質變化」造成的；若夥伴捕捉到了特殊風味，請從生豆處理法或產區風土解釋原因。
+2. 門市實戰應用：給出一個具體的「沖煮微調建議（如改用濾壓壺、冰手沖）」或「向顧客介紹這支豆子的一句話話術」。
+3. 絕對不要用「【大師風味回饋】」或「觀察非常入微！」這類罐頭開頭，每次請直接切入重點。`;
 
         let aiComment = '';
         try {
@@ -5832,7 +6046,7 @@ const app = createApp({
           authorStaffId: currentPartner.value.id || currentPartner.value._key,
           empId: currentPartner.value.empId,
           partnerName: `${currentPartner.value.name} (${currentPartner.value.nickname})`,
-          coffeeName: tastingForm.value.coffeeName,
+          coffeeName: tastingForm.value.coffeeName.trim(),
           acidity: tastingForm.value.acidity,
           body: tastingForm.value.body,
           aroma: tastingForm.value.aroma || '自然咖啡乾香',
@@ -5843,7 +6057,7 @@ const app = createApp({
         };
         if (db) await db.ref('sbux/tasting_notes/' + newNote.id).set(newNote);
         tastingForm.value = { coffeeName: '星巴克家常咖啡豆', acidity: 3, body: 3, aroma: '', flavor: '', notes: '' };
-        alert('🎉 Tasting 品評與 AI 專屬感官分析已發布！');
+        alert('🎉 Tasting 品評已發布，並已同步點亮您的個人咖啡護照！');
       } catch (err) {
         alert(`⚠️ ${err.message}`);
       } finally {
@@ -5851,13 +6065,13 @@ const app = createApp({
       }
     };
 
-    // ==================== 3. 拉花擂台賽 AI 視覺實戰教練評審 (打破固定句型，給出具體手法建議) ====================
+    // ==================== 3. 拉花擂台賽 AI 視覺實戰教練評審 ====================
     const handleLattePhotoUpload = (e) => {
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = (evt) => {
-        latteForm.value.photoUrl = evt.target.result;
+      reader.onload = async (evt) => {
+        latteForm.value.photoUrl = await slimBase64Image(evt.target.result, 960, 0.82);
       };
       reader.readAsDataURL(file);
     };
@@ -5872,10 +6086,7 @@ const app = createApp({
 請仔細觀察這張照片的實際視覺細節，並嚴格遵守以下評審原則：
 
 1. 防偽檢查：若照片根本不是咖啡或沒有拉花（例如風景、人物、飲料杯蓋蓋著、無關物品），請將 isLatteArt 設為 false，score 設為 0，feedback 說明「照片非拉花作品」。
-2. 真實鑑別度評分 (score 範圍 55 ~ 96 分，請精確給出個位數如 73、84、91，切勿總是給整數或同一個分數)：
-   - 55~74分：圖案歪斜明顯、奶泡過厚結塊或有大氣泡、黑白融合混濁、圖形未成形。
-   - 75~84分：圖形可辨識但位置偏離中心、包覆感不足、收尾拉線太粗或把圖案拉變形。
-   - 85~96分：奶泡如絲絨反光無氣泡、Crema底色乾淨對比強烈、葉片/心形層次分明且置中對稱。
+2. 真實鑑別度評分 (score 範圍 55 ~ 96 分，請精確給出個位數如 73、84、91，切勿總是給整數或同一個分數)。
 3. 拒絕罐頭模板的實戰教練回饋 (feedback 約 70~110 字)：
    - 【禁止】使用「這是一幅非常優質的...奶泡質地...左右對稱...」這種千篇一律的填空句型！
    - 請直接點出你在這張照片裡看到的「具體畫面特徵」（例如：杯口幾點鐘方向的融合、愛心/鬱金香第幾層的推擠包覆、葉片左右晃動的間距、收尾直線是否偏左/偏右、或是表面有無微小氣泡與液面高度）。
@@ -6134,19 +6345,19 @@ const app = createApp({
     };
 
     const generateAiRoster = async () => {
-   if (!scheduleStartDate.value || !scheduleEndDate.value) return alert('請先設定排班範圍！');
-   const dates = targetRangeDates.value;
-   if (dates.length === 0) return alert('日期範圍無效！');
+      if (!scheduleStartDate.value || !scheduleEndDate.value) return alert('請先設定排班範圍！');
+      const dates = targetRangeDates.value;
+      if (dates.length === 0) return alert('日期範圍無效！');
 
-   isAiGeneratingRoster.value = true;
-   // ⚡ 排班前強制向雲端二次校驗最新畫假、禁休與可配班時段，確保壓線畫假 100% 納入！
-   await forceSyncRosterDataNow(false);
+      isAiGeneratingRoster.value = true;
+      await forceSyncRosterDataNow(false);
 
-   const allStaff = sortedValidStaffList.value;
-   if (allStaff.length === 0) {
-     isAiGeneratingRoster.value = false;
-     return alert('門市尚無夥伴名單！');
-   }
+      const allStaff = sortedValidStaffList.value;
+      if (allStaff.length === 0) {
+        isAiGeneratingRoster.value = false;
+        return alert('門市尚無夥伴名單！');
+      }
+
       const schedulePlan = [];
       const warnings = [];
 
@@ -6572,6 +6783,7 @@ const app = createApp({
 
       if (db) db.ref('sbux/scheduled_roster').set(newRosterMap);
       scheduledRoster.value = newRosterMap;
+      saveInstantSnapshot();
       aiRosterModal.value.show = false;
       printTargetMode.value = 'ai';
       alert('🎉 預排班表已成功套用！');
@@ -6587,6 +6799,7 @@ const app = createApp({
         });
         if (db) db.ref('sbux/scheduled_roster').set(newRosterMap);
         scheduledRoster.value = newRosterMap;
+        saveInstantSnapshot();
         alert('🗑️ 已清除本週預排班表紀錄！');
       }
     };
@@ -6637,10 +6850,11 @@ const app = createApp({
     };
 
     const triggerPrintSchedule = async (mode) => {
-   printTargetMode.value = mode;
-   await forceSyncRosterDataNow(false);
-   nextTick(() => { window.print(); });
- };
+      printTargetMode.value = mode;
+      await forceSyncRosterDataNow(false);
+      nextTick(() => { window.print(); });
+    };
+
     // ==================== 畫假、禁休、行事曆與各模組操作 ====================
     const blackoutDatesList = computed(() => {
       const data = blackoutDates.value || {};
@@ -6654,14 +6868,20 @@ const app = createApp({
     const saveBlackoutDate = () => {
       const f = blackoutModal.value.form;
       if (!f.date) return;
-      if (db) db.ref('sbux/blackout_dates/' + f.date).set(f.reason || '門市禁休');
+      if (db) {
+        db.ref('sbux/blackout_dates/' + f.date).set(f.reason || '門市禁休');
+        db.ref('sbux/lastRosterSyncAt').set(Date.now());
+      }
       blackoutModal.value.form = { date: '', reason: '' };
       alert(`已將 ${f.date} 設定為禁休日！`);
     };
 
     const deleteBlackoutDate = (dateStr) => {
       if (confirm(`確定解除 ${dateStr} 禁休限制嗎？`)) {
-        if (db) db.ref('sbux/blackout_dates/' + dateStr).remove();
+        if (db) {
+          db.ref('sbux/blackout_dates/' + dateStr).remove();
+          db.ref('sbux/lastRosterSyncAt').set(Date.now());
+        }
       }
     };
 
@@ -6746,50 +6966,50 @@ const app = createApp({
       return dates;
     });
 
-  const submitVacation = async () => {
-   const targetSid = isDutyOrAbove.value ? (vacationForm.value.staffId || currentPartner.value?.id || currentPartner.value?._key) : (currentPartner.value?.id || currentPartner.value?._key);
-   if (!targetSid || !vacationForm.value.date) return alert('請確認夥伴與休假日期！');
+    const submitVacation = async () => {
+      const targetSid = isDutyOrAbove.value ? (vacationForm.value.staffId || currentPartner.value?.id || currentPartner.value?._key) : (currentPartner.value?.id || currentPartner.value?._key);
+      if (!targetSid || !vacationForm.value.date) return alert('請確認夥伴與休假日期！');
 
-   await forceSyncRosterDataNow(false);
+      await forceSyncRosterDataNow(false);
 
-   if (blackoutDates.value && blackoutDates.value[vacationForm.value.date]) {
-     alert(`❌ ${vacationForm.value.date} 為門市禁休日！\n原因：${blackoutDates.value[vacationForm.value.date]}`);
-     return;
-   }
+      if (blackoutDates.value && blackoutDates.value[vacationForm.value.date]) {
+        alert(`❌ ${vacationForm.value.date} 為門市禁休日！\n原因：${blackoutDates.value[vacationForm.value.date]}`);
+        return;
+      }
 
-   if (vacationForm.value.date < allowedVacationStartStr.value && !isDutyOrAbove.value) {
-     return alert(`❌ 違反應提早兩週畫假規範！`);
-   }
+      if (vacationForm.value.date < allowedVacationStartStr.value && !isDutyOrAbove.value) {
+        return alert(`❌ 違反應提早兩週畫假規範！`);
+      }
 
-   const id = Date.now().toString();
-   const newVacObj = {
-     id, staffId: targetSid, date: vacationForm.value.date, type: vacationForm.value.type, notes: vacationForm.value.notes
-   };
-   if (db) {
-     await db.ref('sbux/vacations/' + id).set(newVacObj);
-     await db.ref('sbux/lastRosterSyncAt').set(Date.now());
-   }
-   await forceSyncRosterDataNow(false);
-   vacationForm.value = { staffId: '', date: '', type: '無法排班', notes: '' };
-   alert('✅ 畫假成功！已即時同步至全店所有裝置。');
- };
+      const id = Date.now().toString();
+      const newVacObj = {
+        id, staffId: targetSid, date: vacationForm.value.date, type: vacationForm.value.type, notes: vacationForm.value.notes
+      };
+      if (db) {
+        await db.ref('sbux/vacations/' + id).set(newVacObj);
+        await db.ref('sbux/lastRosterSyncAt').set(Date.now());
+      }
+      await forceSyncRosterDataNow(false);
+      vacationForm.value = { staffId: '', date: '', type: '無法排班', notes: '' };
+      alert('✅ 畫假成功！已即時同步至全店所有裝置。');
+    };
 
- const promptSecureDeleteVacation = (v) => { secureDeleteModal.value = { show: true, target: v, inputName: '' }; };
- const confirmSecureDelete = async () => {
-   const modal = secureDeleteModal.value;
-   const targetStaff = staffList.value.find(s => (s.id === modal.target.staffId || s._key === modal.target.staffId));
-   if (!targetStaff || modal.inputName.trim() === targetStaff.name.trim()) {
-     if (db) {
-       await db.ref('sbux/vacations/' + modal.target.id).remove();
-       await db.ref('sbux/lastRosterSyncAt').set(Date.now());
-     }
-     await forceSyncRosterDataNow(false);
-     modal.show = false;
-     alert('畫假已刪除並同步更新至全店裝置！');
-   } else {
-     alert('姓名不符！');
-   }
- };
+    const promptSecureDeleteVacation = (v) => { secureDeleteModal.value = { show: true, target: v, inputName: '' }; };
+    const confirmSecureDelete = async () => {
+      const modal = secureDeleteModal.value;
+      const targetStaff = staffList.value.find(s => (s.id === modal.target.staffId || s._key === modal.target.staffId));
+      if (!targetStaff || modal.inputName.trim() === targetStaff.name.trim()) {
+        if (db) {
+          await db.ref('sbux/vacations/' + modal.target.id).remove();
+          await db.ref('sbux/lastRosterSyncAt').set(Date.now());
+        }
+        await forceSyncRosterDataNow(false);
+        modal.show = false;
+        alert('畫假已刪除並同步更新至全店裝置！');
+      } else {
+        alert('姓名不符！');
+      }
+    };
 
     const getVacationData = (staffId, dateStr) => vacationList.value.find(item => (item.staffId === staffId) && item.date === dateStr) || null;
 
@@ -6803,10 +7023,13 @@ const app = createApp({
       availModal.value = { show: true, staff: staff, form: form };
     };
 
-    const saveAvailability = () => {
+    const saveAvailability = async () => {
       const staff = availModal.value.staff;
       const targetKey = staff._key || staff.id;
-      if (db && targetKey) db.ref('sbux/staff/' + targetKey + '/availability').set(availModal.value.form);
+      if (db && targetKey) {
+        await db.ref('sbux/staff/' + targetKey + '/availability').set(availModal.value.form);
+        await db.ref('sbux/lastRosterSyncAt').set(Date.now());
+      }
       availModal.value.show = false;
       alert('✅ 已儲存夥伴可配班時段！');
     };
@@ -7023,7 +7246,15 @@ const app = createApp({
       });
     });
 
-    const weeklyLattePosts = computed(() => [...lattePosts.value].sort((a,b) => b.timestamp - a.timestamp));
+    // 嚴格過濾：本週展示牆與本週即時榜只計入「本週一 00:00 後上傳」的作品，舊週期作品一律自動移入底部歷史集錦
+    const weeklyLattePosts = computed(() => {
+      const currentBucket = getCurrentWeekBucket();
+      return (lattePosts.value || []).filter(p => {
+        if (!p) return false;
+        const pBucket = getWeekBucketFromDate(parseWorkActualDate(p));
+        return pBucket.mondayTime >= currentBucket.mondayTime;
+      }).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    });
 
     const hasVoted = (postId) => {
       const post = lattePosts.value.find(p => p.id === postId || p._key === postId);
@@ -7236,7 +7467,7 @@ const app = createApp({
         reader.onload = (evt) => {
           const img = new Image();
           img.onload = () => {
-            const maxDim = 1600;
+            const maxDim = 1200;
             let w = img.width, h = img.height;
             if (w > maxDim || h > maxDim) {
               if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
@@ -7247,7 +7478,7 @@ const app = createApp({
             canvas.height = h;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', 0.85));
+            resolve(canvas.toDataURL('image/jpeg', 0.82));
           };
           img.onerror = () => resolve(evt.target.result);
           img.src = evt.target.result;
@@ -7326,522 +7557,6 @@ const app = createApp({
       document.body.removeChild(a);
     };
 
-    // ==================== 🥤 模組 A：台灣星巴克官方步驟式配方卡系統 (無小杯預設 + 英文代號可留空 + 100% 人工修正) ====================
-    // 預載真實門市配方卡範例 (若雲端已有同 ID 修改版，會自動以人工修改後的雲端版本為準)
-    const defaultTaiwanRecipeCards = [
-      {
-        id: 'tw_vcpl',
-        name: '冰香草風味蛋白雲朵那堤',
-        enName: 'Iced Vanilla Cream Protein Latte',
-        marking: 'VCPL',
-        hasShort: false,
-        deliveryNote: '此飲品提供外送服務',
-        serviceNotes: '1. 蛋白粉用量：每份使用 4 匙蛋白粉(15ml 量匙平匙)，以確保每杯達到最佳的蛋白質含量。\n2. 乳製品基底：使用長春烘焙專用脂取代低脂牛奶，以提供更濃郁、滑順且具質感的飲用體驗。\n3. 風味添加：僅提供使用香草風味基底糖漿及摩卡醬作為額外風味添加，以避免凝結或結塊，並維持蛋白質原料的完整性。',
-        stepsList: [
-          { title: '添加長春烘焙專用脂至Cold Foam壺中', desc: '添加長春烘焙專用脂至Cold Foam壺中150ml刻度線', isSplitSize: false, valS: '', valT: '', valG: '', valV: '' },
-          { title: '添加蛋白粉至Cold Foam壺中(使用15ml量匙)(平匙)', desc: '4', isSplitSize: false, valS: '', valT: '4', valG: '4', valV: '4' },
-          { title: '添加香草風味基底糖漿(使用1ml壓頭)和蔗糖糖漿(使用7.5ml壓頭)(完整份量)', desc: '2', isSplitSize: false, valS: '', valT: '2', valG: '2', valV: '2' },
-          { title: '攪拌', desc: '按下按鈕#4，啟動攪拌機', isSplitSize: false, valS: '', valT: '', valG: '', valV: '' },
-          { title: '準備濃縮咖啡', desc: '', isSplitSize: true, valS: '-', valT: '1', valG: '2', valV: '2' },
-          { title: '倒入濃縮咖啡', desc: '倒入濃縮咖啡至杯中', isSplitSize: false, valS: '', valT: '', valG: '', valV: '' },
-          { title: '倒入牛奶至杯中', desc: '加入牛奶至杯中上標線處', isSplitSize: false, valS: '', valT: '', valG: '', valV: '' },
-          { title: '完成與交流', desc: '• 加入冰塊至杯中距離杯緣36mm\n• 加入香草風味高蛋白雲朵至杯中\n• 蓋上平杯蓋，並提供吸管給顧客', isSplitSize: false, valS: '', valT: '', valG: '', valV: '' }
-        ]
-      },
-      {
-        id: 'tw_hrcb',
-        name: '夏日冰柚冷萃咖啡',
-        enName: 'Honey Ruby Grapefruit Cold Brew',
-        marking: 'HRCB',
-        hasShort: false,
-        deliveryNote: '',
-        serviceNotes: '• 此款飲料不建議提供冰塊客製化調整，避免整體口感或咖啡味失衡。\n• 加入之冷萃咖啡為冷萃咖啡原液(尚未加水稀釋)，請有Nitro設備之門市，額外使用冷水壺準備冷萃咖啡，供此款飲料使用。',
-        stepsList: [
-          { title: '倒入檸檬液', desc: '將檸檬液倒入個人塑膠量杯或冰杯的下線', isSplitSize: false, valS: '', valT: '', valG: '', valV: '' },
-          { title: '倒入杯中原料', desc: '將杯中的全部原料倒入攪拌壺中', isSplitSize: false, valS: '', valT: '', valG: '', valV: '' },
-          { title: '添加冰塊', desc: '使用合適尺寸的冰鏟直接將冰塊鏟入攪拌壺。', isSplitSize: true, valS: '-', valT: 'T', valG: 'G', valV: 'V' },
-          { title: '添加配料', desc: '添加蜂蜜紅柚醬(15ml湯匙)加入攪拌壺中', isSplitSize: true, valS: '-', valT: '2', valG: '3', valV: '4' },
-          { title: '攪拌', desc: '按下按鈕#1，啟動攪拌機', isSplitSize: false, valS: '', valT: '', valG: '', valV: '' },
-          { title: '添加糖漿', desc: '添加原味糖漿(7.5ml吧檯糖漿壓泵)至冰杯中', isSplitSize: true, valS: '-', valT: '2', valG: '3', valV: '4' },
-          { title: '完成與交流', desc: '• 冷萃咖啡原液倒入冰杯的下線\n• 再將攪拌壺中原料倒入冰杯至滿杯\n• 上面加上1匙蜂蜜紅柚醬(15ml 湯匙)\n• 蓋上凸杯蓋，並提供給顧客', isSplitSize: false, valS: '', valT: '', valG: '', valV: '' }
-        ]
-      }
-    ];
-
-    const coreDrinkRecipes = ref([]);
-    const recipeState = ref({ drinkKey: 'tw_vcpl', highlightSize: 'ALL' });
-    const seasonalRecipesList = ref([]);
-    const showSeasonalForm = ref(false);
-    const isAiRecognizingRecipe = ref(false);
-
-    const createEmptyStep = () => ({
-      title: '',
-      desc: '',
-      isSplitSize: false,
-      valS: '',
-      valT: '',
-      valG: '',
-      valV: ''
-    });
-
-    const seasonalForm = ref({
-      id: '',
-      name: '',
-      enName: '',
-      marking: '',
-      hasShort: false,
-      deliveryNote: '',
-      serviceNotes: '',
-      stepsList: [createEmptyStep()]
-    });
-
-    // 將舊格式或 AI 匯入的配方卡統一正規化為步驟式表格結構
-    const normalizeRecipeCard = (raw) => {
-      if (!raw) return null;
-      let steps = [];
-      if (Array.isArray(raw.stepsList) && raw.stepsList.length > 0) {
-        steps = raw.stepsList.map(s => ({
-          title: s.title || '步驟',
-          desc: s.desc || '',
-          isSplitSize: !!s.isSplitSize,
-          valS: s.valS !== undefined ? String(s.valS) : '',
-          valT: s.valT !== undefined ? String(s.valT) : '',
-          valG: s.valG !== undefined ? String(s.valG) : '',
-          valV: s.valV !== undefined ? String(s.valV) : ''
-        }));
-      } else {
-        // 相容先前建立的簡易格式，自動轉為表格步驟
-        if (raw.icedShotsStr || raw.hotShotsStr) {
-          const arr = (raw.icedShotsStr || raw.hotShotsStr).split(',');
-          steps.push({ title: '準備濃縮咖啡 / 基底', desc: '', isSplitSize: true, valS: arr[0] || '-', valT: arr[1] || '1', valG: arr[2] || '2', valV: arr[3] || '3' });
-        }
-        if (raw.icedSyrupStr || raw.hotSyrupStr) {
-          const arr = (raw.icedSyrupStr || raw.hotSyrupStr).split(',');
-          steps.push({ title: '添加糖漿 / 配料', desc: raw.syrupUnit || '', isSplitSize: true, valS: arr[0] || '-', valT: arr[1] || '2', valG: arr[2] || '3', valV: arr[3] || '4' });
-        }
-        if (raw.topping) {
-          steps.push({ title: '完成與交流', desc: raw.topping, isSplitSize: false, valS: '', valT: '', valG: '', valV: '' });
-        }
-      }
-
-      return {
-        id: raw.id || raw.key || ('srec_' + Date.now()),
-        name: raw.name || '未命名飲品',
-        enName: raw.enName || '',
-        marking: raw.marking !== undefined ? String(raw.marking).trim() : '',
-        hasShort: !!raw.hasShort,
-        deliveryNote: raw.deliveryNote || '',
-        serviceNotes: raw.serviceNotes || raw.tip || '',
-        stepsList: steps.length > 0 ? steps : [createEmptyStep()],
-        timestamp: raw.timestamp || 0
-      };
-    };
-
-    // 整合雲端配方與預設真實範例（支援直接修改覆寫或刪除預設範例）
-    const allInteractiveRecipes = computed(() => {
-      const map = {};
-      defaultTaiwanRecipeCards.forEach(d => {
-        map[d.id] = normalizeRecipeCard(d);
-      });
-      seasonalRecipesList.value.forEach(sr => {
-        if (sr && sr.id) {
-          if (sr.isDeleted) {
-            delete map[sr.id];
-          } else {
-            map[sr.id] = normalizeRecipeCard(sr);
-          }
-        }
-      });
-      return Object.values(map).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-    });
-
-    const currentDrinkRecipe = computed(() => {
-      const found = allInteractiveRecipes.value.find(d => d.id === recipeState.value.drinkKey);
-      return found || allInteractiveRecipes.value[0] || null;
-    });
-
-    watch(currentDrinkRecipe, (newDrink) => {
-      if (newDrink && !newDrink.hasShort && recipeState.value.highlightSize === 'S') {
-        recipeState.value.highlightSize = 'ALL';
-      }
-    });
-
-    const visibleSizeColumnsCount = computed(() => {
-      if (!currentDrinkRecipe.value) return 3;
-      if (recipeState.value.highlightSize !== 'ALL') return 1;
-      return currentDrinkRecipe.value.hasShort ? 4 : 3;
-    });
-
-    const computedRecipeResult = computed(() => currentDrinkRecipe.value);
-
-    const addStepRow = () => {
-      seasonalForm.value.stepsList.push(createEmptyStep());
-    };
-
-    const removeStepRow = (idx) => {
-      if (seasonalForm.value.stepsList.length <= 1) return alert('至少需保留一個步驟！');
-      seasonalForm.value.stepsList.splice(idx, 1);
-    };
-
-    const moveStepRow = (idx, dir) => {
-      const target = idx + dir;
-      if (target < 0 || target >= seasonalForm.value.stepsList.length) return;
-      const temp = seasonalForm.value.stepsList[idx];
-      seasonalForm.value.stepsList[idx] = seasonalForm.value.stepsList[target];
-      seasonalForm.value.stepsList[target] = temp;
-    };
-
-    const openNewSeasonalForm = () => {
-      seasonalForm.value = {
-        id: '',
-        name: '',
-        enName: '',
-        marking: '',
-        hasShort: false,
-        deliveryNote: '',
-        serviceNotes: '',
-        stepsList: [
-          { title: '步驟 1', desc: '', isSplitSize: false, valS: '', valT: '', valG: '', valV: '' },
-          { title: '添加糖漿 / 配料', desc: '', isSplitSize: true, valS: '', valT: '2', valG: '3', valV: '4' },
-          { title: '完成與交流', desc: '', isSplitSize: false, valS: '', valT: '', valG: '', valV: '' }
-        ]
-      };
-      showSeasonalForm.value = true;
-    };
-
-    const editSeasonalRecipe = (recipe) => {
-      if (!recipe) return;
-      const norm = normalizeRecipeCard(recipe);
-      seasonalForm.value = {
-        id: norm.id,
-        name: norm.name,
-        enName: norm.enName,
-        marking: norm.marking,
-        hasShort: norm.hasShort,
-        deliveryNote: norm.deliveryNote,
-        serviceNotes: norm.serviceNotes,
-        stepsList: norm.stepsList.map(s => ({ ...s }))
-      };
-      showSeasonalForm.value = true;
-    };
-
-    const submitSeasonalRecipe = async () => {
-      if (!seasonalForm.value.name.trim()) return;
-      const id = seasonalForm.value.id || ('srec_' + Date.now());
-      const item = {
-        id,
-        name: seasonalForm.value.name.trim(),
-        enName: (seasonalForm.value.enName || '').trim(),
-        // 英文代號若沒填就保持空字串，不強制塞預設值
-        marking: (seasonalForm.value.marking || '').trim().toUpperCase(),
-        hasShort: !!seasonalForm.value.hasShort,
-        deliveryNote: (seasonalForm.value.deliveryNote || '').trim(),
-        serviceNotes: (seasonalForm.value.serviceNotes || '').trim(),
-        stepsList: seasonalForm.value.stepsList.map(s => ({
-          title: (s.title || '').trim(),
-          desc: (s.desc || '').trim(),
-          isSplitSize: !!s.isSplitSize,
-          valS: String(s.valS || '').trim(),
-          valT: String(s.valT || '').trim(),
-          valG: String(s.valG || '').trim(),
-          valV: String(s.valV || '').trim()
-        })),
-        timestamp: Date.now()
-      };
-      if (db) await db.ref('sbux/seasonal_recipes/' + id).set(item);
-      recipeState.value.drinkKey = id;
-      showSeasonalForm.value = false;
-      alert(`✅ 已儲存【${item.name}】配方卡！`);
-    };
-
-    // 📸 AI 拍台灣星巴克官方步驟式配方卡匯入 (自動判別是否有小杯 S、是否有拍到英文代號 Drink ID)
-    const handleAiRecipeImageUpload = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const fileType = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
-      isAiRecognizingRecipe.value = true;
-      try {
-        const reader = new FileReader();
-        reader.onload = async (evt) => {
-          try {
-            const base64Data = evt.target.result.split(',')[1];
-            const prompt = `你是台灣星巴克資深吧台訓練師。請仔細閱讀這張台灣門市內部飲料配方卡（如：冰香草風味蛋白雲朵那堤、夏日冰柚冷萃咖啡等表格樣式），將圖片中的所有資訊完整提取為結構化 JSON。
-
-【嚴格解析規則】：
-1. 英文代號 (marking / Drink ID)：若圖片右上角或標題旁有拍到英文縮寫代號（如 VCPL、HRCB），請填入 marking；若圖片中沒有拍到英文代號，marking 請務必填空字串 ""，絕對不要自己亂猜或編造！
-2. 小杯尺寸 (hasShort)：台灣多數飲品表格只有「T、G、V」三欄。請檢查表格標題列，若只有 T、G、V 則 hasShort 設為 false；唯有明確印出 S 欄位時才設為 true。
-3. 主要步驟表格 (stepsList)：請依照圖片表格中的步驟 1、2、3... 順序逐列提取：
-   - title：左欄的步驟名稱（如「倒入檸檬液」、「添加配料」、「準備濃縮咖啡」、「完成與交流」）。
-   - 若該步驟在 T/G/V 欄位是合併成同一格文字或同一個數字（如「按下按鈕#4，啟動攪拌機」或單一數字「4」），請將 isSplitSize 設為 false，並把內容填在 desc。
-   - 若該步驟在 T、G、V 欄位有各自獨立的數值（例如準備濃縮咖啡 T=1, G=2, V=2，或添加配料 T=2, G=3, V=4），請將 isSplitSize 設為 true，分別填入 valT、valG、valV（若有跨欄小標題如「添加蜂蜜紅柚醬(15ml湯匙)加入攪拌壺中」請填在 desc）。
-4. 外送與服務注意事項：提取圖片中的「是否提供外送服務」填入 deliveryNote，並將「服務注意事項」或底部「•」條列注意事項完整填入 serviceNotes。
-
-請只輸出純 JSON 陣列格式（不要加 markdown 符號）：
-[{
-  "name": "飲品中文名稱",
-  "enName": "英文名稱(若無則留空)",
-  "marking": "英文代號(若無拍到則填\"\"空字串)",
-  "hasShort": false,
-  "deliveryNote": "外送服務說明(若無則留空)",
-  "serviceNotes": "服務注意事項完整文字",
-  "stepsList": [
-    {
-      "title": "步驟名稱",
-      "desc": "步驟說明或合併欄內容",
-      "isSplitSize": false,
-      "valS": "",
-      "valT": "",
-      "valG": "",
-      "valV": ""
-    }
-  ]
-}]`;
-
-            const rawText = await callGeminiApi([
-              { text: prompt },
-              { inline_data: { mime_type: fileType, data: base64Data } }
-            ], true, 0.1);
-
-            const match = rawText.match(/\[[\s\S]*\]/);
-            const cleanText = match ? match[0] : rawText.replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
-            const parsedList = JSON.parse(cleanText);
-
-            if (Array.isArray(parsedList) && parsedList.length > 0) {
-              const importedNames = [];
-              let lastItem = null;
-              for (const r of parsedList) {
-                if (!r.name) continue;
-                const id = 'srec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5);
-                const normItem = normalizeRecipeCard({ ...r, id, timestamp: Date.now() });
-                if (db) await db.ref('sbux/seasonal_recipes/' + id).set(normItem);
-                importedNames.push(normItem.name);
-                lastItem = normItem;
-              }
-              if (lastItem) {
-                recipeState.value.drinkKey = lastItem.id;
-              }
-              alert(`🎉 AI 配方卡匯入成功：【${importedNames.join('、')}】！\n您可隨時點擊卡片右上角的「✏️ 人工修正」微調任何細節。`);
-            } else {
-              alert('⚠️ 未能從圖片中識別出配方表格，請確認照片清晰或使用「+ 手動新增」。');
-            }
-          } catch (err) {
-            alert('❌ AI 配方卡辨識失敗：' + err.message);
-          } finally {
-            isAiRecognizingRecipe.value = false;
-            e.target.value = '';
-          }
-        };
-        reader.readAsDataURL(file);
-      } catch (e) {
-        isAiRecognizingRecipe.value = false;
-        e.target.value = '';
-      }
-    };
-
-    const deleteSeasonalRecipe = async (id) => {
-      if (!confirm('確定要移除這張飲品配方卡嗎？')) return;
-      if (db) {
-        const isDefault = defaultTaiwanRecipeCards.some(d => d.id === id);
-        if (isDefault) {
-          await db.ref('sbux/seasonal_recipes/' + id).set({ id, isDeleted: true });
-        } else {
-          await db.ref('sbux/seasonal_recipes/' + id).remove();
-        }
-      }
-      if (allInteractiveRecipes.value.length > 0) {
-        recipeState.value.drinkKey = allInteractiveRecipes.value[0].id;
-      }
-    };
-
-    // 🧠 RAG 吧台抽考：100% 依據目前系統內已建檔之步驟式配方卡出題與批改
-    const buildStoreRecipeKnowledgeContext = () => {
-      return allInteractiveRecipes.value.map(d => {
-        const stepsText = (d.stepsList || []).map((st, i) => {
-          if (st.isSplitSize) {
-            const sPart = d.hasShort ? `S=${st.valS}/` : '無小杯/';
-            return `步驟${i + 1}[${st.title}]: ${st.desc ? st.desc + ' ' : ''}(${sPart}T=${st.valT}, G=${st.valG}, V=${st.valV})`;
-          }
-          return `步驟${i + 1}[${st.title}]: ${st.desc}`;
-        }).join('；');
-        return `• 【${d.name}${d.marking ? ' (' + d.marking + ')' : ''}】尺寸：${d.hasShort ? '含小杯S/T/G/V' : '無小杯(僅T/G/V)'}｜${stepsText}｜注意事項：${d.serviceNotes || '無'}`;
-      }).join('\n');
-    };
-
-    const baristaChallenge = ref({ question: '', userReply: '', feedback: '', isGenerating: false, isChecking: false });
-
-    const generateBaristaChallenge = async () => {
-      baristaChallenge.value.isGenerating = true;
-      baristaChallenge.value.feedback = '';
-      baristaChallenge.value.userReply = '';
-      try {
-        const seed = Math.floor(Math.random() * 10000);
-        const storeContext = buildStoreRecipeKnowledgeContext();
-        const prompt = `你是台灣星巴克永和永安門市的吧台訓練師。以下為我們門市目前最新的【官方飲品配方卡資料庫】：
-${storeContext}
-
-請嚴格從上方這份【門市現有配方卡】中挑選一款飲品，設計一道實戰抽考題（隨機碼 ${seed}）。
-例如詢問某個尺寸（T / G / V）的配料匙數、糖漿壓頭下數、濃縮咖啡份數、攪拌機按鈕幾號、或是服務注意事項（如外送規範、特殊基底乳品、冰塊客製化限制等）。
-請只輸出考題文字（約 40~70 字），不要在題目中直接劇透答案。`;
-        const qText = await callGeminiApi([{ text: prompt }], false, 0.8);
-        baristaChallenge.value.question = qText.replace(/^["「]|["」]$/g, '').trim();
-      } catch (e) {
-        baristaChallenge.value.question = '請問製作「大杯 (G) 冰香草風味蛋白雲朵那堤」時，Cold Foam 壺要加幾平匙蛋白粉？準備幾份濃縮咖啡？攪拌機要按幾號按鈕？';
-      } finally {
-        baristaChallenge.value.isGenerating = false;
-      }
-    };
-
-    const checkBaristaChallengeAnswer = async () => {
-      if (!baristaChallenge.value.userReply.trim()) return;
-      baristaChallenge.value.isChecking = true;
-      try {
-        const storeContext = buildStoreRecipeKnowledgeContext();
-        const prompt = `你是台灣星巴克永和永安門市的吧台訓練師。請嚴格依據以下【門市官方配方卡資料庫】作為唯一批改標準：
-${storeContext}
-
-【考題】：「${baristaChallenge.value.question}」
-【夥伴作答】：「${baristaChallenge.value.userReply}」
-請批改夥伴的答案是否正確，並列出該配方卡上的正確步驟數值與注意事項解析（約 60~100 字）。`;
-        const fb = await callGeminiApi([{ text: prompt }], false, 0.2);
-        baristaChallenge.value.feedback = fb;
-      } catch (e) {
-        baristaChallenge.value.feedback = '請對照上方配方卡表格確認各尺寸（T / G / V）之正確匙數、壓頭下數與攪拌機按鈕編號！';
-      } finally {
-        baristaChallenge.value.isChecking = false;
-      }
-    };
-
-    // ==================== 🏅 模組 B：夥伴數位咖啡護照與成就徽章邏輯 ====================
-    const isMyRecord = (rec) => {
-      if (!rec || !currentPartner.value) return false;
-      const myId = currentPartner.value.id || currentPartner.value._key;
-      const myEmp = String(currentPartner.value.empId || '').trim();
-      const myName = currentPartner.value.name;
-      return (
-        rec.authorStaffId === myId ||
-        String(rec.empId || '').trim() === myEmp ||
-        (rec.partnerName && rec.partnerName.includes(myName))
-      );
-    };
-
-    const myPassportBeanStampList = computed(() => {
-      const myNotes = tastingNotesList.value.filter(n => isMyRecord(n));
-      return starbucksCoreBeans.value.map(bean => {
-        const matchedNotes = myNotes.filter(n =>
-          n.coffeeName && (
-            n.coffeeName.includes(bean.name) ||
-            bean.name.includes(n.coffeeName) ||
-            (bean.matchKey && n.coffeeName.includes(bean.matchKey))
-          )
-        );
-        const latest = matchedNotes[0] || null;
-        return {
-          ...bean,
-          isTasted: matchedNotes.length > 0,
-          tastedTimes: matchedNotes.length,
-          lastDate: latest ? latest.dateStr : '',
-          lastNotes: latest ? getCleanNotesText(latest.notes || latest.aroma) : ''
-        };
-      });
-    });
-
-    const myPassportStats = computed(() => {
-      const tastedCount = myPassportBeanStampList.value.filter(b => b.isTasted).length;
-      const totalBeans = starbucksCoreBeans.value.length || 1;
-      const percent = Math.min(100, Math.round((tastedCount / totalBeans) * 100));
-      const totalTastingPosts = tastingNotesList.value.filter(n => isMyRecord(n)).length;
-
-      let bestLatteScore = 0;
-      let totalLatteCount = 0;
-      let wonChampionCount = 0;
-
-      lattePosts.value.forEach(p => {
-        if (isMyRecord(p)) {
-          totalLatteCount++;
-          const sc = calculateCombinedScore(p);
-          if (sc > bestLatteScore) bestLatteScore = sc;
-        }
-      });
-
-      latteArtArchives.value.forEach(arch => {
-        if (arch.works && Array.isArray(arch.works)) {
-          arch.works.forEach((w, idx) => {
-            if (isMyRecord(w)) {
-              totalLatteCount++;
-              const sc = calculateCombinedScore(w);
-              if (sc > bestLatteScore) bestLatteScore = sc;
-              if (idx === 0 || w.rank === 1) wonChampionCount++;
-            }
-          });
-        }
-      });
-
-      const myId = currentPartner.value?.id || currentPartner.value?._key;
-      const bravoCount = bravoCardsList.value.filter(b => b.targetStaffId === myId || b.senderStaffId === myId).length;
-
-      return { tastedCount, percent, totalTastingPosts, bestLatteScore, totalLatteCount, wonChampionCount, bravoCount };
-    });
-
-    const partnerBadgesList = computed(() => {
-      const st = myPassportStats.value;
-      return [
-        {
-          id: 'first_step',
-          icon: '🌱',
-          title: '咖啡初心探索者',
-          desc: '完成首篇 Tasting 品評或首幅拉花作品上傳',
-          unlocked: (st.totalTastingPosts + st.totalLatteCount) >= 1,
-          progressText: `目前進度：${Math.min(1, st.totalTastingPosts + st.totalLatteCount)} / 1`
-        },
-        {
-          id: 'taster_5',
-          icon: '☕',
-          title: '感官品鑑家',
-          desc: '於數位咖啡護照中點亮滿 5 款不同咖啡豆',
-          unlocked: st.tastedCount >= 5,
-          progressText: `已集章：${st.tastedCount} / 5 款豆子`
-        },
-        {
-          id: 'taster_12',
-          icon: '🎓',
-          title: '黑圍裙風味大師',
-          desc: '於數位咖啡護照中點亮滿 12 款不同咖啡豆',
-          unlocked: st.tastedCount >= 12,
-          progressText: `已集章：${st.tastedCount} / 12 款豆子`
-        },
-        {
-          id: 'latte_craft',
-          icon: '🎨',
-          title: '吧台拉花職人',
-          desc: '累計上傳 3 幅拉花作品或單幅總分達 85 分',
-          unlocked: st.totalLatteCount >= 3 || st.bestLatteScore >= 85,
-          progressText: `作品 ${st.totalLatteCount}/3 幅｜最高 ${st.bestLatteScore} 分`
-        },
-        {
-          id: 'latte_king',
-          icon: '👑',
-          title: '永安拉花霸主',
-          desc: '曾榮獲週拉花冠軍或作品加權總分突破 90 分',
-          unlocked: st.wonChampionCount >= 1 || st.bestLatteScore >= 90,
-          progressText: st.wonChampionCount > 0 ? `已奪冠 ${st.wonChampionCount} 次` : `最高 ${st.bestLatteScore} / 90 分`
-        },
-        {
-          id: 'bravo_star',
-          icon: '💖',
-          title: '永安最佳神隊友',
-          desc: '於 Bravo 感謝牆累計收到或送出滿 3 張感謝卡',
-          unlocked: st.bravoCount >= 3,
-          progressText: `累計互動：${st.bravoCount} / 3 張 Bravo`
-        }
-      ];
-    });
-
-    const myUnlockedBadgesCount = computed(() => partnerBadgesList.value.filter(b => b.unlocked).length);
-
-    const jumpToTastingWithBean = (beanName) => {
-      tastingForm.value.coffeeName = beanName;
-      otherSubTab.value = 'tasting';
-    };
     const openBravoModal = () => { bravoModal.value = { show: true, form: { targetStaffId: '', message: '' } }; };
     const submitBravoCard = () => {
       const f = bravoModal.value.form;
@@ -7917,7 +7632,6 @@ ${storeContext}
 
       isLoggingIn.value = true;
       try {
-        // 若剛打開網頁名冊尚未抵達，或是目前名冊裡找不到該工號，立即主動透過 REST 直連拉取最新名冊
         let partner = staffList.value.find(s => String(s.empId).trim() === inputEmp);
         if (!partner) {
           await fetchStaffFastRest();
@@ -7936,6 +7650,7 @@ ${storeContext}
           loginForm.value = { empId: '', password: '' };
           fetchDynamicWebTrivia();
           syncStarbucksTaiwanBeanUrls();
+          forceSyncRosterDataNow(false);
           nextTick(() => { if (window.lucide) lucide.createIcons(); });
         } else {
           alert('❌ 登入密碼不正確！');
@@ -7971,7 +7686,6 @@ ${storeContext}
             const bDay = parseInt(cleanBday.slice(2, 4));
             let bDate = new Date(now.getFullYear(), bMonth - 1, bDay);
             let diffDays = Math.round((bDate - todayDate) / 86400000);
-            // 支援跨年判斷（例如 12/30 提醒 01/01 壽星）
             if (diffDays < -300) {
               bDate = new Date(now.getFullYear() + 1, bMonth - 1, bDay);
               diffDays = Math.round((bDate - todayDate) / 86400000);
@@ -8030,7 +7744,9 @@ ${storeContext}
     };
 
     return {
-      currentPartner, loginForm, isLoggingIn, handleLogin, handleLogout, isManager, isDutyOrAbove, isSuperTan, isDarkMode, toggleDarkMode, fontSizePref, setFontSizePref, notifPrefs, saveNotifPrefs, systemNotifPermission, requestSystemNotificationPermission,
+      currentPartner, loginForm, isLoggingIn, handleLogin, handleLogout, isManager, isDutyOrAbove, isSuperTan, isDarkMode, toggleDarkMode,
+      isRunningStandalone, installAppModal, triggerInstallApp,
+      fontSizePref, setFontSizePref, notifPrefs, saveNotifPrefs, systemNotifPermission, requestSystemNotificationPermission,
       notificationDrawer, openNotificationDrawer, partnerNotifications, unreadNotificationCount, markAllNotificationsRead,
       activeToastNotification, handleToastClick,
       settingsModal, openSettingsModal, saveNewPassword, saveBirthday, saveGeminiApiKey, testGeminiApiKey, isTestingApiKey, apiKeyTestResult, birthdayAlerts,
@@ -8047,7 +7763,7 @@ ${storeContext}
       groupedAlbumFolders, toggleAlbumFolder, isAlbumExpanded,
       lightboxModal, openPhotoLightbox, stepLightboxPhoto, downloadPhoto,
       bravoCardsList, bravoModal, openBravoModal, submitBravoCard,
-      starbucksCoreBeans, coreDrinkRecipes, allInteractiveRecipes, recipeState, currentDrinkRecipe, visibleSizeColumnsCount, computedRecipeResult, seasonalRecipesList, showSeasonalForm, isAiRecognizingRecipe, seasonalForm, addStepRow, removeStepRow, moveStepRow, openNewSeasonalForm, editSeasonalRecipe, submitSeasonalRecipe, handleAiRecipeImageUpload, deleteSeasonalRecipe, baristaChallenge, generateBaristaChallenge, checkBaristaChallengeAnswer, myPassportBeanStampList, myPassportStats, partnerBadgesList, myUnlockedBadgesCount, jumpToTastingWithBean, coffeeSearchQuery, coffeeCategoryFilter, coffeeRoastFilter, filteredCoffeeBeans,
+      starbucksCoreBeans, coffeeSearchQuery, coffeeCategoryFilter, coffeeRoastFilter, filteredCoffeeBeans,
       courseSummaries, isGeneratingSummary, generateCourseSummary,
       tastingForm, submitTastingNote, tastingNotesList, getIntensityLabel, getCleanNotesText, deleteTastingNote, isAiEvaluatingTasting,
       latteForm, handleLattePhotoUpload, submitLattePost, isAiEvaluating, isArchivingLatteArt,
@@ -8064,7 +7780,8 @@ ${storeContext}
       secureStaffDeleteModal, promptSecureDeleteStaff, confirmSecureStaffDelete,
       availModal, openAvailabilityModal, saveAvailability, getAvailabilitySummary, getAvailabilityText, timeSlots,
       allowedVacationStartStr, scheduleStartDate, scheduleEndDate, targetRangeDates, setNextWeekRange,
-      printTargetMode, triggerPrintSchedule, clearScheduledRoster,isSyncingRoster, lastVacSyncTimeStr, forceSyncRosterDataNow,
+      printTargetMode, triggerPrintSchedule, clearScheduledRoster,
+      isSyncingRoster, lastVacSyncTimeStr, forceSyncRosterDataNow,
       aiRosterModal, isAiGeneratingRoster, generateAiRoster, applyAiRosterToSchedule, getScheduledShiftText, isOvertimeShift, isConsecutiveSixthDay, calculateWeeklyStaffHours,
       blackoutDates, blackoutDatesList, blackoutModal, openBlackoutModal, saveBlackoutDate, deleteBlackoutDate,
       vacationCalYear, vacationCalMonth, changeVacationMonth, resetVacationMonth, vacationCalendarDays,
@@ -8077,7 +7794,10 @@ ${storeContext}
       quizScore, currentQuizQuestions, myQuizResult, allActivePartners,
       quizCompletedStaff, quizPendingStaff, publishKnowledge, deleteKnowledge,
       handleKnowledgeFileUpload, startWeeklyQuiz, submitWeeklyQuiz,
-      isRunningStandalone, installAppModal, triggerInstallApp
+      passportSelectedStaffId, passportFilter, passportTargetStaffName, partnerCareerStats,
+      passportBeansWithStatus, totalPassportBeanCount, tastedBeanCount, filteredPassportBeans,
+      toggleManualBeanStamp, jumpToTastingWithBean, expandedBeanHistory, toggleBeanHistory, isBeanHistoryExpanded,
+      partnerBadges, unlockedBadgeCount
     };
   }
 });
