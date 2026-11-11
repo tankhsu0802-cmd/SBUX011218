@@ -410,58 +410,61 @@
                 </button>
               </div>
 
-              <!-- 🏆 上週榮譽得獎夥伴表揚 -->
-              <div v-if="lastWeekHonorBoard" class="p-3.5 bg-gradient-to-br from-amber-50 via-yellow-50/80 to-orange-50 dark:from-amber-950/50 dark:via-yellow-950/30 dark:to-orange-950/40 rounded-2xl border border-amber-300 dark:border-amber-700/80 shadow-sm space-y-2 relative overflow-hidden">
+              <!-- 🏆 上週榮譽得獎夥伴表揚 (支援大字體完整顯示，絕不截斷姓名與獎項) -->
+              <div v-if="lastWeekHonorBoard" class="p-3.5 bg-gradient-to-br from-amber-50 via-yellow-50/80 to-orange-50 dark:from-amber-950/50 dark:via-yellow-950/30 dark:to-orange-950/40 rounded-2xl border border-amber-300 dark:border-amber-700/80 shadow-sm space-y-2.5 relative overflow-hidden">
                 <div class="flex justify-between items-center border-b border-amber-200/80 dark:border-amber-800/60 pb-1.5 flex-wrap gap-1">
-                  <div class="font-black text-xs text-amber-900 dark:text-amber-300 flex items-center gap-1">
+                  <div class="font-black text-xs text-amber-900 dark:text-amber-300 flex items-center gap-1 whitespace-nowrap">
                     <span>🏆</span> 上週榮譽得獎夥伴
                   </div>
-                  <span class="text-[10px] font-mono font-bold px-2 py-0.5 bg-amber-200/80 dark:bg-amber-900 text-amber-950 dark:text-amber-200 rounded-full">
+                  <span class="text-[10px] font-mono font-bold px-2 py-0.5 bg-amber-200/80 dark:bg-amber-900 text-amber-950 dark:text-amber-200 rounded-full whitespace-nowrap">
                     {{ lastWeekHonorBoard.periodStr }}
                   </span>
                 </div>
 
                 <div class="grid grid-cols-1 gap-2 text-xs">
                   <!-- 1. 拉花冠軍 -->
-                  <div class="flex justify-between items-center bg-white/90 dark:bg-slate-800/90 px-3 py-2 rounded-xl border border-amber-200 dark:border-amber-800/60">
-                    <div class="flex items-center gap-2 min-w-0">
-                      <span class="text-base flex-shrink-0">🥇</span>
-                      <div class="min-w-0">
-                        <span class="text-[10px] text-amber-800 dark:text-amber-300 font-bold block">拉花冠軍</span>
-                        <span class="font-black text-slate-900 dark:text-white truncate block">{{ lastWeekHonorBoard.championName }}</span>
-                      </div>
+                  <div class="bg-white/90 dark:bg-slate-800/90 px-3 py-2.5 rounded-xl border border-amber-200 dark:border-amber-800/60 space-y-1">
+                    <div class="flex justify-between items-center flex-wrap gap-1">
+                      <span class="text-[11px] text-amber-800 dark:text-amber-300 font-bold flex items-center gap-1 whitespace-nowrap">
+                        <span>🥇</span> 拉花冠軍
+                      </span>
+                      <span class="font-mono font-black text-amber-700 dark:text-amber-400 text-xs bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-lg border border-amber-200/60 dark:border-amber-800 whitespace-nowrap">
+                        {{ lastWeekHonorBoard.championScore }}
+                      </span>
                     </div>
-                    <span class="font-mono font-black text-amber-700 dark:text-amber-400 text-xs whitespace-nowrap ml-2">
-                      {{ lastWeekHonorBoard.championScore }}
-                    </span>
+                    <div class="font-black text-slate-900 dark:text-white text-sm break-words leading-snug pl-0.5">
+                      {{ lastWeekHonorBoard.championName }}
+                    </div>
                   </div>
 
                   <!-- 2. 最佳進步獎 (自己跟自己比：當週個人最高分 vs 前一週個人最高分) -->
-                  <div class="flex justify-between items-center bg-blue-50/90 dark:bg-blue-950/50 px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-800/60">
-                    <div class="flex items-center gap-2 min-w-0">
-                      <span class="text-base flex-shrink-0">🌟</span>
-                      <div class="min-w-0">
-                        <span class="text-[10px] text-blue-800 dark:text-blue-300 font-bold block">最佳進步獎</span>
-                        <span class="font-black text-slate-900 dark:text-white truncate block">{{ lastWeekHonorBoard.mostImprovedName }}</span>
-                      </div>
+                  <div class="bg-blue-50/90 dark:bg-blue-950/50 px-3 py-2.5 rounded-xl border border-blue-200 dark:border-blue-800/60 space-y-1">
+                    <div class="flex justify-between items-center flex-wrap gap-1">
+                      <span class="text-[11px] text-blue-800 dark:text-blue-300 font-bold flex items-center gap-1 whitespace-nowrap">
+                        <span>🌟</span> 最佳進步獎
+                      </span>
+                      <span class="font-mono font-bold text-blue-700 dark:text-blue-300 text-[11px] bg-white/80 dark:bg-slate-900/60 px-2 py-0.5 rounded-lg border border-blue-200/60 dark:border-blue-800 whitespace-nowrap">
+                        {{ lastWeekHonorBoard.mostImprovedScore }}
+                      </span>
                     </div>
-                    <span class="font-mono font-bold text-blue-700 dark:text-blue-300 text-[11px] whitespace-nowrap ml-2">
-                      {{ lastWeekHonorBoard.mostImprovedScore }}
-                    </span>
+                    <div class="font-black text-slate-900 dark:text-white text-sm break-words leading-snug pl-0.5">
+                      {{ lastWeekHonorBoard.mostImprovedName }}
+                    </div>
                   </div>
 
                   <!-- 3. 品評活躍獎 -->
-                  <div class="flex justify-between items-center bg-emerald-50/90 dark:bg-emerald-950/50 px-3 py-2 rounded-xl border border-emerald-200 dark:border-emerald-800/60">
-                    <div class="flex items-center gap-2 min-w-0">
-                      <span class="text-base flex-shrink-0">☕</span>
-                      <div class="min-w-0">
-                        <span class="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold block">品評活躍獎</span>
-                        <span class="font-black text-slate-900 dark:text-white truncate block">{{ lastWeekHonorBoard.activePartnerName }}</span>
-                      </div>
+                  <div class="bg-emerald-50/90 dark:bg-emerald-950/50 px-3 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60 space-y-1">
+                    <div class="flex justify-between items-center flex-wrap gap-1">
+                      <span class="text-[11px] text-emerald-800 dark:text-emerald-300 font-bold flex items-center gap-1 whitespace-nowrap">
+                        <span>☕</span> 品評活躍獎
+                      </span>
+                      <span class="font-mono font-bold text-emerald-700 dark:text-emerald-400 text-[11px] bg-white/80 dark:bg-slate-900/60 px-2 py-0.5 rounded-lg border border-emerald-200/60 dark:border-emerald-800 whitespace-nowrap">
+                        {{ lastWeekHonorBoard.activePartnerScore }}
+                      </span>
                     </div>
-                    <span class="font-mono font-bold text-emerald-700 dark:text-emerald-400 text-[11px] whitespace-nowrap ml-2">
-                      {{ lastWeekHonorBoard.activePartnerScore }}
-                    </span>
+                    <div class="font-black text-slate-900 dark:text-white text-sm break-words leading-snug pl-0.5">
+                      {{ lastWeekHonorBoard.activePartnerName }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -582,21 +585,21 @@
                 <div class="bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl p-2 space-y-1">
                   <span class="text-xl">🥇</span>
                   <div class="text-[10px] text-amber-800 dark:text-amber-300 font-bold leading-tight">拉花冠軍</div>
-                  <div class="text-xs font-black text-slate-900 dark:text-white truncate">{{ settledHonors.champion }}</div>
+                  <div class="text-xs font-black text-slate-900 dark:text-white break-words leading-tight">{{ settledHonors.champion }}</div>
                   <div class="text-[9px] text-amber-700 dark:text-amber-400 font-bold">{{ settledHonors.champScore }}</div>
                 </div>
 
                 <div class="bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 rounded-xl p-2 space-y-1">
                   <span class="text-xl">🌟</span>
                   <div class="text-[10px] text-blue-800 dark:text-blue-300 font-bold leading-tight">最佳進步獎</div>
-                  <div class="text-xs font-black text-slate-900 dark:text-white truncate">{{ settledHonors.mostImproved }}</div>
+                  <div class="text-xs font-black text-slate-900 dark:text-white break-words leading-tight">{{ settledHonors.mostImproved }}</div>
                   <div class="text-[9px] text-blue-700 dark:text-blue-400 font-bold">{{ settledHonors.improvedDelta || '-' }}</div>
                 </div>
 
                 <div class="bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl p-2 space-y-1">
                   <span class="text-xl">☕</span>
                   <div class="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold leading-tight">品評活躍獎</div>
-                  <div class="text-xs font-black text-slate-900 dark:text-white truncate">{{ settledHonors.activePartner }}</div>
+                  <div class="text-xs font-black text-slate-900 dark:text-white break-words leading-tight">{{ settledHonors.activePartner }}</div>
                   <div class="text-[9px] text-emerald-700 dark:text-emerald-400 font-bold">{{ settledHonors.activeTitle || '-' }}</div>
                 </div>
               </div>
@@ -2467,6 +2470,33 @@
     </div>
   </transition>
 
+  <!-- 🖨️ 排班表列印匯出進度與預計完成時間 Modal -->
+  <transition name="modal">
+    <div v-if="printProgressModal.show" class="no-print fixed inset-0 bg-black/70 z-[100001] flex items-center justify-center p-4 backdrop-blur-sm">
+      <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-xs p-6 shadow-2xl text-center space-y-4 border border-emerald-500/40">
+        <div class="text-4xl animate-bounce">🖨️</div>
+        <div class="space-y-1">
+          <h3 class="text-sm font-black text-slate-900 dark:text-white">
+            正在準備{{ printTargetMode === 'blank' ? '空白排班表' : '預排班表' }}匯出...
+          </h3>
+          <p class="text-xs text-emerald-700 dark:text-emerald-400 font-bold">
+            {{ printProgressModal.stepText }}
+          </p>
+        </div>
+
+        <!-- 進度條 -->
+        <div class="w-full h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+          <div class="h-full bg-gradient-to-r from-emerald-600 to-teal-400 transition-all duration-150"
+               :style="{ width: printProgressModal.percent + '%' }"></div>
+        </div>
+
+        <div class="text-[11px] font-mono font-bold text-slate-500 dark:text-slate-300 bg-slate-100 dark:bg-slate-900/60 py-1.5 px-3 rounded-xl">
+          ⏱️ 預計還需 <span class="text-emerald-700 dark:text-emerald-400 font-black">{{ printProgressModal.remainSec }}</span> 秒完成匯出
+        </div>
+      </div>
+    </div>
+  </transition>
+  
   <!-- 📲 安裝門市專屬 App 引導 Modal -->
   <transition name="modal">
     <div v-if="installAppModal.show" class="fixed inset-0 bg-black/60 z-[99999] flex items-center justify-center p-4">
@@ -4133,6 +4163,25 @@ const app = createApp({
       return '';
     };
 
+    // 自動校正咖啡豆烘焙度：凡名稱含「黃金」或「Blonde」(如耶誕黃金烘焙) 強制鎖定為黃金烘焙
+    const sanitizeBeanRoastData = (bean) => {
+      if (!bean || !bean.name) return bean;
+      const n = String(bean.name);
+      const en = String(bean.enName || '').toLowerCase();
+      if (n.includes('黃金') || en.includes('blonde') || n.includes('輕柳') || n.includes('日安') || n.includes('瑟加堤')) {
+        return {
+          ...bean,
+          roast: '黃金烘焙',
+          acidity: bean.acidity && bean.acidity !== '低' ? bean.acidity : '高 (柔和柑橘酸質)',
+          body: bean.body && !bean.body.includes('厚') ? bean.body : '輕盈柔順'
+        };
+      }
+      if (n.includes('深烘焙') || n.includes('深度烘焙') || n.includes('佛羅娜') || n.includes('濃縮烘焙')) {
+        return { ...bean, roast: '深度烘焙' };
+      }
+      return bean;
+    };
+
     const parseOfficialBeanDetailPage = (html, id, fallbackMeta = {}) => {
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
@@ -4150,9 +4199,16 @@ const app = createApp({
       const enEl = doc.querySelector('.en, .sub-title, h2, .eng');
       let enName = (enEl ? enEl.textContent.trim() : '') || fallbackMeta.enName || 'Starbucks® Whole Bean Coffee';
 
+      // 優先依據豆名與該豆專屬欄位判定烘焙度，絕不誤抓頁面底部其他推薦豆的「深度烘焙」文字
       let roast = fallbackMeta.roast || '中度烘焙';
-      if (fullText.includes('黃金烘焙') && !roast) roast = '黃金烘焙';
-      else if (fullText.includes('深度烘焙') || name.includes('深烘焙')) roast = '深度烘焙';
+      if (name.includes('黃金') || titleText.includes('黃金') || enName.toLowerCase().includes('blonde')) {
+        roast = '黃金烘焙';
+      } else if (name.includes('深烘焙') || name.includes('深度') || titleText.includes('深度烘焙') || enName.toLowerCase().includes('dark')) {
+        roast = '深度烘焙';
+      } else {
+        const roastMatch = fullText.match(/烘焙程度\s*(黃金烘焙|中度烘焙|深度烘焙)/);
+        if (roastMatch && roastMatch[1]) roast = roastMatch[1];
+      }
 
       const extractField = (regex, defaultVal) => {
         const m = fullText.match(regex);
@@ -4171,9 +4227,9 @@ const app = createApp({
       }
 
       let acidity = fallbackMeta.acidity || (roast === '黃金烘焙' ? '高' : (roast === '深度烘焙' ? '低' : '中等'));
-      let body = fallbackMeta.body || (roast === '黃金烘焙' ? '輕盈' : (roast === '深度烘焙' ? '厚實飽滿' : '中等'));
+      let body = fallbackMeta.body || (roast === '黃金烘焙' ? '輕盈柔順' : (roast === '深度烘焙' ? '厚實飽滿' : '中等'));
 
-      return {
+      return sanitizeBeanRoastData({
         id: String(id),
         name: name || `星巴克季節咖啡豆 (#${id})`,
         enName,
@@ -4188,7 +4244,7 @@ const app = createApp({
         foodPairing,
         description: description || '台灣星巴克官方當季嚴選咖啡豆，點擊卡片可查看官網完整介紹。',
         officialUrl: `https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=${id}`
-      };
+      });
     };
 
     const mergeBeansIntoCatalog = (incomingBeans) => {
@@ -4196,16 +4252,21 @@ const app = createApp({
       const list = Array.isArray(incomingBeans) ? incomingBeans : Object.values(incomingBeans);
       const mapById = {};
       starbucksCoreBeans.value.forEach(b => {
-        if (b && b.id) mapById[String(b.id)] = b;
+        if (b && b.id) mapById[String(b.id)] = sanitizeBeanRoastData(b);
       });
       list.forEach(nb => {
         if (nb && nb.id && nb.name) {
           if (nb.name.includes('禮盒') || nb.name.includes('提袋') || nb.name.includes('掛耳')) return;
-          mapById[String(nb.id)] = {
+          const fixedBean = sanitizeBeanRoastData({
             ...(mapById[String(nb.id)] || {}),
             ...nb,
             officialUrl: `https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=${nb.id}`
-          };
+          });
+          mapById[String(nb.id)] = fixedBean;
+          // 若雲端舊資料曾將黃金烘焙誤存為深度烘焙，自動修復寫回雲端
+          if (db && nb.roast !== fixedBean.roast) {
+            db.ref('sbux/officialCoffeeBeans/' + fixedBean.id).set(fixedBean);
+          }
         }
       });
       starbucksCoreBeans.value = Object.values(mapById);
@@ -4858,28 +4919,55 @@ const app = createApp({
         : { name: '虛位以待', scoreText: '尚無品評' };
     };
 
-    // ==================== 🏆 首頁公告欄：上週榮譽得獎夥伴 ====================
+    // ==================== 🏆 首頁公告欄：嚴格鎖定只顯示「上一週」競賽結果 (絕不顯示兩週以前的舊集錦) ====================
     const lastWeekHonorBoard = computed(() => {
-      if (!latteArtArchives.value || latteArtArchives.value.length === 0) return null;
-      const latestArch = latteArtArchives.value[0];
-      const prevArch = latteArtArchives.value.length > 1 ? latteArtArchives.value[1] : null;
-      const works = latestArch.works || [];
+      // 計算「上一週 (週一 ~ 週日)」的精確期號 (例如今日 11/12，上一週必為 11/2 ~ 11/8)
+      const now = new Date();
+      const lastWeekDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+      const lastWeekBucket = getWeekBucketFromDate(lastWeekDate);
+      const targetPeriodStr = lastWeekBucket.periodRange;
+
+      // 在歷史集錦中尋找「正好是上一週」的封存紀錄
+      const matchedLastWeekArch = (latteArtArchives.value || []).find(a =>
+        a && (a.key === lastWeekBucket.key || a.folderName === lastWeekBucket.key || a.periodRange === targetPeriodStr)
+      );
+
+      // 再找「上上週」的封存紀錄，供計算上一週的「最佳進步獎」
+      const twoWeeksAgoDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14);
+      const twoWeeksAgoBucket = getWeekBucketFromDate(twoWeeksAgoDate);
+      const prevArch = (latteArtArchives.value || []).find(a =>
+        a && (a.key === twoWeeksAgoBucket.key || a.folderName === twoWeeksAgoBucket.key || a.periodRange === twoWeeksAgoBucket.periodRange)
+      );
+
+      const works = matchedLastWeekArch ? (matchedLastWeekArch.works || []) : [];
       const prevWorks = prevArch ? (prevArch.works || []) : [];
+      const activeInfo = computeActiveTasterAward(tastingNotesList.value, targetPeriodStr);
 
-      const top1 = works[0] || null;
-      const championName = top1 ? resolveWorkPartnerName(top1) : resolveArchiveWinner(latestArch);
-      const championScore = top1 ? `${calculateCombinedScore(top1)} 分` : '-';
+      if (works.length > 0) {
+        const sortedWorks = [...works].sort((a, b) => calculateCombinedScore(b) - calculateCombinedScore(a));
+        const top1 = sortedWorks[0];
+        const championName = resolveWorkPartnerName(top1);
+        const championScore = `${calculateCombinedScore(top1)} 分`;
+        const improvedInfo = computeSelfImprovedAward(sortedWorks, prevWorks);
 
-      const periodStr = latestArch.periodRange || latestArch.folderName;
-      const improvedInfo = computeSelfImprovedAward(works, prevWorks);
-      const activeInfo = computeActiveTasterAward(tastingNotesList.value, periodStr);
+        return {
+          periodStr: targetPeriodStr,
+          championName,
+          championScore,
+          mostImprovedName: improvedInfo.name,
+          mostImprovedScore: improvedInfo.scoreText,
+          activePartnerName: activeInfo.name,
+          activePartnerScore: activeInfo.scoreText
+        };
+      }
 
+      // 若上一週無人上傳拉花作品，仍固定顯示「上一週」日期區間並標示從缺，不拿兩三週前的舊集錦充數
       return {
-        periodStr,
-        championName,
-        championScore,
-        mostImprovedName: improvedInfo.name,
-        mostImprovedScore: improvedInfo.scoreText,
+        periodStr: targetPeriodStr,
+        championName: '從缺 (上週無作品)',
+        championScore: '0 分',
+        mostImprovedName: '從缺 (上週無作品)',
+        mostImprovedScore: '-',
         activePartnerName: activeInfo.name,
         activePartnerScore: activeInfo.scoreText
       };
@@ -6849,10 +6937,64 @@ const app = createApp({
       return total.toFixed(1);
     };
 
+    const printProgressModal = ref({
+      show: false,
+      percent: 15,
+      remainSec: '0.8',
+      stepText: '正在同步雲端最新畫假與班表...'
+    });
+
     const triggerPrintSchedule = async (mode) => {
       printTargetMode.value = mode;
-      await forceSyncRosterDataNow(false);
-      nextTick(() => { window.print(); });
+      printProgressModal.value = {
+        show: true,
+        percent: 20,
+        remainSec: '0.8',
+        stepText: '正在向雲端確認最後一秒畫假紀錄...'
+      };
+
+      const timer = setInterval(() => {
+        if (printProgressModal.value.percent < 90) {
+          printProgressModal.value.percent += 25;
+          const rem = Math.max(0.1, (100 - printProgressModal.value.percent) * 0.01).toFixed(1);
+          printProgressModal.value.remainSec = rem;
+          if (printProgressModal.value.percent >= 65) {
+            printProgressModal.value.stepText = '正在排版 A4 單頁滿版表格...';
+          }
+        }
+      }, 180);
+
+      try {
+        // 極速只拉取畫假、禁休與班表 3 個輕量節點 (最多等待 900ms 即刻放行)
+        const ts = Date.now();
+        const baseUrl = firebaseConfig.databaseURL;
+        const fastSyncPromise = Promise.all([
+          fetch(`${baseUrl}/sbux/vacations.json?t=${ts}`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null),
+          fetch(`${baseUrl}/sbux/blackout_dates.json?t=${ts}`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null),
+          fetch(`${baseUrl}/sbux/scheduled_roster.json?t=${ts}`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null)
+        ]);
+        const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(null), 900));
+        const resArr = await Promise.race([fastSyncPromise, timeoutPromise]);
+
+        if (Array.isArray(resArr)) {
+          if (resArr[0]) vacationList.value = Object.values(resArr[0]);
+          if (resArr[1]) blackoutDates.value = resArr[1];
+          if (resArr[2]) scheduledRoster.value = resArr[2];
+          updateSyncTimestampDisplay();
+        }
+      } catch (e) {}
+
+      clearInterval(timer);
+      printProgressModal.value.percent = 100;
+      printProgressModal.value.remainSec = '0.0';
+      printProgressModal.value.stepText = '✅ 準備完成！即將彈出系統列印視窗...';
+
+      setTimeout(() => {
+        printProgressModal.value.show = false;
+        nextTick(() => {
+          window.print();
+        });
+      }, 220);
     };
 
     // ==================== 畫假、禁休、行事曆與各模組操作 ====================
@@ -7797,7 +7939,8 @@ const app = createApp({
       passportSelectedStaffId, passportFilter, passportTargetStaffName, partnerCareerStats,
       passportBeansWithStatus, totalPassportBeanCount, tastedBeanCount, filteredPassportBeans,
       toggleManualBeanStamp, jumpToTastingWithBean, expandedBeanHistory, toggleBeanHistory, isBeanHistoryExpanded,
-      partnerBadges, unlockedBadgeCount
+      partnerBadges, unlockedBadgeCount,
+      printProgressModal
     };
   }
 });
