@@ -1271,12 +1271,12 @@
           <!-- ==================== 頁籤 4：【其他】 ==================== -->
           <section v-if="currentTab === 'other'" class="space-y-4">
             
-          <!-- 子頁籤選單：3x2 對稱六宮格，一目了然、不截斷文字 -->
-            <div class="bg-white dark:bg-slate-800 p-2 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 grid grid-cols-3 gap-1.5 text-xs font-bold">
+          <!-- 子頁籤選單：升級為 6 欄雙層宮格 (上 3 下 2)，無須左右滑動、絕不截斷文字 -->
+            <div class="bg-white dark:bg-slate-800 p-2 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 grid grid-cols-6 gap-1.5 text-xs font-bold">
               <button 
                 @click="otherSubTab = 'academy'" 
                 :class="otherSubTab === 'academy' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200/70'" 
-                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                class="col-span-2 py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
                 <span class="text-base leading-none">🎓</span>
                 <span class="text-[11px] tracking-tight whitespace-nowrap">黑圍裙課程</span>
               </button>
@@ -1284,7 +1284,7 @@
               <button 
                 @click="otherSubTab = 'coffee'" 
                 :class="otherSubTab === 'coffee' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200/70'" 
-                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                class="col-span-2 py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
                 <span class="text-base leading-none">☕</span>
                 <span class="text-[11px] tracking-tight whitespace-nowrap">沖煮與豆寶典</span>
               </button>
@@ -1292,7 +1292,7 @@
               <button 
                 @click="otherSubTab = 'tasting'" 
                 :class="otherSubTab === 'tasting' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200/70'" 
-                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                class="col-span-2 py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
                 <span class="text-base leading-none">📝</span>
                 <span class="text-[11px] tracking-tight whitespace-nowrap">品評 Tasting</span>
               </button>
@@ -1300,25 +1300,17 @@
               <button 
                 @click="otherSubTab = 'latteArt'" 
                 :class="otherSubTab === 'latteArt' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200/70'" 
-                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                class="col-span-3 py-2 px-2 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95">
                 <span class="text-base leading-none">🎨</span>
-                <span class="text-[11px] tracking-tight whitespace-nowrap">拉花擂台賽</span>
+                <span class="text-xs tracking-tight whitespace-nowrap">拉花擂台賽</span>
               </button>
 
               <button 
                 @click="otherSubTab = 'quiz'" 
                 :class="otherSubTab === 'quiz' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200/70'" 
-                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                class="col-span-3 py-2 px-2 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95">
                 <span class="text-base leading-none">📖</span>
-                <span class="text-[11px] tracking-tight whitespace-nowrap">永安小學堂</span>
-              </button>
-
-              <button 
-                @click="otherSubTab = 'passport'" 
-                :class="otherSubTab === 'passport' ? 'bg-amber-600 text-white shadow-sm ring-1 ring-amber-500' : 'bg-amber-50/90 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60'" 
-                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
-                <span class="text-base leading-none">🛂</span>
-                <span class="text-[11px] tracking-tight whitespace-nowrap">護照與成就</span>
+                <span class="text-xs tracking-tight whitespace-nowrap">永安小學堂</span>
               </button>
             </div>
 
@@ -2469,161 +2461,6 @@
                   <button v-else @click="showQuizModal = false" class="px-4 py-1.5 bg-slate-200 dark:bg-slate-700 rounded-xl text-xs font-bold">關閉</button>
                 </div>
               </div>
-            </div>
-            <!-- 🛂 新增子頁籤：個人數位咖啡護照 ＆ 成就激勵徽章 -->
-            <div v-if="otherSubTab === 'passport'" class="space-y-4">
-              
-              <!-- 夥伴切換與個人成就黑金總覽卡 -->
-              <div class="black-gold-card rounded-3xl p-5 text-amber-100 space-y-3.5 relative overflow-hidden">
-                <div class="flex justify-between items-center gap-2">
-                  <div>
-                    <span class="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-bold border border-amber-400/30">
-                      COFFEE PASSPORT & BADGES
-                    </span>
-                    <h3 class="text-base font-black text-white mt-1.5 flex items-center gap-1.5">
-                      <span>🛂</span> {{ passportTargetStaffName }} 的咖啡護照
-                    </h3>
-                  </div>
-                  <select 
-                    v-model="passportSelectedStaffId" 
-                    class="px-2.5 py-1.5 rounded-xl bg-zinc-900/90 border border-amber-500/50 text-amber-200 text-xs font-bold">
-                    <option value="">查看自己 ({{ currentPartner?.name }})</option>
-                    <option v-for="s in sortedValidStaffList" :key="s._key || s.id" :value="s.id || s._key">
-                      {{ s.name }} ({{ s.nickname }})
-                    </option>
-                  </select>
-                </div>
-
-                <!-- 四大生涯數據指標 -->
-                <div class="grid grid-cols-4 gap-2 pt-1 text-center">
-                  <div class="bg-white/5 border border-amber-500/20 rounded-2xl p-2">
-                    <div class="text-lg font-black text-amber-300">{{ unlockedBadgeCount }}<span class="text-[10px] text-amber-200/60">/{{ partnerBadges.length }}</span></div>
-                    <div class="text-[10px] text-amber-100/70">成就徽章</div>
-                  </div>
-                  <div class="bg-white/5 border border-amber-500/20 rounded-2xl p-2">
-                    <div class="text-lg font-black text-emerald-400">{{ tastedBeanCount }}<span class="text-[10px] text-amber-200/60">/{{ starbucksCoreBeans.length }}</span></div>
-                    <div class="text-[10px] text-amber-100/70">點亮豆款</div>
-                  </div>
-                  <div class="bg-white/5 border border-amber-500/20 rounded-2xl p-2">
-                    <div class="text-lg font-black text-sky-300">{{ partnerCareerStats.totalLatteCount }}</div>
-                    <div class="text-[10px] text-amber-100/70">拉花作品</div>
-                  </div>
-                  <div class="bg-white/5 border border-amber-500/20 rounded-2xl p-2">
-                    <div class="text-lg font-black text-pink-300">{{ partnerCareerStats.bravoReceived }}</div>
-                    <div class="text-[10px] text-amber-100/70">獲讚小卡</div>
-                  </div>
-                </div>
-
-                <!-- 護照收集進度條 -->
-                <div class="space-y-1 pt-1">
-                  <div class="flex justify-between text-[11px] font-bold">
-                    <span class="text-amber-200">☕ 咖啡豆探索進度</span>
-                    <span class="text-amber-300 font-mono">{{ Math.round((tastedBeanCount / (starbucksCoreBeans.length || 1)) * 100) }}%</span>
-                  </div>
-                  <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden border border-amber-500/30">
-                    <div class="h-full bg-gradient-to-r from-emerald-500 via-amber-400 to-yellow-300 transition-all duration-500"
-                         :style="{ width: Math.min(100, Math.round((tastedBeanCount / (starbucksCoreBeans.length || 1)) * 100)) + '%' }"></div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 🏅 8 大門市實戰成就激勵徽章牆 -->
-              <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
-                <div class="flex justify-between items-center">
-                  <h4 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <span>🏅</span> 夥伴生涯成就徽章 ({{ unlockedBadgeCount }} / {{ partnerBadges.length }} 已點亮)
-                  </h4>
-                  <span class="text-[10px] text-slate-400">依門市紀錄自動解鎖</span>
-                </div>
-
-                <div class="grid grid-cols-2 gap-2.5">
-                  <div 
-                    v-for="badge in partnerBadges" :key="badge.id"
-                    class="p-3 rounded-2xl border transition flex items-start gap-2.5 relative overflow-hidden"
-                    :class="badge.unlocked ? 'bg-gradient-to-br from-amber-50/90 to-orange-50/60 dark:from-amber-950/40 dark:to-orange-950/20 border-amber-300 dark:border-amber-700 shadow-sm' : 'bg-slate-50/60 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 opacity-50 grayscale'">
-                    <span class="text-2xl flex-shrink-0">{{ badge.icon }}</span>
-                    <div class="min-w-0 flex-1">
-                      <div class="flex items-center justify-between gap-1">
-                        <span class="text-xs font-black text-slate-900 dark:text-white truncate">{{ badge.title }}</span>
-                        <span v-if="badge.unlocked" class="text-[9px] px-1.5 py-0.2 bg-amber-500 text-black font-black rounded-full flex-shrink-0">已達成</span>
-                      </div>
-                      <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">{{ badge.desc }}</p>
-                      <div class="text-[9px] font-bold mt-1" :class="badge.unlocked ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400'">
-                        進度：{{ badge.progressText }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 🛂 數位咖啡護照：19 款星巴克咖啡豆收集冊 -->
-              <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
-                <div class="flex justify-between items-center flex-wrap gap-1">
-                  <div>
-                    <h4 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <span>📖</span> 星巴克咖啡豆品鑑印章冊
-                    </h4>
-                    <p class="text-[10px] text-slate-400 mt-0.5">發布 Tasting 品評或點擊印章即可點亮該豆款</p>
-                  </div>
-                  <div class="flex gap-1 text-[10px] font-bold">
-                    <button @click="passportFilter = 'all'" :class="passportFilter === 'all' ? 'bg-emerald-800 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="px-2.5 py-1 rounded-lg">全部</button>
-                    <button @click="passportFilter = 'unlocked'" :class="passportFilter === 'unlocked' ? 'bg-amber-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="px-2.5 py-1 rounded-lg">已點亮 ({{ tastedBeanCount }})</button>
-                    <button @click="passportFilter = 'locked'" :class="passportFilter === 'locked' ? 'bg-slate-800 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'" class="px-2.5 py-1 rounded-lg">待探索</button>
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  <div 
-                    v-for="bean in filteredPassportBeans" :key="bean.name"
-                    class="p-3 rounded-2xl border transition flex flex-col justify-between gap-2 relative"
-                    :class="bean.isTasted ? 'bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800 shadow-sm' : 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800'">
-                    
-                    <div class="flex justify-between items-start gap-2">
-                      <div class="min-w-0">
-                        <div class="flex items-center gap-1.5">
-                          <span class="text-sm">{{ bean.isTasted ? '✅' : '🔒' }}</span>
-                          <span class="text-xs font-black text-slate-900 dark:text-white truncate">{{ bean.name }}</span>
-                        </div>
-                        <span class="text-[10px] text-slate-400 block mt-0.5">{{ bean.roast }} · {{ bean.region }}</span>
-                      </div>
-
-                      <span v-if="bean.isTasted" class="px-2 py-0.5 bg-amber-400 text-black text-[9px] font-black rounded-full whitespace-nowrap shadow-sm">
-                        ★ 已品鑑 ({{ bean.tastedCount }}次)
-                      </span>
-                      <span v-else class="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-500 text-[9px] font-bold rounded-full whitespace-nowrap">
-                        尚未品鑑
-                      </span>
-                    </div>
-
-                    <div v-if="bean.latestNote" class="p-2 bg-white/90 dark:bg-slate-800/90 rounded-xl border border-emerald-200/70 dark:border-emerald-900/50 text-[10px] text-slate-600 dark:text-slate-300">
-                      <div class="font-bold text-emerald-800 dark:text-emerald-400 mb-0.5">
-                        📅 {{ bean.latestNote.dateStr }} 品鑑紀錄 (酸度{{ bean.latestNote.acidity }} / 醇度{{ bean.latestNote.body }})：
-                      </div>
-                      <div class="line-clamp-2">{{ bean.latestNote.notes || bean.latestNote.aroma }}</div>
-                    </div>
-                    <div v-else class="text-[10px] text-slate-400">
-                      ✨ 風味特色：{{ bean.flavorNotes }}
-                    </div>
-
-                    <div class="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700/60 gap-2">
-                      <button 
-                        @click="jumpToTastingWithBean(bean.name)"
-                        class="flex-1 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-bold transition active:scale-95">
-                        ✍️ 撰寫品評點亮
-                      </button>
-                      <button 
-                        v-if="!passportSelectedStaffId || passportSelectedStaffId === (currentPartner?.id || currentPartner?._key)"
-                        @click="toggleManualBeanStamp(bean.name)"
-                        class="px-2.5 py-1.5 rounded-xl border text-[10px] font-bold transition active:scale-95"
-                        :class="bean.isManualStamped ? 'bg-amber-100 border-amber-300 text-amber-900' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300'">
-                        {{ bean.isManualStamped ? '取消印章' : '💮 蓋章記錄' }}
-                      </button>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-
             </div>
 
           </section>
@@ -4205,99 +4042,27 @@ const app = createApp({
     const readNotifIds = ref(new Set(JSON.parse(localStorage.getItem('sbux_read_notifs_v1') || '[]')));
     const pushedNotifIds = new Set(JSON.parse(localStorage.getItem('sbux_pushed_notifs_v1') || '[]'));
 
-        const requestSystemNotificationPermission = async () => {
+    const saveNotifPrefs = () => {
+      localStorage.setItem('sbux_notif_prefs_v1', JSON.stringify(notifPrefs.value));
+    };
+
+    const requestSystemNotificationPermission = async () => {
       if (!('Notification' in window)) {
-        alert('您的裝置目前支援 App 內建頂部動態島橫幅通知（若使用 iPhone，請先點選分享 ➔ 加入主畫面，從桌面打開即可開啟系統推播）！');
+        alert('您的瀏覽器目前僅支援 App 內建頂部動態島橫幅通知！');
         return;
       }
       try {
         const perm = await Notification.requestPermission();
         systemNotifPermission.value = perm;
         if (perm === 'granted') {
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.ready.then(reg => {
-              reg.showNotification('☕ 永和永安門市 (011218)', {
-                body: '桌面推播通知已成功開啟！有換班需求、得獎或收到 Bravo 小卡時將即時通知您。'
-              });
-            }).catch(() => {
-              new Notification('☕ 永和永安門市 (011218)', { body: '系統通知已開啟！' });
-            });
-          } else {
-            new Notification('☕ 永和永安門市 (011218)', { body: '系統通知已開啟！' });
-          }
+          new Notification('☕ 永和永安門市 (011218)', {
+            body: '系統通知已開啟！當有換班媒合、得獎或收到 Bravo 小卡時將即時通知您。'
+          });
         } else {
-          alert('請於手機「設定 ➔ 通知」或瀏覽器網址列旁允許「通知」權限。');
+          alert('請於手機或瀏覽器設定中允許「通知」權限。');
         }
       } catch (e) {}
     };
-
-    const saveNotifPrefs = () => {
-      localStorage.setItem('sbux_notif_prefs_v1', JSON.stringify(notifPrefs.value));
-      // 貼心連動：當夥伴勾選任一通知開關時，若手機尚未授權系統推播，自動彈出系統授權詢問！
-      if ('Notification' in window && Notification.permission === 'default') {
-        requestSystemNotificationPermission();
-      }
-    };
-
-    // 🚀 IndexedDB 500MB 超大容量本機圖片快取引擎 (讓拉花照、歷屆集錦、門市相簿在 0.02 秒內瞬間載入！)
-    const IDB_NAME = 'sbux_011218_photo_cache_db';
-    const IDB_STORE = 'photo_collections';
-
-    const openPhotoIdb = () => {
-      return new Promise((resolve, reject) => {
-        if (!('indexedDB' in window)) return reject('No IDB');
-        const req = indexedDB.open(IDB_NAME, 1);
-        req.onupgradeneeded = (e) => {
-          const idb = e.target.result;
-          if (!idb.objectStoreNames.contains(IDB_STORE)) {
-            idb.createObjectStore(IDB_STORE);
-          }
-        };
-        req.onsuccess = (e) => resolve(e.target.result);
-        req.onerror = (e) => reject(e);
-      });
-    };
-
-    const savePhotosToIdb = async (key, dataVal) => {
-      try {
-        const idb = await openPhotoIdb();
-        const tx = idb.transaction(IDB_STORE, 'readwrite');
-        tx.objectStore(IDB_STORE).put(JSON.parse(JSON.stringify(dataVal)), key);
-      } catch (e) {}
-    };
-
-    const loadPhotosFromIdb = async (key) => {
-      try {
-        const idb = await openPhotoIdb();
-        return await new Promise((resolve) => {
-          const tx = idb.transaction(IDB_STORE, 'readonly');
-          const req = tx.objectStore(IDB_STORE).get(key);
-          req.onsuccess = () => resolve(req.result || null);
-          req.onerror = () => resolve(null);
-        });
-      } catch (e) {
-        return null;
-      }
-    };
-
-    // 啟動瞬間 (0.02秒) 直接從手機 IndexedDB 載入完整拉花照片、歷屆集錦與門市相簿！
-    const hydratePhotosFromIdbInstantly = async () => {
-      const [cachedLatte, cachedArchives, cachedStorePhotos] = await Promise.all([
-        loadPhotosFromIdb('lattePosts'),
-        loadPhotosFromIdb('latteArtArchives'),
-        loadPhotosFromIdb('storePhotos')
-      ]);
-      if (Array.isArray(cachedLatte) && cachedLatte.length > 0) {
-        lattePosts.value = cachedLatte;
-      }
-      if (Array.isArray(cachedArchives) && cachedArchives.length > 0) {
-        latteArtArchives.value = cachedArchives;
-      }
-      if (Array.isArray(cachedStorePhotos) && cachedStorePhotos.length > 0) {
-        storePhotos.value = cachedStorePhotos;
-      }
-    };
-    hydratePhotosFromIdbInstantly();
 
     let toastTimer = null;
     const triggerNotificationAlert = (notifItem) => {
@@ -4316,24 +4081,13 @@ const app = createApp({
         }
       }, 6000);
 
-    // 2. 若已授權系統推播，優先由 Service Worker (sw.js) 發出手機原生級通知 (支援點擊喚醒 App)
+      // 2. 若已授權系統推播，同步發送手機/電腦原生通知
       if ('Notification' in window && Notification.permission === 'granted') {
         try {
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.ready.then((reg) => {
-              reg.showNotification(notifItem.title, {
-                body: notifItem.body,
-                tag: notifItem.id,
-                renotify: true
-              });
-            }).catch(() => {
-              new Notification(notifItem.title, { body: notifItem.body });
-            });
-          } else {
-            new Notification(notifItem.title, { body: notifItem.body });
-          }
+          new Notification(notifItem.title, { body: notifItem.body });
         } catch (e) {}
       }
+    };
 
     // 智慧彙整與目前登入夥伴相關的四大類通知
     const partnerNotifications = computed(() => {
@@ -5471,132 +5225,52 @@ const app = createApp({
       });
     });
 
-        // ==================== 🌟 全時段智慧分週歸檔引擎 (自動將非本週舊照片依實際日期移入對應週期歷史集錦) ====================
-    // 解析任一作品的真實上傳日期 (優先比對 dateStr 如 "10/28"，徹底解決舊照片卡在本週的問題)
-    const parseWorkActualDate = (work) => {
-      const now = new Date();
-      let baseDate = null;
-      if (work && work.timestamp && !isNaN(Number(work.timestamp))) {
-        baseDate = new Date(Number(work.timestamp));
-      } else if (work && work.id && /^\d{12,14}/.test(String(work.id))) {
-        baseDate = new Date(Number(String(work.id).slice(0, 13)));
-      }
-      if (work && work.dateStr && typeof work.dateStr === 'string') {
-        const m = work.dateStr.trim().match(/^(\d{1,2})\/(\d{1,2})$/);
-        if (m) {
-          const month = parseInt(m[1], 10);
-          const day = parseInt(m[2], 10);
-          let year = baseDate ? baseDate.getFullYear() : now.getFullYear();
-          // 若現在是 1~2 月但照片是 11~12 月，代表是去年底上傳
-          if (!baseDate && month > now.getMonth() + 2) year -= 1;
-          return new Date(year, month - 1, day, 12, 0, 0);
-        }
-      }
-      return baseDate || now;
-    };
-
-    // 根據日期計算該作品所屬的「週一 ~ 週日」期號資訊
-    const getWeekBucketFromDate = (dateObj) => {
-      const d = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
-      const day = d.getDay();
-      const diffToMonday = (day === 0 ? -6 : 1) - day;
-      const monday = new Date(d.getFullYear(), d.getMonth(), d.getDate() + diffToMonday, 0, 0, 0, 0);
-      const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6, 23, 59, 59, 999);
-      const key = `${monday.getFullYear()}${String(monday.getMonth() + 1).padStart(2, '0')}${String(monday.getDate()).padStart(2, '0')}_期`;
-      const periodRange = `${monday.getMonth() + 1}/${monday.getDate()} ~ ${sunday.getMonth() + 1}/${sunday.getDate()}`;
-      return { key, periodRange, mondayTime: monday.getTime(), sundayTime: sunday.getTime() };
-    };
-
-    // 取得「本週一 00:00:00」的時間起點
-    const getCurrentWeekBucket = () => {
-      const now = new Date();
-      const isSundayAfterCutoff = (now.getDay() === 0 && (now.getHours() > 23 || (now.getHours() === 23 && now.getMinutes() >= 30)));
-      const refDate = isSundayAfterCutoff ? new Date(now.getTime() + 3600000) : now;
-      return getWeekBucketFromDate(refDate);
-    };
-
+    // ==================== 🌟 自動結算與封存引擎 + 舊封存「門市夥伴」自動修復 ====================
     let isAutoArchivingInProgress = false;
     const checkAndAutoArchiveLatteArt = async () => {
+      // 必須確保 staffList 已經載入完成，才允許執行自動結算，徹底杜絕寫入「門市夥伴」！
       if (!db || isAutoArchivingInProgress || staffList.value.length === 0) return;
+      const now = new Date();
+      const isSundayNight = (now.getDay() === 0 && (now.getHours() > 23 || (now.getHours() === 23 && now.getMinutes() >= 30)));
+      const isMondayMorning = (now.getDay() === 1 && now.getHours() < 12);
 
-      const currentBucket = getCurrentWeekBucket();
-      // 找出目前留在 sbux/latte_posts 中，但實際上傳日期早於「本週一 00:00」的所有跨週舊照片 (例如 10/28 等)
-      const pastPostsInLiveWall = (lattePosts.value || []).filter(p => {
-        if (!p || p.photoUrl === '__LAZY_IMG__') return false;
-        const pBucket = getWeekBucketFromDate(parseWorkActualDate(p));
-        return pBucket.mondayTime < currentBucket.mondayTime;
-      });
+      if ((isSundayNight || isMondayMorning) && lattePosts.value && lattePosts.value.length > 0) {
+        const day = now.getDay();
+        const diffToMonday = (day === 0 ? -6 : 1) - day;
+        const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday - (isMondayMorning ? 7 : 0), 0, 0, 0);
+        const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6, 23, 59, 59);
 
-      // 同時檢查現有歷史集錦中，是否有「把 10/28 舊照片誤塞進 11/2 ~ 11/8 期號」的錯位情況
-      let hasMisplacedInArchives = false;
-      (latteArtArchives.value || []).forEach(arch => {
-        if (!arch || !Array.isArray(arch.works)) return;
-        arch.works.forEach(w => {
-          if (w && w.photoUrl === '') return;
-          const wBucket = getWeekBucketFromDate(parseWorkActualDate(w));
-          if (wBucket.key !== arch.key && wBucket.key !== arch.folderName) {
-            hasMisplacedInArchives = true;
-          }
-        });
-      });
+        const periodRange = `${monday.getMonth() + 1}/${monday.getDate()} ~ ${sunday.getMonth() + 1}/${sunday.getDate()}`;
+        const autoKey = `${monday.getFullYear()}${String(monday.getMonth() + 1).padStart(2, '0')}${String(monday.getDate()).padStart(2, '0')}_期`;
 
-      if (pastPostsInLiveWall.length === 0 && !hasMisplacedInArchives) return;
+        // 🛡️ 防護 1：若上週期號 (autoKey) 已經封存過了，絕對不再重複結算，避免覆蓋歷史紀錄！
+        const alreadyArchived = latteArtArchives.value.some(a => a.key === autoKey || a.folderName === autoKey);
+        if (alreadyArchived) return;
 
-      isAutoArchivingInProgress = true;
-      try {
-        // 1. 將現有歷史集錦與剛抓出的舊照片全部按「真實上傳週期 (bucket.key)」重新精準分桶
-        const bucketsMap = {};
+        // 🛡️ 防護 2：只篩選出屬於該結算週期 (週日 23:59:59 以前上傳) 的作品，不誤刪週一早上新上傳的作品！
+        const postsToArchive = lattePosts.value.filter(p => !p.timestamp || p.timestamp <= sunday.getTime());
+        if (postsToArchive.length === 0) return;
 
-        // 先載入現有集錦中的所有作品，歸入各自真正的上傳週期桶子
-        (latteArtArchives.value || []).forEach(arch => {
-          (arch.works || []).forEach(w => {
-            if (!w) return;
-            const b = getWeekBucketFromDate(parseWorkActualDate(w));
-            if (b.mondayTime >= currentBucket.mondayTime) return;
-            if (!bucketsMap[b.key]) {
-              bucketsMap[b.key] = { ...b, worksMap: {} };
-            }
-            const wid = w.id || w._key || `${w.authorStaffId}_${w.dateStr}_${w.aiScore}`;
-            bucketsMap[b.key].worksMap[wid] = w;
-          });
-        });
-
-        // 再把卡在「本週展示牆」裡的過去週期照片，歸入它們真正上傳的那一週桶子
-        pastPostsInLiveWall.forEach(p => {
-          const b = getWeekBucketFromDate(parseWorkActualDate(p));
-          if (!bucketsMap[b.key]) {
-            bucketsMap[b.key] = { ...b, worksMap: {} };
-          }
-          const pid = p.id || p._key || `${p.authorStaffId}_${p.dateStr}_${p.aiScore}`;
-          bucketsMap[b.key].worksMap[pid] = p;
-        });
-
-        // 2. 依時間由舊到新排序所有歷史週期桶，逐週結算真實排名與「自己跟自己比」最佳進步獎
-        const sortedBucketKeys = Object.keys(bucketsMap).sort((a, b) => bucketsMap[a].mondayTime - bucketsMap[b].mondayTime);
-        let previousWeekWorks = [];
-
-        for (const bKey of sortedBucketKeys) {
-          const bucket = bucketsMap[bKey];
-          const rawWorks = Object.values(bucket.worksMap);
-          if (rawWorks.length === 0) continue;
-
-          const sortedWorks = [...rawWorks].sort((a, b) => calculateCombinedScore(b) - calculateCombinedScore(a));
-          const finalRanked = sortedWorks.map((item, idx) => ({
+        isAutoArchivingInProgress = true;
+        try {
+          const sorted = [...postsToArchive].sort((a, b) => calculateCombinedScore(b) - calculateCombinedScore(a));
+          const finalRanked = sorted.map((item, idx) => ({
             ...item,
             rank: idx + 1,
             finalScore: calculateCombinedScore(item),
             partnerName: resolveWorkPartnerName(item)
           }));
 
+          const prevWorks = latteArtArchives.value.length > 0 ? (latteArtArchives.value[0].works || []) : [];
+          const improvedInfo = computeSelfImprovedAward(finalRanked, prevWorks);
           const top1 = finalRanked[0];
-          const improvedInfo = computeSelfImprovedAward(finalRanked, previousWeekWorks);
-          const activeInfo = computeActiveTasterAward(tastingNotesList.value, bucket.periodRange);
+          const activeInfo = computeActiveTasterAward(tastingNotesList.value, periodRange);
 
-          await db.ref('sbux/latteArtArchives/' + bKey).set({
-            folderName: bKey,
-            periodRange: bucket.periodRange,
-            archivedAt: new Date(bucket.sundayTime).toISOString(),
-            archivedBy: '系統依實際上傳週期歸檔',
+          await db.ref('sbux/latteArtArchives/' + autoKey).set({
+            folderName: autoKey,
+            periodRange,
+            archivedAt: new Date().toISOString(),
+            archivedBy: '系統自動結算',
             totalWorks: finalRanked.length,
             winner: top1 ? top1.partnerName : '無',
             mostImproved: `${improvedInfo.name} (${improvedInfo.scoreText})`,
@@ -5604,242 +5278,18 @@ const app = createApp({
             works: finalRanked
           });
 
-          previousWeekWorks = finalRanked;
-        }
-
-        // 3. 若原本有某個空殼期號（因為裡面的 10/28 照片全部被移回 10/26~11/1 了）變成 0 幅作品，將空資料夾移除
-        for (const arch of (latteArtArchives.value || [])) {
-          const aKey = arch.key || arch.folderName;
-          if (aKey && !bucketsMap[aKey]) {
-            await db.ref('sbux/latteArtArchives/' + aKey).remove();
+          // 僅移除已封存之舊週期作品，保留週一新上傳的作品
+          for (const oldPost of postsToArchive) {
+            const pid = oldPost.id || oldPost._key;
+            if (pid) await db.ref('sbux/latte_posts/' + pid).remove();
           }
+        } catch (e) {
+          console.error('自動結算錯誤：', e);
+        } finally {
+          isAutoArchivingInProgress = false;
         }
-
-        // 4. 從「本週參賽作品 (sbux/latte_posts)」中移除所有已經搬進歷史集錦的舊照片
-        for (const oldPost of pastPostsInLiveWall) {
-          const pid = oldPost.id || oldPost._key;
-          if (pid) await db.ref('sbux/latte_posts/' + pid).remove();
-        }
-      } catch (e) {
-        console.error('智慧分週歸檔錯誤：', e);
-      } finally {
-        isAutoArchivingInProgress = false;
       }
     };
-
-    // ==================== 🛂 個人數位咖啡護照 ＆ 🏅 8 大實戰成就激勵徽章引擎 ====================
-    const passportSelectedStaffId = ref('');
-    const passportFilter = ref('all');
-    const manualBeanStamps = ref(JSON.parse(localStorage.getItem('sbux_manual_bean_stamps_v1') || '{}'));
-
-    const targetPassportPartner = computed(() => {
-      if (passportSelectedStaffId.value) {
-        const found = findStaffByAnyId(passportSelectedStaffId.value);
-        if (found) return found;
-      }
-      return currentPartner.value;
-    });
-
-    const passportTargetStaffName = computed(() => {
-      const p = targetPassportPartner.value;
-      return p ? `${p.name} (${p.nickname || ''})` : '夥伴';
-    });
-
-    // 統計目標夥伴在全系統的生涯累積表現（包含本週與所有歷史封存）
-    const partnerCareerStats = computed(() => {
-      const p = targetPassportPartner.value;
-      if (!p) return { totalLatteCount: 0, maxLatteScore: 0, championCount: 0, hasSelfImproved: false, tastingCount: 0, bravoReceived: 0, bravoSent: 0, quizPerfectCount: 0 };
-
-      const pKey = String(p.empId || p.id || p._key);
-      const pName = p.name;
-
-      // 1. 收集該夥伴在「本週」與「歷屆集錦」的所有拉花作品
-      const allMyLatteWorks = [];
-      let championCount = 0;
-
-      (lattePosts.value || []).forEach(w => {
-        if (resolveWorkPartnerKey(w) === pKey || resolveWorkPartnerName(w).includes(pName)) {
-          allMyLatteWorks.push(w);
-        }
-      });
-
-      (latteArtArchives.value || []).forEach(arch => {
-        const archWinner = resolveArchiveWinner(arch);
-        if (archWinner && archWinner.includes(pName)) championCount += 1;
-        (arch.works || []).forEach(w => {
-          if (resolveWorkPartnerKey(w) === pKey || resolveWorkPartnerName(w).includes(pName)) {
-            allMyLatteWorks.push(w);
-          }
-        });
-      });
-
-      let maxLatteScore = 0;
-      let minLatteScore = 999;
-      allMyLatteWorks.forEach(w => {
-        const sc = calculateCombinedScore(w);
-        if (sc > maxLatteScore) maxLatteScore = sc;
-        if (sc > 0 && sc < minLatteScore) minLatteScore = sc;
-      });
-      const hasSelfImproved = (allMyLatteWorks.length >= 2 && maxLatteScore > minLatteScore);
-
-      // 2. 統計品評篇數
-      const myTastings = (tastingNotesList.value || []).filter(n =>
-        resolveWorkPartnerKey(n) === pKey || resolveWorkPartnerName(n).includes(pName)
-      );
-
-      // 3. 統計 Bravo 小卡獲讚數與發送數
-      const bravoReceived = (bravoCardsList.value || []).filter(b =>
-        b.targetStaffId === p.id || b.targetStaffId === p._key || getStaffName(b.targetStaffId).includes(pName)
-      ).length;
-      const bravoSent = (bravoCardsList.value || []).filter(b =>
-        b.senderStaffId === p.id || b.senderStaffId === p._key || getStaffName(b.senderStaffId).includes(pName)
-      ).length;
-
-      // 4. 統計小學堂滿分紀錄
-      const qRec = weeklyQuizRecords.value ? weeklyQuizRecords.value[pName] : null;
-      const quizPerfectCount = (qRec && qRec.score === 5) ? 1 : 0;
-
-      return {
-        totalLatteCount: allMyLatteWorks.length,
-        maxLatteScore,
-        championCount,
-        hasSelfImproved,
-        tastingCount: myTastings.length,
-        myTastings,
-        bravoReceived,
-        bravoSent,
-        quizPerfectCount
-      };
-    });
-
-    // 計算 19 款咖啡豆護照的點亮狀態
-    const passportBeansWithStatus = computed(() => {
-      const p = targetPassportPartner.value;
-      const pEmp = p ? String(p.empId || p.id) : 'me';
-      const myStamps = manualBeanStamps.value[pEmp] || {};
-      const myTastings = partnerCareerStats.value.myTastings || [];
-
-      return starbucksCoreBeans.value.map(bean => {
-        const matchedNotes = myTastings.filter(n =>
-          n.coffeeName && (
-            n.coffeeName.includes(bean.name) ||
-            bean.name.includes(n.coffeeName) ||
-            (bean.matchKey && n.coffeeName.includes(bean.matchKey))
-          )
-        );
-        const isManualStamped = !!myStamps[bean.name];
-        const isTasted = matchedNotes.length > 0 || isManualStamped;
-        return {
-          ...bean,
-          isTasted,
-          isManualStamped,
-          tastedCount: matchedNotes.length + (isManualStamped && matchedNotes.length === 0 ? 1 : 0),
-          latestNote: matchedNotes[0] || null
-        };
-      });
-    });
-
-    const tastedBeanCount = computed(() => {
-      return passportBeansWithStatus.value.filter(b => b.isTasted).length;
-    });
-
-    const filteredPassportBeans = computed(() => {
-      if (passportFilter.value === 'unlocked') return passportBeansWithStatus.value.filter(b => b.isTasted);
-      if (passportFilter.value === 'locked') return passportBeansWithStatus.value.filter(b => !b.isTasted);
-      return passportBeansWithStatus.value;
-    });
-
-    const toggleManualBeanStamp = (beanName) => {
-      const p = targetPassportPartner.value;
-      const pEmp = p ? String(p.empId || p.id) : 'me';
-      if (!manualBeanStamps.value[pEmp]) manualBeanStamps.value[pEmp] = {};
-      manualBeanStamps.value[pEmp][beanName] = !manualBeanStamps.value[pEmp][beanName];
-      localStorage.setItem('sbux_manual_bean_stamps_v1', JSON.stringify(manualBeanStamps.value));
-      if (db && p) {
-        db.ref(`sbux/passportStamps/${pEmp}`).set(manualBeanStamps.value[pEmp]);
-      }
-    };
-
-    const jumpToTastingWithBean = (beanName) => {
-      tastingForm.value.coffeeName = beanName;
-      otherSubTab.value = 'tasting';
-    };
-
-    // 8 大實戰成就徽章自動計算
-    const partnerBadges = computed(() => {
-      const st = partnerCareerStats.value;
-      const beansCnt = tastedBeanCount.value;
-      return [
-        {
-          id: 'first_step',
-          icon: '🌱',
-          title: '初試啼聲',
-          desc: '完成首次拉花作品上傳或發布第 1 篇咖啡品評',
-          unlocked: (st.totalLatteCount + st.tastingCount) >= 1,
-          progressText: `${Math.min(1, st.totalLatteCount + st.tastingCount)} / 1 次參與`
-        },
-        {
-          id: 'latte_craftsman',
-          icon: '🎨',
-          title: '永安拉花匠人',
-          desc: '累計上傳滿 3 幅拉花作品，持續精進奶泡工藝',
-          unlocked: st.totalLatteCount >= 3,
-          progressText: `累計 ${st.totalLatteCount} / 3 幅 (最高 ${st.maxLatteScore}分)`
-        },
-        {
-          id: 'latte_champion',
-          icon: '👑',
-          title: '擂台霸主',
-          desc: '曾於週度拉花擂台賽奪得第 1 名冠軍殊榮',
-          unlocked: st.championCount >= 1,
-          progressText: st.championCount >= 1 ? `已奪冠 ${st.championCount} 次` : '0 / 1 次奪冠'
-        },
-        {
-          id: 'self_improver',
-          icon: '🚀',
-          title: '自我超越者',
-          desc: '拉花個人最高分較過去自己作品成長突破',
-          unlocked: st.hasSelfImproved,
-          progressText: st.hasSelfImproved ? `個人最高達 ${st.maxLatteScore} 分` : '上傳 2 幅以上比對成長'
-        },
-        {
-          id: 'sensory_master',
-          icon: '☕',
-          title: '感官品鑑師',
-          desc: '累計於 Tasting 動態牆發布滿 3 篇咖啡品評',
-          unlocked: st.tastingCount >= 3,
-          progressText: `${st.tastingCount} / 3 篇品評`
-        },
-        {
-          id: 'bean_explorer',
-          icon: '🌍',
-          title: '產區探索家',
-          desc: '於個人咖啡護照點亮滿 8 款星巴克咖啡豆',
-          unlocked: beansCnt >= 8,
-          progressText: `${beansCnt} / 8 款咖啡豆`
-        },
-        {
-          id: 'quiz_ace',
-          icon: '🎓',
-          title: '永安學霸',
-          desc: '於永安咖啡小學堂週測驗獲得 5 / 5 滿分',
-          unlocked: st.quizPerfectCount >= 1,
-          progressText: st.quizPerfectCount >= 1 ? '已獲 5/5 滿分' : '挑戰本週 5 題滿分'
-        },
-        {
-          id: 'bravo_star',
-          icon: '💖',
-          title: '最佳神隊友',
-          desc: '累計收到或送出滿 3 張 Bravo 感謝小卡',
-          unlocked: (st.bravoReceived + st.bravoSent) >= 3,
-          progressText: `收到 ${st.bravoReceived} 張 · 送出 ${st.bravoSent} 張`
-        }
-      ];
-    });
-
-    const unlockedBadgeCount = computed(() => {
-      return partnerBadges.value.filter(b => b.unlocked).length;
-    });
 
     // 當夥伴名冊與歷屆集錦都載入後，自動檢查並修復雲端曾被寫成「門市夥伴」的歷史紀錄
     const repairArchivedPartnerNamesIfNeeded = () => {
@@ -5868,51 +5318,13 @@ const app = createApp({
       });
     };
 
-  // ==================== Firebase 即時同步監聽 + 雲端肥大圖片自動瘦身與 IndexedDB 快取 ====================
-    // 將任何過大的 Base64 照片自動壓縮至高畫質 960px (約 80KB~110KB)，速度提升 30 倍且視覺完全清晰
-    const slimBase64Image = (dataUrl, maxDim = 960, quality = 0.80) => {
-      return new Promise((resolve) => {
-        if (!dataUrl || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image')) {
-          return resolve(dataUrl);
-        }
-        const img = new Image();
-        img.onload = () => {
-          let w = img.width, h = img.height;
-          if (w > maxDim || h > maxDim) {
-            if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
-            else { w = Math.round(w * (maxDim / h)); h = maxDim; }
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, w, h);
-          resolve(canvas.toDataURL('image/jpeg', quality));
-        };
-        img.onerror = () => resolve(dataUrl);
-        img.src = dataUrl;
-      });
-    };
-
+        // ==================== Firebase 即時同步監聽 (輕量資料即時寫入快照，肥大圖片按需載入) ====================
     let isStorePhotosLoaded = false;
     const loadStorePhotosLazy = () => {
       if (!db || isStorePhotosLoaded) return;
       isStorePhotosLoaded = true;
-      db.ref('sbux/store_photos').on('value', async (snap) => {
-        const val = snap.val();
-        const arr = val ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
-        storePhotos.value = arr;
-        savePhotosToIdb('storePhotos', arr);
-
-        // 自動檢查雲端是否有早年上傳超過 450KB 的肥大相簿照片，自動在背景瘦身寫回雲端，全店永久加速！
-        for (const p of arr) {
-          if (p && p.id && p.url && p.url.length > 450000) {
-            const slimmed = await slimBase64Image(p.url, 1200, 0.82);
-            if (slimmed && slimmed.length < p.url.length) {
-              db.ref('sbux/store_photos/' + p.id + '/url').set(slimmed);
-            }
-          }
-        }
+      db.ref('sbux/store_photos').on('value', snap => {
+        storePhotos.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
       });
     };
 
@@ -5921,30 +5333,17 @@ const app = createApp({
       if (!db || isLatteArtLoaded) return;
       isLatteArtLoaded = true;
 
-      db.ref('sbux/latte_posts').on('value', async (snap) => {
+      db.ref('sbux/latte_posts').on('value', snap => {
         const val = snap.val();
-        const arr = val ? Object.keys(val).map(k => ({ id: k, _key: k, ...val[k] })) : [];
-        lattePosts.value = arr;
-        savePhotosToIdb('lattePosts', arr);
+        lattePosts.value = val ? Object.keys(val).map(k => ({ id: k, _key: k, ...val[k] })) : [];
         saveInstantSnapshot();
         checkAndAutoArchiveLatteArt();
-
-        // 自動檢查本週拉花作品是否有未壓縮的百萬級原圖 (>350KB)，自動在背景瘦身至 90KB 寫回雲端！
-        for (const post of arr) {
-          const pid = post.id || post._key;
-          if (pid && post.photoUrl && post.photoUrl.length > 350000) {
-            const slimmed = await slimBase64Image(post.photoUrl, 960, 0.80);
-            if (slimmed && slimmed.length < post.photoUrl.length) {
-              db.ref('sbux/latte_posts/' + pid + '/photoUrl').set(slimmed);
-            }
-          }
-        }
       });
 
-      db.ref('sbux/latteArtArchives').on('value', async (snapshot) => {
+      db.ref('sbux/latteArtArchives').on('value', (snapshot) => {
         const val = snapshot.val();
         if (val) {
-          const parsedArchives = Object.keys(val).map(key => {
+          latteArtArchives.value = Object.keys(val).map(key => {
             const data = val[key] || {};
             let worksArr = [];
             if (Array.isArray(data.works)) worksArr = data.works;
@@ -5963,32 +5362,8 @@ const app = createApp({
               works: worksArr
             };
           }).sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
-
-          latteArtArchives.value = parsedArchives;
-          savePhotosToIdb('latteArtArchives', parsedArchives);
           repairArchivedPartnerNamesIfNeeded();
           saveInstantSnapshot();
-
-          // 自動幫歷屆封存集錦裡超過 350KB 的肥大照片瘦身
-          for (const arch of parsedArchives) {
-            if (!arch.key || !Array.isArray(arch.works)) continue;
-            let modified = false;
-            const slimWorks = [];
-            for (const w of arch.works) {
-              if (w && w.photoUrl && w.photoUrl.length > 350000) {
-                const sUrl = await slimBase64Image(w.photoUrl, 800, 0.78);
-                if (sUrl && sUrl.length < w.photoUrl.length) {
-                  slimWorks.push({ ...w, photoUrl: sUrl });
-                  modified = true;
-                  continue;
-                }
-              }
-              slimWorks.push(w);
-            }
-            if (modified) {
-              db.ref('sbux/latteArtArchives/' + arch.key + '/works').set(slimWorks);
-            }
-          }
         } else {
           latteArtArchives.value = [];
         }
@@ -6105,10 +5480,10 @@ const app = createApp({
       });
 
       // 待所有核心畫面與登入完成 2.5 秒後，才在背景閒置時靜默同步拉花榮譽榜數據，完全不佔用登入頻寬
-    setTimeout(() => {
+      setTimeout(() => {
         loadLatteArtPhotosLazy();
-        loadStorePhotosLazy();
-      }, 300);
+      }, 2500);
+    }
 
 
     // ==================== 📝 班次交接與待辦事項邏輯 ====================
@@ -6276,27 +5651,37 @@ const app = createApp({
       return `${now.getMonth() + 1}/${now.getDate()} 當期評選中`;
     });
 
-    // 🏆 門市榮譽殿堂 (嚴格忠實呈現「本週」即時競賽戰況，不拿以前上傳的舊分數連勝)
+    // 🏆 門市榮譽殿堂 (當週即時戰況：同步採用真實姓名解析 + 自己跟自己比最佳進步獎)
     const settledHonors = computed(() => {
       let champName = '虛位以待';
-      let champScore = '本週尚無作品';
+      let champScore = '-';
       let progressName = '虛位以待';
-      let progressDelta = '本週尚無作品';
+      let progressDelta = '-';
 
       const prevArchWorks = (latteArtArchives.value && latteArtArchives.value.length > 0)
         ? (latteArtArchives.value[0].works || [])
         : [];
 
-      if (weeklyLattePosts.value && weeklyLattePosts.value.length > 0) {
-        const sortedCurrent = [...weeklyLattePosts.value].sort((a, b) => calculateCombinedScore(b) - calculateCombinedScore(a));
+      if (lattePosts.value && lattePosts.value.length > 0) {
+        const sortedCurrent = [...lattePosts.value].sort((a, b) => calculateCombinedScore(b) - calculateCombinedScore(a));
         champName = resolveWorkPartnerName(sortedCurrent[0]);
-        champScore = `${calculateCombinedScore(sortedCurrent[0])} 分領先`;
+        champScore = `${calculateCombinedScore(sortedCurrent[0])} 分`;
 
         const imp = computeSelfImprovedAward(sortedCurrent, prevArchWorks);
         progressName = imp.name;
         progressDelta = imp.scoreText;
+      } else if (latteArtArchives.value && latteArtArchives.value.length > 0) {
+        const latestArch = latteArtArchives.value[0];
+        const prevArch2 = latteArtArchives.value.length > 1 ? (latteArtArchives.value[1].works || []) : [];
+        champName = resolveArchiveWinner(latestArch);
+        champScore = latestArch.works && latestArch.works[0] ? `${calculateCombinedScore(latestArch.works[0])} 分` : '上期冠軍';
+
+        const imp = computeSelfImprovedAward(latestArch.works || [], prevArch2);
+        progressName = imp.name;
+        progressDelta = imp.scoreText;
       }
 
+      // 傳入 null 代表僅統計「本週一 00:00 後」實際上傳的品評紀錄
       const activeInfo = computeActiveTasterAward(tastingNotesList.value, null);
 
       return {
@@ -6471,9 +5856,8 @@ const app = createApp({
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = async (evt) => {
-        // 上傳瞬間自動壓縮為 960px 高畫質輕量圖 (約 90KB)，徹底告別 5MB 原圖卡頓！
-        latteForm.value.photoUrl = await slimBase64Image(evt.target.result, 960, 0.82);
+      reader.onload = (evt) => {
+        latteForm.value.photoUrl = evt.target.result;
       };
       reader.readAsDataURL(file);
     };
@@ -7639,15 +7023,7 @@ const app = createApp({
       });
     });
 
-        // 嚴格過濾：本週展示牆與本週即時榜只計入「本週一 00:00 後上傳」的作品，舊週期作品一律移入底部歷史集錦
-    const weeklyLattePosts = computed(() => {
-      const currentBucket = getCurrentWeekBucket();
-      return (lattePosts.value || []).filter(p => {
-        if (!p) return false;
-        const pBucket = getWeekBucketFromDate(parseWorkActualDate(p));
-        return pBucket.mondayTime >= currentBucket.mondayTime;
-      }).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-    });
+    const weeklyLattePosts = computed(() => [...lattePosts.value].sort((a,b) => b.timestamp - a.timestamp));
 
     const hasVoted = (postId) => {
       const post = lattePosts.value.find(p => p.id === postId || p._key === postId);
@@ -8675,9 +8051,7 @@ ${storeContext}
       courseSummaries, isGeneratingSummary, generateCourseSummary,
       tastingForm, submitTastingNote, tastingNotesList, getIntensityLabel, getCleanNotesText, deleteTastingNote, isAiEvaluatingTasting,
       latteForm, handleLattePhotoUpload, submitLattePost, isAiEvaluating, isArchivingLatteArt,
-      weeklyLattePosts, deleteLattePost, passportSelectedStaffId, passportFilter, passportTargetStaffName, partnerCareerStats,
-      passportBeansWithStatus, tastedBeanCount, filteredPassportBeans, toggleManualBeanStamp, jumpToTastingWithBean,
-      partnerBadges, unlockedBadgeCount, materials, matSearchQuery, matTempFilter, filteredMaterials,
+      weeklyLattePosts, deleteLattePost, materials, matSearchQuery, matTempFilter, filteredMaterials,
       calcModal, calculateOpenTime, addMaterialToSchedule,
       matEditModal, openAddMaterialModal, editMaterial, saveMaterialForm, deleteMaterial,
       intakeForm, submitIntake, deleteIntake, rules,
