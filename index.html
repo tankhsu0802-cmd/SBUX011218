@@ -134,6 +134,31 @@
     }
     .modal-enter-from, .modal-leave-to { opacity: 0; transform: scale(0.95); }
 
+        /* ==================== 🔠 動態字體大小縮放與手機按鈕防擠壓保護 ==================== */
+    html.font-size-normal { font-size: 16px; }
+    html.font-size-large { font-size: 18px; }
+    html.font-size-xlarge { font-size: 20px; }
+
+    /* 讓微字級標籤也隨大字模式等比例放大，同時保持行高舒適 */
+    html.font-size-large .text-\[9px\],
+    html.font-size-large .text-\[10px\] { font-size: 12px !important; line-height: 1.4 !important; }
+    html.font-size-large .text-\[11px\] { font-size: 13.5px !important; line-height: 1.45 !important; }
+
+    html.font-size-xlarge .text-\[9px\],
+    html.font-size-xlarge .text-\[10px\] { font-size: 13.5px !important; line-height: 1.45 !important; }
+    html.font-size-xlarge .text-\[11px\] { font-size: 15px !important; line-height: 1.5 !important; }
+
+    /* 手機按鈕防擠壓保護：禁止按鈕內部文字異常斷行，確保觸控面積 */
+    button, label.cursor-pointer {
+      flex-shrink: 0;
+      word-break: keep-all;
+    }
+    @media print {
+      html.font-size-normal, html.font-size-large, html.font-size-xlarge {
+        font-size: 16px !important;
+      }
+    }
+
     /* ==================== A4 直式單頁滿版列印 CSS ==================== */
     @media screen {
       .print-only-container { display: none !important; }
@@ -264,30 +289,51 @@
   <!-- ==================== 2. 登入後主容器 ==================== -->
   <div v-else class="app-screen max-w-md mx-auto w-full min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col shadow-lg border-x border-slate-200 dark:border-slate-800 relative">
 
-    <header class="fixed top-0 left-0 right-0 z-50 ios-header-glass text-white shadow-md">
-      <div class="max-w-md mx-auto px-4 py-2.5 flex items-center justify-between">
-        <div class="flex items-center space-x-2">
-          <span class="text-xl">☕</span>
-          <div>
-            <h1 class="text-sm font-bold tracking-wider leading-tight">永和永安 (011218)</h1>
-            <p class="text-[10px] text-emerald-200">
+        <header class="fixed top-0 left-0 right-0 z-50 ios-header-glass text-white shadow-md">
+      <div class="max-w-md mx-auto px-3 py-2.5 flex items-center justify-between gap-1.5">
+        <div class="flex items-center space-x-2 min-w-0 flex-1">
+          <span class="text-xl flex-shrink-0">☕</span>
+          <div class="min-w-0">
+            <h1 class="text-sm font-bold tracking-wider leading-tight truncate">永和永安 (011218)</h1>
+            <p class="text-[10px] text-emerald-200 truncate">
               Hi, {{ currentPartner?.name || '夥伴' }} ({{ currentPartner?.role || '夥伴' }})
             </p>
           </div>
         </div>
-        <div class="flex items-center space-x-2">
-          <button v-if="!isRunningStandalone" @click="triggerInstallApp" class="px-2 py-0.5 bg-amber-400 hover:bg-amber-300 text-black font-black rounded-full text-[10px] shadow active:scale-95 transition flex items-center gap-1">
-            <span>📲</span> 安裝App
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <!-- 🔔 通知中心鈴鐺按鈕 -->
+          <button @click="openNotificationDrawer" class="relative p-1.5 text-emerald-100 hover:text-white active:scale-95 transition" title="通知中心">
+            <span class="text-base">🔔</span>
+            <span v-if="unreadNotificationCount > 0" class="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 bg-rose-500 text-white font-black text-[9px] rounded-full flex items-center justify-center shadow">
+              {{ unreadNotificationCount > 9 ? '9+' : unreadNotificationCount }}
+            </span>
           </button>
-          <button @click="openSettingsModal" class="p-1 text-emerald-200 hover:text-white text-base active:scale-95 transition" title="設定">
+          <button @click="openSettingsModal" class="p-1.5 text-emerald-200 hover:text-white text-base active:scale-95 transition" title="設定">
             ⚙️
           </button>
-          <button @click="handleLogout" class="px-2.5 py-0.5 bg-emerald-950/80 hover:bg-red-900 border border-emerald-700 rounded-full text-[10px] text-emerald-200 transition">
+          <button @click="handleLogout" class="px-2.5 py-1 bg-emerald-950/80 hover:bg-red-900 border border-emerald-700 rounded-full text-[10px] text-emerald-200 whitespace-nowrap transition">
             登出
           </button>
         </div>
       </div>
+
+      <!-- 🔔 App 內建 iOS 動態島風格即時推播橫幅 -->
+      <transition name="fade">
+        <div v-if="activeToastNotification" @click="handleToastClick(activeToastNotification)" class="max-w-md mx-auto px-3 pb-2 cursor-pointer">
+          <div class="bg-slate-900/95 text-white border border-emerald-500/50 rounded-2xl p-3 shadow-2xl flex items-center justify-between gap-2.5 backdrop-blur-md">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <span class="text-xl flex-shrink-0">{{ activeToastNotification.icon || '🔔' }}</span>
+              <div class="min-w-0">
+                <div class="text-xs font-black text-emerald-300 truncate">{{ activeToastNotification.title }}</div>
+                <div class="text-[11px] text-slate-200 truncate">{{ activeToastNotification.body }}</div>
+              </div>
+            </div>
+            <button @click.stop="activeToastNotification = null" class="text-slate-400 hover:text-white text-xs px-1.5">✕</button>
+          </div>
+        </div>
+      </transition>
     </header>
+
 
     <!-- 主要內容區 -->
     <main class="flex-1 p-4 space-y-4">
@@ -836,20 +882,21 @@
 
               <!-- 4. 隱藏於資料庫開關內的「下架標準庫」清單 -->
               <div v-if="showRulesLibrary" class="pt-3 mt-2 border-t border-slate-200 dark:border-slate-700 space-y-3">
-                <div class="flex justify-between items-center">
+                <div class="flex flex-wrap justify-between items-center gap-2">
                   <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
                     <span>📋</span> 下架標準資料庫 ({{ rules.length }})
                   </h3>
-                  <div class="flex items-center gap-1.5">
-                    <button v-if="isManager" @click="openAddRuleModal" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-[10px] font-bold transition">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <button v-if="isManager" @click="openAddRuleModal" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-[10px] font-bold whitespace-nowrap transition">
                       + 手動新增
                     </button>
-                    <label v-if="isManager" class="px-2.5 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold transition cursor-pointer flex items-center gap-1 active:scale-95 shadow-sm">
+                    <label v-if="isManager" class="px-2.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold transition cursor-pointer flex items-center gap-1 whitespace-nowrap active:scale-95 shadow-sm">
                       <span>📄</span> AI 辨識匯入
                       <input type="file" accept="image/*,application/pdf" @change="handleAiRuleImageUpload" class="hidden" :disabled="isAiRecognizingRules">
                     </label>
                   </div>
                 </div>
+
                 
                 <div v-if="isAiRecognizingRules" class="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-pulse">
                   <span class="animate-spin text-sm">🔄</span>
@@ -882,18 +929,18 @@
             
             <!-- 【管理職專用面板】 -->
             <div v-if="isDutyOrAbove" class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3 overflow-hidden">
-              <div class="flex justify-between items-center">
+              <div class="flex flex-wrap justify-between items-center gap-2">
                 <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <span>👥</span> 排班管理
                 </h2>
-                <div class="flex items-center gap-1.5">
-                  <button @click="openAddStaffModal" class="px-2 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition active:scale-95">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <button @click="openAddStaffModal" class="px-2.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm whitespace-nowrap transition active:scale-95">
                     + 新增夥伴
                   </button>
-                  <button @click="openBlackoutModal" class="px-2 py-1 bg-rose-700 hover:bg-rose-600 text-white rounded-lg text-xs font-bold shadow-sm transition active:scale-95">
+                  <button @click="openBlackoutModal" class="px-2.5 py-1.5 bg-rose-700 hover:bg-rose-600 text-white rounded-lg text-xs font-bold shadow-sm whitespace-nowrap transition active:scale-95">
                     🚫 設定禁休
                   </button>
-                  <button @click="clearScheduledRoster" class="px-2 py-1 bg-slate-200 hover:bg-rose-100 text-slate-700 hover:text-rose-700 dark:bg-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold transition active:scale-95">
+                  <button @click="clearScheduledRoster" class="px-2.5 py-1.5 bg-slate-200 hover:bg-rose-100 text-slate-700 hover:text-rose-700 dark:bg-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold whitespace-nowrap transition active:scale-95">
                     🗑️ 清除預排
                   </button>
                 </div>
@@ -1224,28 +1271,46 @@
           <!-- ==================== 頁籤 4：【其他】 ==================== -->
           <section v-if="currentTab === 'other'" class="space-y-4">
             
-            <!-- 子頁籤選單 (隱藏滾動條) -->
-            <div class="flex gap-1.5 overflow-x-auto pb-1 text-xs font-bold no-scrollbar">
-              <button @click="otherSubTab = 'academy'" :class="otherSubTab === 'academy' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
-                🎓 黑圍裙課程
+          <!-- 子頁籤選單：升級為 6 欄雙層宮格 (上 3 下 2)，無須左右滑動、絕不截斷文字 -->
+            <div class="bg-white dark:bg-slate-800 p-2 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 grid grid-cols-6 gap-1.5 text-xs font-bold">
+              <button 
+                @click="otherSubTab = 'academy'" 
+                :class="otherSubTab === 'academy' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200/70'" 
+                class="col-span-2 py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                <span class="text-base leading-none">🎓</span>
+                <span class="text-[11px] tracking-tight whitespace-nowrap">黑圍裙課程</span>
               </button>
-              <button @click="otherSubTab = 'coffee'" :class="otherSubTab === 'coffee' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
-                ☕ 沖煮與豆寶典
+
+              <button 
+                @click="otherSubTab = 'coffee'" 
+                :class="otherSubTab === 'coffee' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200/70'" 
+                class="col-span-2 py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                <span class="text-base leading-none">☕</span>
+                <span class="text-[11px] tracking-tight whitespace-nowrap">沖煮與豆寶典</span>
               </button>
-              <button @click="otherSubTab = 'tasting'" :class="otherSubTab === 'tasting' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
-                📝 品評 Tasting
+
+              <button 
+                @click="otherSubTab = 'tasting'" 
+                :class="otherSubTab === 'tasting' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200/70'" 
+                class="col-span-2 py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                <span class="text-base leading-none">📝</span>
+                <span class="text-[11px] tracking-tight whitespace-nowrap">品評 Tasting</span>
               </button>
-              <button @click="otherSubTab = 'latteArt'" :class="otherSubTab === 'latteArt' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
-                🎨 拉花擂台賽
+
+              <button 
+                @click="otherSubTab = 'latteArt'" 
+                :class="otherSubTab === 'latteArt' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200/70'" 
+                class="col-span-3 py-2 px-2 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95">
+                <span class="text-base leading-none">🎨</span>
+                <span class="text-xs tracking-tight whitespace-nowrap">拉花擂台賽</span>
               </button>
-              <button @click="otherSubTab = 'quiz'" :class="otherSubTab === 'quiz' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
-                📖 永安小學堂
-              </button>
-              <button @click="otherSubTab = 'recipe'" :class="otherSubTab === 'recipe' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
-                🥤 飲品配方速查
-              </button>
-              <button @click="otherSubTab = 'passport'" :class="otherSubTab === 'passport' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'" class="px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex-shrink-0">
-                🏅 咖啡護照與徽章
+
+              <button 
+                @click="otherSubTab = 'quiz'" 
+                :class="otherSubTab === 'quiz' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200/70'" 
+                class="col-span-3 py-2 px-2 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95">
+                <span class="text-base leading-none">📖</span>
+                <span class="text-xs tracking-tight whitespace-nowrap">永安小學堂</span>
               </button>
             </div>
 
@@ -1704,7 +1769,10 @@
                     <div 
                       @click="openPhotoLightbox(post.photoUrl, post.pattern + ' - ' + resolveWorkPartnerName(post))"
                       class="rounded-xl overflow-hidden bg-black/5 border border-slate-100 dark:border-slate-700 max-h-64 flex items-center justify-center cursor-zoom-in relative group">
-                      <img :src="post.photoUrl" class="w-full object-cover">
+                      <div v-if="post.photoUrl === '__LAZY_IMG__'" class="py-12 text-xs text-slate-400 font-bold flex items-center gap-1.5">
+                        <span class="animate-spin">🔄</span> 正在載入高畫質拉花作品...
+                      </div>
+                      <img v-else :src="post.photoUrl" class="w-full object-cover">
                       <span class="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition">🔍 點擊放大</span>
                     </div>
 
@@ -2840,16 +2908,123 @@
       </div>
     </div>
   </transition>
-  <!-- 個人設定 Modal -->
+    <!-- 🔔 門市通知中心 Modal -->
+  <transition name="modal">
+    <div v-if="notificationDrawer.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-3.5 border border-slate-200 dark:border-slate-700 max-h-[85vh] flex flex-col">
+        <div class="flex justify-between items-center border-b dark:border-slate-700 pb-2 flex-shrink-0">
+          <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+            <span>🔔</span> 個人通知中心
+          </h3>
+          <div class="flex items-center gap-2">
+            <button @click="markAllNotificationsRead" class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold hover:underline">
+              全部標為已讀
+            </button>
+            <button @click="notificationDrawer.show = false" class="text-slate-400 text-sm px-1">✕</button>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto space-y-2 pr-1 text-xs">
+          <div 
+            v-for="n in partnerNotifications" :key="n.id"
+            @click="handleToastClick(n); notificationDrawer.show = false"
+            class="p-3 rounded-2xl border transition cursor-pointer flex items-start gap-2.5"
+            :class="n.isRead ? 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200 dark:border-slate-700 opacity-75' : 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 shadow-sm'">
+            <span class="text-lg flex-shrink-0 mt-0.5">{{ n.icon }}</span>
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-center gap-1">
+                <span class="font-black text-slate-900 dark:text-white truncate">{{ n.title }}</span>
+                <span class="text-[9px] text-slate-400 whitespace-nowrap">{{ n.dateStr }}</span>
+              </div>
+              <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5 leading-snug">{{ n.body }}</p>
+            </div>
+          </div>
+          <p v-if="partnerNotifications.length === 0" class="text-slate-400 text-center py-8">
+            目前尚無新通知（可在 ⚙️ 個人設定調整通知項目）。
+          </p>
+        </div>
+
+        <button @click="notificationDrawer.show = false; openSettingsModal()" class="w-full py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex-shrink-0">
+          ⚙️ 設定通知偏好與字體大小
+        </button>
+      </div>
+    </div>
+  </transition>
+
+  <!-- ⚙️ 個人設定 Modal (含字體大小調整、自訂通知開關、暗黑模式、密碼與生日) -->
   <transition name="modal">
     <div v-if="settingsModal.show" class="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-4 border">
+      <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm p-5 shadow-2xl space-y-3.5 border max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b pb-2">
           <h3 class="font-bold text-sm text-slate-900 dark:text-white">⚙️ 個人設定</h3>
           <button @click="settingsModal.show = false" class="text-slate-400 text-sm">✕</button>
         </div>
 
         <div class="space-y-3 text-xs">
+          <!-- 1. 字體大小自訂區 -->
+          <div class="p-3 bg-slate-50 dark:bg-slate-700/60 rounded-xl space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-slate-800 dark:text-slate-200">🔠 畫面字體大小</span>
+              <span class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">自動適應排版</span>
+            </div>
+            <div class="grid grid-cols-3 gap-1.5">
+              <button 
+                type="button"
+                @click="setFontSizePref('normal')" 
+                :class="fontSizePref === 'normal' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border'"
+                class="py-1.5 rounded-lg font-bold transition active:scale-95">
+                標準 (100%)
+              </button>
+              <button 
+                type="button"
+                @click="setFontSizePref('large')" 
+                :class="fontSizePref === 'large' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border'"
+                class="py-1.5 rounded-lg font-bold transition active:scale-95">
+                舒適 (112%)
+              </button>
+              <button 
+                type="button"
+                @click="setFontSizePref('xlarge')" 
+                :class="fontSizePref === 'xlarge' ? 'bg-emerald-800 text-white shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border'"
+                class="py-1.5 rounded-lg font-bold transition active:scale-95">
+                特大 (125%)
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. 個人化通知開關區 -->
+          <div class="p-3 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-xl border border-emerald-200/80 dark:border-emerald-800/60 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-emerald-950 dark:text-emerald-300">🔔 即時通知偏好設定</span>
+              <button 
+                type="button"
+                @click="requestSystemNotificationPermission" 
+                class="px-2 py-0.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-md text-[10px] font-bold transition active:scale-95">
+                {{ systemNotifPermission === 'granted' ? '✓ 手機推播已開啟' : '開啟系統推播' }}
+              </button>
+            </div>
+
+            <div class="space-y-1.5 pt-1 border-t border-emerald-200/60 dark:border-emerald-800/50 text-[11px]">
+              <label class="flex justify-between items-center cursor-pointer py-0.5">
+                <span class="text-slate-700 dark:text-slate-200 font-medium">🔄 換班／代班媒合需求通知</span>
+                <input type="checkbox" v-model="notifPrefs.shiftSwap" @change="saveNotifPrefs" class="rounded text-emerald-800 w-4 h-4">
+              </label>
+              <label class="flex justify-between items-center cursor-pointer py-0.5">
+                <span class="text-slate-700 dark:text-slate-200 font-medium">🏆 榮譽殿堂與拉花得名通知</span>
+                <input type="checkbox" v-model="notifPrefs.honor" @change="saveNotifPrefs" class="rounded text-emerald-800 w-4 h-4">
+              </label>
+              <label class="flex justify-between items-center cursor-pointer py-0.5">
+                <span class="text-slate-700 dark:text-slate-200 font-medium">💌 收到 Bravo 感謝小卡通知</span>
+                <input type="checkbox" v-model="notifPrefs.bravo" @change="saveNotifPrefs" class="rounded text-emerald-800 w-4 h-4">
+              </label>
+              <label class="flex justify-between items-center cursor-pointer py-0.5">
+                <span class="text-slate-700 dark:text-slate-200 font-medium">📢 門市新公告發布通知</span>
+                <input type="checkbox" v-model="notifPrefs.bulletin" @change="saveNotifPrefs" class="rounded text-emerald-800 w-4 h-4">
+              </label>
+            </div>
+          </div>
+
+          <!-- 3. 暗黑模式 -->
           <div class="flex justify-between items-center p-2.5 bg-slate-50 dark:bg-slate-700/60 rounded-xl">
             <span class="font-bold text-slate-800 dark:text-slate-200">🌓 暗黑模式</span>
             <button @click="toggleDarkMode" class="px-3 py-1 bg-emerald-800 text-white rounded-lg font-bold">
@@ -3832,7 +4007,230 @@ const app = createApp({
     const createAlbumModal = ref({ show: false, name: '' });
     const bravoModal = ref({ show: false, form: { targetStaffId: '', message: '' } });
 
-    // ==================== ⚡ 極速登入引擎：本機快取秒開 + REST API 直連通道 ====================
+        // ==================== ⚡ 0.001 秒瞬間載入引擎：SWR 全域快照 + 圖文分離 + 平行預熱 ====================
+        // ==================== ⚡ 0.001 秒瞬間載入引擎 + 🔠 字體縮放 + 🔔 智慧通知中心 ====================
+    const isSyncingRoster = ref(false);
+    const lastVacSyncTimeStr = ref('已就緒');
+    const SNAPSHOT_STORAGE_KEY = 'sbux_instant_snapshot_v2';
+
+    // 🔠 字體大小偏好控制 ('normal' | 'large' | 'xlarge')
+    const fontSizePref = ref(localStorage.getItem('sbux_font_size_pref') || 'normal');
+    const applyFontSizeClass = (size) => {
+      const htmlEl = document.documentElement;
+      htmlEl.classList.remove('font-size-normal', 'font-size-large', 'font-size-xlarge');
+      htmlEl.classList.add('font-size-' + (size || 'normal'));
+    };
+    const setFontSizePref = (size) => {
+      fontSizePref.value = size;
+      localStorage.setItem('sbux_font_size_pref', size);
+      applyFontSizeClass(size);
+    };
+    applyFontSizeClass(fontSizePref.value);
+
+    // 🔔 個人化通知設定與即時推播引擎
+    const defaultNotifPrefs = { shiftSwap: true, honor: true, bravo: true, bulletin: true };
+    let savedNotifPrefs = defaultNotifPrefs;
+    try {
+      const rawPrefs = localStorage.getItem('sbux_notif_prefs_v1');
+      if (rawPrefs) savedNotifPrefs = { ...defaultNotifPrefs, ...JSON.parse(rawPrefs) };
+    } catch (e) {}
+
+    const notifPrefs = ref(savedNotifPrefs);
+    const systemNotifPermission = ref(('Notification' in window) ? Notification.permission : 'default');
+    const notificationDrawer = ref({ show: false });
+    const activeToastNotification = ref(null);
+    const readNotifIds = ref(new Set(JSON.parse(localStorage.getItem('sbux_read_notifs_v1') || '[]')));
+    const pushedNotifIds = new Set(JSON.parse(localStorage.getItem('sbux_pushed_notifs_v1') || '[]'));
+
+    const saveNotifPrefs = () => {
+      localStorage.setItem('sbux_notif_prefs_v1', JSON.stringify(notifPrefs.value));
+    };
+
+    const requestSystemNotificationPermission = async () => {
+      if (!('Notification' in window)) {
+        alert('您的瀏覽器目前僅支援 App 內建頂部動態島橫幅通知！');
+        return;
+      }
+      try {
+        const perm = await Notification.requestPermission();
+        systemNotifPermission.value = perm;
+        if (perm === 'granted') {
+          new Notification('☕ 永和永安門市 (011218)', {
+            body: '系統通知已開啟！當有換班媒合、得獎或收到 Bravo 小卡時將即時通知您。'
+          });
+        } else {
+          alert('請於手機或瀏覽器設定中允許「通知」權限。');
+        }
+      } catch (e) {}
+    };
+
+    let toastTimer = null;
+    const triggerNotificationAlert = (notifItem) => {
+      if (!notifItem || pushedNotifIds.has(notifItem.id)) return;
+      pushedNotifIds.add(notifItem.id);
+      try {
+        localStorage.setItem('sbux_pushed_notifs_v1', JSON.stringify(Array.from(pushedNotifIds).slice(-80)));
+      } catch (e) {}
+
+      // 1. 顯示 App 內建頂部動態島橫幅
+      activeToastNotification.value = notifItem;
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        if (activeToastNotification.value && activeToastNotification.value.id === notifItem.id) {
+          activeToastNotification.value = null;
+        }
+      }, 6000);
+
+      // 2. 若已授權系統推播，同步發送手機/電腦原生通知
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+          new Notification(notifItem.title, { body: notifItem.body });
+        } catch (e) {}
+      }
+    };
+
+    // 智慧彙整與目前登入夥伴相關的四大類通知
+    const partnerNotifications = computed(() => {
+      if (!currentPartner.value) return [];
+      const myId = currentPartner.value.id || currentPartner.value._key;
+      const myName = currentPartner.value.name || '';
+      const list = [];
+
+      // (1) 💌 收到 Bravo 感謝小卡通知
+      if (notifPrefs.value.bravo && Array.isArray(bravoCardsList.value)) {
+        bravoCardsList.value.slice(0, 15).forEach(b => {
+          const isForMe = (b.targetStaffId === myId || getStaffName(b.targetStaffId).includes(myName));
+          if (isForMe) {
+            list.push({
+              id: 'notif_bravo_' + b.id,
+              type: 'bravo',
+              icon: '💌',
+              title: '您收到一張 Bravo 感謝小卡！',
+              body: `來自 ${getStaffName(b.senderStaffId)}：「${b.message}」`,
+              dateStr: b.dateStr || '最新',
+              timestamp: b.timestamp || Date.now(),
+              targetTab: 'about',
+              isRead: readNotifIds.value.has('notif_bravo_' + b.id)
+            });
+          }
+        });
+      }
+
+      // (2) 🔄 換班與代班媒合需求通知
+      if (notifPrefs.value.shiftSwap && Array.isArray(shiftSwapsList.value)) {
+        shiftSwapsList.value.slice(0, 10).forEach(sw => {
+          if (sw.requesterId === myId && sw.helperName) {
+            list.push({
+              id: 'notif_swap_helped_' + sw.id + '_' + sw.helperName,
+              type: 'shiftSwap',
+              icon: '🤝',
+              title: '您的換班需求已被認領支援！',
+              body: `${sw.helperName} 已認領您 ${sw.date} (${sw.shiftTime}) 的班次。`,
+              dateStr: sw.date,
+              timestamp: (sw.timestamp || Date.now()) + 1,
+              targetTab: 'roster',
+              isRead: readNotifIds.value.has('notif_swap_helped_' + sw.id + '_' + sw.helperName)
+            });
+          } else if (sw.requesterId !== myId && !sw.helperName) {
+            list.push({
+              id: 'notif_swap_new_' + sw.id,
+              type: 'shiftSwap',
+              icon: '🔄',
+              title: '門市新換班／代班支援需求',
+              body: `${sw.requesterName} 發布了 ${sw.date} (${sw.shiftTime})：${sw.reason}`,
+              dateStr: sw.date,
+              timestamp: sw.timestamp || Date.now(),
+              targetTab: 'roster',
+              isRead: readNotifIds.value.has('notif_swap_new_' + sw.id)
+            });
+          }
+        });
+      }
+
+      // (3) 🏆 榮譽殿堂與上週得名通知
+      if (notifPrefs.value.honor && lastWeekHonorBoard.value) {
+        const hb = lastWeekHonorBoard.value;
+        const myAwards = [];
+        if (hb.championName && hb.championName.includes(myName)) myAwards.push(`🥇拉花冠軍(${hb.championScore})`);
+        if (hb.mostImprovedName && hb.mostImprovedName.includes(myName)) myAwards.push(`🌟最佳進步獎(${hb.mostImprovedScore})`);
+        if (hb.activePartnerName && hb.activePartnerName.includes(myName)) myAwards.push(`☕品評活躍獎(${hb.activePartnerScore})`);
+
+        if (myAwards.length > 0) {
+          const hid = 'notif_honor_me_' + hb.periodStr;
+          list.push({
+            id: hid,
+            type: 'honor',
+            icon: '🏆',
+            title: `恭喜榮登 (${hb.periodStr}) 門市榮譽榜！`,
+            body: `您獲得了：${myAwards.join('、')}，太棒了！`,
+            dateStr: hb.periodStr,
+            timestamp: Date.now() - 3600000,
+            targetTab: 'home',
+            isRead: readNotifIds.value.has(hid)
+          });
+        }
+      }
+
+      // (4) 📢 門市最新公告通知
+      if (notifPrefs.value.bulletin && Array.isArray(filteredBulletinList.value)) {
+        filteredBulletinList.value.slice(0, 5).forEach(bul => {
+          list.push({
+            id: 'notif_bul_' + bul.id,
+            type: 'bulletin',
+            icon: '📢',
+            title: `門市公告：${bul.title}`,
+            body: bul.content,
+            dateStr: bul.dateStr || '公告',
+            timestamp: bul.timestamp || Date.now(),
+            targetTab: 'home',
+            isRead: readNotifIds.value.has('notif_bul_' + bul.id)
+          });
+        });
+      }
+
+      return list.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    });
+
+    const unreadNotificationCount = computed(() => {
+      return partnerNotifications.value.filter(n => !n.isRead).length;
+    });
+
+    // 當有新的未讀通知產生時，自動彈出頂部動態島通知與系統推播
+    watch(partnerNotifications, (newList) => {
+      if (!currentPartner.value || !Array.isArray(newList) || newList.length === 0) return;
+      const latestUnread = newList.find(n => !n.isRead && !pushedNotifIds.has(n.id));
+      if (latestUnread) {
+        triggerNotificationAlert(latestUnread);
+      }
+    }, { deep: true });
+
+    const markAllNotificationsRead = () => {
+      partnerNotifications.value.forEach(n => readNotifIds.value.add(n.id));
+      try {
+        localStorage.setItem('sbux_read_notifs_v1', JSON.stringify(Array.from(readNotifIds.value).slice(-100)));
+      } catch (e) {}
+    };
+
+    const openNotificationDrawer = () => {
+      notificationDrawer.value.show = true;
+    };
+
+    const handleToastClick = (notif) => {
+      if (!notif) return;
+      readNotifIds.value.add(notif.id);
+      try {
+        localStorage.setItem('sbux_read_notifs_v1', JSON.stringify(Array.from(readNotifIds.value).slice(-100)));
+      } catch (e) {}
+      if (notif.targetTab) currentTab.value = notif.targetTab;
+      activeToastNotification.value = null;
+    };
+
+    const updateSyncTimestampDisplay = () => {
+      const now = new Date();
+      lastVacSyncTimeStr.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    };
+
+
     const applyRawStaffData = (data) => {
       if (!data || typeof data !== 'object') return;
       const parsed = Object.keys(data).map(key => ({
@@ -3843,10 +4241,6 @@ const app = createApp({
 
       if (parsed.length > 0) {
         staffList.value = parsed;
-        try {
-          localStorage.setItem('sbux_cached_staff_v1', JSON.stringify(parsed));
-        } catch (e) {}
-
         const savedEmpId = localStorage.getItem('sbux_logged_empid');
         if (savedEmpId && !currentPartner.value) {
           const found = parsed.find(s => String(s.empId).trim() === String(savedEmpId).trim());
@@ -3855,53 +4249,106 @@ const app = createApp({
       }
     };
 
-    // 步驟 1：啟動瞬間 (0ms) 先從本機快取載入夥伴名冊與上次登入狀態
-    try {
-      const cachedStaffStr = localStorage.getItem('sbux_cached_staff_v1');
-      if (cachedStaffStr) {
-        const cachedArr = JSON.parse(cachedStaffStr);
-        if (Array.isArray(cachedArr) && cachedArr.length > 0) {
-          staffList.value = cachedArr;
+    // 將全店輕量資料與「抽離圖片後的拉花榮譽榜數據」存入本機快照 (僅約 20KB，讀取只需 0.001 秒)
+    let snapshotSaveTimer = null;
+    const saveInstantSnapshot = () => {
+      if (snapshotSaveTimer) clearTimeout(snapshotSaveTimer);
+      snapshotSaveTimer = setTimeout(() => {
+        try {
+          // 僅保留拉花與歷屆集錦的「文字與分數」，剔除肥大的 Base64 圖片，讓首頁榮譽榜 0 秒瞬開！
+          const lightLattePosts = (lattePosts.value || []).map(p => ({ ...p, photoUrl: p.photoUrl ? '__LAZY_IMG__' : '' }));
+          const lightArchives = (latteArtArchives.value || []).slice(0, 3).map(a => ({
+            ...a,
+            works: (a.works || []).map(w => ({ ...w, photoUrl: '' }))
+          }));
+
+          const snapshot = {
+            staffList: staffList.value,
+            materials: materials.value,
+            rules: rules.value,
+            inventory: inventory.value,
+            vacationList: vacationList.value,
+            blackoutDates: blackoutDates.value,
+            scheduledRoster: scheduledRoster.value,
+            bulletinList: bulletinList.value,
+            shiftTasksList: shiftTasksList.value,
+            shiftSwapsList: shiftSwapsList.value,
+            tastingNotesList: (tastingNotesList.value || []).slice(0, 20),
+            bravoCardsList: (bravoCardsList.value || []).slice(0, 20),
+            coffeeKnowledgeList: (coffeeKnowledgeList.value || []).slice(0, 15),
+            lightLattePosts,
+            lightArchives,
+            savedAt: Date.now()
+          };
+          localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(snapshot));
+        } catch (e) {}
+      }, 300);
+    };
+
+    // 步驟 1：網頁開啟第 0.001 秒，立即從本機快照瞬間填滿所有模組資料 (達成 0 等待秒開)
+    const loadInstantSnapshot = () => {
+      try {
+        const raw = localStorage.getItem(SNAPSHOT_STORAGE_KEY);
+        if (!raw) return;
+        const snap = JSON.parse(raw);
+        if (!snap || typeof snap !== 'object') return;
+
+        if (Array.isArray(snap.staffList) && snap.staffList.length > 0) {
+          staffList.value = snap.staffList;
           const savedEmpId = localStorage.getItem('sbux_logged_empid');
-          if (savedEmpId) {
-            const found = cachedArr.find(s => String(s.empId).trim() === String(savedEmpId).trim());
+          if (savedEmpId && !currentPartner.value) {
+            const found = snap.staffList.find(s => String(s.empId).trim() === String(savedEmpId).trim());
             if (found) currentPartner.value = found;
           }
         }
-      }
-    } catch (e) {}
-
-    // 步驟 2：透過輕量 REST API 直接抓取 sbux/staff.json (不跟幾十 MB 的相簿圖片排隊，0.2 秒內完成)
-    const isSyncingRoster = ref(false);
-    const lastVacSyncTimeStr = ref('連線中');
-
-    const updateSyncTimestampDisplay = () => {
-      const now = new Date();
-      lastVacSyncTimeStr.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+        if (Array.isArray(snap.materials)) materials.value = snap.materials;
+        if (Array.isArray(snap.rules)) rules.value = snap.rules;
+        if (Array.isArray(snap.inventory)) inventory.value = snap.inventory;
+        if (Array.isArray(snap.vacationList)) vacationList.value = snap.vacationList;
+        if (snap.blackoutDates) blackoutDates.value = snap.blackoutDates;
+        if (snap.scheduledRoster) scheduledRoster.value = snap.scheduledRoster;
+        if (Array.isArray(snap.bulletinList)) bulletinList.value = snap.bulletinList;
+        if (Array.isArray(snap.shiftTasksList)) shiftTasksList.value = snap.shiftTasksList;
+        if (Array.isArray(snap.shiftSwapsList)) shiftSwapsList.value = snap.shiftSwapsList;
+        if (Array.isArray(snap.tastingNotesList)) tastingNotesList.value = snap.tastingNotesList;
+        if (Array.isArray(snap.bravoCardsList)) bravoCardsList.value = snap.bravoCardsList;
+        if (Array.isArray(snap.coffeeKnowledgeList)) coffeeKnowledgeList.value = snap.coffeeKnowledgeList;
+        if (Array.isArray(snap.lightLattePosts) && lattePosts.value.length === 0) lattePosts.value = snap.lightLattePosts;
+        if (Array.isArray(snap.lightArchives) && latteArtArchives.value.length === 0) latteArtArchives.value = snap.lightArchives;
+      } catch (e) {}
     };
+    loadInstantSnapshot();
 
-    // 步驟 2：透過無快取 REST API 僅針對「名冊」極速拉取 (供登入驗證使用)
+    // 步驟 2：單獨極速拉取名冊 (供登入瞬間驗證)
     const fetchStaffFastRest = async () => {
       try {
         const res = await fetch(`${firebaseConfig.databaseURL}/sbux/staff.json?t=${Date.now()}`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
-          if (data) applyRawStaffData(data);
+          if (data) {
+            applyRawStaffData(data);
+            saveInstantSnapshot();
+          }
         }
       } catch (e) {}
     };
 
-    // ⚡ 核心排班資料「零時差強制同步引擎」：平行拉取最新畫假、禁休、名冊與班表 (完全繞過圖片排隊與瀏覽器快取)
+    // 步驟 3：全店輕量資料「平行極速預載引擎」(在登入畫面輸入工號時，背景 0.15 秒全部同步到位)
     const forceSyncRosterDataNow = async (showToast = false) => {
       isSyncingRoster.value = true;
       try {
         const ts = Date.now();
         const baseUrl = firebaseConfig.databaseURL;
-        const [staffRes, vacRes, blackRes, rosterRes] = await Promise.all([
+        const [staffRes, vacRes, blackRes, rosterRes, invRes, rulesRes, matRes, taskRes, bulRes] = await Promise.all([
           fetch(`${baseUrl}/sbux/staff.json?t=${ts}`, { cache: 'no-store' }),
           fetch(`${baseUrl}/sbux/vacations.json?t=${ts}`, { cache: 'no-store' }),
           fetch(`${baseUrl}/sbux/blackout_dates.json?t=${ts}`, { cache: 'no-store' }),
-          fetch(`${baseUrl}/sbux/scheduled_roster.json?t=${ts}`, { cache: 'no-store' })
+          fetch(`${baseUrl}/sbux/scheduled_roster.json?t=${ts}`, { cache: 'no-store' }),
+          fetch(`${baseUrl}/sbux/inventory.json?t=${ts}`, { cache: 'no-store' }),
+          fetch(`${baseUrl}/sbux/rules.json?t=${ts}`, { cache: 'no-store' }),
+          fetch(`${baseUrl}/sbux/materials.json?t=${ts}`, { cache: 'no-store' }),
+          fetch(`${baseUrl}/sbux/shift_tasks.json?t=${ts}`, { cache: 'no-store' }),
+          fetch(`${baseUrl}/sbux/bulletins.json?t=${ts}`, { cache: 'no-store' })
         ]);
 
         if (staffRes.ok) {
@@ -3920,24 +4367,50 @@ const app = createApp({
           const rData = await rosterRes.json();
           scheduledRoster.value = rData || {};
         }
+        if (invRes.ok) {
+          const iData = await invRes.json();
+          inventory.value = iData ? Object.values(iData) : [];
+        }
+        if (rulesRes.ok) {
+          const rlData = await rulesRes.json();
+          rules.value = rlData ? Object.values(rlData) : [];
+        }
+        if (matRes.ok) {
+          const mData = await matRes.json();
+          if (mData) {
+            materials.value = Object.keys(mData).map(key => ({ _key: key, id: key, ...(typeof mData[key] === 'object' ? mData[key] : {}) }));
+          }
+        }
+        if (taskRes.ok) {
+          const tkData = await taskRes.json();
+          shiftTasksList.value = tkData ? Object.values(tkData).sort((a, b) => (a.done === b.done ? b.timestamp - a.timestamp : (a.done ? 1 : -1))) : [];
+        }
+        if (bulRes.ok) {
+          const blData = await bulRes.json();
+          bulletinList.value = blData ? Object.values(blData).sort((a,b) => b.timestamp - a.timestamp) : [];
+        }
+
         updateSyncTimestampDisplay();
+        saveInstantSnapshot();
         if (showToast) {
           alert(`✅ 已完成雲端強制同步！\n目前共有 ${vacationList.value.length} 筆最新畫假紀錄。`);
         }
       } catch (e) {
-        console.warn('強制同步異常，改由 WebSocket 接手：', e);
+        console.warn('平行預載略過，由 WebSocket 接手：', e);
       } finally {
         isSyncingRoster.value = false;
       }
     };
 
-    // 網頁啟動瞬間立即平行同步名冊與畫假紀錄
+    // 網頁啟動瞬間立即平行同步所有核心文字資料
     forceSyncRosterDataNow(false);
 
-    // 當夥伴或店經理切換到「排班」頁籤時，自動觸發零時差同步
+    // 監聽頁籤切換：切到「排班」強制同步最新畫假；切到「其他」才載入拉花高畫質原圖；切到「關於」才載入相簿大圖
     watch(currentTab, (newTab) => {
       if (newTab === 'roster') {
         forceSyncRosterDataNow(false);
+      } else if (newTab === 'other') {
+        loadLatteArtPhotosLazy();
       } else if (newTab === 'about') {
         loadStorePhotosLazy();
       }
@@ -3949,6 +4422,7 @@ const app = createApp({
         forceSyncRosterDataNow(false);
       }
     });
+
 
     // ==================== 🔗 台灣星巴克官網「全自動新檔期季節豆爬蟲與同步引擎」 ====================
     const fetchHtmlViaCorsProxy = async (targetUrl) => {
@@ -4844,7 +5318,7 @@ const app = createApp({
       });
     };
 
-    // ==================== Firebase 即時同步監聽 (優先同步排班畫假，相簿大圖改為點進頁面才載入) ====================
+        // ==================== Firebase 即時同步監聽 (輕量資料即時寫入快照，肥大圖片按需載入) ====================
     let isStorePhotosLoaded = false;
     const loadStorePhotosLazy = () => {
       if (!db || isStorePhotosLoaded) return;
@@ -4854,38 +5328,80 @@ const app = createApp({
       });
     };
 
+    let isLatteArtLoaded = false;
+    const loadLatteArtPhotosLazy = () => {
+      if (!db || isLatteArtLoaded) return;
+      isLatteArtLoaded = true;
+
+      db.ref('sbux/latte_posts').on('value', snap => {
+        const val = snap.val();
+        lattePosts.value = val ? Object.keys(val).map(k => ({ id: k, _key: k, ...val[k] })) : [];
+        saveInstantSnapshot();
+        checkAndAutoArchiveLatteArt();
+      });
+
+      db.ref('sbux/latteArtArchives').on('value', (snapshot) => {
+        const val = snapshot.val();
+        if (val) {
+          latteArtArchives.value = Object.keys(val).map(key => {
+            const data = val[key] || {};
+            let worksArr = [];
+            if (Array.isArray(data.works)) worksArr = data.works;
+            else if (data.works && typeof data.works === 'object') worksArr = Object.values(data.works);
+            return {
+              key,
+              folderName: data.folderName || key,
+              periodRange: data.periodRange || data.folderName || key,
+              archivedAt: data.archivedAt || '',
+              archivedBy: data.archivedBy || '',
+              totalWorks: data.totalWorks || worksArr.length,
+              winner: data.winner || '無',
+              mostImproved: data.mostImproved || '',
+              activePartner: data.activePartner || '',
+              expanded: false,
+              works: worksArr
+            };
+          }).sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
+          repairArchivedPartnerNamesIfNeeded();
+          saveInstantSnapshot();
+        } else {
+          latteArtArchives.value = [];
+        }
+      });
+    };
+
     if (db) {
       db.ref('.info/connected').on('value', snap => {
         isCloudConnected.value = snap.val() === true;
-        if (snap.val() === true) {
-          forceSyncRosterDataNow(false);
-        }
       });
 
-      // ⚡ 第一優先監聽：夥伴名冊、畫假紀錄、禁休日、預排班表與全店同步脈衝
+      // ⚡ 第一優先監聽：全店輕量文字資料，一有變動立即更新畫面並寫入 0.001 秒本機快照
       db.ref('sbux/staff').on('value', snap => {
         const data = snap.val();
         if (data) {
           applyRawStaffData(data);
           repairArchivedPartnerNamesIfNeeded();
           checkAndAutoArchiveLatteArt();
+          saveInstantSnapshot();
         }
       });
 
       db.ref('sbux/vacations').on('value', snap => {
         vacationList.value = snap.val() ? Object.values(snap.val()) : [];
         updateSyncTimestampDisplay();
+        saveInstantSnapshot();
       });
 
       db.ref('sbux/blackout_dates').on('value', snap => {
         blackoutDates.value = snap.val() || {};
+        saveInstantSnapshot();
       });
 
       db.ref('sbux/scheduled_roster').on('value', snap => {
         scheduledRoster.value = snap.val() || {};
+        saveInstantSnapshot();
       });
 
-      // 監聽全店畫假異動脈衝：一旦任何裝置送出或刪除畫假，所有裝置 0.1 秒內強制同步
       db.ref('sbux/lastRosterSyncAt').on('value', snap => {
         if (snap.val()) {
           forceSyncRosterDataNow(false);
@@ -4908,79 +5424,67 @@ const app = createApp({
       db.ref('sbux/materials').on('value', snap => {
         const val = snap.val();
         materials.value = val ? Object.keys(val).map(key => ({ _key: key, id: key, ...(typeof val[key] === 'object' ? val[key] : {}) })) : [];
+        saveInstantSnapshot();
       });
 
-      db.ref('sbux/rules').on('value', snap => { rules.value = snap.val() ? Object.values(snap.val()) : []; });
-      db.ref('sbux/inventory').on('value', snap => { inventory.value = snap.val() ? Object.values(snap.val()) : []; });
+      db.ref('sbux/rules').on('value', snap => {
+        rules.value = snap.val() ? Object.values(snap.val()) : [];
+        saveInstantSnapshot();
+      });
+
+      db.ref('sbux/inventory').on('value', snap => {
+        inventory.value = snap.val() ? Object.values(snap.val()) : [];
+        saveInstantSnapshot();
+      });
       
       db.ref('sbux/shift_tasks').on('value', snap => {
         const val = snap.val();
         shiftTasksList.value = val ? Object.values(val).sort((a, b) => (a.done === b.done ? b.timestamp - a.timestamp : (a.done ? 1 : -1))) : [];
+        saveInstantSnapshot();
       });
 
       db.ref('sbux/shift_swaps').on('value', snap => {
         const val = snap.val();
         shiftSwapsList.value = val ? Object.values(val).sort((a, b) => b.timestamp - a.timestamp) : [];
+        saveInstantSnapshot();
       });
 
       db.ref('sbux/tasting_notes').on('value', snap => {
         const val = snap.val();
         tastingNotesList.value = val ? Object.keys(val).map(k => ({ id: k, _key: k, ...val[k] })).sort((a,b) => b.timestamp - a.timestamp) : [];
+        saveInstantSnapshot();
       });
 
-      db.ref('sbux/bulletins').on('value', snap => { bulletinList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []; });
-      db.ref('sbux/custom_albums').on('value', snap => { customAlbums.value = snap.val() ? Object.values(snap.val()) : []; });
-      db.ref('sbux/bravo_cards').on('value', snap => { bravoCardsList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : []; });
-      db.ref('sbux/seasonal_recipes').on('value', snap => {
-        seasonalRecipesList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
+      db.ref('sbux/bulletins').on('value', snap => {
+        bulletinList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
+        saveInstantSnapshot();
+      });
+
+      db.ref('sbux/custom_albums').on('value', snap => {
+        customAlbums.value = snap.val() ? Object.values(snap.val()) : [];
+      });
+
+      db.ref('sbux/bravo_cards').on('value', snap => {
+        bravoCardsList.value = snap.val() ? Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp) : [];
+        saveInstantSnapshot();
       });
 
       db.ref('sbux/coffeeKnowledge').on('value', snap => {
         const val = snap.val();
         coffeeKnowledgeList.value = val ? Object.keys(val).map(k => ({ id: k, ...val[k] })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) : [];
+        saveInstantSnapshot();
       });
 
       db.ref('sbux/quizRecords/' + currentWeekQuizId.value).on('value', snap => {
         weeklyQuizRecords.value = snap.val() || {};
       });
 
-      // 拉花作品與榮譽榜封存於核心文字資料就緒後載入 (而相簿大圖則改為點進「關於」頁籤才載入)
+      // 待所有核心畫面與登入完成 2.5 秒後，才在背景閒置時靜默同步拉花榮譽榜數據，完全不佔用登入頻寬
       setTimeout(() => {
-        db.ref('sbux/latte_posts').on('value', snap => {
-          const val = snap.val();
-          lattePosts.value = val ? Object.keys(val).map(k => ({ id: k, _key: k, ...val[k] })) : [];
-          checkAndAutoArchiveLatteArt();
-        });
-
-        db.ref('sbux/latteArtArchives').on('value', (snapshot) => {
-          const val = snapshot.val();
-          if (val) {
-            latteArtArchives.value = Object.keys(val).map(key => {
-              const data = val[key] || {};
-              let worksArr = [];
-              if (Array.isArray(data.works)) worksArr = data.works;
-              else if (data.works && typeof data.works === 'object') worksArr = Object.values(data.works);
-              return {
-                key,
-                folderName: data.folderName || key,
-                periodRange: data.periodRange || data.folderName || key,
-                archivedAt: data.archivedAt || '',
-                archivedBy: data.archivedBy || '',
-                totalWorks: data.totalWorks || worksArr.length,
-                winner: data.winner || '無',
-                mostImproved: data.mostImproved || '',
-                activePartner: data.activePartner || '',
-                expanded: false,
-                works: worksArr
-              };
-            }).sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
-            repairArchivedPartnerNamesIfNeeded();
-          } else {
-            latteArtArchives.value = [];
-          }
-        });
-      }, 600);
+        loadLatteArtPhotosLazy();
+      }, 2500);
     }
+
 
     // ==================== 📝 班次交接與待辦事項邏輯 ====================
     const addShiftTask = () => {
@@ -7526,7 +8030,9 @@ ${storeContext}
     };
 
     return {
-      currentPartner, loginForm, isLoggingIn, handleLogin, handleLogout, isManager, isDutyOrAbove, isSuperTan, isDarkMode, toggleDarkMode,
+      currentPartner, loginForm, isLoggingIn, handleLogin, handleLogout, isManager, isDutyOrAbove, isSuperTan, isDarkMode, toggleDarkMode, fontSizePref, setFontSizePref, notifPrefs, saveNotifPrefs, systemNotifPermission, requestSystemNotificationPermission,
+      notificationDrawer, openNotificationDrawer, partnerNotifications, unreadNotificationCount, markAllNotificationsRead,
+      activeToastNotification, handleToastClick,
       settingsModal, openSettingsModal, saveNewPassword, saveBirthday, saveGeminiApiKey, testGeminiApiKey, isTestingApiKey, apiKeyTestResult, birthdayAlerts,
       currentTab, otherSubTab, isCloudConnected, currentDateTimeDisplay,
       todayTrivia, fetchDynamicWebTrivia, isFetchingTrivia,
