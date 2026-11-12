@@ -2685,18 +2685,24 @@
               <div class="bg-white dark:bg-slate-800 rounded-2xl border-2 border-slate-800 dark:border-slate-500 overflow-hidden shadow-md text-xs">
                 
                 <!-- 官方表單標題與表頭 -->
-                <div class="bg-slate-900 text-white p-3.5 space-y-2">
+                <div class="bg-slate-900 text-white p-3.5 space-y-2.5">
                   <div class="flex justify-between items-center flex-wrap gap-2">
                     <div>
                       <h4 class="font-black text-sm tracking-wide">FY2026 食品安全衛生檢查紀錄表 (含法規及集團要求)</h4>
                       <span class="text-[10px] text-slate-400 font-mono">(20260514版)</span>
                     </div>
-                    <div class="flex gap-1.5">
-                      <button @click="saveCurrentFsaReportToCloud" class="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-[11px] font-bold shadow active:scale-95 transition">
-                        💾 儲存紀錄表
+                    <div class="flex gap-1.5 flex-wrap">
+                      <button @click="triggerPrintFsaOfficialTable(fsaForm)" class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-[11px] font-black shadow active:scale-95 transition flex items-center gap-1">
+                        <span>🖨️</span> 匯出官方格式表單 (PDF/列印)
                       </button>
-                      <button @click="copyOfficialFsaTableText(fsaForm)" class="px-2.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-black rounded-lg text-[11px] font-black shadow active:scale-95 transition">
-                        📋 複製整份表格
+                      <button @click="publishFsaToStoreBulletin(fsaForm)" class="px-2.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-black rounded-lg text-[11px] font-black shadow active:scale-95 transition flex items-center gap-1">
+                        <span>📢</span> 公布至首頁公告欄
+                      </button>
+                      <button @click="saveCurrentFsaReportToCloud" class="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-[11px] font-bold shadow active:scale-95 transition">
+                        💾 儲存
+                      </button>
+                      <button @click="copyOfficialFsaTableText(fsaForm)" class="px-2 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-lg text-[11px] font-bold shadow active:scale-95 transition">
+                        📋 複製文字
                       </button>
                     </div>
                   </div>
@@ -3762,7 +3768,7 @@
   <!-- ==================== A4 直式單頁滿版列印表格 ==================== -->
   <div class="print-only-container bg-white text-black font-sans">
     
-    <div class="print-page-single">
+    <div v-if="printTargetMode !== 'fsa'" class="print-page-single">
       
       <div class="print-header border-b-2 border-black pb-1">
         <div class="flex justify-between items-end">
@@ -3860,6 +3866,83 @@
         </table>
       </div>
 
+    </div>
+
+    </div>
+
+    <!-- 🛡️ 1:1 還原官方《FY2026 食品安全衛生檢查紀錄表(含法規及集團要求) (20260514版)》A4 匯出表格 -->
+    <div v-else class="w-full text-black bg-white p-1 font-sans">
+      <!-- 頂部版本號與大標題 -->
+      <div class="text-right text-[10px] font-bold leading-none mb-0.5">(20260514版)</div>
+      <div class="text-center font-black text-lg tracking-wider border-t-2 border-x-2 border-black py-1.5 bg-slate-50">
+        FY2026 食品安全衛生檢查紀錄表(含法規及集團要求)
+      </div>
+
+      <!-- 官方表頭五欄資訊區 -->
+      <table class="w-full border-collapse border-2 border-black text-[11px] font-bold">
+        <tbody>
+          <tr>
+            <td class="border border-black py-1 px-2 text-left w-[33%]">門市店號：{{ fsaForm.storeId }}</td>
+            <td class="border border-black py-1 px-2 text-left w-[34%]">門市名稱：{{ fsaForm.storeName }}</td>
+            <td class="border border-black py-1 px-2 text-left w-[33%]">檢查日期：{{ fsaForm.auditDate }}</td>
+          </tr>
+          <tr>
+            <td class="border border-black py-1 px-2 text-left">評核員姓名：{{ fsaForm.auditorName }}</td>
+            <td class="border border-black py-1 px-2 text-left" colspan="2">值班經理姓名：{{ fsaForm.dutyManagerName }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 上半部：缺失項目 | 缺失說明 -->
+      <table class="w-full border-collapse border-x-2 border-b-2 border-black text-[10.5px]">
+        <thead>
+          <tr class="bg-slate-100 font-black text-center">
+            <th class="border border-black py-1 px-2 w-[30%] text-[11px]">缺失項目</th>
+            <th class="border border-black py-1 px-2 w-[70%] text-[11px]">缺失說明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(v, idx) in fsaForm.violations" :key="'pv_'+idx">
+            <td class="border border-black py-1.5 px-2 text-left align-top font-bold leading-snug">
+              <div v-if="v.zone" class="text-[9.5px] font-black text-slate-700">【{{ v.zone }}】</div>
+              <div>{{ v.missingItemTitle || v.clauseCode }}</div>
+            </td>
+            <td class="border border-black py-1.5 px-2 text-left align-top leading-snug whitespace-pre-line">
+              <div class="font-bold">{{ v.findingDesc }}</div>
+              <div v-if="v.actionPlan" class="mt-0.5 text-[10px] text-slate-800">{{ v.actionPlan }}</div>
+            </td>
+          </tr>
+          <!-- 自動補齊空白列以維持官方表單完整視覺高度 -->
+          <tr v-for="n in Math.max(0, 6 - (fsaForm.violations ? fsaForm.violations.length : 0))" :key="'blank_'+n" style="height: 28px;">
+            <td class="border border-black">&nbsp;</td>
+            <td class="border border-black">&nbsp;</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 下半部：項目 | 內容 | 符合/不符合 -->
+      <table class="w-full border-collapse border-x-2 border-b-2 border-black text-[10px]">
+        <thead>
+          <tr class="bg-slate-100 font-black text-center">
+            <th class="border border-black py-1 px-1.5 w-[18%] text-[11px]">項目</th>
+            <th class="border border-black py-1 px-2 w-[64%] text-[11px]">內容</th>
+            <th class="border border-black py-1 px-1.5 w-[18%] text-[11px]">符合/不符合</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(chk, cIdx) in fsaForm.statutoryChecklist" :key="'pchk_'+cIdx">
+            <td class="border border-black py-1 px-1.5 text-center font-bold align-middle">
+              {{ chk.category }}
+            </td>
+            <td class="border border-black py-1 px-2 text-left align-middle whitespace-pre-line leading-tight">
+              {{ chk.content }}
+            </td>
+            <td class="border border-black py-1 px-1.5 text-center font-black align-middle text-[10.5px]">
+              {{ chk.status }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
   </div>
@@ -5596,11 +5679,25 @@ ${recipesContext}
       }
     };
 
+    // 📍 一鍵在速記框插入【前區 FOH】或【後區 BOH】標籤
+    const insertFsaZoneTag = (tagText) => {
+      const curr = fsaForm.value.rawNotes || '';
+      fsaForm.value.rawNotes = curr ? `${curr.trim()}\n${tagText}\n` : `${tagText}\n`;
+    };
+
+    // 當手動切換表格左欄的前後區下拉選單時，同步更新右欄說明文字
+    const syncZoneToFindingDesc = (vItem) => {
+      if (!vItem || !vItem.zone) return;
+      const cleanDesc = String(vItem.findingDesc || '').replace(/^📍\s*【(前區\s*FOH|後區\s*BOH|展示櫃\/RTD|客席\/洗手間|全店共通)】\s*/, '');
+      vItem.findingDesc = `📍【${vItem.zone.replace(/[()]/g, '')}】${cleanDesc}`;
+    };
+
     const addManualFsaViolationRow = () => {
       fsaForm.value.violations.push({
+        zone: '前區 (FOH)',
         clauseCode: '',
         missingItemTitle: '',
-        findingDesc: '',
+        findingDesc: '📍【前區 FOH】',
         actionPlan: '【立即改善】：\n【預防行動方案】：'
       });
     };
@@ -5624,7 +5721,7 @@ ${recipesContext}
       e.target.value = '';
     };
 
-    // 核心：將手機口語缺失速記與照片對照《2026 FSA 標準條文》並自動填入檢查表
+    // 核心：將手機口語缺失速記與照片對照《2026 FSA 標準條文》，自動區分前區(FOH)/後區(BOH)並生成行動方案
     const analyzeFsaNotesToOfficialTable = async () => {
       if (!fsaForm.value.rawNotes.trim() && fsaForm.value.photos.length === 0) return;
       isAnalyzingFsa.value = true;
@@ -5655,19 +5752,22 @@ ${clausesPromptList}
 - local_ty: 桃園市桃食安心QR CODE
 - local_kh: 高雄市產品責任險QR CODE
 
-【嚴格輸出要求】：
-1. 針對每一項缺失，請從【官方 2026 食品安全評核標準條文庫】選出最精確的條文編號 (clauseCode，如 "1.2a", "2.1b", "4.1j", "4.2d", "4.2o") 與「缺失項目名稱 (missingItemTitle，格式為『編號 條文標題』，如『4.2o 抹布應正確存放』)」。
-2. 在「findingDesc (違反細項與現場狀況)」中，先寫出對應的【官方細項原文】，再寫出現場具體發現的位置、品名或數值（例如：「【使用中的抹布遺留在檯面上/抹布計時器未啟動】前區濃縮咖啡機檯面放置使用中抹布，且未啟動抹布更換計時器。」）。
-3. 在「actionPlan (改善與預防行動方案)」中，針對該項缺失制定具體、專業的「【立即改善】」與「【預防行動方案】」。
-4. 若現場速記中有提到違反【法定與集團必檢項目】（例如：沒指甲刷、指甲刷發霉、KAY-5或多用途清潔劑沒寫分裝日、水塔沒鎖、工作日誌沒填氮氣支數等），請在 failedStatutoryKeys 陣列中列出對應的 key。
+【前區 (FOH) 與後區 (BOH) 智慧判定規則】：
+1. 若速記中有標註【前區 FOH】、【後區 BOH】、【糕點展示櫃/RTD】或【客席/洗手間】，請優先依該區塊標記判定每項缺失的發生區域 (zone)。
+2. 若未標註區域，請依星巴克門市設備位置自動推論：
+   - 吧台設備（濃縮機、蒸奶棒、蒸奶壺、BPR沖洗器、冰沙機、前區儲冰槽、工作台小冰箱、調理吧台）➔ 判定為 "前區 (FOH)"。
+   - 內場設備（三水槽、高溫洗碗機、製冰機盛水盤/儲冰槽、四門大冰箱、拖把槽、乾貨貨架、待退貨區、水塔、軟水器）➔ 判定為 "後區 (BOH)"。
+   - 糕點櫃、RTD&E自取櫃 ➔ 判定為 "展示櫃/RTD"。
+3. 請為每一項缺失選出最精確的條文編號 (clauseCode) 與「缺失項目名稱 (missingItemTitle，如『1.2a 應設置洗手槽、提供清潔用品並正確使用』)」，並在 findingDesc 開頭加上區域標記與對應之【官方細項原文】，接著於 actionPlan 制定具體的「【立即改善】」與「【預防行動方案】」。
 
 請只輸出純 JSON 格式（不要加 markdown 符號）：
 {
   "violations": [
     {
+      "zone": "前區 (FOH)",
       "clauseCode": "4.2o",
       "missingItemTitle": "4.2o 抹布應正確存放",
-      "findingDesc": "【使用中的抹布遺留在檯面上 / 抹布計時器未啟動】現場於前區吧台檯面發現遺留使用中抹布，且抹布計時器未啟動。",
+      "findingDesc": "📍【前區 FOH】【使用中的抹布遺留在檯面上 / 抹布計時器未啟動】現場於前區吧台檯面發現遺留使用中抹布，且抹布計時器未啟動。",
       "actionPlan": "【立即改善】：當場將抹布收回泡入標準濃度(150-400ppm)季銨鹽消毒水桶中，並立即啟動計時器。\n【預防行動方案】：值班經理於每班交接與轉班時檢核吧台抹布存放與計時器運作，並對當班夥伴進行隨手歸位宣導。"
     }
   ],
@@ -5696,7 +5796,7 @@ ${clausesPromptList}
         }
         fsaForm.value.rawNotes = '';
         fsaForm.value.photos = [];
-        alert(`🎉 AI 核對完成！已自動對應《2026 FSA 標準條文》並填入下方檢查紀錄表！`);
+        alert(`🎉 AI 核對完成！已自動區分前/後區、對應《2026 FSA 標準條文》並填入下方檢查紀錄表！`);
       } catch (err) {
         alert('AI 條文核對失敗：' + err.message);
       } finally {
@@ -5746,6 +5846,65 @@ ${clausesPromptList}
     const deleteFsaReport = async (id) => {
       if (confirm('確定刪除此份已存檔的 FSA 檢查紀錄表？') && db) {
         await db.ref('sbux/fsa_reports/' + id).remove();
+      }
+    };
+
+    // 🖨️ 以 1:1 官方《FY2026 食品安全衛生檢查紀錄表 (20260514版)》格式匯出 PDF 或 A4 列印
+    const triggerPrintFsaOfficialTable = (repObj = null) => {
+      if (repObj && repObj.storeId) {
+        loadSavedFsaReport(repObj);
+      }
+      const prevMode = printTargetMode.value;
+      printTargetMode.value = 'fsa';
+      nextTick(() => {
+        setTimeout(() => {
+          window.print();
+          setTimeout(() => {
+            printTargetMode.value = prevMode === 'fsa' ? 'blank' : prevMode;
+          }, 500);
+        }, 150);
+      });
+    };
+
+    // 📢 一鍵將本次 FSA 評核結果公布至首頁「門市公告欄」提醒全體夥伴
+    const publishFsaToStoreBulletin = async (repObj = null) => {
+      const f = (repObj && repObj.storeId) ? repObj : fsaForm.value;
+      if (!f.violations || f.violations.length === 0) {
+        if (!confirm('目前表單中無缺失項目，確定仍要發布「全數符合」公告至首頁嗎？')) return;
+      }
+      const id = 'bul_fsa_' + Date.now();
+      const title = `🛡️ 【FSA 食安評核結果公告】${f.auditDate || ''} (評核員：${f.auditorName || 'FSA專員'})`;
+      const contentLines = [
+        `門市：${f.storeName || '永和永安'} (${f.storeId || '011218'}) ｜ 當班值班：${f.dutyManagerName || '-'}`
+      ];
+
+      if (f.violations && f.violations.length > 0) {
+        contentLines.push(`⚠️ 本次評核共發現 ${f.violations.length} 項需立即注意與改善之項目：`);
+        f.violations.forEach((v, i) => {
+          contentLines.push(`\n${i + 1}. 【${v.missingItemTitle || v.clauseCode}】`);
+          contentLines.push(`▸ 缺失說明：${v.findingDesc}`);
+          if (v.actionPlan) {
+            contentLines.push(`▸ 行動方案：\n${v.actionPlan}`);
+          }
+        });
+      } else {
+        contentLines.push(`🎉 本次門市食安評核各項標準均符合規範，感謝夥伴共同維護門市食品安全！`);
+      }
+
+      const failedStat = (f.statutoryChecklist || []).filter(c => c.status === '不符合');
+      if (failedStat.length > 0) {
+        contentLines.push(`\n🚨 法規及集團必檢不符合項目：${failedStat.map(c => c.category).join('、')}`);
+      }
+
+      if (db) {
+        await db.ref('sbux/bulletins/' + id).set({
+          id,
+          title,
+          content: contentLines.join('\n'),
+          dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`,
+          timestamp: Date.now()
+        });
+        alert('📢 已成功發布至首頁「📌 門市公告欄」！全店夥伴登入首頁即可看到本次評核缺失與行動方案。');
       }
     };
 
@@ -9560,8 +9719,9 @@ ${beansContext}
       partnerBadges, unlockedBadgeCount,
       fsa2026OfficialClauses, showFsaClauseLibrary, fsaClauseSearch, filteredFsaClauses,
       fsaForm, isAnalyzingFsa, applyCityRegulationDefaults, cycleStatutoryStatus, resetFsaCurrentForm,
-      addManualFsaViolationRow, onSelectFsaClauseCode, handleFsaPhotosUpload, analyzeFsaNotesToOfficialTable,
-      fsaAuditReports, saveCurrentFsaReportToCloud, loadSavedFsaReport, deleteFsaReport, copyOfficialFsaTableText
+      insertFsaZoneTag, syncZoneToFindingDesc, addManualFsaViolationRow, onSelectFsaClauseCode, handleFsaPhotosUpload, analyzeFsaNotesToOfficialTable,
+      fsaAuditReports, saveCurrentFsaReportToCloud, loadSavedFsaReport, deleteFsaReport, copyOfficialFsaTableText,
+      triggerPrintFsaOfficialTable, publishFsaToStoreBulletin
     };
   }
 });
