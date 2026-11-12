@@ -2260,25 +2260,91 @@
               </div>
             </div>
 
-            <div v-if="showQuizModal" class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-              <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-5 space-y-3 shadow-xl">
-                <div class="flex justify-between items-center border-b pb-2">
-                  <h3 class="font-bold text-sm text-slate-900 dark:text-white">📝 本週測驗 ({{ currentWeekQuizId }})</h3>
-                  <button @click="showQuizModal = false" class="text-slate-400 hover:text-slate-600">✕</button>
+            <!-- 永安小學堂：週測驗 Modal (z-[100000] 防遮擋 + 底部固定送出列 + 完整多行選項顯示) -->
+            <div v-if="showQuizModal" class="fixed inset-0 z-[100000] bg-black/70 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm">
+              <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full max-h-[86vh] flex flex-col p-4 sm:p-5 shadow-2xl border border-slate-200 dark:border-slate-700">
+                
+                <!-- 1. 固定頂部標題列 -->
+                <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3 flex-shrink-0">
+                  <div>
+                    <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <span>📝</span> 永安咖啡小學堂週測驗 ({{ currentWeekQuizId }})
+                    </h3>
+                    <p class="text-[10px] text-slate-400 mt-0.5">共 5 題實戰情境單選題，請詳閱四個選項後作答</p>
+                  </div>
+                  <button @click="showQuizModal = false" class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-slate-800 dark:text-slate-300 flex items-center justify-center text-xs font-bold">
+                    ✕
+                  </button>
                 </div>
-                <div v-for="(q, qIndex) in currentQuizQuestions" :key="qIndex" class="space-y-1.5 bg-slate-50 dark:bg-slate-700/50 p-2.5 rounded-xl">
-                  <div class="text-xs font-bold text-slate-900 dark:text-white">{{ qIndex + 1 }}. {{ q.question }}</div>
-                  <label v-for="(opt, optIndex) in q.options" :key="optIndex" class="flex items-center gap-2 p-1.5 rounded-lg border text-xs cursor-pointer">
-                    <input type="radio" :name="'quiz_q_'+qIndex" :value="optIndex" v-model="userAnswers[qIndex]" :disabled="quizSubmitted">
-                    <span>{{ opt }}</span>
-                  </label>
-                  <div v-if="quizSubmitted" class="text-[10px] text-slate-500 mt-1">💡 解析：{{ q.explanation }}</div>
+
+                <!-- 2. 獨立可捲動題目與完整選項區 -->
+                <div class="flex-1 overflow-y-auto py-3 pr-1 space-y-3.5">
+                  <div v-for="(q, qIndex) in currentQuizQuestions" :key="qIndex" class="space-y-2 bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700">
+                    <div class="text-xs font-black text-slate-900 dark:text-white leading-relaxed break-words">
+                      <span class="inline-block px-1.5 py-0.2 bg-emerald-800 text-white rounded text-[10px] font-mono mr-1">Q{{ qIndex + 1 }}</span>
+                      {{ q.question }}
+                    </div>
+
+                    <div class="space-y-1.5 pt-1">
+                      <label 
+                        v-for="(opt, optIndex) in q.options" 
+                        :key="optIndex" 
+                        class="flex items-start gap-2.5 p-2.5 rounded-xl border text-xs cursor-pointer transition select-none"
+                        :class="[
+                          quizSubmitted
+                            ? (optIndex === q.correct
+                                ? 'bg-emerald-100/90 dark:bg-emerald-950/70 border-emerald-500 text-emerald-950 dark:text-emerald-200 font-bold'
+                                : (userAnswers[qIndex] === optIndex
+                                    ? 'bg-rose-100/90 dark:bg-rose-950/60 border-rose-400 text-rose-900 dark:text-rose-200'
+                                    : 'bg-white/60 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 opacity-60'))
+                            : (userAnswers[qIndex] === optIndex
+                                ? 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-600 ring-1 ring-emerald-600 text-emerald-950 dark:text-emerald-200 font-bold'
+                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100/70')
+                        ]">
+                        <input 
+                          type="radio" 
+                          :name="'quiz_q_'+qIndex" 
+                          :value="optIndex" 
+                          v-model="userAnswers[qIndex]" 
+                          :disabled="quizSubmitted"
+                          class="mt-0.5 w-4 h-4 text-emerald-800 focus:ring-emerald-700 flex-shrink-0"
+                        >
+                        <span class="flex-1 break-words whitespace-normal leading-relaxed">
+                          <b class="font-mono mr-1">{{ ['A.', 'B.', 'C.', 'D.'][optIndex] }}</b>{{ opt }}
+                        </span>
+                      </label>
+                    </div>
+
+                    <div v-if="quizSubmitted" class="p-2.5 bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/70 rounded-xl text-[11px] text-amber-950 dark:text-amber-200 leading-relaxed break-words mt-2">
+                      💡 <b>專業解析：</b>{{ q.explanation }}
+                    </div>
+                  </div>
                 </div>
-                <div class="pt-2 flex justify-between items-center border-t">
-                  <span v-if="quizSubmitted" class="font-bold text-emerald-600 text-sm">得分：{{ quizScore }} / 5 分</span>
-                  <button v-if="!quizSubmitted" @click="submitWeeklyQuiz" class="px-4 py-1.5 bg-emerald-800 text-white rounded-xl text-xs font-bold">繳交測驗</button>
-                  <button v-else @click="showQuizModal = false" class="px-4 py-1.5 bg-slate-200 dark:bg-slate-700 rounded-xl text-xs font-bold">關閉</button>
+
+                <!-- 3. 固定底部操作列 (絕不被底部導航列遮擋) -->
+                <div class="pt-3 border-t dark:border-slate-700 flex justify-between items-center gap-3 flex-shrink-0 bg-white dark:bg-slate-800">
+                  <div v-if="quizSubmitted" class="font-black text-emerald-700 dark:text-emerald-400 text-sm flex items-center gap-1.5">
+                    <span>🏆 測驗得分：{{ quizScore }} / 5 分</span>
+                  </div>
+                  <div v-else class="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                    已作答 {{ userAnswers.filter(a => a !== null).length }} / 5 題
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <button 
+                      v-if="!quizSubmitted" 
+                      @click="submitWeeklyQuiz" 
+                      class="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-black shadow-md transition">
+                      ✅ 繳交測驗
+                    </button>
+                    <button 
+                      @click="showQuizModal = false" 
+                      class="px-4 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold">
+                      {{ quizSubmitted ? '完成關閉' : '暫時離開' }}
+                    </button>
+                  </div>
                 </div>
+
               </div>
             </div>
 
@@ -3916,18 +3982,7 @@ const coffeeTriviaList = [
   { level: "CA 300 萃取", text: "完美濃縮 Shot 包含底層 Heart、中層 Body 與表層金黃色 Crema，蒸奶最佳甜感溫度為 60~65°C。", searchUrl: "https://www.google.com/search?q=Starbucks+Espresso+Shot+Heart+Body+Crema" }
 ];
 
-const masterQuizPool = [
-  { question: "冷萃咖啡 (Cold Brew) 的標準常溫慢速萃取時間規範為何？", options: ["10 小時", "12 小時", "20 小時", "24 小時"], correct: 2, explanation: "星巴克冷萃咖啡標準常溫浸泡萃取時間為 20 小時。" },
-  { question: "水洗法處理的咖啡豆，風味輪廓通常呈現何種特色？", options: ["濃郁發酵感與熱帶水果甜", "明亮乾淨的酸質與花果香氣", "厚重泥土與草本風味", "強烈的焦糖與木質香氣"], correct: 1, explanation: "水洗法透過發酵槽洗淨果肉，酸質最為純淨清晰。" },
-  { question: "濃縮咖啡完美的「三層結構」由下至上依序為何？", options: ["Crema、Body、Heart", "Heart (核心)、Body (主體)、Crema (咖啡脂)", "Body、Heart、Crema", "Heart、Crema、Body"], correct: 1, explanation: "底層最深色為 Heart，中間為琥珀色 Body，頂層為綿密金黃色 Crema。" },
-  { question: "門市標準奶泡蒸煮的最佳理想溫度區間為何？", options: ["50°C ~ 55°C", "60°C ~ 65°C", "75°C ~ 80°C", "85°C 以上"], correct: 1, explanation: "蒸奶最適溫度為 60°C ~ 65°C，能釋放乳糖甜感且不破壞蛋白質。" },
-  { question: "產區位於「亞太地區（如蘇門答臘）」的咖啡豆，通常具備什麼主要風味？", options: ["柑橘香與茉莉花香", "可可堅果與柔和果酸", "厚重草本、香料與泥土芳香", "輕盈茶感與蜜桃甜"], correct: 2, explanation: "蘇門答臘等亞太產區多採半水洗處理法，呈現濃郁草本與香料芳香。" },
-  { question: "標準法式濾壓壺官方建議的浸泡萃取時間是多久？", options: ["2 分鐘", "3 分鐘", "4 分鐘", "5 分鐘"], correct: 2, explanation: "法式濾壓壺建議浸泡時間為完整的 4 分鐘。" },
-  { question: "星巴克標準手沖咖啡的官方建議粉水比為何？", options: ["1 : 12", "1 : 15", "1 : 16", "1 : 18"], correct: 2, explanation: "標準手沖比例為 1:16（10g 咖啡粉配 160ml 水）。" },
-  { question: "生豆處理法中的「半水洗法」在印尼當地又稱為什麼？", options: ["Giling Basah", "Monsooning", "Pulped Natural", "Double Washed"], correct: 0, explanation: "半水洗在印尼稱為 Giling Basah（濕刨法），使豆體保留厚實草本醇度。" },
-  { question: "下列哪一款咖啡豆屬於星巴克經典的「黃金烘焙」？", options: ["Pike Place 派克市場", "Willow Blend 輕柳綜合", "Caffè Verona 佛羅娜", "Sumatra 蘇門答臘"], correct: 1, explanation: "輕柳綜合 (Willow Blend) 屬於黃金烘焙。" },
-  { question: "品嚐咖啡的四大特徵中，指「咖啡在舌面上重量與黏稠質地」的是哪一項？", options: ["Aroma (香氣)", "Acidity (酸度)", "Body (醇度)", "Flavor (風味)"], correct: 2, explanation: "醇度 (Body) 描述的是咖啡在舌頭與上顎間感受到的厚實重量與觸感。" }
-];
+  // 已移除固定題庫，全面改由 AI 根據門市上傳之咖啡知識與系統咖啡豆寶典動態隨機出題
 
 const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
 
@@ -5342,38 +5397,113 @@ ${recipesContext}
     const quizCompletedStaff = computed(() => allActivePartners.value.filter(p => weeklyQuizRecords.value[p.name]));
     const quizPendingStaff = computed(() => allActivePartners.value.filter(p => !weeklyQuizRecords.value[p.name]));
 
-    const currentQuizQuestions = computed(() => {
-      const weekStr = currentWeekQuizId.value;
-      let seed = 0;
-      for (let i = 0; i < weekStr.length; i++) seed += weekStr.charCodeAt(i);
+    // 動態儲存當前測驗的 5 道題目 (無固定題庫，由 AI 即時根據咖啡知識與咖啡豆寶典生成)
+    const currentQuizQuestions = ref([]);
+    const isGeneratingWeeklyQuiz = ref(false);
 
-      let pool = [...masterQuizPool];
-      if (coffeeKnowledgeList.value.length > 0) {
-        coffeeKnowledgeList.value.forEach(item => {
-          if (item.title && item.content) {
-            pool.unshift({
-              question: `【門市知識考驗】關於「${item.title}」的要點，下列何者符合門市發布之標準？`,
-              options: [
-                item.content.slice(0, 32) + "...",
-                "非門市標準操作規範",
-                "僅適用於特定外送活動",
-                "規範無特別硬性限制"
-              ],
-              correct: 0,
-              explanation: `依門市知識庫紀錄：${item.content.slice(0, 80)}...`
-            });
-          }
+    // 當網路瞬斷或 AI 忙碌時的「純系統資料動態組題器」（同樣 100% 取自系統咖啡豆與已上傳知識，無固定題庫）
+    const buildDynamicQuestionsFromSystemData = () => {
+      const generated = [];
+      const shuffledKnowledge = [...(coffeeKnowledgeList.value || [])].sort(() => Math.random() - 0.5);
+      const shuffledBeans = [...(starbucksCoreBeans.value || [])].sort(() => Math.random() - 0.5);
+
+      // 1. 先從過去上傳的咖啡知識動態抽取題目
+      shuffledKnowledge.slice(0, 2).forEach((kItem) => {
+        if (!kItem || !kItem.title || !kItem.content) return;
+        const cleanText = String(kItem.content).replace(/\s+/g, ' ').trim();
+        const otherBeans = shuffledBeans.slice(0, 3);
+        const opts = [
+          { text: cleanText, isCorrect: true },
+          { text: `此規範僅適用於${otherBeans[0]?.name || '黃金烘焙豆款'}之冷萃調理，沖煮時須將水溫降至 80°C 以下並縮短浸泡時間。`, isCorrect: false },
+          { text: `在門市操作上須改採半水洗濕刨法之粗研磨設定（刻度 9），並將粉水比固定為 1:18 方可呈現標準風味。`, isCorrect: false },
+          { text: `其風味表現主要取決於蒸奶打發溫度與焦糖淋醬比例，與生豆產區風土、處理法及烘焙曲線無直接關聯。`, isCorrect: false }
+        ].sort(() => Math.random() - 0.5);
+
+        generated.push({
+          question: `【門市上傳知識考驗】關於門市發布之「${kItem.title}」專業內容，下列敘述何者完全正確？`,
+          options: opts.map(o => o.text),
+          correct: opts.findIndex(o => o.isCorrect),
+          explanation: `依據門市上傳之咖啡知識（${kItem.title}）：${cleanText}`
+        });
+      });
+
+      // 2. 再從系統中的咖啡豆寶典動態隨機抽取豆款互相交叉比對出題
+      for (let i = 0; i < shuffledBeans.length && generated.length < 5; i++) {
+        const targetBean = shuffledBeans[i];
+        const distractors = shuffledBeans.filter(b => b.name !== targetBean.name).sort(() => Math.random() - 0.5).slice(0, 3);
+        if (distractors.length < 3) continue;
+
+        const formatBeanDesc = (b) => `屬於「${b.roast}」（產區：${b.region}｜處理法：${b.processing}），展現「${b.flavorNotes}」風味，酸度為${b.acidity}、醇度為${b.body}，適合搭配${b.foodPairing}。`;
+        const opts = [
+          { text: formatBeanDesc(targetBean), isCorrect: true },
+          { text: formatBeanDesc(distractors[0]), isCorrect: false },
+          { text: formatBeanDesc(distractors[1]), isCorrect: false },
+          { text: formatBeanDesc(distractors[2]), isCorrect: false }
+        ].sort(() => Math.random() - 0.5);
+
+        generated.push({
+          question: `【咖啡豆寶典實戰】關於系統中「${targetBean.name} (${targetBean.enName || ''})」的官方烘焙度、產區處理法與風味特徵，下列何者正確？`,
+          options: opts.map(o => o.text),
+          correct: opts.findIndex(o => o.isCorrect),
+          explanation: `【${targetBean.name}】官方設定：${formatBeanDesc(targetBean)}`
         });
       }
+      return generated.slice(0, 5);
+    };
 
-      const selected = [];
-      const tempPool = [...pool];
-      for (let i = 0; i < 5; i++) {
-        const index = (seed + i * 7) % tempPool.length;
-        selected.push(tempPool.splice(index, 1)[0] || masterQuizPool[i]);
+    // 核心：呼叫 Gemini AI 根據「過去上傳的咖啡知識」與「系統中的咖啡豆寶典」隨機生成 5 道深度考題
+    const generateAiQuizFromKnowledgeAndBeans = async () => {
+      const shuffledKnowledge = [...(coffeeKnowledgeList.value || [])].sort(() => Math.random() - 0.5).slice(0, 8);
+      const shuffledBeans = [...(starbucksCoreBeans.value || [])].sort(() => Math.random() - 0.5).slice(0, 10);
+
+      const knowledgeContext = shuffledKnowledge.length > 0
+        ? shuffledKnowledge.map((k, idx) => `[上傳知識 ${idx + 1}] 主題：${k.title}｜內容：${k.content}`).join('\n')
+        : '（目前尚無額外上傳知識，請全數由下方系統咖啡豆寶典與星巴克黑圍裙專業知識出題）';
+
+      const beansContext = shuffledBeans.map((b, idx) =>
+        `[系統咖啡豆 ${idx + 1}] 名稱：${b.name} (${b.enName})｜分類：${b.category}｜烘焙度：${b.roast}｜產區：${b.region}｜處理法：${b.processing}｜酸度：${b.acidity}｜醇度：${b.body}｜風味：${b.flavorNotes}｜搭配食物：${b.foodPairing}｜介紹：${b.description}`
+      ).join('\n');
+
+      const prompt = `你是一位嚴謹的台灣星巴克黑圍裙認證主考官。請完全根據以下門市系統中的【過去上傳的咖啡知識】與【系統中的咖啡豆寶典資料】，為夥伴隨機設計 5 道「高深度、高鑑別度」的單選題（隨機碼：${Date.now()}）：
+
+【素材一：門市過去上傳的咖啡知識】
+${knowledgeContext}
+
+【素材二：系統中的咖啡豆寶典資料】
+${beansContext}
+
+【嚴格命題規範】：
+1. 題目來源：若【素材一】有資料，請至少出 2~3 題考驗【素材一】的咖啡知識細節，其餘題目考驗【素材二】各款咖啡豆的「烘焙度、產區、處理法、酸醇度、風味筆記與搭配食物」比較；若【素材一】無資料，則 5 題皆由【素材二】咖啡豆寶典深入出題。
+2. 提升答案深度與鑑別度（禁止明顯送分題）：
+   - 每題必須有 4 個選項 (options)，且 **4 個選項的字數必須相近（約 25~50 字）、語氣皆須專業完整**。
+   - 3 個錯誤誘答選項必須拿系統裡「其他咖啡豆的真實特徵、不同處理法（水洗/半水洗/日曬）、不同烘焙度（黃金/中度/深度）或微調後的沖煮數據」來混淆，讓夥伴無法靠直覺或選項長度猜中，必須真正讀懂咖啡知識與豆款資料才能選對！
+3. 正確答案位置 (correct: 0~3) 請在 5 題中隨機分佈，並在 explanation 提供詳盡的知識解析。
+
+請只輸出純 JSON 陣列格式（不要加 markdown 語法）：
+[
+  {
+    "question": "題目內容...",
+    "options": ["選項A完整敘述", "選項B完整敘述", "選項C完整敘述", "選項D完整敘述"],
+    "correct": 0,
+    "explanation": "詳細解析..."
+  }
+]`;
+
+      const rawText = await callGeminiApi([{ text: prompt }], true, 0.75);
+      const match = rawText.match(/\[[\s\S]*\]/);
+      const cleanJson = match ? match[0] : rawText.replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
+      const parsed = JSON.parse(cleanJson);
+
+      if (Array.isArray(parsed) && parsed.length >= 5) {
+        return parsed.slice(0, 5).map(q => ({
+          question: String(q.question || '').trim(),
+          options: Array.isArray(q.options) && q.options.length === 4 ? q.options.map(o => String(o).trim()) : ['選項A', '選項B', '選項C', '選項D'],
+          correct: (typeof q.correct === 'number' && q.correct >= 0 && q.correct <= 3) ? q.correct : 0,
+          explanation: String(q.explanation || '請參考門市咖啡知識與豆寶典規範。').trim()
+        }));
       }
-      return selected;
-    });
+      throw new Error('AI 回傳題數不足');
+    };
 
     const calculateCombinedScore = (post) => {
       if (!post) return 0;
@@ -8288,22 +8418,56 @@ ${recipesContext}
       }
     };
 
-    const startWeeklyQuiz = () => {
+    const startWeeklyQuiz = async () => {
       if (!currentPartner.value) return alert('請先登入！');
+
+      // 若本週已作答完成，直接載入當時作答儲存的專屬 AI 考題與解析
       if (myQuizResult.value) {
-        userAnswers.value = [...myQuizResult.value.answers];
+        if (Array.isArray(myQuizResult.value.questions) && myQuizResult.value.questions.length > 0) {
+          currentQuizQuestions.value = myQuizResult.value.questions;
+        } else if (currentQuizQuestions.value.length === 0) {
+          currentQuizQuestions.value = buildDynamicQuestionsFromSystemData();
+        }
+        userAnswers.value = [...(myQuizResult.value.answers || [0, 0, 0, 0, 0])];
         quizScore.value = myQuizResult.value.score;
         quizSubmitted.value = true;
-      } else {
-        userAnswers.value = [null, null, null, null, null];
-        quizSubmitted.value = false;
-        quizScore.value = 0;
+        showQuizModal.value = true;
+        return;
       }
+
+      // 尚未測驗：立即開啟視窗並顯示 AI 命題進度，由 AI 即時根據上傳知識與咖啡豆寶典隨機出 5 題
+      userAnswers.value = [null, null, null, null, null];
+      quizSubmitted.value = false;
+      quizScore.value = 0;
+      isGeneratingWeeklyQuiz.value = true;
+      currentQuizQuestions.value = [
+        {
+          question: '🤖 AI 考官正在翻閱「過去上傳的咖啡知識」與「咖啡豆寶典」，為您隨機生成 5 道深度考題中，請稍候約 2~3 秒...',
+          options: [],
+          correct: 0,
+          explanation: ''
+        }
+      ];
       showQuizModal.value = true;
+
+      try {
+        const aiQuestions = await generateAiQuizFromKnowledgeAndBeans();
+        currentQuizQuestions.value = aiQuestions;
+      } catch (e) {
+        console.warn('AI 即時出題切換為系統資料動態組題：', e);
+        currentQuizQuestions.value = buildDynamicQuestionsFromSystemData();
+      } finally {
+        isGeneratingWeeklyQuiz.value = false;
+      }
     };
 
     const submitWeeklyQuiz = async () => {
-      if (userAnswers.value.some(a => a === null)) return alert('還有題目尚未作答！');
+      if (isGeneratingWeeklyQuiz.value || currentQuizQuestions.value.length < 5 || !currentQuizQuestions.value[0]?.options?.length) {
+        return alert('⏳ AI 考官正在完成命題中，請稍候題目顯示後再作答！');
+      }
+      if (userAnswers.value.some(a => a === null)) {
+        return alert('還有題目尚未選擇答案喔！');
+      }
       let score = 0;
       currentQuizQuestions.value.forEach((q, idx) => {
         if (userAnswers.value[idx] === q.correct) score++;
@@ -8311,8 +8475,13 @@ ${recipesContext}
       quizScore.value = score;
       quizSubmitted.value = true;
       const partnerName = currentPartner.value.name;
+      // 將本次 AI 隨機生成的專屬題目 (questions) 一併存入雲端，確保「查看解析」時完全對應
       await db.ref(`sbux/quizRecords/${currentWeekQuizId.value}/${partnerName}`).set({
-        partnerName, score, answers: userAnswers.value, submittedAt: new Date().toISOString()
+        partnerName,
+        score,
+        answers: userAnswers.value,
+        questions: currentQuizQuestions.value,
+        submittedAt: new Date().toISOString()
       });
       alert(`🎉 測驗完成！得分：${score} / 5 分`);
     };
