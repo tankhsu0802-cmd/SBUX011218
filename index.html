@@ -145,9 +145,14 @@
     html.font-size-xlarge .text-\[10px\] { font-size: 13.5px !important; line-height: 1.45 !important; }
     html.font-size-xlarge .text-\[11px\] { font-size: 15px !important; line-height: 1.5 !important; }
 
-    button, label.cursor-pointer {
+    button {
       flex-shrink: 0;
       word-break: keep-all;
+    }
+    label.cursor-pointer {
+      word-break: break-word !important;
+      overflow-wrap: anywhere !important;
+      white-space: normal !important;
     }
 
     @media screen {
@@ -2260,36 +2265,37 @@
               </div>
             </div>
 
-            <!-- 永安小學堂：週測驗 Modal (z-[100000] 防遮擋 + 底部固定送出列 + 完整多行選項顯示) -->
+            <!-- 永安小學堂：週測驗 Modal (強制中文斷行防切字 + 支援重新呼叫 AI 測驗) -->
             <div v-if="showQuizModal" class="fixed inset-0 z-[100000] bg-black/70 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm">
-              <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full max-h-[86vh] flex flex-col p-4 sm:p-5 shadow-2xl border border-slate-200 dark:border-slate-700">
+              <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full max-h-[86vh] flex flex-col p-4 sm:p-5 shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
                 
                 <!-- 1. 固定頂部標題列 -->
                 <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3 flex-shrink-0">
-                  <div>
+                  <div class="min-w-0 pr-2">
                     <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
                       <span>📝</span> 永安咖啡小學堂週測驗 ({{ currentWeekQuizId }})
                     </h3>
-                    <p class="text-[10px] text-slate-400 mt-0.5">共 5 題實戰情境單選題，請詳閱四個選項後作答</p>
+                    <p class="text-[10px] text-slate-400 mt-0.5">由 AI 依據門市咖啡知識與豆寶典隨機命題</p>
                   </div>
-                  <button @click="showQuizModal = false" class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-slate-800 dark:text-slate-300 flex items-center justify-center text-xs font-bold">
+                  <button @click="showQuizModal = false" class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-slate-800 dark:text-slate-300 flex items-center justify-center text-xs font-bold flex-shrink-0">
                     ✕
                   </button>
                 </div>
 
                 <!-- 2. 獨立可捲動題目與完整選項區 -->
-                <div class="flex-1 overflow-y-auto py-3 pr-1 space-y-3.5">
-                  <div v-for="(q, qIndex) in currentQuizQuestions" :key="qIndex" class="space-y-2 bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700">
-                    <div class="text-xs font-black text-slate-900 dark:text-white leading-relaxed break-words">
+                <div class="flex-1 overflow-y-auto overflow-x-hidden py-3 pr-1 space-y-3.5">
+                  <div v-for="(q, qIndex) in currentQuizQuestions" :key="qIndex" class="space-y-2 bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700 overflow-hidden">
+                    <div class="text-xs font-black text-slate-900 dark:text-white leading-relaxed" style="word-break: break-word; overflow-wrap: anywhere;">
                       <span class="inline-block px-1.5 py-0.2 bg-emerald-800 text-white rounded text-[10px] font-mono mr-1">Q{{ qIndex + 1 }}</span>
                       {{ q.question }}
                     </div>
 
-                    <div class="space-y-1.5 pt-1">
+                    <div class="space-y-2 pt-1">
                       <label 
                         v-for="(opt, optIndex) in q.options" 
                         :key="optIndex" 
-                        class="flex items-start gap-2.5 p-2.5 rounded-xl border text-xs cursor-pointer transition select-none"
+                        style="word-break: break-word !important; overflow-wrap: anywhere !important; white-space: normal !important;"
+                        class="w-full min-w-0 flex items-start gap-2.5 p-2.5 rounded-xl border text-xs cursor-pointer transition select-none overflow-hidden"
                         :class="[
                           quizSubmitted
                             ? (optIndex === q.correct
@@ -2309,38 +2315,44 @@
                           :disabled="quizSubmitted"
                           class="mt-0.5 w-4 h-4 text-emerald-800 focus:ring-emerald-700 flex-shrink-0"
                         >
-                        <span class="flex-1 break-words whitespace-normal leading-relaxed">
-                          <b class="font-mono mr-1">{{ ['A.', 'B.', 'C.', 'D.'][optIndex] }}</b>{{ opt }}
-                        </span>
+                        <div class="flex-1 min-w-0 leading-relaxed" style="word-break: break-word !important; overflow-wrap: anywhere !important; white-space: normal !important;">
+                          <b class="font-mono mr-1">{{ ['A.', 'B.', 'C.', 'D.'][optIndex] }}</b>{{ String(opt).replace(/\s+/g, ' ') }}
+                        </div>
                       </label>
                     </div>
 
-                    <div v-if="quizSubmitted" class="p-2.5 bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/70 rounded-xl text-[11px] text-amber-950 dark:text-amber-200 leading-relaxed break-words mt-2">
+                    <div v-if="quizSubmitted && q.explanation" class="p-2.5 bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/70 rounded-xl text-[11px] text-amber-950 dark:text-amber-200 leading-relaxed mt-2" style="word-break: break-word; overflow-wrap: anywhere;">
                       💡 <b>專業解析：</b>{{ q.explanation }}
                     </div>
                   </div>
                 </div>
 
-                <!-- 3. 固定底部操作列 (絕不被底部導航列遮擋) -->
-                <div class="pt-3 border-t dark:border-slate-700 flex justify-between items-center gap-3 flex-shrink-0 bg-white dark:bg-slate-800">
-                  <div v-if="quizSubmitted" class="font-black text-emerald-700 dark:text-emerald-400 text-sm flex items-center gap-1.5">
-                    <span>🏆 測驗得分：{{ quizScore }} / 5 分</span>
+                <!-- 3. 固定底部操作列 -->
+                <div class="pt-3 border-t dark:border-slate-700 flex justify-between items-center gap-2 flex-shrink-0 bg-white dark:bg-slate-800">
+                  <div v-if="quizSubmitted" class="font-black text-emerald-700 dark:text-emerald-400 text-xs sm:text-sm flex items-center gap-1">
+                    <span>🏆 得分：{{ quizScore }} / 5 分</span>
                   </div>
                   <div v-else class="text-[11px] font-bold text-slate-500 dark:text-slate-400">
                     已作答 {{ userAnswers.filter(a => a !== null).length }} / 5 題
                   </div>
 
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-1.5">
                     <button 
                       v-if="!quizSubmitted" 
                       @click="submitWeeklyQuiz" 
-                      class="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-black shadow-md transition">
+                      class="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-black shadow-md transition">
                       ✅ 繳交測驗
                     </button>
                     <button 
+                      v-else 
+                      @click="myQuizResult && (weeklyQuizRecords[currentPartner.name] = null); startWeeklyQuiz()" 
+                      class="px-3 py-2 bg-amber-500 hover:bg-amber-400 active:scale-95 text-black rounded-xl text-xs font-black shadow-sm transition">
+                      🔄 重新 AI 測驗
+                    </button>
+                    <button 
                       @click="showQuizModal = false" 
-                      class="px-4 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold">
-                      {{ quizSubmitted ? '完成關閉' : '暫時離開' }}
+                      class="px-3.5 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold">
+                      關閉
                     </button>
                   </div>
                 </div>
