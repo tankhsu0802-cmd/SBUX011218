@@ -1258,7 +1258,7 @@
               <button 
                 @click="otherSubTab = 'quiz'" 
                 :class="otherSubTab === 'quiz' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300'" 
-                class="col-span-3 py-2 px-2 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95">
+                class="col-span-2 py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
                 <span class="text-base leading-none">📖</span>
                 <span class="text-[11px] tracking-tight whitespace-nowrap">永安小學堂</span>
               </button>
@@ -1266,11 +1266,18 @@
               <button 
                 @click="otherSubTab = 'passport'" 
                 :class="otherSubTab === 'passport' ? 'bg-amber-600 text-white shadow-sm ring-1 ring-amber-500' : 'bg-amber-50/90 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60'" 
-                class="col-span-3 py-2 px-2 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95">
+                class="col-span-2 py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
                 <span class="text-base leading-none">🛂</span>
                 <span class="text-[11px] tracking-tight whitespace-nowrap">護照與成就</span>
               </button>
-            </div>
+
+              <button 
+                @click="otherSubTab = 'fsa'" 
+                :class="otherSubTab === 'fsa' ? 'bg-rose-700 text-white shadow-sm ring-1 ring-rose-600' : 'bg-rose-50/90 dark:bg-rose-950/40 text-rose-900 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/60'" 
+                class="col-span-2 py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                <span class="text-base leading-none">🛡️</span>
+                <span class="text-[11px] tracking-tight whitespace-nowrap">FSA 食安評核</span>
+              </button>
 
             <!--  1：CA 100~300 黑圍裙課程 -->
             <div v-if="otherSubTab === 'academy'" class="space-y-3">
@@ -2538,6 +2545,310 @@
 
             </div>
 
+          <!-- 🛡️ 子頁籤 8：FY2026 食品安全衛生檢查紀錄表 (20260514版) & 2026 FSA 條文自動對照系統 -->
+            <div v-if="otherSubTab === 'fsa'" class="space-y-4">
+              
+              <!-- 1. 頂部橫幅與 2026 官方條文庫檢視器 -->
+              <div class="bg-gradient-to-r from-rose-900 via-red-900 to-zinc-900 rounded-2xl p-4 text-white shadow-sm space-y-3 border border-rose-700/50">
+                <div class="flex justify-between items-start flex-wrap gap-2">
+                  <div>
+                    <span class="px-2 py-0.5 bg-white/20 rounded text-[10px] font-mono font-bold">20260514版</span>
+                    <h3 class="font-black text-sm flex items-center gap-1.5 mt-1">
+                      <span>🛡️</span> FY2026 食品安全衛生檢查紀錄表 ＆ AI 條文核對
+                    </h3>
+                  </div>
+                  <button 
+                    @click="showFsaClauseLibrary = !showFsaClauseLibrary" 
+                    class="px-2.5 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-xl text-[11px] font-bold border border-white/20 transition whitespace-nowrap">
+                    📚 {{ showFsaClauseLibrary ? '收起 2026 條文庫' : '查看 2026 標準條文 (' + fsa2026OfficialClauses.length + '條)' }}
+                  </button>
+                </div>
+
+                <!-- 展開：內建 2026 FSA 標準條文速查庫 -->
+                <div v-if="showFsaClauseLibrary" class="p-3 bg-black/40 rounded-xl border border-rose-400/30 space-y-2 text-xs">
+                  <input 
+                    v-model="fsaClauseSearch" 
+                    type="text" 
+                    placeholder="搜尋條文編號 (如 1.2a、2.1b、4.2o) 或關鍵字 (如 冰杓、抹布、溫度、效期)..." 
+                    class="w-full px-3 py-1.5 rounded-lg bg-zinc-900/90 border border-white/20 text-white text-xs"
+                  >
+                  <div class="max-h-60 overflow-y-auto divide-y divide-white/10 pr-1 text-[11px] space-y-1.5">
+                    <div v-for="cl in filteredFsaClauses" :key="cl.code" class="pt-1.5">
+                      <div class="font-black text-amber-300">
+                        <span class="px-1.5 py-0.2 bg-rose-600 text-white font-mono rounded text-[10px] mr-1">{{ cl.code }}</span>
+                        <span>{{ cl.title }}</span>
+                        <span class="text-[10px] text-rose-200 ml-1">({{ cl.category }})</span>
+                      </div>
+                      <div class="text-slate-200 text-[10px] pl-1 mt-0.5 leading-relaxed">
+                        細項：{{ cl.subItems.join(' ／ ') }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. 手機現場巡檢輸入區 (表頭資訊 + 口語缺失速記 + 拍照上傳) -->
+              <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3 text-xs">
+                <div class="flex justify-between items-center border-b dark:border-slate-700 pb-2">
+                  <h4 class="font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <span>📝</span> 步驟 1：填寫評核表頭 ＆ 輸入現場不符合事項
+                  </h4>
+                  <button @click="resetFsaCurrentForm" class="text-[10px] text-slate-400 hover:text-rose-600 font-bold">
+                    🔄 重置表單
+                  </button>
+                </div>
+
+                <!-- 對應《表格.pdf》的 5 個表頭欄位 -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <div>
+                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5">門市店號</label>
+                    <input v-model="fsaForm.storeId" type="text" placeholder="如：011218" class="w-full px-2.5 py-1.5 rounded-xl border dark:bg-slate-700 dark:text-white font-mono font-bold">
+                  </div>
+                  <div>
+                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5">門市名稱</label>
+                    <input v-model="fsaForm.storeName" type="text" placeholder="如：永和永安" class="w-full px-2.5 py-1.5 rounded-xl border dark:bg-slate-700 dark:text-white font-bold">
+                  </div>
+                  <div>
+                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5">檢查日期</label>
+                    <input v-model="fsaForm.auditDate" type="date" class="w-full px-2 py-1.5 rounded-xl border dark:bg-slate-700 dark:text-white font-mono">
+                  </div>
+                  <div>
+                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5">評核員姓名</label>
+                    <input v-model="fsaForm.auditorName" type="text" placeholder="評核專員姓名" class="w-full px-2.5 py-1.5 rounded-xl border dark:bg-slate-700 dark:text-white font-bold">
+                  </div>
+                  <div>
+                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5">值班經理姓名</label>
+                    <input v-model="fsaForm.dutyManagerName" type="text" placeholder="當班值班姓名" class="w-full px-2.5 py-1.5 rounded-xl border dark:bg-slate-700 dark:text-white font-bold">
+                  </div>
+                  <div>
+                    <label class="text-[10px] text-slate-500 font-bold block mb-0.5">所在縣市 (地方條例)</label>
+                    <select v-model="fsaForm.city" @change="applyCityRegulationDefaults" class="w-full px-2 py-1.5 rounded-xl border dark:bg-slate-700 dark:text-white font-bold">
+                      <option value="新北市">新北市</option>
+                      <option value="台北市">台北市</option>
+                      <option value="桃園市">桃園市</option>
+                      <option value="高雄市">高雄市</option>
+                      <option value="其他縣市">其他縣市</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- 現場口語速記輸入框 -->
+                <div class="pt-1">
+                  <label class="text-[11px] font-black text-rose-800 dark:text-rose-300 block mb-1">
+                    📱 現場不符合事項隨手記（打字或語音輸入皆可，AI 會自動對照 1.1a~4.3j 條文編號與制定行動方案）：
+                  </label>
+                  <textarea 
+                    v-model="fsaForm.rawNotes" 
+                    rows="4" 
+                    placeholder="範例：&#10;1. 前區洗手槽裡面有冰塊跟咖啡渣&#10;2. 吧台小冰箱牛奶量出來 7.8 度&#10;3. 抹布直接放在濃縮機檯面上，而且計時器沒按&#10;4. 開封的燕麥奶沒貼效期標籤&#10;5. 多用途清潔劑噴瓶沒有標示分裝日" 
+                    class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 dark:text-white text-xs leading-relaxed"
+                  ></textarea>
+                </div>
+
+                <!-- 附加現場缺失照片 -->
+                <div class="flex items-center gap-2">
+                  <label class="flex-1 py-2 px-3 border-2 border-dashed border-rose-400 dark:border-rose-700 bg-rose-50/40 dark:bg-rose-950/20 rounded-xl text-center cursor-pointer hover:bg-rose-50 transition">
+                    <input type="file" accept="image/*" multiple @change="handleFsaPhotosUpload" class="hidden">
+                    <span v-if="fsaForm.photos.length === 0" class="text-[11px] font-bold text-rose-800 dark:text-rose-300">
+                      📷 附加現場缺失照片 / 手寫筆記照片 (選填，可多選)
+                    </span>
+                    <span v-else class="text-[11px] font-black text-emerald-700 dark:text-emerald-400">
+                      ✅ 已附加 {{ fsaForm.photos.length }} 張照片
+                    </span>
+                  </label>
+                  <button v-if="fsaForm.photos.length > 0" @click="fsaForm.photos = []" class="px-2.5 py-2 bg-slate-100 dark:bg-slate-700 text-slate-500 rounded-xl text-[11px] font-bold">
+                    清除
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 pt-1">
+                  <button 
+                    @click="analyzeFsaNotesToOfficialTable" 
+                    :disabled="isAnalyzingFsa || (!fsaForm.rawNotes.trim() && fsaForm.photos.length === 0)"
+                    class="col-span-2 py-2.5 bg-rose-700 hover:bg-rose-600 disabled:bg-slate-300 text-white rounded-xl font-black text-xs shadow transition active:scale-95 flex items-center justify-center gap-1.5">
+                    <span v-if="isAnalyzingFsa" class="animate-spin">🔄</span>
+                    <span v-else>🤖</span>
+                    <span>{{ isAnalyzingFsa ? '正在核對 2026 條文與生成行動方案...' : 'AI 自動辨識條文並填入檢查表' }}</span>
+                  </button>
+
+                  <button 
+                    @click="addManualFsaViolationRow" 
+                    type="button"
+                    class="py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-xs transition active:scale-95">
+                    ➕ 手動加一列
+                  </button>
+                </div>
+              </div>
+
+              <!-- 3. 1:1 還原《FY2026 食品安全衛生檢查紀錄表 (20260514版)》預覽與編輯區 -->
+              <div class="bg-white dark:bg-slate-800 rounded-2xl border-2 border-slate-800 dark:border-slate-500 overflow-hidden shadow-md text-xs">
+                
+                <!-- 官方表單標題與表頭 -->
+                <div class="bg-slate-900 text-white p-3.5 space-y-2">
+                  <div class="flex justify-between items-center flex-wrap gap-2">
+                    <div>
+                      <h4 class="font-black text-sm tracking-wide">FY2026 食品安全衛生檢查紀錄表 (含法規及集團要求)</h4>
+                      <span class="text-[10px] text-slate-400 font-mono">(20260514版)</span>
+                    </div>
+                    <div class="flex gap-1.5">
+                      <button @click="saveCurrentFsaReportToCloud" class="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-[11px] font-bold shadow active:scale-95 transition">
+                        💾 儲存紀錄表
+                      </button>
+                      <button @click="copyOfficialFsaTableText(fsaForm)" class="px-2.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-black rounded-lg text-[11px] font-black shadow active:scale-95 transition">
+                        📋 複製整份表格
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 pt-2 border-t border-white/15 text-[11px]">
+                    <div><span class="text-slate-400">門市店號：</span><b class="font-mono text-amber-300">{{ fsaForm.storeId || '-' }}</b></div>
+                    <div><span class="text-slate-400">門市名稱：</span><b>{{ fsaForm.storeName || '-' }}</b></div>
+                    <div><span class="text-slate-400">檢查日期：</span><b class="font-mono">{{ fsaForm.auditDate || '-' }}</b></div>
+                    <div><span class="text-slate-400">評核員：</span><b>{{ fsaForm.auditorName || '-' }}</b></div>
+                    <div><span class="text-slate-400">值班經理：</span><b>{{ fsaForm.dutyManagerName || '-' }}</b></div>
+                  </div>
+                </div>
+
+                <!-- 上半部表格：缺失項目 | 缺失說明 (含標準細項、現場情況與行動方案) -->
+                <div class="overflow-x-auto">
+                  <table class="w-full border-collapse text-xs">
+                    <thead>
+                      <tr class="bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white font-black text-center">
+                        <th class="py-2 px-2 border border-slate-400 dark:border-slate-600 w-[34%]">缺失項目 (條文編號與名稱)</th>
+                        <th class="py-2 px-2 border border-slate-400 dark:border-slate-600 w-[66%]">缺失說明 (違反細項、現場狀況與行動方案)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(vItem, vIdx) in fsaForm.violations" :key="vIdx" class="border-b border-slate-300 dark:border-slate-700 align-top">
+                        <!-- 左欄：缺失項目 (可下拉切換或直接修改條文) -->
+                        <td class="p-2.5 border border-slate-300 dark:border-slate-700 bg-rose-50/30 dark:bg-rose-950/20 space-y-1.5">
+                          <div class="flex justify-between items-center gap-1">
+                            <span class="px-1.5 py-0.5 bg-rose-700 text-white font-mono font-black rounded text-[10px]">
+                              缺失 #{{ vIdx + 1 }}
+                            </span>
+                            <button @click="fsaForm.violations.splice(vIdx, 1)" class="text-slate-400 hover:text-rose-600 text-xs px-1" title="刪除此列">✕</button>
+                          </div>
+                          <select 
+                            @change="onSelectFsaClauseCode(vItem, $event.target.value)" 
+                            :value="vItem.clauseCode"
+                            class="w-full p-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-[11px] font-bold">
+                            <option value="">-- 選擇 2026 標準條文 --</option>
+                            <option v-for="cl in fsa2026OfficialClauses" :key="cl.code" :value="cl.code">
+                              {{ cl.code }} {{ cl.title }}
+                            </option>
+                          </select>
+                          <textarea 
+                            v-model="vItem.missingItemTitle" 
+                            rows="2" 
+                            placeholder="條文編號與名稱 (如：4.2o 抹布應正確存放)"
+                            class="w-full p-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 font-black text-slate-900 dark:text-white text-xs leading-snug"
+                          ></textarea>
+                        </td>
+
+                        <!-- 右欄：缺失說明 (違反細項 + 現場狀況 + 立即改善與預防行動方案) -->
+                        <td class="p-2.5 border border-slate-300 dark:border-slate-700 space-y-2">
+                          <div>
+                            <span class="text-[10px] font-bold text-rose-700 dark:text-rose-400 block mb-0.5">🔍 違反細項與現場狀況描述：</span>
+                            <textarea 
+                              v-model="vItem.findingDesc" 
+                              rows="2" 
+                              placeholder="輸入違反之標準細項與現場位置/品名描述..."
+                              class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white text-xs leading-relaxed"
+                            ></textarea>
+                          </div>
+                          <div>
+                            <span class="text-[10px] font-bold text-emerald-800 dark:text-emerald-400 block mb-0.5">🛠️ 改善與預防行動方案 (Action Plan)：</span>
+                            <textarea 
+                              v-model="vItem.actionPlan" 
+                              rows="3" 
+                              placeholder="【立即矯正】...&#10;【預防再發】..."
+                              class="w-full p-2 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50/40 dark:bg-emerald-950/30 text-slate-900 dark:text-white text-xs leading-relaxed"
+                            ></textarea>
+                          </div>
+                        </td>
+                      </tr>
+
+                      <tr v-if="fsaForm.violations.length === 0">
+                        <td colspan="2" class="py-6 text-center text-slate-400 text-xs border border-slate-300 dark:border-slate-700">
+                          目前尚無缺失項目（請於上方輸入現場速記後點擊「🤖 AI 自動辨識條文並填入檢查表」）
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- 下半部表格：法規及集團要求必檢項目 (項目 | 內容 | 符合/不符合) -->
+                <div class="overflow-x-auto border-t-2 border-slate-800 dark:border-slate-500">
+                  <table class="w-full border-collapse text-xs">
+                    <thead>
+                      <tr class="bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white font-black text-center">
+                        <th class="py-2 px-2 border border-slate-400 dark:border-slate-600 w-[22%]">項目</th>
+                        <th class="py-2 px-2 border border-slate-400 dark:border-slate-600 w-[56%]">內容</th>
+                        <th class="py-2 px-2 border border-slate-400 dark:border-slate-600 w-[22%]">符合 / 不符合</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(chk, cIdx) in fsaForm.statutoryChecklist" :key="cIdx" class="border-b border-slate-300 dark:border-slate-700">
+                        <td class="p-2 border border-slate-300 dark:border-slate-700 font-black text-center bg-slate-50 dark:bg-slate-900/50">
+                          {{ chk.category }}
+                        </td>
+                        <td class="p-2 border border-slate-300 dark:border-slate-700 whitespace-pre-line leading-relaxed text-slate-800 dark:text-slate-200">
+                          {{ chk.content }}
+                        </td>
+                        <td class="p-2 border border-slate-300 dark:border-slate-700 text-center">
+                          <div class="flex flex-col gap-1">
+                            <button 
+                              type="button"
+                              @click="cycleStatutoryStatus(chk)"
+                              class="py-1.5 px-2 rounded-lg font-black text-xs border transition active:scale-95"
+                              :class="{
+                                'bg-emerald-100 text-emerald-900 border-emerald-400 dark:bg-emerald-950/70 dark:text-emerald-300': chk.status === '符合',
+                                'bg-rose-600 text-white border-rose-700 shadow-sm': chk.status === '不符合',
+                                'bg-slate-100 text-slate-400 border-slate-300 dark:bg-slate-800 dark:border-slate-700': chk.status === '不適用'
+                              }">
+                              {{ chk.status === '符合' ? '✓ 符合' : (chk.status === '不符合' ? '✕ 不符合' : '— 不適用') }}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+
+              <!-- 4. 歷史已存檔之 FSA 檢查紀錄表清單 -->
+              <div v-if="fsaAuditReports.length > 0" class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-2.5">
+                <h4 class="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <span>🗂️</span> 歷史已存檔 FSA 檢查紀錄表 ({{ fsaAuditReports.length }})
+                </h4>
+                <div class="space-y-2">
+                  <div v-for="rep in fsaAuditReports" :key="rep.id" class="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 flex justify-between items-center gap-2 text-xs">
+                    <div>
+                      <div class="font-black text-slate-900 dark:text-white">
+                        {{ rep.auditDate }} ｜ {{ rep.storeName }} ({{ rep.storeId }})
+                      </div>
+                      <div class="text-[11px] text-slate-500 mt-0.5">
+                        評核員：{{ rep.auditorName }} · 值班：{{ rep.dutyManagerName || '-' }} · 共 <b class="text-rose-600">{{ (rep.violations || []).length }}</b> 項缺失
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <button @click="loadSavedFsaReport(rep)" class="px-2.5 py-1 bg-emerald-800 text-white rounded-lg text-[11px] font-bold">
+                        📂 載入檢視
+                      </button>
+                      <button @click="copyOfficialFsaTableText(rep)" class="px-2.5 py-1 bg-amber-400 text-black rounded-lg text-[11px] font-bold">
+                        📋 複製
+                      </button>
+                      <button @click="deleteFsaReport(rep.id)" class="px-2 py-1 text-slate-400 hover:text-rose-600 text-xs">
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+              
           </section>
 
           <!-- 頁籤 5：關於 -->
@@ -5121,6 +5432,356 @@ ${recipesContext}
       });
       recipeQuizModal.value.score = sc;
       recipeQuizModal.value.submitted = true;
+    };
+
+    // ==================== 🛡️ 2026 食品安全評核 (FSA) 官方完整條文庫 (1.1a ~ 4.3j) ＆ 20260514版檢查紀錄表引擎 ====================
+    const fsa2026OfficialClauses = [
+      // 【1. 夥伴行為】
+      { code: '1.1a', category: '夥伴行為', title: '確保不在生病時工作', subItems: ['嚴重咳嗽及流鼻涕', '出現腹瀉症狀', '出現嘔吐症狀', '出現發燒症狀', '黃疸(皮膚或眼睛發黃)', '手部/手腕/手臂出現任何明顯的病灶', '手部/手腕繃帶外露或未使用拋棄式手套包覆'] },
+      { code: '1.1b', category: '夥伴行為', title: '免手觸接觸：正確使用手套', subItems: ['手部直接接觸冰塊', '手部直接接觸未包裝的即食品', '清洗/重複使用拋棄式手套'] },
+      { code: '1.1c', category: '夥伴行為', title: '在需要時洗手', subItems: ['進班前及休息後未洗手', '上廁所後未洗手', '戴上拋棄式手套處理食物前未洗手', '處理垃圾後未洗手', '咳嗽或擤鼻涕後未洗手', '飲食、吸菸、嚼菸草或口香糖後未洗手', '接觸臉部、頭髮或皮膚後未洗手', '執行清潔工作後未洗手', '清理桌面/處理髒盤或設備後未洗手'] },
+      { code: '1.1d', category: '夥伴行為', title: '正確洗手', subItems: ['未使用肥皂/洗手液洗手', '未進行至少10-15秒的搓洗', '洗手後未擦乾', '在圍裙上擦手', '在非指定的洗手槽洗手'] },
+      { code: '1.2a', category: '夥伴行為', title: '應設置洗手槽、提供清潔用品並正確使用', subItems: ['廁所洗手槽被阻隔', '後區洗手槽被阻隔', '車道型門市洗手槽被阻隔', '前區洗手槽被阻隔', '洗手槽內部/上方存放物品', '在指定洗手槽進行洗手以外的工作', '在指定洗手槽進行洗手以外工作的證據(洗手槽中出現冰塊內容物、吸管、咖啡牛奶等)', '洗手液分配器空了', '洗手液分配器故障/未裝設', '擦手紙分配器空了', '擦手紙分配器故障/未裝設', '烘手機故障/未裝設'] },
+      { code: '1.2b', category: '夥伴行為', title: '指甲/頭髮/飾品應符合標準', subItems: ['指甲未修剪/保持清潔', '黏貼人工指甲/指甲油/有其他裝飾', '長度超過肩膀的頭髮沒有紮起', '發現食物操作夥伴手腕配戴飾品'] },
+      { code: '1.2c', category: '夥伴行為', title: '值班經理應能正確回答本職學能題目', subItems: ['無法正確回答問題1「夥伴出現哪五種疾病的症狀應禁止/限制上班？」', '無法正確回答問題2「夥伴表示經確診法定傳染病、依然還有症狀，應該採取哪兩項措施？」', '無法正確回答問題3「請提供門市內發生嘔吐/腹瀉(生物危害)事件的書面處理流程」'] },
+      { code: '1.2d', category: '夥伴行為', title: '夥伴的食物/飲料應妥善存放', subItems: ['夥伴的食物/飲料未存放於冰箱內指定的有蓋容器', '夥伴的食物/飲料放在架上，旁邊或下方還有乾貨/乾淨餐具/拋棄式物品', '存放夥伴食品的容器未標示'] },
+      { code: '1.2e', category: '夥伴行為', title: '應遵守飲食及吸菸規定', subItems: ['在前區食品儲存區/準備區吃東西或喝飲料', '在後區食品儲存區/準備區吃東西或喝飲料', '在餐飲服務區抽香菸/電子菸/嚼菸草/嚼口香糖'] },
+      { code: '1.3a', category: '夥伴行為', title: '夥伴制服應保持乾淨', subItems: ['使用洗手間沒有脫下圍裙', '休息時沒有脫下圍裙', '清潔洗手間沒有脫下圍裙', '清運垃圾到店外沒有脫下圍裙', '開始工作時圍裙外觀髒汙'] },
+      { code: '1.3b', category: '夥伴行為', title: '夥伴的非食品個人物品應妥善存放', subItems: ['夥伴的非食品個人物品與食品/食品接觸物放在一起'] },
+      { code: '1.3c', category: '夥伴行為', title: '應按照規定進行食安培訓/備妥有效認證', subItems: ['未依規定完成食安培訓或認證'] },
+      { code: '1.3d', category: '夥伴行為', title: '應備妥衛生部門報告及許可證/行動計劃/門市自評報告', subItems: ['沒有健康檢查報告', '前次評核的行動計劃未完成', '內部評核或門市自評未完成'] },
+      { code: '1.3e', category: '夥伴行為', title: '食安標示應清楚可見', subItems: ['需時間/溫度控制食品展示區沒有「僅供展示」的標示', '清洗水槽未標示「清洗/沖洗/消毒」', '清洗水槽標示順序不正確', '清洗水槽「清洗/沖洗/消毒」標示毀損或無法辨識', '沒有洗手標示', '菜單或價目表上沒有過敏原資訊'] },
+
+      // 【2. 溫度管理】
+      { code: '2.1a', category: '溫度管理', title: '需時間/溫度控制安全食品(TCS)充分冷藏', subItems: ['完全沒有用於冷藏TCS食品的機器設備'] },
+      { code: '2.1b', category: '溫度管理', title: '需時間/溫度控制安全食品(TCS)冷藏溫度符合標準(台灣法規≤7°C)', subItems: ['吧台設備TCS產品超過溫度標準(台灣市場>7°C)', '即食RTD&E區TCS產品超過溫度標準(台灣市場>7°C)', '後區保存TCS產品超過溫度標準(台灣市場>7°C)', '冷藏工作台TCS產品超過冷藏溫度(台灣市場>7°C)', '直立式冷藏冰箱TCS產品超過冷藏溫度(台灣市場>7°C)', '展示櫃或其他設備TCS產品超過冷藏溫度(台灣市場>7°C)'] },
+      { code: '2.2a', category: '溫度管理', title: '冷藏設備不應超過規定的溫度範圍', subItems: ['前區(FOH)冰箱空氣溫度過高', '後區(BOH)冰箱溫度過高', '展示櫃冰箱溫度過高', '其他冰箱溫度過高'] },
+      { code: '2.2b', category: '溫度管理', title: '應備妥功能正常的數字溫度計', subItems: ['沒有數字溫度計', '數字溫度計無法正常運作/不準確'] },
+      { code: '2.2d', category: '溫度管理', title: '溫度紀錄應完整填寫-主要', subItems: ['缺少晚班冰箱/冷凍冰箱紀錄', '缺少早班冰箱/冷凍冰箱紀錄', '缺少冷藏展示櫃的中班溫度記錄', '缺少TCS冷藏食品收貨的溫度記錄', '未按規定紀錄矯正措施', '溫度日誌缺少一整天或一整週的紀錄', '提前完成溫度記錄'] },
+      { code: '2.3a', category: '溫度管理', title: '冷凍產品應保持凍結固態-次要', subItems: ['發現食物未結凍或局部解凍(觸感柔軟)'] },
+      { code: '2.3b', category: '溫度管理', title: '應配備正常運作的內部溫度計', subItems: ['前區冰箱/冷凍冰箱沒有內部溫度計或損壞', '後區冰箱/冷凍冰箱沒有內部溫度計或損壞', '展示櫃/自取式冰箱沒有內部溫度計或損壞', '其他冷藏設備沒有內部溫度計或損壞'] },
+      { code: '2.3c', category: '溫度管理', title: '冰箱門墊圈應妥善維修', subItems: ['前區冰箱/冷凍冰箱沒有墊圈或墊圈損壞', '後區冰箱/冷凍冰箱沒有墊圈或墊圈損壞', '其他冷藏設備沒有墊圈或墊圈損壞'] },
+      { code: '2.3d', category: '溫度管理', title: '冷藏設備通風良好-次要', subItems: ['後區冰箱/冷凍冰箱頂部存放的物品會阻擋通風口', '冷藏展示櫃中存放的物品會阻礙空氣流通', '展示櫃後方的外部散熱片有塊狀灰塵', '冰箱層架上鋪設了阻礙空氣流通的厚紙板'] },
+
+      // 【3. 病媒防治】
+      { code: '3.1a~d', category: '病媒防治', title: '無嚴重病媒出沒(依發現區域紀錄)', subItems: ['在食品櫃或糕點展示櫃內發現果蠅/家蠅/螞蟻', '在食物接觸表面發現果蠅/家蠅/螞蟻', '發現活老鼠、老鼠屍體、被啃咬的產品或包裝或鼠便', '在後區、前區或客席區發現蟑螂'] },
+      { code: '3.2a', category: '病媒防治', title: '無果蠅出沒-主要(依發現區域紀錄)', subItems: ['在店內觀察到5隻以上果蠅，未在食物或食物接觸面上發現'] },
+      { code: '3.2b', category: '病媒防治', title: '無家蠅出沒-主要(依發現區域紀錄)', subItems: ['在店內觀察到5隻以上家蠅，未在食物或食物接觸面上發現'] },
+      { code: '3.2c', category: '病媒防治', title: '無螞蟻出沒-主要(依發現區域紀錄)', subItems: ['櫥櫃或檯面上/非食品或食品接觸表面發現螞蟻'] },
+      { code: '3.2d', category: '病媒防治', title: '應預防病媒入侵', subItems: ['外部大門無法防止鼠類入侵', '前區牆面/天花板上發現孔洞', '後區牆面/天花板上發現孔洞', '穿牆水電管道沒有密封', '天花板缺少或移位'] },
+      { code: '3.2e', category: '病媒防治', title: '病媒防治裝置應正確存放(如適用)', subItems: ['在食品準備區上方放置病媒防治裝置', '在食品準備區上方放置捕蟲燈'] },
+      { code: '3.3a', category: '病媒防治', title: '無病媒出沒-次要', subItems: ['在店內觀察到少於5隻果蠅，未在食物或食物接觸面上發現', '在店內觀察到少於5隻家蠅，未在食物或食物接觸面上發現', '在捕蟲屋/捕捉裝置內發現蟲屍體'] },
+      { code: '3.3b', category: '病媒防治', title: '預防病媒藏匿', subItems: ['配管設備沒有與牆壁或檯面密合(位置)', '櫃子/檯面沒有與牆壁/防濺板接縫密合(位置)', '櫃子/檯面水平面/接縫未密封(位置)', '不銹鋼/工作檯面下的木頭腐壞(位置)', '櫃子出現因水漬導致的碎裂及腐壞', '檯面嚴重磨損/破損/凹陷', '櫃子/工作檯面木頭裸露(位置)', '垃圾未按照規定丟棄', '建築物外部周圍或外部垃圾桶(間)周圍藏匿病媒'] },
+      { code: '3.3c', category: '病媒防治', title: '地面/牆面/天花板保持乾淨與維護', subItems: ['前區/後區/洗手間牆面髒', '前區/後區/洗手間牆面磁磚破裂/缺失', '前區/後區木頭裸露', '前區/後區/洗手間牆面/天花板輕微損壞', '前區/後區/洗手間天花板/通風口髒或損壞', '水泥縫線破損(位置)', '地磚損壞/缺失/鬆動(位置)', '前區/後區地面/牆壁踢腳板/排水孔沒有保持乾淨', '洗手間地面/牆壁接縫/踢腳板/邊緣累積深色汙垢'] },
+      { code: '3.3d', category: '病媒防治', title: '應按規定安裝空氣簾(如適用)', subItems: ['車道型門市窗口沒有安裝空氣簾', '門口沒有安裝空氣簾(依據要求)'] },
+      { code: '3.3e', category: '病媒防治', title: '空氣簾應開啟並正常運作', subItems: ['車道窗口的空氣簾未開啟或無法正常運作', '門口空氣簾未開啟或無法正常運作'] },
+      { code: '3.3f', category: '病媒防治', title: '病媒防治紀錄', subItems: ['無病媒防治紀錄', '紀錄病媒防治日期(MM/DD)'] },
+      { code: '3.3g', category: '病媒防治', title: '拖把櫃區域應妥善維護', subItems: ['拖把水槽髒汙', '拖把泡在汙水中', '沒有將拖把收好正確晾乾'] },
+      { code: '3.3h', category: '病媒防治', title: '配管設備應妥善維護', subItems: ['前區/後區水槽漏水', '前區/後區洗手水槽漏水', '洗手間水槽/馬桶/小便池漏水', '洗碗機/三水槽或其他設備漏水', '水龍頭鬆動或損壞(位置)'] },
+
+      // 【4. 交叉汙染】
+      { code: '4.1a~d', category: '交叉汙染', title: '無重大環境危害事件-中止評估', subItems: ['無法在生物危害事件汙染處設置半徑7.7公尺封鎖區', '發現汙水逆流到門市內(位置)', '門市沒有飲用水或未遵照停水規定', '發生火災/洪災/其他自然災害'] },
+      { code: '4.1e', category: '交叉汙染', title: '備有可用洗手間與足溫熱水', subItems: ['夥伴沒有可正常使用的洗手間', '水槽熱水溫度低於38°C/100°F'] },
+      { code: '4.1f', category: '交叉汙染', title: '正確的洗碗與消毒程序', subItems: ['高溫洗碗機熱水消毒溫度不符規定(餐具表面達71°C)', '三水槽的消毒液濃度不符合規定', '手動消毒時沒有按照流程的正確順序'] },
+      { code: '4.1g', category: '交叉汙染', title: '消毒溶液濃度符合規定', subItems: ['沒有消毒溶液或一次性使用的消毒抹布', '季銨鹽消毒液濃度大於400ppm', '季銨鹽消毒液濃度小於150ppm', '氯消毒液濃度大於200ppm', '氯消毒液濃度小於50ppm'] },
+      { code: '4.1h', category: '交叉汙染', title: '食品或冰塊未受汙染', subItems: ['發現食品或冰塊遭到化學性汙染(描述)', '發現食品或冰塊遭到物理性汙染(描述)', '發現食品或冰塊遭到生物性汙染(描述)'] },
+      { code: '4.1i', category: '交叉汙染', title: '不販售未經核准的食物', subItems: ['販售未經核准的食物'] },
+      { code: '4.1j', category: '交叉汙染', title: 'TCS食品在有效期限內且正確標示', subItems: ['TCS食品超過製造商的有效期(請標明品名/位置)', 'TCS食品開封後夥伴未標示有效日期(請標明品名/位置)', 'TCS食材或預製食品超過夥伴標示的有效日期(請標明品名/位置)'] },
+      { code: '4.2a', category: '交叉汙染', title: '設備排水管應設有回流防護', subItems: ['設備排水管沒有適當的回流防護'] },
+      { code: '4.2b', category: '交叉汙染', title: '食品應妥善存放', subItems: ['食品沒有妥善保存/蓋好', '食品存放在洗手間', '食品存放在地上'] },
+      { code: '4.2c', category: '交叉汙染', title: '食品接觸產品應妥善存放', subItems: ['食品接觸產品存放在髒汙或食物噴濺處', '存放的食品接觸產品出現缺口/裂縫/生鏽或其他毀損', '存放在洗手間、地上、排水管/冷凝水滴水口下方或髒的表面', '玻璃、陶瓷、塑膠或任何易碎的小器具和餐具未安全儲存，有破損風險'] },
+      { code: '4.2d', category: '交叉汙染', title: '核准的食品接觸器具應保持清潔', subItems: ['器具沒有保持清潔或出現缺口/裂縫/生鏽/毀損', '砧板有明顯的積垢痕跡或出現缺口/裂縫', '使用中的冰杓沒有保持清潔或出現缺口/裂縫', '使用中的冰杓沒有存放在乾淨指定的容器內', '使用中的蒸奶壺內有積垢', '使用未經批准/食品級的食品工具', '正在使用的玻璃、陶瓷、塑膠或易碎小器具未安全放置，有破損風險'] },
+      { code: '4.2e', category: '交叉汙染', title: '食品接觸器具按規定清洗/沖洗及消毒', subItems: ['計時器不見、未運作或未正確使用', '食品接觸器具未至少每隔4小時清洗/沖洗及消毒'] },
+      { code: '4.2f', category: '交叉汙染', title: '包裝完整與毀損食品應分開存放', subItems: ['食品容器/外包裝效期無法辨識或篡改效期', '損壞/召回的食品沒有分開存放/未標示請勿使用'] },
+      { code: '4.2g', category: '交叉汙染', title: '即食品或冷藏食品應正確標示', subItems: ['從原包裝取出食品/飲品沒有標示名稱', '重新包裝零售食品/飲品沒有標示'] },
+      { code: '4.2i', category: '交叉汙染', title: '冰塊應妥善保存', subItems: ['前區冰櫃上蓋敞開', '後區製冰機的門敞開'] },
+      { code: '4.2j', category: '交叉汙染', title: '製冰機應保持清潔', subItems: ['後區製冰機盛水盤長黴/粘液累積', '後區製冰機儲冰槽長黴/粘液累積', '前區冰槽長黴/粘液累積'] },
+      { code: '4.2k', category: '交叉汙染', title: '製冰機應妥善維修', subItems: ['製冰機墊圈損壞', '製冰機內部出現缺口/裂縫或其他毀損', '前區儲冰槽上蓋破損/裂開或其他損壞'] },
+      { code: '4.2l', category: '交叉汙染', title: '化學品正確標示、安全存放', subItems: ['化學品噴瓶/容器沒有標示或標示無法辨識', '化學品儲存在食品容器或一次性使用食品容器中', '消毒劑容器沒有標示', '化學品沒有蓋上/密封儲存(消毒桶除外)', '存放在食品/食品接觸容器/一次性使用器具旁邊或上方', '存放在乾淨的盤子/器具/瀝水盤/消毒槽/食品準備區/水槽平面或上方', '存放在洗碗機上', '使用未經批准的化學品'] },
+      { code: '4.2m', category: '交叉汙染', title: '正確使用洗碗機及三水槽', subItems: ['洗碗槽用於存放食品或一次性使用物品', '髒餐具可能污染其他乾淨餐具', '洗碗機未使用洗劑/洗劑少於1/2吋(1公分)深', '手洗餐具時沒有按照規定使用清潔劑'] },
+      { code: '4.2n', category: '交叉汙染', title: '應提供消毒劑測試條', subItems: ['沒有提供季銨鹽測試條、毀損不堪使用或過期', '沒有氯測試條、毀損不堪使用或過期'] },
+      { code: '4.2o', category: '交叉汙染', title: '抹布應正確存放', subItems: ['乾淨抹布與化學用品或髒汙物品一同存放', '使用中的抹布遺留在檯面上/水槽中/架子上', '冰桶未標示「冰桶專用」或作為其他用途', '抹布計時器未啟動', '抹布計時器響時沒有更換抹布'] },
+      { code: '4.2p', category: '交叉汙染', title: '食品不應遭到直接汙染', subItems: ['發現頭髮接觸食品或冰塊', '發現食品或冰塊上有灰塵'] },
+      { code: '4.3a', category: '交叉汙染', title: '設備/器具風乾後堆疊存放', subItems: ['未風乾的食品接觸器具堆疊存放'] },
+      { code: '4.3b', category: '交叉汙染', title: '使用經核准的菜瓜布', subItems: ['在洗碗槽/食品準備區域使用軟海綿/立可擦', '在洗碗槽/食品準備區域使用鋼絲刷'] },
+      { code: '4.3c', category: '交叉汙染', title: '非時間溫度控制安全食品(non-TCS)不應超過有效日期', subItems: ['發現未標示有效期限的非TCS食品', '發現超過有效期限的非TCS食品'] },
+      { code: '4.3d', category: '交叉汙染', title: '冷藏設備應保持清潔', subItems: ['後區/前區冰箱/冷凍冰箱墊圈髒、層架髒、風扇罩髒、內部髒或外部髒', '糕點櫃/冷藏展示櫃髒', '冷凍冰箱層架明顯生鏽', '冰箱/冷凍庫內部結冰'] },
+      { code: '4.3e', category: '交叉汙染', title: '水槽/洗碗槽應保持清潔', subItems: ['前區/後區/洗手間洗手槽髒', '前區/後區準備水槽髒', '前區/後區傾倒水槽髒', '洗碗槽、洗碗槽水龍頭/高壓噴槍、洗碗槽上方或洗碗機髒'] },
+      { code: '4.3f', category: '交叉汙染', title: '櫃子/工作檯面應保持清潔', subItems: ['工作檯面髒', '前區櫃子髒', '後區櫃子髒'] },
+      { code: '4.3g', category: '交叉汙染', title: '其他設備保持乾淨', subItems: ['烤箱髒或損壞', '通風口髒或損壞', '後區貨架/儲存設備髒或損壞', '濃縮咖啡機髒或損壞', '滴濾咖啡機/Clover髒或損壞', '攪拌壺沖洗器(BPR)髒或損壞', '攪拌機隔音罩/攪拌機座髒或損壞', '糕點架/解凍架髒或損壞', '製冰機外部髒或損壞', '糕點/咖啡烘焙設備髒或損壞'] },
+      { code: '4.3h', category: '交叉汙染', title: '調理吧台應保持清潔', subItems: ['調理吧台內部髒或外部髒', '糖包/甜味劑儲存盒內有積垢', '餐巾紙儲存器/垃圾桶下方積垢'] },
+      { code: '4.3i', category: '交叉汙染', title: '燈具維護良好，恰當保護', subItems: ['前區/後區/洗手間燈具髒', '前區/後區/洗手間/冰箱/冷凍冰箱燈具故障/缺失', '前區/後區/冰箱/冷凍冰箱燈具沒有遮罩/無恰當防碎裝置'] },
+      { code: '4.3j', category: '交叉汙染', title: '洗手間保持乾淨', subItems: ['扶手髒或扶手鬆動', '馬桶髒', '沒有衛生紙或衛生紙未裝進捲筒架', '嬰兒尿布台髒'] }
+    ];
+
+    // 建立對應《表格.pdf》下半部的「法規及集團要求必檢項目」預設清單
+    const createDefaultStatutoryChecklist = (city = '新北市') => [
+      { key: 'handwash', category: '洗手六步驟', content: '1. 未使用指甲刷不列入FSA缺失，未依照星巴克標準洗手仍列入缺失\n2. 指甲刷乾淨無發霉(無指甲刷則不符合)', status: '符合' },
+      { key: 'water_tower', category: '水塔管理', content: '3. 應張貼水塔公告(無加裝水塔:店長桌上方 / 有加裝水塔:水塔上)\n4. 室內水塔有無上鎖', status: '符合' },
+      { key: 'return_area', category: '退貨管理', content: '5. 台北市門市(後區)設立報廢區及待退貨區\n6. 非台北市門市(後區)設立待退貨區', status: '符合' },
+      { key: 'chemical_date', category: '化學品', content: '「分裝日：應標示分裝日之化學品皆有標示」\n多用途清潔劑 / KAY-5消毒劑 / 玻璃清潔劑 / 分裝洗手乳(如有)', status: '符合' },
+      { key: 'training_3hr', category: '教育訓練紀錄', content: '7. 食品從業人員教育訓練3小時(2026新進夥伴於報到120天內)', status: '符合' },
+      { key: 'daily_log', category: '工作日誌紀錄', content: '1. 氮氣鋼瓶支數  2. 發泡奶油用氮氣支數\n3. 化學品紀錄表  4. 軟水器投鹽', status: '符合' },
+      { key: 'local_ntpc_1', category: '地方條例', content: '【新北市】明顯處張貼管理衛生人員貼紙 (管理衛生人員:店經理)', status: city === '新北市' ? '符合' : '不適用' },
+      { key: 'local_ntpc_2', category: '地方條例', content: '【新北市】化學品紀錄表：多用途清潔劑', status: city === '新北市' ? '符合' : '不適用' },
+      { key: 'local_ntpc_3', category: '地方條例', content: '【新北市】本店豬肉產品不含萊克多巴胺 - 警語張貼於糕點櫃', status: city === '新北市' ? '符合' : '不適用' },
+      { key: 'local_ty', category: '地方條例', content: '【桃園市】張貼桃食安心平台 QR CODE', status: city === '桃園市' ? '符合' : '不適用' },
+      { key: 'local_kh', category: '地方條例', content: '【高雄市】張貼產品責任險 QR CODE', status: city === '高雄市' ? '符合' : '不適用' }
+    ];
+
+    const showFsaClauseLibrary = ref(false);
+    const fsaClauseSearch = ref('');
+    const isAnalyzingFsa = ref(false);
+    const fsaAuditReports = ref([]);
+
+    const createInitialFsaForm = () => ({
+      id: '',
+      storeId: '011218',
+      storeName: '永和永安',
+      auditDate: formatDateLocal(new Date()),
+      auditorName: currentPartner.value?.name || '徐爰坦',
+      dutyManagerName: '',
+      city: '新北市',
+      rawNotes: '',
+      photos: [],
+      violations: [],
+      statutoryChecklist: createDefaultStatutoryChecklist('新北市')
+    });
+
+    const fsaForm = ref(createInitialFsaForm());
+
+    watch(currentPartner, (newP) => {
+      if (newP && !fsaForm.value.auditorName) {
+        fsaForm.value.auditorName = newP.name;
+      }
+    });
+
+    if (db) {
+      db.ref('sbux/fsa_reports').on('value', snap => {
+        const val = snap.val();
+        fsaAuditReports.value = val ? Object.values(val).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)) : [];
+      });
+    }
+
+    const filteredFsaClauses = computed(() => {
+      const q = fsaClauseSearch.value.trim().toLowerCase();
+      if (!q) return fsa2026OfficialClauses;
+      return fsa2026OfficialClauses.filter(c =>
+        c.code.toLowerCase().includes(q) ||
+        c.title.toLowerCase().includes(q) ||
+        c.category.toLowerCase().includes(q) ||
+        c.subItems.some(s => s.toLowerCase().includes(q))
+      );
+    });
+
+    const applyCityRegulationDefaults = () => {
+      const c = fsaForm.value.city;
+      fsaForm.value.statutoryChecklist.forEach(item => {
+        if (item.key.startsWith('local_ntpc')) item.status = (c === '新北市') ? '符合' : '不適用';
+        else if (item.key === 'local_ty') item.status = (c === '桃園市') ? '符合' : '不適用';
+        else if (item.key === 'local_kh') item.status = (c === '高雄市') ? '符合' : '不適用';
+      });
+    };
+
+    const cycleStatutoryStatus = (chk) => {
+      const order = ['符合', '不符合', '不適用'];
+      const idx = order.indexOf(chk.status);
+      chk.status = order[(idx + 1) % order.length];
+    };
+
+    const resetFsaCurrentForm = () => {
+      if (confirm('確定要清空目前畫面上的檢查表內容，重新開始新的評核嗎？')) {
+        fsaForm.value = createInitialFsaForm();
+      }
+    };
+
+    const addManualFsaViolationRow = () => {
+      fsaForm.value.violations.push({
+        clauseCode: '',
+        missingItemTitle: '',
+        findingDesc: '',
+        actionPlan: '【立即改善】：\n【預防行動方案】：'
+      });
+    };
+
+    const onSelectFsaClauseCode = (vItem, selectedCode) => {
+      vItem.clauseCode = selectedCode;
+      const found = fsa2026OfficialClauses.find(c => c.code === selectedCode);
+      if (found) {
+        vItem.missingItemTitle = `${found.code} ${found.title}`;
+      }
+    };
+
+    const handleFsaPhotosUpload = async (e) => {
+      const files = Array.from(e.target.files || []);
+      const compressedList = [];
+      for (const f of files.slice(0, 4)) {
+        const cUrl = await compressImageFile(f);
+        compressedList.push(cUrl);
+      }
+      fsaForm.value.photos = compressedList;
+      e.target.value = '';
+    };
+
+    // 核心：將手機口語缺失速記與照片對照《2026 FSA 標準條文》並自動填入檢查表
+    const analyzeFsaNotesToOfficialTable = async () => {
+      if (!fsaForm.value.rawNotes.trim() && fsaForm.value.photos.length === 0) return;
+      isAnalyzingFsa.value = true;
+      try {
+        const clausesPromptList = fsa2026OfficialClauses.map(c =>
+          `【${c.code} ${c.title}】細項：${c.subItems.join('；')}`
+        ).join('\n');
+
+        const promptText = `你是一位資深的台灣星巴克 FSA (食品安全評核) 專員。
+請根據評核員在門市現場記錄的「口語缺失速記」與「附加照片」，嚴格對照以下官方《2026 食品安全評核 (Food Safety Assessment) 標準條文》，將每一項不符合事項轉換為《FY2026 食品安全衛生檢查紀錄表 (20260514版)》的正式表格內容：
+
+【評核員現場速記】：
+${fsaForm.value.rawNotes || '（請根據附加照片辨識現場不符合之食安缺失）'}
+
+【官方 2026 食品安全評核標準條文庫】：
+${clausesPromptList}
+
+【法定與集團必檢項目對照 keys】：
+- handwash: 洗手六步驟 / 指甲刷乾淨無發霉
+- water_tower: 水塔公告 / 室內水塔上鎖
+- return_area: 後區設立報廢區及待退貨區
+- chemical_date: 化學品(多用途清潔劑/KAY-5消毒劑/玻璃清潔劑/分裝洗手乳)標示分裝日
+- training_3hr: 新進夥伴報到120天內完成食品從業人員教育訓練3小時
+- daily_log: 工作日誌紀錄(氮氣鋼瓶支數、發泡奶油用氮氣支數、化學品紀錄表、軟水器投鹽)
+- local_ntpc_1: 新北市管理衛生人員貼紙
+- local_ntpc_2: 新北市多用途清潔劑化學品紀錄表
+- local_ntpc_3: 新北市豬肉不含萊克多巴胺警語張貼於糕點櫃
+- local_ty: 桃園市桃食安心QR CODE
+- local_kh: 高雄市產品責任險QR CODE
+
+【嚴格輸出要求】：
+1. 針對每一項缺失，請從【官方 2026 食品安全評核標準條文庫】選出最精確的條文編號 (clauseCode，如 "1.2a", "2.1b", "4.1j", "4.2d", "4.2o") 與「缺失項目名稱 (missingItemTitle，格式為『編號 條文標題』，如『4.2o 抹布應正確存放』)」。
+2. 在「findingDesc (違反細項與現場狀況)」中，先寫出對應的【官方細項原文】，再寫出現場具體發現的位置、品名或數值（例如：「【使用中的抹布遺留在檯面上/抹布計時器未啟動】前區濃縮咖啡機檯面放置使用中抹布，且未啟動抹布更換計時器。」）。
+3. 在「actionPlan (改善與預防行動方案)」中，針對該項缺失制定具體、專業的「【立即改善】」與「【預防行動方案】」。
+4. 若現場速記中有提到違反【法定與集團必檢項目】（例如：沒指甲刷、指甲刷發霉、KAY-5或多用途清潔劑沒寫分裝日、水塔沒鎖、工作日誌沒填氮氣支數等），請在 failedStatutoryKeys 陣列中列出對應的 key。
+
+請只輸出純 JSON 格式（不要加 markdown 符號）：
+{
+  "violations": [
+    {
+      "clauseCode": "4.2o",
+      "missingItemTitle": "4.2o 抹布應正確存放",
+      "findingDesc": "【使用中的抹布遺留在檯面上 / 抹布計時器未啟動】現場於前區吧台檯面發現遺留使用中抹布，且抹布計時器未啟動。",
+      "actionPlan": "【立即改善】：當場將抹布收回泡入標準濃度(150-400ppm)季銨鹽消毒水桶中，並立即啟動計時器。\n【預防行動方案】：值班經理於每班交接與轉班時檢核吧台抹布存放與計時器運作，並對當班夥伴進行隨手歸位宣導。"
+    }
+  ],
+  "failedStatutoryKeys": []
+}`;
+
+        const parts = [{ text: promptText }];
+        for (const pUrl of fsaForm.value.photos) {
+          const b64 = pUrl.split(',')[1];
+          parts.push({ inline_data: { mime_type: 'image/jpeg', data: b64 } });
+        }
+
+        const rawRes = await callGeminiApi(parts, true, 0.15);
+        const match = rawRes.match(/\{[\s\S]*\}/);
+        const parsed = JSON.parse(match ? match[0] : rawRes);
+
+        if (parsed && Array.isArray(parsed.violations)) {
+          fsaForm.value.violations = [...fsaForm.value.violations, ...parsed.violations];
+        }
+        if (parsed && Array.isArray(parsed.failedStatutoryKeys)) {
+          fsaForm.value.statutoryChecklist.forEach(chk => {
+            if (parsed.failedStatutoryKeys.includes(chk.key)) {
+              chk.status = '不符合';
+            }
+          });
+        }
+        fsaForm.value.rawNotes = '';
+        fsaForm.value.photos = [];
+        alert(`🎉 AI 核對完成！已自動對應《2026 FSA 標準條文》並填入下方檢查紀錄表！`);
+      } catch (err) {
+        alert('AI 條文核對失敗：' + err.message);
+      } finally {
+        isAnalyzingFsa.value = false;
+      }
+    };
+
+    const saveCurrentFsaReportToCloud = async () => {
+      const f = fsaForm.value;
+      const repId = f.id || ('fsa_rep_' + Date.now());
+      const payload = {
+        id: repId,
+        storeId: f.storeId || '011218',
+        storeName: f.storeName || '永和永安',
+        auditDate: f.auditDate || formatDateLocal(new Date()),
+        auditorName: f.auditorName || currentPartner.value?.name || 'FSA專員',
+        dutyManagerName: f.dutyManagerName || '',
+        city: f.city || '新北市',
+        violations: JSON.parse(JSON.stringify(f.violations || [])),
+        statutoryChecklist: JSON.parse(JSON.stringify(f.statutoryChecklist || [])),
+        timestamp: Date.now()
+      };
+      if (db) await db.ref('sbux/fsa_reports/' + repId).set(payload);
+      fsaForm.value.id = repId;
+      alert('💾 已將本份《FY2026 食品安全衛生檢查紀錄表》儲存至雲端！');
+    };
+
+    const loadSavedFsaReport = (rep) => {
+      fsaForm.value = {
+        id: rep.id,
+        storeId: rep.storeId || '011218',
+        storeName: rep.storeName || '永和永安',
+        auditDate: rep.auditDate || formatDateLocal(new Date()),
+        auditorName: rep.auditorName || '',
+        dutyManagerName: rep.dutyManagerName || '',
+        city: rep.city || '新北市',
+        rawNotes: '',
+        photos: [],
+        violations: JSON.parse(JSON.stringify(rep.violations || [])),
+        statutoryChecklist: Array.isArray(rep.statutoryChecklist) && rep.statutoryChecklist.length > 0
+          ? JSON.parse(JSON.stringify(rep.statutoryChecklist))
+          : createDefaultStatutoryChecklist(rep.city || '新北市')
+      };
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const deleteFsaReport = async (id) => {
+      if (confirm('確定刪除此份已存檔的 FSA 檢查紀錄表？') && db) {
+        await db.ref('sbux/fsa_reports/' + id).remove();
+      }
+    };
+
+    const copyOfficialFsaTableText = (repObj) => {
+      const f = repObj || fsaForm.value;
+      const lines = [
+        `【FY2026 食品安全衛生檢查紀錄表 (含法規及集團要求) 20260514版】`,
+        `門市店號：${f.storeId || '-'} ｜ 門市名稱：${f.storeName || '-'} ｜ 檢查日期：${f.auditDate || '-'}`,
+        `評核員姓名：${f.auditorName || '-'} ｜ 值班經理姓名：${f.dutyManagerName || '-'}`,
+        `================================================`,
+        `一、【FSA 缺失項目與行動方案】`
+      ];
+
+      if (!f.violations || f.violations.length === 0) {
+        lines.push(`（本次評核無 FSA 條文缺失項目）`);
+      } else {
+        f.violations.forEach((v, i) => {
+          lines.push(`${i + 1}. 缺失項目：${v.missingItemTitle || v.clauseCode}`);
+          lines.push(`   缺失說明：${v.findingDesc}`);
+          lines.push(`   行動方案：\n   ${String(v.actionPlan || '').replace(/\n/g, '\n   ')}`);
+          lines.push(`------------------------------------------------`);
+        });
+      }
+
+      lines.push(`二、【法規及集團要求必檢項目】`);
+      (f.statutoryChecklist || []).forEach(chk => {
+        if (chk.status !== '不適用') {
+          lines.push(`[${chk.status}] 【${chk.category}】${String(chk.content).replace(/\n/g, ' / ')}`);
+        }
+      });
+
+      const fullText = lines.join('\n');
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(fullText).then(() => {
+          alert('📋 已將完整《FY2026 食品安全衛生檢查紀錄表》複製到剪貼簿！');
+        });
+      }
     };
 
     // ==================== Gemini AI 引擎 ====================
@@ -8895,7 +9556,11 @@ ${beansContext}
       passportSelectedStaffId, passportFilter, passportTargetStaffName, partnerCareerStats,
       passportBeansWithStatus, totalPassportBeanCount, tastedBeanCount, filteredPassportBeans,
       toggleManualBeanStamp, jumpToTastingWithBean, expandedBeanHistory, toggleBeanHistory, isBeanHistoryExpanded,
-      partnerBadges, unlockedBadgeCount
+      partnerBadges, unlockedBadgeCount,
+      fsa2026OfficialClauses, showFsaClauseLibrary, fsaClauseSearch, filteredFsaClauses,
+      fsaForm, isAnalyzingFsa, applyCityRegulationDefaults, cycleStatutoryStatus, resetFsaCurrentForm,
+      addManualFsaViolationRow, onSelectFsaClauseCode, handleFsaPhotosUpload, analyzeFsaNotesToOfficialTable,
+      fsaAuditReports, saveCurrentFsaReportToCloud, loadSavedFsaReport, deleteFsaReport, copyOfficialFsaTableText
     };
   }
 });
