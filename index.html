@@ -3012,7 +3012,7 @@
             <tr class="bg-slate-100 border-b-2 border-black">
               <th class="w-[9%] text-[10.5px]">員工編號</th>
               <th class="w-[12%] text-[10.5px]">員工姓名</th>
-              <th v-for="d in targetRangeDates" :key="d.dateStr"="w-[10%]">
+              <th v-for="d in targetRangeDates" :key="d.dateStr" class="w-[10%]">
                 <div class="font-black text-[11px] leading-tight">{{ d.displayDate }}</div>
                 <div class="text-[9.5px] font-bold leading-tight">({{ d.weekday }})</div>
               </th>
@@ -3085,14 +3085,60 @@
   
 </div>
 <script>
-// 自動修復列印表頭屬性並確保移除 v-cloak 防白屏
+// 啟動前自動清除 HTML 中不小心重複貼上的頁籤或子頁面，並修復列印表頭屬性
 (function() {
   try {
     var appRoot = document.getElementById('app');
-    if (appRoot && appRoot.innerHTML.indexOf(':key="d.dateStr"="w-[10%]"') !== -1) {
-      appRoot.innerHTML = appRoot.innerHTML.replace(':key="d.dateStr"="w-[10%]"', ':key="d.dateStr" class="w-[10%]"');
+    if (!appRoot) return;
+
+    // 1. 若檔案中有重複的 <section v-if="currentTab === '...'">，自動移除多餘的區塊
+    var seenTabs = {};
+    var sections = appRoot.querySelectorAll('section');
+    sections.forEach(function(sec) {
+      var vif = sec.getAttribute('v-if') || '';
+      if (vif.indexOf('currentTab') !== -1) {
+        var tabMatch = vif.match(/'([^']+)'/);
+        var tabKey = tabMatch ? tabMatch[1] : vif;
+        if (seenTabs[tabKey]) {
+          sec.parentNode.removeChild(sec);
+        } else {
+          seenTabs[tabKey] = true;
+        }
+      }
+    });
+
+    // 2. 若「其他」頁籤內部有重複的子選單或重複的 otherSubTab 內容，自動移除第二份
+    var otherSec = appRoot.querySelector('section[v-if*="other"]');
+    if (otherSec) {
+      var seenSubTabs = {};
+      var menuCount = 0;
+      Array.from(otherSec.children).forEach(function(child) {
+        var subVif = child.getAttribute('v-if') || '';
+        if (subVif.indexOf('otherSubTab') !== -1) {
+          var subMatch = subVif.match(/'([^']+)'/);
+          var subKey = subMatch ? subMatch[1] : subVif;
+          if (seenSubTabs[subKey]) {
+            child.parentNode.removeChild(child);
+          } else {
+            seenSubTabs[subKey] = true;
+          }
+        } else if (child.innerHTML.indexOf("otherSubTab = 'academy'") !== -1) {
+          menuCount++;
+          if (menuCount > 1) {
+            child.parentNode.removeChild(child);
+          }
+        }
+      });
     }
-  } catch (e) {}
+
+    // 3. 確保列印表格的星期欄位樣式正確
+    var printThs = appRoot.querySelectorAll('table.print-table th[v-for*="targetRangeDates"]');
+    printThs.forEach(function(th) {
+      th.className = 'w-[10%]';
+    });
+  } catch (e) {
+    console.warn('自動去重檢查略過：', e);
+  }
 })();
 
 window.onerror = function(msg, url, line) {
@@ -5749,10 +5795,10 @@ const app = createApp({
       const daysUntilSunday = (7 - day) % 7;
       const targetSunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysUntilSunday, 23, 30, 0, 0);
 
-      if (now > targetSunday) targetSunday.setDate(targetSunday.getDate() + 7);
+      if (now >= targetSunday) targetSunday.setDate(targetSunday.getDate() + 7);
       const diff = targetSunday - now;
       if (diff <= 0) {
-        countdownToSunday.value = '結算完成';
+        countdownToSunday.value = '0天 00時 00分 00秒';
         checkAndAutoArchiveLatteArt();
         return;
       }
@@ -5762,7 +5808,9 @@ const app = createApp({
       const s = Math.floor((diff / 1000) % 60);
       countdownToSunday.value = `${d}天 ${h.toString().padStart(2, '0')}時 ${m.toString().padStart(2, '0')}分 ${s.toString().padStart(2, '0')}秒`;
     };
-
+    // 立即執行第一次計算並啟動每秒倒數
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
     const fetchYongheWeather = async () => {
       try {
         const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=25.00&longitude=121.51&current_weather=true');
