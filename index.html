@@ -1205,14 +1205,15 @@
 
           </section>
 
-          <!-- 頁籤 4：其他 (3x2 六宮格選單) -->
+          <!-- 頁籤 4：其他 (含黑圍裙課程、沖煮與豆寶典、配方卡與測驗、品評、拉花擂台、永安小學堂、護照與成就) -->
           <section v-if="currentTab === 'other'" class="space-y-4">
             
-            <div class="bg-white dark:bg-slate-800 p-2 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 grid grid-cols-3 gap-1.5 text-xs font-bold">
+            <!-- 子頁籤宮格選單 (上3 + 中2 + 下2 對稱防擠壓設計) -->
+            <div class="bg-white dark:bg-slate-800 p-2 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 grid grid-cols-6 gap-1.5 text-xs font-bold">
               <button 
                 @click="otherSubTab = 'academy'" 
                 :class="otherSubTab === 'academy' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300'" 
-                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                class="col-span-2 py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
                 <span class="text-base leading-none">🎓</span>
                 <span class="text-[11px] tracking-tight whitespace-nowrap">黑圍裙課程</span>
               </button>
@@ -1220,15 +1221,23 @@
               <button 
                 @click="otherSubTab = 'coffee'" 
                 :class="otherSubTab === 'coffee' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300'" 
-                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                class="col-span-2 py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
                 <span class="text-base leading-none">☕</span>
                 <span class="text-[11px] tracking-tight whitespace-nowrap">沖煮與豆寶典</span>
               </button>
 
               <button 
+                @click="otherSubTab = 'recipe'" 
+                :class="otherSubTab === 'recipe' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300'" 
+                class="col-span-2 py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                <span class="text-base leading-none">🥤</span>
+                <span class="text-[11px] tracking-tight whitespace-nowrap">配方卡與測驗</span>
+              </button>
+
+              <button 
                 @click="otherSubTab = 'tasting'" 
                 :class="otherSubTab === 'tasting' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300'" 
-                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                class="col-span-3 py-2 px-2 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95">
                 <span class="text-base leading-none">📝</span>
                 <span class="text-[11px] tracking-tight whitespace-nowrap">品評 Tasting</span>
               </button>
@@ -1236,7 +1245,7 @@
               <button 
                 @click="otherSubTab = 'latteArt'" 
                 :class="otherSubTab === 'latteArt' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300'" 
-                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                class="col-span-3 py-2 px-2 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95">
                 <span class="text-base leading-none">🎨</span>
                 <span class="text-[11px] tracking-tight whitespace-nowrap">拉花擂台賽</span>
               </button>
@@ -1244,7 +1253,7 @@
               <button 
                 @click="otherSubTab = 'quiz'" 
                 :class="otherSubTab === 'quiz' ? 'bg-emerald-800 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-slate-100/80 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300'" 
-                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                class="col-span-3 py-2 px-2 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95">
                 <span class="text-base leading-none">📖</span>
                 <span class="text-[11px] tracking-tight whitespace-nowrap">永安小學堂</span>
               </button>
@@ -1252,13 +1261,13 @@
               <button 
                 @click="otherSubTab = 'passport'" 
                 :class="otherSubTab === 'passport' ? 'bg-amber-600 text-white shadow-sm ring-1 ring-amber-500' : 'bg-amber-50/90 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60'" 
-                class="py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition active:scale-95">
+                class="col-span-3 py-2 px-2 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95">
                 <span class="text-base leading-none">🛂</span>
                 <span class="text-[11px] tracking-tight whitespace-nowrap">護照與成就</span>
               </button>
             </div>
 
-            <!-- 子頁籤 1：CA 100~300 -->
+            <!-- 子頁籤 1：CA 100~300 黑圍裙課程 -->
             <div v-if="otherSubTab === 'academy'" class="space-y-3">
               <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
                 <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
@@ -1441,7 +1450,7 @@
 
                 <a 
                   v-for="bean in filteredCoffeeBeans" 
-                  :key="bean.name" 
+                  :key="bean.id || bean.name" 
                   :href="bean.officialUrl"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -1488,7 +1497,234 @@
               </div>
             </div>
 
-            <!-- 子頁籤 3：Tasting 品評 -->
+            <!-- 🥤 子頁籤 3：飲品配方卡速查與測驗 (Barista Recipe Hub & Quiz) -->
+            <div v-if="otherSubTab === 'recipe'" class="space-y-4">
+              
+              <!-- 頂部：吧台配方隨堂測驗橫幅 -->
+              <div class="bg-gradient-to-r from-teal-900 via-emerald-800 to-emerald-950 rounded-2xl p-4 text-white shadow-sm space-y-3">
+                <div class="flex justify-between items-center flex-wrap gap-2">
+                  <div>
+                    <h3 class="font-black text-sm flex items-center gap-1.5">
+                      <span>🥤</span> 門市飲品配方卡速查 ＆ 隨堂測驗
+                    </h3>
+                    <p class="text-[11px] text-emerald-200 mt-0.5">涵蓋濃縮份數、糖漿下數、杯身標記與製作步驟</p>
+                  </div>
+                  <div class="flex gap-1.5">
+                    <button @click="startRecipeQuiz('standard')" class="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-black rounded-xl font-black text-xs shadow active:scale-95 transition whitespace-nowrap">
+                      🎯 配方隨堂測驗
+                    </button>
+                    <button @click="startRecipeQuiz('ai')" :disabled="isGeneratingAiRecipeQuiz" class="px-2.5 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-xl font-bold text-xs active:scale-95 transition whitespace-nowrap">
+                      {{ isGeneratingAiRecipeQuiz ? '🔄 出題中...' : '🤖 AI 客製考題' }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 標準杯型 Shot 與糖漿對照速查表 (可展開/收合) -->
+                <div class="pt-1 border-t border-white/15">
+                  <button @click="showShotSyrupTable = !showShotSyrupTable" class="w-full flex justify-between items-center text-[11px] font-bold text-emerald-200 hover:text-white">
+                    <span>📊 標準杯型濃縮 Shot ＆ 糖漿下數速查總表</span>
+                    <span>{{ showShotSyrupTable ? '▲ 收合' : '▼ 展開對照表' }}</span>
+                  </button>
+                  <div v-if="showShotSyrupTable" class="mt-2 bg-black/30 rounded-xl p-2.5 overflow-x-auto text-[11px]">
+                    <table class="w-full text-center border-collapse">
+                      <thead>
+                        <tr class="border-b border-white/20 text-amber-300 font-bold">
+                          <th class="py-1 text-left">項目 / 杯型</th>
+                          <th class="py-1">Short<br><span class="text-[9px] font-normal">8oz</span></th>
+                          <th class="py-1">Tall<br><span class="text-[9px] font-normal">12oz</span></th>
+                          <th class="py-1">Grande<br><span class="text-[9px] font-normal">16oz</span></th>
+                          <th class="py-1">Venti<br><span class="text-[9px] font-normal">20oz/24oz</span></th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-white/10 font-mono">
+                        <tr>
+                          <td class="py-1 text-left font-sans font-bold text-emerald-200">🔥 熱飲濃縮 (Shot)</td>
+                          <td>1</td><td>1</td><td>2</td><td>2</td>
+                        </tr>
+                        <tr>
+                          <td class="py-1 text-left font-sans font-bold text-sky-300">🧊 冰飲濃縮 (Shot)</td>
+                          <td>-</td><td>1</td><td>2</td><td>3</td>
+                        </tr>
+                        <tr>
+                          <td class="py-1 text-left font-sans font-bold text-amber-200">☕ 美式咖啡 (Shot)</td>
+                          <td>1</td><td>2</td><td>3</td><td>4</td>
+                        </tr>
+                        <tr>
+                          <td class="py-1 text-left font-sans font-bold text-pink-200">🍯 熱飲糖漿 (下)</td>
+                          <td>2</td><td>3</td><td>4</td><td>5</td>
+                        </tr>
+                        <tr>
+                          <td class="py-1 text-left font-sans font-bold text-indigo-200">🧊 冰飲糖漿 (下)</td>
+                          <td>-</td><td>3</td><td>4</td><td>6</td>
+                        </tr>
+                        <tr>
+                          <td class="py-1 text-left font-sans font-bold text-orange-200">🎃 焦糖瑪奇朵糖漿</td>
+                          <td>1</td><td>2</td><td>3</td><td>4 (冰5)</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 篩選、搜尋與杯型/冰熱全域切換器 -->
+              <div class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-2.5">
+                <div class="flex justify-between items-center flex-wrap gap-2">
+                  <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-700 p-1 rounded-xl text-xs font-bold">
+                    <button @click="recipeTempMode = 'hot'" :class="recipeTempMode === 'hot' ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300'" class="px-2.5 py-1 rounded-lg transition">🔥 熱飲</button>
+                    <button @click="recipeTempMode = 'iced'" :class="recipeTempMode === 'iced' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300'" class="px-2.5 py-1 rounded-lg transition">🧊 冰飲</button>
+                  </div>
+
+                  <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-700 p-1 rounded-xl text-xs font-mono font-bold">
+                    <button v-for="sz in ['Short', 'Tall', 'Grande', 'Venti']" :key="sz"
+                            @click="recipeSizeMode = sz"
+                            :class="recipeSizeMode === sz ? 'bg-emerald-800 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300'"
+                            class="px-2 py-1 rounded-lg transition">
+                      {{ sz === 'Short' ? 'S' : (sz === 'Tall' ? 'T' : (sz === 'Grande' ? 'G' : 'V')) }}
+                    </button>
+                  </div>
+
+                  <button v-if="isDutyOrAbove" @click="openAddRecipeModal" class="px-2.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-[11px] font-bold transition active:scale-95">
+                    + 新增配方
+                  </button>
+                </div>
+
+                <div class="flex gap-1.5 flex-wrap text-[11px] font-bold">
+                  <button v-for="cat in ['all', '經典濃縮', '茶瓦納', '星冰樂', '冷萃與季節']" :key="cat"
+                          @click="recipeCategoryFilter = cat"
+                          :class="recipeCategoryFilter === cat ? 'bg-emerald-800 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'"
+                          class="px-2.5 py-1 rounded-lg transition">
+                    {{ cat === 'all' ? '全部飲品' : cat }}
+                  </button>
+                </div>
+
+                <div class="relative">
+                  <input v-model="recipeSearchQuery" type="text" placeholder="搜尋飲品名稱、縮寫代號 (如 CM、FW、GRTL)..." class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white">
+                  <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
+                </div>
+              </div>
+
+              <!-- 配方卡片列表 -->
+              <div class="space-y-2.5">
+                <div v-for="rcp in filteredDrinkRecipes" :key="rcp.id || rcp.name" class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2.5">
+                  <div class="flex justify-between items-start gap-2">
+                    <div>
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="px-2 py-0.5 bg-emerald-900 text-amber-300 font-mono font-black text-xs rounded-md">
+                          {{ rcp.code }}
+                        </span>
+                        <h4 class="font-black text-sm text-slate-900 dark:text-white">{{ rcp.name }}</h4>
+                        <span class="px-1.5 py-0.2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded text-[10px] font-bold">
+                          {{ rcp.category }}
+                        </span>
+                      </div>
+                    </div>
+                    <div v-if="isDutyOrAbove && rcp.isCustom" class="flex gap-1">
+                      <button @click="deleteCustomRecipe(rcp.id)" class="text-slate-400 hover:text-rose-500 text-xs px-1">🗑️</button>
+                    </div>
+                  </div>
+
+                  <!-- 動態換算當前所選【冰/熱 + 杯型】的濃縮與糖漿數 -->
+                  <div class="grid grid-cols-2 gap-2 text-xs bg-emerald-50/70 dark:bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                    <div>
+                      <span class="text-[10px] text-slate-500 dark:text-slate-400 block">☕ 濃縮 / 基底 ({{ recipeTempMode === 'hot' ? '熱' : '冰' }} {{ recipeSizeMode }})</span>
+                      <span class="font-black text-emerald-900 dark:text-emerald-300 text-sm">
+                        {{ getRecipeShotDisplay(rcp, recipeTempMode, recipeSizeMode) }}
+                      </span>
+                    </div>
+                    <div>
+                      <span class="text-[10px] text-slate-500 dark:text-slate-400 block">🍯 糖漿 / 粉量 ({{ recipeTempMode === 'hot' ? '熱' : '冰' }} {{ recipeSizeMode }})</span>
+                      <span class="font-black text-amber-800 dark:text-amber-300 text-sm">
+                        {{ getRecipeSyrupDisplay(rcp, recipeTempMode, recipeSizeMode) }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="text-xs space-y-1 bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700">
+                    <div><b class="text-slate-700 dark:text-slate-200">🛠️ 標準步驟：</b><span class="text-slate-600 dark:text-slate-300">{{ rcp.steps }}</span></div>
+                    <div v-if="rcp.topping"><b class="text-slate-700 dark:text-slate-200">✨ 頂層與重點：</b><span class="text-emerald-800 dark:text-emerald-400 font-bold">{{ rcp.topping }}</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 新增自訂配方 Modal -->
+              <div v-if="addRecipeModal.show" class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+                <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-5 space-y-3 shadow-xl text-xs">
+                  <div class="flex justify-between items-center border-b pb-2">
+                    <h3 class="font-bold text-sm text-slate-900 dark:text-white">🥤 新增門市飲品配方卡</h3>
+                    <button @click="addRecipeModal.show = false" class="text-slate-400">✕</button>
+                  </div>
+                  <div class="space-y-2">
+                    <div class="grid grid-cols-3 gap-2">
+                      <div>
+                        <label class="font-bold block mb-0.5">杯身代號</label>
+                        <input v-model="addRecipeModal.form.code" placeholder="如：TNCL" class="w-full border rounded-xl px-2.5 py-1.5 font-mono uppercase dark:bg-slate-700 dark:text-white">
+                      </div>
+                      <div class="col-span-2">
+                        <label class="font-bold block mb-0.5">飲品名稱</label>
+                        <input v-model="addRecipeModal.form.name" placeholder="如：太妃核果風味那堤" class="w-full border rounded-xl px-2.5 py-1.5 dark:bg-slate-700 dark:text-white">
+                      </div>
+                    </div>
+                    <div>
+                      <label class="font-bold block mb-0.5">分類</label>
+                      <select v-model="addRecipeModal.form.category" class="w-full border rounded-xl px-2.5 py-1.5 dark:bg-slate-700 dark:text-white">
+                        <option value="經典濃縮">經典濃縮</option>
+                        <option value="茶瓦納">茶瓦納</option>
+                        <option value="星冰樂">星冰樂</option>
+                        <option value="冷萃與季節">冷萃與季節</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="font-bold block mb-0.5">糖漿/風味名稱</label>
+                      <input v-model="addRecipeModal.form.syrupName" placeholder="如：太妃核果糖漿" class="w-full border rounded-xl px-2.5 py-1.5 dark:bg-slate-700 dark:text-white">
+                    </div>
+                    <div>
+                      <label class="font-bold block mb-0.5">標準製作步驟</label>
+                      <textarea v-model="addRecipeModal.form.steps" rows="2" placeholder="輸入製作順序與比例..." class="w-full border rounded-xl px-2.5 py-1.5 dark:bg-slate-700 dark:text-white"></textarea>
+                    </div>
+                    <div>
+                      <label class="font-bold block mb-0.5">頂層裝飾與注意事項</label>
+                      <input v-model="addRecipeModal.form.topping" placeholder="如：鮮奶油 + 太妃蜜糖碎片" class="w-full border rounded-xl px-2.5 py-1.5 dark:bg-slate-700 dark:text-white">
+                    </div>
+                  </div>
+                  <div class="flex gap-2 pt-2">
+                    <button @click="saveCustomRecipe" class="flex-1 py-2 bg-emerald-800 text-white rounded-xl font-bold">儲存配方</button>
+                    <button @click="addRecipeModal.show = false" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 rounded-xl font-bold">取消</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 吧台配方隨堂測驗 Modal -->
+              <div v-if="recipeQuizModal.show" class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+                <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-5 space-y-3 shadow-xl">
+                  <div class="flex justify-between items-center border-b pb-2">
+                    <h3 class="font-bold text-sm text-slate-900 dark:text-white">🎯 吧台飲品配方隨堂測驗</h3>
+                    <button @click="recipeQuizModal.show = false" class="text-slate-400">✕</button>
+                  </div>
+                  <div v-for="(rq, rIdx) in recipeQuizModal.questions" :key="rIdx" class="space-y-1.5 bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl">
+                    <div class="text-xs font-bold text-slate-900 dark:text-white">{{ rIdx + 1 }}. {{ rq.question }}</div>
+                    <label v-for="(opt, oIdx) in rq.options" :key="oIdx" class="flex items-center gap-2 p-1.5 rounded-lg border text-xs cursor-pointer"
+                           :class="recipeQuizModal.submitted ? (oIdx === rq.correct ? 'bg-emerald-100 border-emerald-500 dark:bg-emerald-950/60 font-bold' : (recipeQuizModal.answers[rIdx] === oIdx ? 'bg-rose-100 border-rose-400 dark:bg-rose-950/50' : '')) : ''">
+                      <input type="radio" :name="'rcp_q_'+rIdx" :value="oIdx" v-model="recipeQuizModal.answers[rIdx]" :disabled="recipeQuizModal.submitted">
+                      <span>{{ opt }}</span>
+                    </label>
+                    <div v-if="recipeQuizModal.submitted" class="text-[10px] text-emerald-800 dark:text-emerald-300 mt-1 font-medium">💡 配方解析：{{ rq.explanation }}</div>
+                  </div>
+                  <div class="pt-2 flex justify-between items-center border-t">
+                    <span v-if="recipeQuizModal.submitted" class="font-black text-emerald-600 text-sm">得分：{{ recipeQuizModal.score }} / {{ recipeQuizModal.questions.length }} 分</span>
+                    <span v-else></span>
+                    <div class="flex gap-2">
+                      <button v-if="!recipeQuizModal.submitted" @click="submitRecipeQuiz" class="px-4 py-1.5 bg-emerald-800 text-white rounded-xl text-xs font-bold">交卷批改</button>
+                      <button v-else @click="startRecipeQuiz('standard')" class="px-3 py-1.5 bg-amber-500 text-black rounded-xl text-xs font-bold">🔄 再測一次</button>
+                      <button @click="recipeQuizModal.show = false" class="px-4 py-1.5 bg-slate-200 dark:bg-slate-700 rounded-xl text-xs font-bold">關閉</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- 子頁籤 4：Tasting 品評 -->
             <div v-if="otherSubTab === 'tasting'" class="space-y-4">
               <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
                 <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -1511,7 +1747,7 @@
                         class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 dark:text-white">
                       
                       <datalist id="coffeeBeansDatalist">
-                        <option v-for="b in starbucksCoreBeans" :key="b.name" :value="b.name"></option>
+                        <option v-for="b in starbucksCoreBeans" :key="b.id || b.name" :value="b.name"></option>
                       </datalist>
                     </div>
                   </div>
@@ -1597,7 +1833,7 @@
               </div>
             </div>
 
-            <!-- 子頁籤 4：拉花擂台賽 -->
+            <!-- 子頁籤 5：拉花擂台賽 -->
             <div v-if="otherSubTab === 'latteArt'" class="space-y-4">
               <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
                 <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
@@ -1806,10 +2042,12 @@
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
 
             </div>
 
-            <!-- 子頁籤 5：永安小學堂 -->
+            <!-- 子頁籤 6：永安小學堂 -->
             <div v-if="otherSubTab === 'quiz'" class="space-y-4">
               <div class="bg-gradient-to-r from-emerald-800 to-teal-900 rounded-2xl p-4 text-white shadow-sm space-y-3">
                 <div class="flex justify-between items-center">
@@ -1826,9 +2064,14 @@
                     <span v-if="myQuizResult" class="text-emerald-300">已完成 ({{ myQuizResult.score }} / 5 分)</span>
                     <span v-else class="text-amber-300">尚未測驗</span>
                   </div>
-                  <button @click="startWeeklyQuiz" class="px-3 py-1.5 bg-white text-emerald-900 rounded-lg font-bold text-xs shadow-sm active:scale-95 transition whitespace-nowrap">
-                    {{ myQuizResult ? '查看解析' : '開始測驗' }}
-                  </button>
+                  <div class="flex gap-1.5">
+                    <button @click="otherSubTab = 'recipe'" class="px-2.5 py-1.5 bg-amber-400 text-black rounded-lg font-bold text-xs shadow-sm active:scale-95 transition whitespace-nowrap">
+                      🥤 配方卡速查
+                    </button>
+                    <button @click="startWeeklyQuiz" class="px-3 py-1.5 bg-white text-emerald-900 rounded-lg font-bold text-xs shadow-sm active:scale-95 transition whitespace-nowrap">
+                      {{ myQuizResult ? '查看解析' : '開始測驗' }}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1899,7 +2142,7 @@
               </div>
             </div>
 
-            <!-- 子頁籤 6：個人數位咖啡護照與成就徽章 -->
+            <!-- 子頁籤 7：個人數位咖啡護照與成就徽章 -->
             <div v-if="otherSubTab === 'passport'" class="space-y-4">
               
               <div class="black-gold-card rounded-3xl p-5 text-amber-100 space-y-3.5 relative overflow-hidden">
@@ -1989,7 +2232,7 @@
 
                 <div class="grid grid-cols-1 gap-2.5">
                   <div 
-                    v-for="bean in filteredPassportBeans" :key="bean.name"
+                    v-for="bean in filteredPassportBeans" :key="bean.id || bean.name"
                     class="p-3.5 rounded-2xl border transition flex flex-col justify-between gap-2.5 relative"
                     :class="bean.isTasted ? 'bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800 shadow-sm' : 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800'">
                     
@@ -4062,25 +4305,58 @@ const app = createApp({
       }
     });
 
-    // ==================== 台灣星巴克官網季節豆爬蟲與烘焙度精準校正 ====================
+    // ==================== 忠實呈現台灣星巴克官網咖啡豆資料 (自動區分耶誕綜合、耶誕濃縮與耶誕黃金) ====================
     const sanitizeBeanRoastData = (bean) => {
       if (!bean || !bean.name) return bean;
-      const n = String(bean.name);
-      const en = String(bean.enName || '').toLowerCase();
-      // 針對耶誕咖啡豆（官網連結實際為耶誕黃金烘焙咖啡豆）與所有黃金烘焙豆款強制鎖定為黃金烘焙
-      if (n.includes('耶誕') || n.includes('聖誕') || en.includes('christmas') || n.includes('黃金') || en.includes('blonde') || n.includes('輕柳') || n.includes('日安') || n.includes('瑟加堤')) {
-        const isXmas = (n.includes('耶誕') || n.includes('聖誕') || en.includes('christmas'));
-        return {
-          ...bean,
-          name: (isXmas && !n.includes('黃金')) ? '星巴克®耶誕黃金烘焙咖啡豆' : bean.name,
-          enName: (isXmas && !en.includes('blonde')) ? 'Starbucks® Christmas Blonde Roast' : bean.enName,
-          roast: '黃金烘焙',
-          acidity: bean.acidity && bean.acidity !== '低' ? bean.acidity : '高 (柔和柑橘酸質)',
-          body: bean.body && !bean.body.includes('厚') ? bean.body : '輕盈柔順',
-          flavorNotes: (isXmas && (!bean.flavorNotes || bean.flavorNotes.includes('核桃'))) ? '香料甜橙、無花果與楓糖甜香' : bean.flavorNotes
-        };
+      let n = String(bean.name).trim();
+      let en = String(bean.enName || '').trim();
+      const desc = String(bean.description || '');
+      const notes = String(bean.flavorNotes || '');
+      const combinedText = `${n} ${en} ${desc} ${notes}`;
+
+      // 修復先前被誤改名為「星巴克®耶誕黃金烘焙咖啡豆」的其他耶誕系列豆款，忠實還原官網設定
+      if (n.includes('耶誕') || n.includes('聖誕') || en.toLowerCase().includes('christmas')) {
+        const isEspressoXmas = n.includes('濃縮') || en.toLowerCase().includes('espresso') || desc.includes('濃縮') || notes.includes('糖蜜') || notes.includes('黑可可');
+        const isDarkTraditionalXmas = (!n.includes('黃金') && !en.toLowerCase().includes('blonde') && !desc.includes('較淺') && !notes.includes('甜橙') && !notes.includes('無花果')) || desc.includes('陳年蘇門答臘') || desc.includes('1984') || notes.includes('雪松') || notes.includes('甜美草本');
+
+        if (isEspressoXmas) {
+          return {
+            ...bean,
+            name: '星巴克®耶誕濃縮烘焙咖啡豆',
+            enName: 'Starbucks® Christmas Blend Espresso Roast',
+            roast: '深度烘焙',
+            acidity: '低',
+            body: '厚重濃郁',
+            flavorNotes: notes && !notes.includes('甜橙') ? notes : '雪松香料、糖蜜與醇厚黑可可'
+          };
+        } else if (isDarkTraditionalXmas && (desc.includes('陳年') || desc.includes('1984') || notes.includes('雪松') || notes.includes('草本'))) {
+          return {
+            ...bean,
+            name: '星巴克®耶誕綜合咖啡豆',
+            enName: 'Starbucks® Christmas Blend',
+            roast: '深度烘焙',
+            acidity: '低',
+            body: '厚實飽滿',
+            flavorNotes: notes && !notes.includes('甜橙') ? notes : '甜美草本、烘焙香料與絲滑可可尾韻'
+          };
+        } else if (n.includes('黃金') || en.toLowerCase().includes('blonde') || notes.includes('甜橙') || notes.includes('無花果') || desc.includes('較淺')) {
+          return {
+            ...bean,
+            name: '星巴克®耶誕黃金烘焙咖啡豆',
+            enName: 'Starbucks® Christmas Blonde Roast',
+            roast: '黃金烘焙',
+            acidity: '高 (柔和柑橘酸質)',
+            body: '輕盈柔順',
+            flavorNotes: notes || '香料甜橙、無花果與楓糖甜香'
+          };
+        }
       }
-      if (n.includes('深烘焙') || n.includes('深度烘焙') || n.includes('佛羅娜') || n.includes('濃縮烘焙')) {
+
+      // 一般豆款：嚴格依據該豆本身的名稱與英文名稱判定烘焙度
+      if (n.includes('黃金') || en.toLowerCase().includes('blonde') || n.includes('輕柳') || n.includes('日安') || n.includes('瑟加堤')) {
+        return { ...bean, roast: '黃金烘焙' };
+      }
+      if (n.includes('深烘焙') || n.includes('深度烘焙') || n.includes('佛羅娜') || n.includes('濃縮烘焙') || n === '蘇門答臘咖啡豆') {
         return { ...bean, roast: '深度烘焙' };
       }
       return bean;
@@ -4110,32 +4386,37 @@ const app = createApp({
     const parseOfficialBeanDetailPage = (html, id, fallbackMeta = {}) => {
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
-      const fullText = (doc.body ? doc.body.innerText : html).replace(/\s+/g, ' ');
+      const rawFullText = (doc.body ? doc.body.innerText : html).replace(/\s+/g, ' ');
+      // 關鍵修正：只截取官網單品頁「更多咖啡豆選擇」輪播區之前的正文，避免被底部其他推薦豆的烘焙度干擾！
+      const mainProductText = rawFullText.split(/更多咖啡豆選擇|相關商品|前往生活頻道/)[0] || rawFullText;
 
       const titleText = (doc.querySelector('title')?.textContent || '').trim();
       let category = fallbackMeta.category || (titleText.includes('季節') ? '季節限定豆' : '常態經典豆');
-      let name = fallbackMeta.name || '';
-      if (!name && titleText.includes('|')) {
+      let name = '';
+      if (titleText.includes('|')) {
         name = titleText.split('|')[0].replace(/^(季節咖啡豆|經典咖啡豆)-/, '').trim();
       }
       const h1El = doc.querySelector('h1, .product-title, .title');
       if (!name && h1El) name = h1El.textContent.trim();
+      if (!name) name = fallbackMeta.name || `星巴克季節咖啡豆 (#${id})`;
 
       const enEl = doc.querySelector('.en, .sub-title, h2, .eng');
       let enName = (enEl ? enEl.textContent.trim() : '') || fallbackMeta.enName || 'Starbucks® Whole Bean Coffee';
 
-      let roast = fallbackMeta.roast || '中度烘焙';
-      if (name.includes('黃金') || titleText.includes('黃金') || enName.toLowerCase().includes('blonde')) {
+      // 忠實讀取官網該單品頁標示的烘焙程度
+      let roast = '中度烘焙';
+      if (mainProductText.includes('黃金烘焙') || name.includes('黃金') || enName.toLowerCase().includes('blonde')) {
         roast = '黃金烘焙';
-      } else if (name.includes('深烘焙') || name.includes('深度') || titleText.includes('深度烘焙') || enName.toLowerCase().includes('dark')) {
+      } else if (mainProductText.includes('深度烘焙') || name.includes('深烘焙') || enName.toLowerCase().includes('dark')) {
         roast = '深度烘焙';
-      } else {
-        const roastMatch = fullText.match(/烘焙程度\s*(黃金烘焙|中度烘焙|深度烘焙)/);
-        if (roastMatch && roastMatch[1]) roast = roastMatch[1];
+      } else if (mainProductText.includes('中度烘焙')) {
+        roast = '中度烘焙';
+      } else if (fallbackMeta.roast) {
+        roast = fallbackMeta.roast;
       }
 
       const extractField = (regex, defaultVal) => {
-        const m = fullText.match(regex);
+        const m = mainProductText.match(regex);
         return (m && m[1]) ? m[1].trim() : defaultVal;
       };
 
@@ -4145,17 +4426,17 @@ const app = createApp({
       const foodPairing = extractField(/適合搭配的食物風味\s*([^\s*•｜|認識咖啡豆]{2,35})/, fallbackMeta.foodPairing || '可頌、巧克力、堅果點心');
 
       let description = fallbackMeta.description || '';
-      const descMatch = fullText.match(/認識咖啡豆\s*(.+?)\s*(?:前往生活頻道|更多咖啡豆選擇|如何調理好咖啡)/);
+      const descMatch = rawFullText.match(/認識咖啡豆\s*(.+?)\s*(?:前往生活頻道|更多咖啡豆選擇|如何調理好咖啡)/);
       if (descMatch && descMatch[1]) {
         description = descMatch[1].trim().slice(0, 140);
       }
 
-      let acidity = fallbackMeta.acidity || (roast === '黃金烘焙' ? '高' : (roast === '深度烘焙' ? '低' : '中等'));
-      let body = fallbackMeta.body || (roast === '黃金烘焙' ? '輕盈柔順' : (roast === '深度烘焙' ? '厚實飽滿' : '中等'));
+      let acidity = extractField(/酸度\s*([^\s*•｜|]{1,10})/, roast === '黃金烘焙' ? '高' : (roast === '深度烘焙' ? '低' : '中等'));
+      let body = extractField(/醇度\s*([^\s*•｜|]{1,10})/, roast === '黃金烘焙' ? '輕盈柔順' : (roast === '深度烘焙' ? '厚實飽滿' : '中等'));
 
       return sanitizeBeanRoastData({
         id: String(id),
-        name: name || `星巴克季節咖啡豆 (#${id})`,
+        name,
         enName,
         matchKey: name.replace(/星巴克|®|™|咖啡豆|單一產區/g, '').trim() || String(id),
         category,
@@ -4187,12 +4468,19 @@ const app = createApp({
             officialUrl: `https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=${nb.id}`
           });
           mapById[String(nb.id)] = fixedBean;
-          if (db && nb.roast !== fixedBean.roast) {
-            db.ref('sbux/officialCoffeeBeans/' + fixedBean.id).set(fixedBean);
-          }
         }
       });
-      starbucksCoreBeans.value = Object.values(mapById);
+
+      // 去重保護：若不同 ID 因舊快取同名為「星巴克®耶誕黃金烘焙咖啡豆」，先去重避免畫面出現三個一模一樣的豆卡，並觸發背景官網重抓還原
+      const uniqueList = [];
+      const seenNames = new Set();
+      Object.values(mapById).forEach(b => {
+        if (!seenNames.has(b.name)) {
+          seenNames.add(b.name);
+          uniqueList.push(b);
+        }
+      });
+      starbucksCoreBeans.value = uniqueList;
     };
 
     const syncStarbucksTaiwanBeanUrls = async () => {
@@ -4202,6 +4490,28 @@ const app = createApp({
       } catch (e) {}
 
       try {
+        // 自動檢查雲端是否有被舊版誤改名的耶誕豆款，直接從各自的官網 product.jspx?id=XXX 重新抓取真實名稱與烘焙度修復！
+        if (db) {
+          const snap = await db.ref('sbux/officialCoffeeBeans').once('value');
+          const cloudBeans = snap.val();
+          if (cloudBeans && typeof cloudBeans === 'object') {
+            for (const bId of Object.keys(cloudBeans)) {
+              const cb = cloudBeans[bId];
+              if (cb && cb.name && (cb.name.includes('耶誕') || cb.name.includes('聖誕'))) {
+                const detailUrl = `https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=${bId}`;
+                const detailHtml = await fetchHtmlViaCorsProxy(detailUrl);
+                if (detailHtml) {
+                  const trueBean = parseOfficialBeanDetailPage(detailHtml, bId, {});
+                  await db.ref('sbux/officialCoffeeBeans/' + bId).set(trueBean);
+                  cloudBeans[bId] = trueBean;
+                }
+              }
+            }
+            mergeBeansIntoCatalog(cloudBeans);
+            localStorage.setItem('sbux_tw_official_beans_v2', JSON.stringify(starbucksCoreBeans.value));
+          }
+        }
+
         const seedHtml = await fetchHtmlViaCorsProxy('https://www.starbucks.com.tw/coffee/our-coffees/product.jspx?id=149');
         if (!seedHtml) return;
 
@@ -4218,15 +4528,11 @@ const app = createApp({
           if (!idMatch) return;
           const beanId = idMatch[1];
 
-          const containerText = (a.closest('li, div')?.textContent || a.parentElement?.textContent || '').replace(/\s+/g, ' ').trim();
+          const containerText = (a.closest('li')?.textContent || a.parentElement?.textContent || '').replace(/\s+/g, ' ').trim();
           const isBeanCategory = containerText.includes('經典咖啡豆') || containerText.includes('季節咖啡豆');
           const isExcluded = containerText.includes('掛耳') || containerText.includes('VIA') || containerText.includes('禮盒') || containerText.includes('提袋');
 
           if (isBeanCategory && !isExcluded && !existingIds.has(beanId)) {
-            let roast = '中度烘焙';
-            if (containerText.includes('黃金烘焙')) roast = '黃金烘焙';
-            else if (containerText.includes('深度烘焙')) roast = '深度烘焙';
-
             const category = containerText.includes('季節咖啡豆') ? '季節限定豆' : '常態經典豆';
             const cleanName = containerText
               .replace(/經典咖啡豆|季節咖啡豆|黃金烘焙|中度烘焙|深度烘焙|了解詳情/g, '')
@@ -4234,7 +4540,7 @@ const app = createApp({
 
             if (cleanName) {
               existingIds.add(beanId);
-              newlyDiscoveredMeta.push({ id: beanId, name: cleanName, category, roast });
+              newlyDiscoveredMeta.push({ id: beanId, name: cleanName, category });
             }
           }
         });
@@ -4256,6 +4562,337 @@ const app = createApp({
           }
         }
       } catch (err) {}
+    };
+
+    // ==================== 🥤 門市飲品配方卡速查與隨堂測驗引擎 ====================
+    const defaultDrinkRecipes = [
+      {
+        id: 'rcp_latte',
+        code: 'L',
+        name: '那堤 (Caffè Latte)',
+        category: '經典濃縮',
+        shotRule: 'standard',
+        syrupRule: 'none',
+        syrupName: '無糖漿 (原味)',
+        steps: '1. 蒸煮牛奶至 60~65°C (綿密奶泡約 1cm) ➔ 2. 萃取濃縮咖啡入杯 ➔ 3. 注入蒸奶並保留頂層薄奶泡。冰飲：濃縮 + 冰牛奶至上線 + 冰塊滿杯。',
+        topping: '熱飲保留約 1 公分綿密奶泡；冰飲無鮮奶油'
+      },
+      {
+        id: 'rcp_cm',
+        code: 'CM',
+        name: '焦糖瑪奇朵 (Caramel Macchiato)',
+        category: '經典濃縮',
+        shotRule: 'standard',
+        syrupRule: 'cm',
+        syrupName: '香草糖漿 (較標準少1下)',
+        steps: '1. 杯底壓入香草糖漿 (S:1 / T:2 / G:3 / 熱V:4 / 冰V:5) ➔ 2. 加入蒸奶(熱)或冰牛奶+冰塊(冰) ➔ 3. 將濃縮咖啡由正中央緩緩傾倒於頂層進行「印記 (Mark)」。',
+        topping: '頂層焦糖醬畫「7×7 網格 + 順時針外圈 2 圈」'
+      },
+      {
+        id: 'rcp_mocha',
+        code: 'M',
+        name: '摩卡 (Caffè Mocha)',
+        category: '經典濃縮',
+        shotRule: 'standard',
+        syrupRule: 'standard',
+        syrupName: '摩卡醬',
+        steps: '1. 杯底壓入標準下數摩卡醬 ➔ 2. 注入濃縮咖啡攪拌融化摩卡醬 ➔ 3. 注入蒸奶(熱)或冰牛奶+冰塊(冰)。',
+        topping: '擠上標準螺旋鮮奶油 (Whipped Cream)'
+      },
+      {
+        id: 'rcp_americano',
+        code: 'A',
+        name: '美式咖啡 (Caffè Americano)',
+        category: '經典濃縮',
+        shotRule: 'americano',
+        syrupRule: 'none',
+        syrupName: '無糖漿',
+        steps: '濃縮份數較一般那堤多 1 份 (S:1 / T:2 / G:3 / V:4)！萃取濃縮咖啡後注入熱水（冰美式為濃縮 + 冰水至上線 + 冰塊）。',
+        topping: '保留表面黃金 Crema 油脂感'
+      },
+      {
+        id: 'rcp_fw',
+        code: 'FW',
+        name: '馥列白 (Flat White)',
+        category: '經典濃縮',
+        shotRule: 'flatwhite',
+        syrupRule: 'none',
+        syrupName: '無糖漿 (全脂奶)',
+        steps: '全面採用 Ristretto (短濃縮)，份數比標準多 1 份 (S:2 / T:2 / G:3 / V:3；冰 V:4)！搭配極細緻絲絨奶泡，收尾於中央留下一顆白圓點。',
+        topping: '表面中心呈現經典「馥列白圓點 (White Dot)」'
+      },
+      {
+        id: 'rcp_cappuccino',
+        code: 'C',
+        name: '卡布奇諾 (Cappuccino)',
+        category: '經典濃縮',
+        shotRule: 'standard',
+        syrupRule: 'none',
+        syrupName: '無糖漿',
+        steps: '蒸奶打發時間拉長（約 6~8 秒），使牛奶與豐厚奶泡比例達 1:1，注入濃縮咖啡中。',
+        topping: '綿密豐厚奶泡佔杯身約 1/2'
+      },
+      {
+        id: 'rcp_matcha',
+        code: 'GRTL',
+        name: '醇濃抹茶那堤 (Matcha Tea Latte)',
+        category: '茶瓦納',
+        shotRule: 'none',
+        syrupRule: 'matcha',
+        syrupName: '醇濃抹茶粉 + 液態蔗糖',
+        steps: '依杯型加入標準匙數醇濃抹茶粉與糖漿 (S:2 / T:3 / G:4 / V:5)，以少量熱水攪勻化開後，加入蒸奶或冰牛奶與冰塊。',
+        topping: '抹茶粉務必完全化開無結塊'
+      },
+      {
+        id: 'rcp_ruby',
+        code: 'RBTL',
+        name: '紅玉紅茶那堤 / 福吉茶那堤',
+        category: '茶瓦納',
+        shotRule: 'none',
+        syrupRule: 'standard',
+        syrupName: '經典糖漿 / 茶粉基底',
+        steps: '濃萃茶湯或茶粉基底搭配標準下數糖漿，結合 1/2 比例蒸煮鮮奶與細緻奶泡。',
+        topping: '茶香與乳香平衡交融'
+      },
+      {
+        id: 'rcp_javachip',
+        code: 'JCF',
+        name: '焦糖可可碎片星冰樂 (Java Chip Frappuccino)',
+        category: '星冰樂',
+        shotRule: 'fraproast',
+        syrupRule: 'frap',
+        syrupName: '摩卡醬 + 可可碎片 + 咖啡星冰樂基底',
+        steps: '1. 星冰樂烤咖啡 + 全脂奶至杯身下線 ➔ 2. 倒入冰沙機，加入摩卡醬、星冰樂可可碎片、標準冰鏟與咖啡星冰樂基底糖漿 (T:2 / G:3 / V:4) 攪打均勻。',
+        topping: '鮮奶油 + 摩卡淋醬 + 焦糖淋醬'
+      },
+      {
+        id: 'rcp_vsccb',
+        code: 'VSCCB',
+        name: '香草風味甜奶油冷萃 (Vanilla Sweet Cream Cold Brew)',
+        category: '冷萃與季節',
+        shotRule: 'coldbrew',
+        syrupRule: 'cbsyrup',
+        syrupName: '香草糖漿 (冷萃減半規範)',
+        steps: '1. 壓入香草糖漿 (T:1 / G:2 / V:3) ➔ 2. 倒入 20 小時慢速萃取冷萃咖啡與冰水、加冰塊 ➔ 3. 頂層緩緩淋上自製香草甜奶油創造瀑布漸層。',
+        topping: '頂層漂浮香草甜奶油漸層'
+      },
+      {
+        id: 'rcp_tncl',
+        code: 'TNCL',
+        name: '太妃核果風味那堤 (耶誕季節限定)',
+        category: '冷萃與季節',
+        shotRule: 'standard',
+        syrupRule: 'standard',
+        syrupName: '太妃核果風味糖漿',
+        steps: '1. 杯底壓入標準下數太妃核果糖漿 ➔ 2. 注入經典濃縮咖啡與蒸煮牛奶 (冰飲為冰牛奶 + 冰塊)。',
+        topping: '擠上鮮奶油 + 撒上香脆太妃蜜糖碎片'
+      }
+    ];
+
+    const customRecipesList = ref([]);
+    const showShotSyrupTable = ref(true);
+    const recipeTempMode = ref('hot');
+    const recipeSizeMode = ref('Grande');
+    const recipeCategoryFilter = ref('all');
+    const recipeSearchQuery = ref('');
+    const addRecipeModal = ref({ show: false, form: { code: '', name: '', category: '經典濃縮', syrupName: '', steps: '', topping: '' } });
+    const isGeneratingAiRecipeQuiz = ref(false);
+    const recipeQuizModal = ref({ show: false, questions: [], answers: [], submitted: false, score: 0 });
+
+    if (db) {
+      db.ref('sbux/custom_recipes').on('value', snap => {
+        const val = snap.val();
+        customRecipesList.value = val ? Object.values(val) : [];
+      });
+    }
+
+    const allDrinkRecipes = computed(() => {
+      return [...customRecipesList.value, ...defaultDrinkRecipes];
+    });
+
+    const filteredDrinkRecipes = computed(() => {
+      const q = recipeSearchQuery.value.trim().toLowerCase();
+      return allDrinkRecipes.value.filter(r => {
+        if (recipeCategoryFilter.value !== 'all' && r.category !== recipeCategoryFilter.value) return false;
+        if (!q) return true;
+        return (
+          (r.name && r.name.toLowerCase().includes(q)) ||
+          (r.code && r.code.toLowerCase().includes(q)) ||
+          (r.syrupName && r.syrupName.toLowerCase().includes(q)) ||
+          (r.steps && r.steps.toLowerCase().includes(q))
+        );
+      });
+    });
+
+    const getRecipeShotDisplay = (rcp, temp, size) => {
+      if (temp === 'iced' && size === 'Short') return '冰飲無 Short 杯型';
+      if (rcp.shotRule === 'none') return '無濃縮 (茶/奶基底)';
+      if (rcp.shotRule === 'coldbrew') return '冷萃原液 + 冰水';
+      if (rcp.shotRule === 'fraproast') {
+        const map = { Short: '1下', Tall: '2下', Grande: '3下', Venti: '4下' };
+        return `星冰樂烤咖啡 ${map[size] || '3下'}`;
+      }
+      if (rcp.shotRule === 'americano') {
+        const map = { Short: '1 份 Shot', Tall: '2 份 Shot', Grande: '3 份 Shot', Venti: '4 份 Shot' };
+        return map[size] || '3 份 Shot';
+      }
+      if (rcp.shotRule === 'flatwhite') {
+        if (temp === 'iced' && size === 'Venti') return '4 份 Ristretto';
+        const map = { Short: '2 份 Ristretto', Tall: '2 份 Ristretto', Grande: '3 份 Ristretto', Venti: '3 份 Ristretto' };
+        return map[size] || '3 份 Ristretto';
+      }
+      // 標準那堤/瑪奇朵/摩卡
+      if (temp === 'iced' && size === 'Venti') return '3 份濃縮 Shot';
+      const stdMap = { Short: '1 份濃縮 Shot', Tall: '1 份濃縮 Shot', Grande: '2 份濃縮 Shot', Venti: '2 份濃縮 Shot' };
+      return stdMap[size] || '2 份濃縮 Shot';
+    };
+
+    const getRecipeSyrupDisplay = (rcp, temp, size) => {
+      if (temp === 'iced' && size === 'Short') return '-';
+      if (rcp.syrupRule === 'none') return '0 下 (無糖漿)';
+      const sName = rcp.syrupName || '標準糖漿';
+      if (rcp.syrupRule === 'cm') {
+        if (temp === 'iced' && size === 'Venti') return `5 下 (${sName})`;
+        const cmMap = { Short: '1 下', Tall: '2 下', Grande: '3 下', Venti: '4 下' };
+        return `${cmMap[size]} (${sName})`;
+      }
+      if (rcp.syrupRule === 'frap') {
+        const fMap = { Short: '1 下', Tall: '2 下', Grande: '3 下', Venti: '4 下' };
+        return `${fMap[size]} (${sName})`;
+      }
+      if (rcp.syrupRule === 'cbsyrup') {
+        const cbMap = { Short: '1 下', Tall: '1 下', Grande: '2 下', Venti: '3 下' };
+        return `${cbMap[size]} (${sName})`;
+      }
+      if (temp === 'iced' && size === 'Venti') return `6 下 (${sName})`;
+      const stdMap = { Short: '2 下', Tall: '3 下', Grande: '4 下', Venti: '5 下' };
+      return `${stdMap[size]} (${sName})`;
+    };
+
+    const openAddRecipeModal = () => {
+      addRecipeModal.value = { show: true, form: { code: '', name: '', category: '經典濃縮', syrupName: '', steps: '', topping: '' } };
+    };
+
+    const saveCustomRecipe = async () => {
+      const f = addRecipeModal.value.form;
+      if (!f.name || !f.code) return alert('請填寫代號與飲品名稱！');
+      const id = 'rcp_custom_' + Date.now();
+      const newRcp = {
+        id,
+        code: f.code.trim().toUpperCase(),
+        name: f.name.trim(),
+        category: f.category,
+        shotRule: f.category === '星冰樂' ? 'fraproast' : (f.category === '茶瓦納' ? 'none' : 'standard'),
+        syrupRule: f.category === '星冰樂' ? 'frap' : 'standard',
+        syrupName: f.syrupName.trim() || '標準糖漿',
+        steps: f.steps.trim() || '依門市標準流程製作',
+        topping: f.topping.trim(),
+        isCustom: true
+      };
+      if (db) await db.ref('sbux/custom_recipes/' + id).set(newRcp);
+      addRecipeModal.value.show = false;
+      alert(`✅ 已新增【${newRcp.name}】配方卡！`);
+    };
+
+    const deleteCustomRecipe = async (id) => {
+      if (confirm('確定刪除此自訂配方卡？') && db) {
+        await db.ref('sbux/custom_recipes/' + id).remove();
+      }
+    };
+
+    const recipeQuestionBank = [
+      {
+        question: "顧客點一杯「特大杯冰那堤 (Iced Venti Caffè Latte)」，請問標準應加入幾份濃縮咖啡 (Shot)？",
+        options: ["1 份 Shot", "2 份 Shot", "3 份 Shot", "4 份 Shot"],
+        correct: 2,
+        explanation: "冰特大杯 (Iced Venti 24oz) 因冰塊與奶量較多，標準濃縮份數為 3 份 Shot（熱特大杯則為 2 份）。"
+      },
+      {
+        question: "製作「大杯熱焦糖瑪奇朵 (Hot Grande Caramel Macchiato)」時，杯底應壓入幾下香草糖漿？",
+        options: ["2 下", "3 下", "4 下", "5 下"],
+        correct: 1,
+        explanation: "焦糖瑪奇朵的香草糖漿比標準那堤少 1 下（S:1 / T:2 / G:3 / 熱V:4 / 冰V:5），因此大杯 Grande 為 3 下！"
+      },
+      {
+        question: "顧客點一杯「特大杯冰焦糖瑪奇朵 (Iced Venti Caramel Macchiato)」，請問香草糖漿與濃縮份數分別為何？",
+        options: ["4 下糖漿 + 2 份濃縮", "5 下糖漿 + 3 份濃縮", "6 下糖漿 + 3 份濃縮", "5 下糖漿 + 2 份濃縮"],
+        correct: 1,
+        explanation: "冰特大杯標準糖漿為 6 下，焦糖瑪奇朵減 1 下為 5 下香草糖漿，搭配冰特大標準 3 份濃縮 Shot。"
+      },
+      {
+        question: "關於「大杯熱美式咖啡 (Grande Caffè Americano)」的標準濃縮份數，下列何者正確？",
+        options: ["1 份 Shot", "2 份 Shot", "3 份 Shot", "4 份 Shot"],
+        correct: 2,
+        explanation: "美式咖啡各杯型 Shot 數依序為 Short:1 / Tall:2 / Grande:3 / Venti:4。"
+      },
+      {
+        question: "製作「大杯熱馥列白 (Grande Flat White)」時，標準濃縮設定為何？",
+        options: ["2 份標準 Shot", "3 份標準 Shot", "2 份 Ristretto (短濃縮)", "3 份 Ristretto (短濃縮)"],
+        correct: 3,
+        explanation: "馥列白採用 Ristretto (短濃縮)，且份數為 S:2 / T:2 / G:3 / 熱V:3 (冰V:4)。"
+      },
+      {
+        question: "「特大杯冰風味那堤（如冰特大香草那堤）」標準應壓入幾下風味糖漿？",
+        options: ["4 下", "5 下", "6 下", "7 下"],
+        correct: 2,
+        explanation: "熱飲標準糖漿為 S:2 / T:3 / G:4 / V:5；冰特大杯 (Iced Venti) 標準糖漿則為 6 下。"
+      },
+      {
+        question: "星冰樂製作時，「大杯 (Grande)」標準應壓入幾下星冰樂基底糖漿與烤咖啡？",
+        options: ["2 下", "3 下", "4 下", "5 下"],
+        correct: 1,
+        explanation: "星冰樂烤咖啡與基底糖漿下數為 Tall:2 / Grande:3 / Venti:4。"
+      }
+    ];
+
+    const startRecipeQuiz = async (mode = 'standard') => {
+      if (mode === 'ai') {
+        isGeneratingAiRecipeQuiz.value = true;
+        try {
+          const prompt = `你是台灣星巴克吧台訓練師。請隨機出 5 題「台灣星巴克門市吧台飲品配方與客製化實戰選擇題」（包含冰熱杯型 Shot 數、糖漿下數、焦糖瑪奇朵減1下規則、美式1-2-3-4規則、馥列白 Ristretto 或季節太妃核果那堤等）。
+請只輸出純 JSON 陣列格式：
+[{"question":"題目","options":["選項A","選項B","選項C","選項D"],"correct":正確索引0到3,"explanation":"詳細配方解析"}]`;
+          const raw = await callGeminiApi([{ text: prompt }], true, 0.75);
+          const match = raw.match(/\[[\s\S]*\]/);
+          const parsed = JSON.parse(match ? match[0] : raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            recipeQuizModal.value = {
+              show: true,
+              questions: parsed.slice(0, 5),
+              answers: new Array(Math.min(5, parsed.length)).fill(null),
+              submitted: false,
+              score: 0
+            };
+            isGeneratingAiRecipeQuiz.value = false;
+            return;
+          }
+        } catch (e) {
+          alert('AI 忙碌中，已為您切換為內建標準吧台配方考題！');
+        } finally {
+          isGeneratingAiRecipeQuiz.value = false;
+        }
+      }
+
+      const shuffled = [...recipeQuestionBank].sort(() => Math.random() - 0.5).slice(0, 5);
+      recipeQuizModal.value = {
+        show: true,
+        questions: shuffled,
+        answers: new Array(shuffled.length).fill(null),
+        submitted: false,
+        score: 0
+      };
+    };
+
+    const submitRecipeQuiz = () => {
+      if (recipeQuizModal.value.answers.some(a => a === null)) {
+        return alert('還有題目尚未選擇答案喔！');
+      }
+      let sc = 0;
+      recipeQuizModal.value.questions.forEach((q, idx) => {
+        if (recipeQuizModal.value.answers[idx] === q.correct) sc++;
+      });
+      recipeQuizModal.value.score = sc;
+      recipeQuizModal.value.submitted = true;
     };
 
     // ==================== Gemini AI 引擎 ====================
@@ -7876,7 +8513,10 @@ const app = createApp({
       groupedAlbumFolders, toggleAlbumFolder, isAlbumExpanded,
       lightboxModal, openPhotoLightbox, stepLightboxPhoto, downloadPhoto,
       bravoCardsList, bravoModal, openBravoModal, submitBravoCard,
-      starbucksCoreBeans, coffeeSearchQuery, coffeeCategoryFilter, coffeeRoastFilter, filteredCoffeeBeans,
+      starbucksCoreBeans, showShotSyrupTable, recipeTempMode, recipeSizeMode, recipeCategoryFilter, recipeSearchQuery,
+      filteredDrinkRecipes, getRecipeShotDisplay, getRecipeSyrupDisplay,
+      addRecipeModal, openAddRecipeModal, saveCustomRecipe, deleteCustomRecipe,
+      isGeneratingAiRecipeQuiz, recipeQuizModal, startRecipeQuiz, submitRecipeQuiz, coffeeSearchQuery, coffeeCategoryFilter, coffeeRoastFilter, filteredCoffeeBeans,
       courseSummaries, isGeneratingSummary, generateCourseSummary,
       tastingForm, submitTastingNote, tastingNotesList, getIntensityLabel, getCleanNotesText, deleteTastingNote, isAiEvaluatingTasting,
       latteForm, handleLattePhotoUpload, submitLattePost, isAiEvaluating, isArchivingLatteArt,
