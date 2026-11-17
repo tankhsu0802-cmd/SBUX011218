@@ -979,21 +979,22 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-2 pt-1">
-                  <button 
-                    @click="triggerPrintSchedule('blank')" 
-                    class="py-2.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1 active:scale-95">
-                    <span>🖨️</span> 列印空白排班表
-                  </button>
-                  
-                  <button 
-                    @click="triggerPrintSchedule('ai')" 
-                    class="py-2.5 bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1 active:scale-95">
-                    <span>🖨️</span> 列印預排班表
-                  </button>
-                </div>
-              </div>
-            </div>
+               <button 
+                 @touchstart.passive="printTargetMode = 'blank'"
+                 @mousedown="printTargetMode = 'blank'"
+                 @click="triggerPrintSchedule('blank')" 
+                 class="py-2.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1 active:scale-95">
+                 <span>🖨️</span> 列印空白排班表
+               </button>
 
+               <button 
+                 @touchstart.passive="printTargetMode = 'ai'"
+                 @mousedown="printTargetMode = 'ai'"
+                 @click="triggerPrintSchedule('ai')" 
+                 class="py-2.5 bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1 active:scale-95">
+                 <span>🖨️</span> 列印預排班表
+               </button>
+             </div>
             <!-- 畫假登記與畫假行事曆 -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
               <div class="flex justify-between items-center flex-wrap gap-1.5">
@@ -2663,30 +2664,44 @@
                ></textarea>
              </div>
 
-                <!-- 附加現場缺失照片 -->
-                <div class="flex items-center gap-2">
-                  <label class="flex-1 py-2 px-3 border-2 border-dashed border-rose-400 dark:border-rose-700 bg-rose-50/40 dark:bg-rose-950/20 rounded-xl text-center cursor-pointer hover:bg-rose-50 transition">
-                    <input type="file" accept="image/*" multiple @change="handleFsaPhotosUpload" class="hidden">
-                    <span v-if="fsaForm.photos.length === 0" class="text-[11px] font-bold text-rose-800 dark:text-rose-300">
-                      📷 附加現場缺失照片 / 手寫筆記照片 (選填，可多選)
-                    </span>
-                    <span v-else class="text-[11px] font-black text-emerald-700 dark:text-emerald-400">
-                      ✅ 已附加 {{ fsaForm.photos.length }} 張照片
-                    </span>
-                  </label>
-                  <button v-if="fsaForm.photos.length > 0" @click="fsaForm.photos = []" class="px-2.5 py-2 bg-slate-100 dark:bg-slate-700 text-slate-500 rounded-xl text-[11px] font-bold">
-                    清除
-                  </button>
+                <!-- 附加現場缺失照片 (支援 20~30+ 張批次上傳與預覽) -->
+                <div class="space-y-2">
+                  <div class="flex items-center gap-2">
+                    <label class="flex-1 py-2.5 px-3 border-2 border-dashed border-rose-400 dark:border-rose-700 bg-rose-50/40 dark:bg-rose-950/20 rounded-xl text-center cursor-pointer hover:bg-rose-50 transition">
+                      <input type="file" accept="image/*" multiple @change="handleFsaPhotosUpload" class="hidden" :disabled="isUploadingFsaPhotos || isAnalyzingFsa">
+                      <span v-if="isUploadingFsaPhotos" class="text-[11px] font-black text-amber-700 dark:text-amber-300 flex items-center justify-center gap-1.5">
+                        <span class="animate-spin">🔄</span> {{ fsaPhotoProgressText }}
+                      </span>
+                      <span v-else-if="fsaForm.photos.length === 0" class="text-[11px] font-bold text-rose-800 dark:text-rose-300">
+                        📷 附加現場缺失照片 / 手寫筆記照片 (支援一次選取 20~30+ 張)
+                      </span>
+                      <span v-else class="text-[11px] font-black text-emerald-700 dark:text-emerald-400">
+                        ✅ 已附加 {{ fsaForm.photos.length }} 張照片 (點擊可繼續追加照片)
+                      </span>
+                    </label>
+                    <button v-if="fsaForm.photos.length > 0 && !isUploadingFsaPhotos" @click="fsaForm.photos = []" type="button" class="px-2.5 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-rose-100 text-slate-600 dark:text-slate-300 rounded-xl text-[11px] font-bold">
+                      清空({{ fsaForm.photos.length }})
+                    </button>
+                  </div>
+
+                  <!-- 照片縮圖橫向預覽列 (可點擊放大或單張移除) -->
+                  <div v-if="fsaForm.photos.length > 0" class="flex gap-2 overflow-x-auto py-1 px-0.5">
+                    <div v-for="(pUrl, pIdx) in fsaForm.photos" :key="pIdx" class="relative w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600 bg-slate-100">
+                      <img :src="pUrl" class="w-full h-full object-cover" @click="openPhotoLightbox && openPhotoLightbox(pUrl, 'FSA 現場照片 #' + (pIdx + 1))">
+                      <span class="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[9px] text-center font-mono">{{ pIdx + 1 }}</span>
+                      <button type="button" @click.stop="fsaForm.photos.splice(pIdx, 1)" class="absolute top-0 right-0 w-4 h-4 bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center rounded-bl">✕</button>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="grid grid-cols-3 gap-2 pt-1">
                   <button 
                     @click="analyzeFsaNotesToOfficialTable" 
-                    :disabled="isAnalyzingFsa || (!fsaForm.rawNotes.trim() && fsaForm.photos.length === 0)"
+                    :disabled="isAnalyzingFsa || isUploadingFsaPhotos || (!fsaForm.rawNotes.trim() && fsaForm.photos.length === 0)"
                     class="col-span-2 py-2.5 bg-rose-700 hover:bg-rose-600 disabled:bg-slate-300 text-white rounded-xl font-black text-xs shadow transition active:scale-95 flex items-center justify-center gap-1.5">
                     <span v-if="isAnalyzingFsa" class="animate-spin">🔄</span>
                     <span v-else>🤖</span>
-                    <span>{{ isAnalyzingFsa ? '正在核對 2026 條文與生成行動方案...' : 'AI 自動辨識條文並填入檢查表' }}</span>
+                    <span>{{ isAnalyzingFsa ? (fsaPhotoProgressText || '正在核對 2026 條文與生成行動方案...') : 'AI 自動辨識條文並填入檢查表' }}</span>
                   </button>
 
                   <button 
@@ -2709,8 +2724,12 @@
                       <span class="text-[10px] text-slate-400 font-mono">(20260514版)</span>
                     </div>
                     <div class="flex gap-1.5 flex-wrap">
-                      <button @click="triggerPrintFsaOfficialTable(fsaForm)" class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-[11px] font-black shadow active:scale-95 transition flex items-center gap-1">
-                        <span>🖨️</span> 匯出官方格式表單 (PDF/列印)
+                      <button 
+                     @touchstart.passive="printTargetMode = 'fsa'"
+                     @mousedown="printTargetMode = 'fsa'"
+                     @click="triggerPrintFsaOfficialTable()" 
+                     class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-[11px] font-black shadow active:scale-95 transition flex items-center gap-1">
+                     <span>🖨️</span> 匯出官方格式表單 (PDF/列印)
                       </button>
                       <button @click="publishFsaToStoreBulletin(fsaForm)" class="px-2.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-black rounded-lg text-[11px] font-black shadow active:scale-95 transition flex items-center gap-1">
                         <span>📢</span> 公布至首頁公告欄
@@ -5738,31 +5757,115 @@ ${recipesContext}
       }
     };
 
-    const handleFsaPhotosUpload = async (e) => {
-      const files = Array.from(e.target.files || []);
-      const compressedList = [];
-      for (const f of files.slice(0, 4)) {
-        const cUrl = await compressImageFile(f);
-        compressedList.push(cUrl);
-      }
-      fsaForm.value.photos = compressedList;
-      e.target.value = '';
+    // 📸 支援一次選取 20~50 張照片的記憶體安全序列壓縮狀態
+    const isUploadingFsaPhotos = ref(false);
+    const fsaPhotoProgressText = ref('');
+
+    // 單張照片記憶體安全壓縮（立即釋放 Canvas VRAM 與 ObjectURL，防止 iOS 選 30 張時閃退或卡死）
+    const compressFsaImageSafe = (file, maxDim = 1100, quality = 0.72) => {
+      return new Promise((resolve) => {
+        const objUrl = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          try {
+            let w = img.width, h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+              else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            const dataUrl = canvas.toDataURL('image/jpeg', quality);
+            // 立即釋放畫布與記憶體指標
+            canvas.width = 0;
+            canvas.height = 0;
+            URL.revokeObjectURL(objUrl);
+            resolve(dataUrl);
+          } catch (err) {
+            URL.revokeObjectURL(objUrl);
+            resolve('');
+          }
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(objUrl);
+          resolve('');
+        };
+        img.src = objUrl;
+      });
     };
 
-    // 核心：將手機口語缺失速記與照片對照《2026 FSA 標準條文》，自動區分前區(FOH)/後區(BOH)並生成行動方案
+    // ✅ 已移除 .slice(0, 4) 限制，支援一次選取 20~30+ 張照片並可累加
+    const handleFsaPhotosUpload = async (e) => {
+      const files = Array.from(e.target.files || []);
+      if (files.length === 0) return;
+
+      isUploadingFsaPhotos.value = true;
+      try {
+        for (let i = 0; i < files.length; i++) {
+          fsaPhotoProgressText.value = `正在壓縮載入第 ${i + 1} / ${files.length} 張照片...`;
+          const cUrl = await compressFsaImageSafe(files[i], 1100, 0.72);
+          if (cUrl && cUrl.startsWith('data:image')) {
+            fsaForm.value.photos.push(cUrl);
+          }
+          // 讓出 15ms 給手機畫面更新進度文字
+          await new Promise(r => setTimeout(r, 15));
+        }
+      } finally {
+        isUploadingFsaPhotos.value = false;
+        fsaPhotoProgressText.value = '';
+        e.target.value = '';
+      }
+    };
+
+    // 🤖 支援 20~30 張照片「每 5 張自動分批 (Batch)」核對《2026 FSA 標準條文》
     const analyzeFsaNotesToOfficialTable = async () => {
-      if (!fsaForm.value.rawNotes.trim() && fsaForm.value.photos.length === 0) return;
+      const hasNotes = !!fsaForm.value.rawNotes.trim();
+      const totalPhotos = fsaForm.value.photos.length;
+      if (!hasNotes && totalPhotos === 0) return;
+
       isAnalyzingFsa.value = true;
       try {
         const clausesPromptList = fsa2026OfficialClauses.map(c =>
           `【${c.code} ${c.title}】細項：${c.subItems.join('；')}`
         ).join('\n');
 
-        const promptText = `你是一位資深的台灣星巴克 FSA (食品安全評核) 專員。
+        // 將照片每 5 張分為一批（若無照片則執行 1 批純文字分析）
+        const BATCH_SIZE = 5;
+        const photoBatches = [];
+        if (totalPhotos > 0) {
+          for (let i = 0; i < totalPhotos; i += BATCH_SIZE) {
+            photoBatches.push(fsaForm.value.photos.slice(i, i + BATCH_SIZE));
+          }
+        } else {
+          photoBatches.push([]);
+        }
+
+        let totalAddedViolations = 0;
+
+        for (let bIdx = 0; bIdx < photoBatches.length; bIdx++) {
+          const currentBatchPhotos = photoBatches[bIdx];
+          const includeTextNotes = (bIdx === 0 && hasNotes);
+
+          if (photoBatches.length > 1) {
+            const startNum = bIdx * BATCH_SIZE + 1;
+            const endNum = Math.min((bIdx + 1) * BATCH_SIZE, totalPhotos);
+            fsaPhotoProgressText.value = `正在核對第 ${bIdx + 1}/${photoBatches.length} 批照片 (第 ${startNum}~${endNum} 張)...`;
+          } else {
+            fsaPhotoProgressText.value = '正在核對 2026 條文與生成行動方案...';
+          }
+
+          const notesSection = includeTextNotes
+            ? fsaForm.value.rawNotes
+            : (currentBatchPhotos.length > 0 ? `（請仔細針對本批第 ${bIdx * BATCH_SIZE + 1} 至 ${bIdx * BATCH_SIZE + currentBatchPhotos.length} 張現場照片，逐張辨識所有不符合之食安缺失，每張照片的缺失都必須列出，不可遺漏）` : '');
+
+          const promptText = `你是一位資深的台灣星巴克 FSA (食品安全評核) 專員。
 請根據評核員在門市現場記錄的「口語缺失速記」與「附加照片」，嚴格對照以下官方《2026 食品安全評核 (Food Safety Assessment) 標準條文》，將每一項不符合事項轉換為《FY2026 食品安全衛生檢查紀錄表 (20260514版)》的正式表格內容：
 
 【評核員現場速記】：
-${fsaForm.value.rawNotes || '（請根據附加照片辨識現場不符合之食安缺失）'}
+${notesSection}
 
 【官方 2026 食品安全評核標準條文庫】：
 ${clausesPromptList}
@@ -5796,39 +5899,43 @@ ${clausesPromptList}
       "clauseCode": "4.2o",
       "missingItemTitle": "4.2o 抹布應正確存放",
       "findingDesc": "📍【前區 FOH】【使用中的抹布遺留在檯面上 / 抹布計時器未啟動】現場於前區吧台檯面發現遺留使用中抹布，且抹布計時器未啟動。",
-      "actionPlan": "【立即改善】：當場將抹布收回泡入標準濃度(150-400ppm)季銨鹽消毒水桶中，並立即啟動計時器。\n【預防行動方案】：值班經理於每班交接與轉班時檢核吧台抹布存放與計時器運作，並對當班夥伴進行隨手歸位宣導。"
+      "actionPlan": "【立即改善】：當場將抹布收回泡入標準濃度(150-400ppm)季銨鹽消毒水桶中，並立即啟動計時器。\\n【預防行動方案】：值班經理於每班交接與轉班時檢核吧台抹布存放與計時器運作，並對當班夥伴進行隨手歸位宣導。"
     }
   ],
   "failedStatutoryKeys": []
 }`;
 
-        const parts = [{ text: promptText }];
-        for (const pUrl of fsaForm.value.photos) {
-          const b64 = pUrl.split(',')[1];
-          parts.push({ inline_data: { mime_type: 'image/jpeg', data: b64 } });
+          const parts = [{ text: promptText }];
+          for (const pUrl of currentBatchPhotos) {
+            const b64 = pUrl.split(',')[1];
+            if (b64) parts.push({ inline_data: { mime_type: 'image/jpeg', data: b64 } });
+          }
+
+          const rawRes = await callGeminiApi(parts, true, 0.15);
+          const match = rawRes.match(/\{[\s\S]*\}/);
+          const parsed = JSON.parse(match ? match[0] : rawRes);
+
+          if (parsed && Array.isArray(parsed.violations)) {
+            fsaForm.value.violations = [...fsaForm.value.violations, ...parsed.violations];
+            totalAddedViolations += parsed.violations.length;
+          }
+          if (parsed && Array.isArray(parsed.failedStatutoryKeys)) {
+            fsaForm.value.statutoryChecklist.forEach(chk => {
+              if (parsed.failedStatutoryKeys.includes(chk.key)) {
+                chk.status = '不符合';
+              }
+            });
+          }
         }
 
-        const rawRes = await callGeminiApi(parts, true, 0.15);
-        const match = rawRes.match(/\{[\s\S]*\}/);
-        const parsed = JSON.parse(match ? match[0] : rawRes);
-
-        if (parsed && Array.isArray(parsed.violations)) {
-          fsaForm.value.violations = [...fsaForm.value.violations, ...parsed.violations];
-        }
-        if (parsed && Array.isArray(parsed.failedStatutoryKeys)) {
-          fsaForm.value.statutoryChecklist.forEach(chk => {
-            if (parsed.failedStatutoryKeys.includes(chk.key)) {
-              chk.status = '不符合';
-            }
-          });
-        }
         fsaForm.value.rawNotes = '';
         fsaForm.value.photos = [];
-        alert(`🎉 AI 核對完成！已自動區分前/後區、對應《2026 FSA 標準條文》並填入下方檢查紀錄表！`);
+        alert(`🎉 AI 核對完成！共分析 ${totalPhotos} 張照片，新增 ${totalAddedViolations} 項缺失並填入下方檢查紀錄表！`);
       } catch (err) {
         alert('AI 條文核對失敗：' + err.message);
       } finally {
         isAnalyzingFsa.value = false;
+        fsaPhotoProgressText.value = '';
       }
     };
 
@@ -5852,7 +5959,7 @@ ${clausesPromptList}
       alert('💾 已將本份《FY2026 食品安全衛生檢查紀錄表》儲存至雲端！');
     };
 
-    const loadSavedFsaReport = (rep) => {
+    const loadSavedFsaReport = (rep, shouldScroll = true) => {
       fsaForm.value = {
         id: rep.id,
         storeId: rep.storeId || '011218',
@@ -5868,7 +5975,9 @@ ${clausesPromptList}
           ? JSON.parse(JSON.stringify(rep.statutoryChecklist))
           : createDefaultStatutoryChecklist(rep.city || '新北市')
       };
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (shouldScroll) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     };
 
     const deleteFsaReport = async (id) => {
@@ -5877,23 +5986,17 @@ ${clausesPromptList}
       }
     };
 
-    // 🖨️ 以 1:1 官方《FY2026 食品安全衛生檢查紀錄表 (20260514版)》格式匯出 PDF 或 A4 列印
-    const triggerPrintFsaOfficialTable = (repObj = null) => {
-      if (repObj && repObj.storeId) {
-        loadSavedFsaReport(repObj);
+    // 🖨️ 修復：一按即印 1:1 官方《FY2026 食品安全衛生檢查紀錄表》，不執行 smooth scroll、不以 500ms 計時器重置為班表！
+    const triggerPrintFsaOfficialTable = async (repObj = null) => {
+      if (repObj && repObj !== fsaForm.value && repObj.storeId) {
+        loadSavedFsaReport(repObj, false);
       }
-      const prevMode = printTargetMode.value;
       printTargetMode.value = 'fsa';
-      nextTick(() => {
-        setTimeout(() => {
-          window.print();
-          setTimeout(() => {
-            printTargetMode.value = prevMode === 'fsa' ? 'blank' : prevMode;
-          }, 500);
-        }, 150);
-      });
+      await nextTick();
+      // 強制同步計算排版 (Synchronous Reflow)，確保 iOS Safari 第一下點擊就 100% 印出 FSA 表格
+      void document.body.offsetHeight;
+      window.print();
     };
-
     // 📢 一鍵將本次 FSA 評核結果公布至首頁「門市公告欄」提醒全體夥伴
     const publishFsaToStoreBulletin = async (repObj = null) => {
       const f = (repObj && repObj.storeId) ? repObj : fsaForm.value;
@@ -8689,60 +8792,25 @@ ${beansContext}
       stepText: '正在同步雲端最新畫假與班表...'
     });
 
-    const triggerPrintSchedule = async (mode) => {
-      printTargetMode.value = mode;
-      printProgressModal.value = {
-        show: true,
-        percent: 20,
-        remainSec: '0.8',
-        stepText: '正在向雲端確認最後一秒畫休紀錄...'
-      };
+    // 當進入 FSA 子頁籤時，自動預先將列印目標設為 'fsa'；進入排班頁籤時預設為 'blank'
+ watch([currentTab, otherSubTab], ([tab, subTab]) => {
+   if (tab === 'other' && subTab === 'fsa') {
+     printTargetMode.value = 'fsa';
+   } else if (tab === 'roster' && printTargetMode.value === 'fsa') {
+     printTargetMode.value = 'blank';
+   }
+ }, { immediate: true });
 
-      const timer = setInterval(() => {
-        if (printProgressModal.value.percent < 90) {
-          printProgressModal.value.percent += 25;
-          const rem = Math.max(0.1, (100 - printProgressModal.value.percent) * 0.01).toFixed(1);
-          printProgressModal.value.remainSec = rem;
-          if (printProgressModal.value.percent >= 65) {
-            printProgressModal.value.stepText = '正在排版 A4 單頁滿版表格...';
-          }
-        }
-      }, 180);
-
-      try {
-        const ts = Date.now();
-        const baseUrl = firebaseConfig.databaseURL;
-        const fastSyncPromise = Promise.all([
-          fetch(`${baseUrl}/sbux/vacations.json?t=${ts}`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null),
-          fetch(`${baseUrl}/sbux/blackout_dates.json?t=${ts}`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null),
-          fetch(`${baseUrl}/sbux/scheduled_roster.json?t=${ts}`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null),
-          db ? db.ref('sbux/vacations').once('value').then(s => s.val()).catch(() => null) : Promise.resolve(null)
-        ]);
-        const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(null), 900));
-        const resArr = await Promise.race([fastSyncPromise, timeoutPromise]);
-
-        if (Array.isArray(resArr)) {
-          if (resArr[0] || resArr[3]) {
-            vacationList.value = mergeAndSanitizeVacations(resArr[0], resArr[3]);
-          }
-          if (resArr[1]) blackoutDates.value = resArr[1];
-          if (resArr[2]) scheduledRoster.value = resArr[2];
-          updateSyncTimestampDisplay();
-        }
-      } catch (e) {}
-
-      clearInterval(timer);
-      printProgressModal.value.percent = 100;
-      printProgressModal.value.remainSec = '0.0';
-      printProgressModal.value.stepText = '✅ 準備完成！即將彈出列印視窗...';
-
-      setTimeout(() => {
-        printProgressModal.value.show = false;
-        nextTick(() => {
-          window.print();
-        });
-      }, 220);
-    };
+ // 🖨️ 修復：零延遲一按即印排班表（不因網路等待而弄丟 iOS 手勢憑證）
+ const triggerPrintSchedule = async (mode) => {
+   printTargetMode.value = mode;
+   await nextTick();
+   // 強制瀏覽器同步完成 A4 表格排版，確保第一次點擊立即彈出列印預覽
+   void document.body.offsetHeight;
+   window.print();
+   // 背景非阻塞同步最新畫休紀錄，不阻擋列印視窗彈出
+   forceSyncRosterDataNow(false);
+ };
 
     // ==================== 畫假、禁休與行事曆 ====================
     const blackoutDatesList = computed(() => {
@@ -9747,6 +9815,7 @@ ${beansContext}
       partnerBadges, unlockedBadgeCount,
       fsa2026OfficialClauses, showFsaClauseLibrary, fsaClauseSearch, filteredFsaClauses,
       fsaForm, isAnalyzingFsa, applyCityRegulationDefaults, cycleStatutoryStatus, resetFsaCurrentForm,
+      isUploadingFsaPhotos, fsaPhotoProgressText,
       insertFsaZoneTag, syncZoneToFindingDesc, addManualFsaViolationRow, onSelectFsaClauseCode, handleFsaPhotosUpload, analyzeFsaNotesToOfficialTable,
       fsaAuditReports, saveCurrentFsaReportToCloud, loadSavedFsaReport, deleteFsaReport, copyOfficialFsaTableText,
       triggerPrintFsaOfficialTable, publishFsaToStoreBulletin
