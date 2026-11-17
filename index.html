@@ -979,22 +979,25 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-2 pt-1">
-               <button 
-                 @touchstart.passive="printTargetMode = 'blank'"
-                 @mousedown="printTargetMode = 'blank'"
-                 @click="triggerPrintSchedule('blank')" 
-                 class="py-2.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1 active:scale-95">
-                 <span>🖨️</span> 列印空白排班表
-               </button>
+                  <button 
+                    @touchstart.passive="printTargetMode = 'blank'"
+                    @mousedown="printTargetMode = 'blank'"
+                    @click="triggerPrintSchedule('blank')" 
+                    class="py-2.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1 active:scale-95">
+                    <span>🖨️</span> 列印空白排班表
+                  </button>
+                  
+                  <button 
+                    @touchstart.passive="printTargetMode = 'ai'"
+                    @mousedown="printTargetMode = 'ai'"
+                    @click="triggerPrintSchedule('ai')" 
+                    class="py-2.5 bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1 active:scale-95">
+                    <span>🖨️</span> 列印預排班表
+                  </button>
+                </div>
+              </div>
+            </div>
 
-               <button 
-                 @touchstart.passive="printTargetMode = 'ai'"
-                 @mousedown="printTargetMode = 'ai'"
-                 @click="triggerPrintSchedule('ai')" 
-                 class="py-2.5 bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1 active:scale-95">
-                 <span>🖨️</span> 列印預排班表
-               </button>
-             </div>
             <!-- 畫假登記與畫假行事曆 -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
               <div class="flex justify-between items-center flex-wrap gap-1.5">
@@ -2676,7 +2679,7 @@
                         📷 附加現場缺失照片 / 手寫筆記照片 (支援一次選取 20~30+ 張)
                       </span>
                       <span v-else class="text-[11px] font-black text-emerald-700 dark:text-emerald-400">
-                        ✅ 已附加 {{ fsaForm.photos.length }} 張照片 (點擊可繼續追加照片)
+                        ✅ 已附加 {{ fsaForm.photos.length }} 張照片 (點擊可繼續追加)
                       </span>
                     </label>
                     <button v-if="fsaForm.photos.length > 0 && !isUploadingFsaPhotos" @click="fsaForm.photos = []" type="button" class="px-2.5 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-rose-100 text-slate-600 dark:text-slate-300 rounded-xl text-[11px] font-bold">
@@ -2684,7 +2687,6 @@
                     </button>
                   </div>
 
-                  <!-- 照片縮圖橫向預覽列 (可點擊放大或單張移除) -->
                   <div v-if="fsaForm.photos.length > 0" class="flex gap-2 overflow-x-auto py-1 px-0.5">
                     <div v-for="(pUrl, pIdx) in fsaForm.photos" :key="pIdx" class="relative w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600 bg-slate-100">
                       <img :src="pUrl" class="w-full h-full object-cover" @click="openPhotoLightbox && openPhotoLightbox(pUrl, 'FSA 現場照片 #' + (pIdx + 1))">
@@ -2694,7 +2696,7 @@
                   </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-2 pt-1">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
                   <button 
                     @click="analyzeFsaNotesToOfficialTable" 
                     :disabled="isAnalyzingFsa || isUploadingFsaPhotos || (!fsaForm.rawNotes.trim() && fsaForm.photos.length === 0)"
@@ -2710,37 +2712,66 @@
                     class="py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-xs transition active:scale-95">
                     ➕ 手動加一列
                   </button>
+
+                  <button 
+                    @click="consolidateAndSortCurrentFsa(true)" 
+                    type="button"
+                    class="py-2.5 bg-amber-100 hover:bg-amber-200 dark:bg-amber-950/70 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-700 rounded-xl font-black text-xs transition active:scale-95">
+                    🔗 合併同條文&排序
+                  </button>
                 </div>
               </div>
 
               <!-- 3. 1:1 還原《FY2026 食品安全衛生檢查紀錄表 (20260514版)》預覽與編輯區 -->
               <div class="bg-white dark:bg-slate-800 rounded-2xl border-2 border-slate-800 dark:border-slate-500 overflow-hidden shadow-md text-xs">
                 
-                <!-- 官方表單標題與表頭 -->
+                <!-- 官方表單標題與表頭 (含右上角 X/X/X 扣分統計與 0/2/5 通過判定) -->
                 <div class="bg-slate-900 text-white p-3.5 space-y-2.5">
-                  <div class="flex justify-between items-center flex-wrap gap-2">
+                  <div class="flex justify-between items-start flex-wrap gap-2">
                     <div>
                       <h4 class="font-black text-sm tracking-wide">FY2026 食品安全衛生檢查紀錄表 (含法規及集團要求)</h4>
-                      <span class="text-[10px] text-slate-400 font-mono">(20260514版)</span>
+                      <span class="text-[10px] text-slate-400 font-mono">(20260514版 ｜ 依嚴重程度 .1關注 ➔ .2主要 ➔ .3次要 排序，同條文集中合併且不重複扣分)</span>
                     </div>
-                    <div class="flex gap-1.5 flex-wrap">
-                      <button 
-                     @touchstart.passive="printTargetMode = 'fsa'"
-                     @mousedown="printTargetMode = 'fsa'"
-                     @click="triggerPrintFsaOfficialTable()" 
-                     class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-[11px] font-black shadow active:scale-95 transition flex items-center gap-1">
-                     <span>🖨️</span> 匯出官方格式表單 (PDF/列印)
-                      </button>
-                      <button @click="publishFsaToStoreBulletin(fsaForm)" class="px-2.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-black rounded-lg text-[11px] font-black shadow active:scale-95 transition flex items-center gap-1">
-                        <span>📢</span> 公布至首頁公告欄
-                      </button>
-                      <button @click="saveCurrentFsaReportToCloud" class="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-[11px] font-bold shadow active:scale-95 transition">
-                        💾 儲存
-                      </button>
-                      <button @click="copyOfficialFsaTableText(fsaForm)" class="px-2 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-lg text-[11px] font-bold shadow active:scale-95 transition">
-                        📋 複製文字
-                      </button>
+
+                    <!-- 右上角 X/X/X 扣分總結面板 (通過政府/集團稽核上限 0/2/5) -->
+                    <div class="px-3 py-1.5 rounded-xl border flex flex-col items-end"
+                         :class="currentFsaScoreSummary.isPass ? 'bg-emerald-950/80 border-emerald-500/60 text-emerald-200' : 'bg-rose-950/90 border-rose-500 text-rose-200'">
+                      <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-bold text-slate-300">扣分總結 (關注/主要/次要)：</span>
+                        <span class="font-mono font-black text-base tracking-wider px-2 py-0.2 rounded bg-black/50 text-white border border-white/20">
+                          {{ currentFsaScoreSummary.ratioStr }}
+                        </span>
+                      </div>
+                      <div class="text-[10px] font-bold mt-0.5 flex items-center gap-1.5">
+                        <span>通過上限：0/2/5</span>
+                        <span>｜</span>
+                        <span :class="currentFsaScoreSummary.isPass ? 'text-emerald-400 font-black' : 'text-amber-300 font-black'">
+                          {{ currentFsaScoreSummary.statusText }}
+                        </span>
+                      </div>
                     </div>
+                  </div>
+
+                  <div class="flex gap-1.5 flex-wrap pt-1">
+                    <button 
+                      @touchstart.passive="printTargetMode = 'fsa'"
+                      @mousedown="printTargetMode = 'fsa'"
+                      @click="triggerPrintFsaOfficialTable()" 
+                      class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-[11px] font-black shadow active:scale-95 transition flex items-center gap-1">
+                      <span>🖨️</span> 匯出官方格式表單 (PDF/列印)
+                    </button>
+                    <button @click="consolidateAndSortCurrentFsa(true)" class="px-2.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-[11px] font-black shadow active:scale-95 transition flex items-center gap-1">
+                      <span>🔗</span> 集中同條文 & 嚴重度排序
+                    </button>
+                    <button @click="publishFsaToStoreBulletin(fsaForm)" class="px-2.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-black rounded-lg text-[11px] font-black shadow active:scale-95 transition flex items-center gap-1">
+                      <span>📢</span> 公布至首頁公告欄
+                    </button>
+                    <button @click="saveCurrentFsaReportToCloud" class="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-[11px] font-bold shadow active:scale-95 transition">
+                      💾 儲存
+                    </button>
+                    <button @click="copyOfficialFsaTableText(fsaForm)" class="px-2 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-lg text-[11px] font-bold shadow active:scale-95 transition">
+                      📋 複製文字
+                    </button>
                   </div>
 
                   <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 pt-2 border-t border-white/15 text-[11px]">
@@ -2757,18 +2788,21 @@
                   <table class="w-full border-collapse text-xs">
                     <thead>
                       <tr class="bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white font-black text-center">
-                        <th class="py-2 px-2 border border-slate-400 dark:border-slate-600 w-[34%]">缺失項目 (條文編號與名稱)</th>
-                        <th class="py-2 px-2 border border-slate-400 dark:border-slate-600 w-[66%]">缺失說明 (違反細項、現場狀況與行動方案)</th>
+                        <th class="py-2 px-2 border border-slate-400 dark:border-slate-600 w-[34%]">缺失項目 (依嚴重度 .1關注 ➔ .2主要 ➔ .3次要)</th>
+                        <th class="py-2 px-2 border border-slate-400 dark:border-slate-600 w-[66%]">缺失說明 (同條文集中顯示：違反細項、現場狀況與行動方案)</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr v-for="(vItem, vIdx) in fsaForm.violations" :key="vIdx" class="border-b border-slate-300 dark:border-slate-700 align-top">
-                        <!-- 左欄：缺失項目 (可下拉切換或直接修改條文) -->
+                        <!-- 左欄：缺失項目 (可下拉切換或直接修改條文，自動顯示 .1/.2/.3 嚴重度徽章) -->
                         <td class="p-2.5 border border-slate-300 dark:border-slate-700 bg-rose-50/30 dark:bg-rose-950/20 space-y-1.5">
                           <div class="flex justify-between items-center gap-1 flex-wrap">
-                         <div class="flex items-center gap-1">
-                           <span class="px-1.5 py-0.5 bg-rose-700 text-white font-mono font-black rounded text-[10px]">
-                             缺失 #{{ vIdx + 1 }}
+                         <div class="flex items-center gap-1 flex-wrap">
+                           <span class="px-1.5 py-0.5 bg-slate-800 text-white font-mono font-black rounded text-[10px]">
+                             #{{ vIdx + 1 }}
+                           </span>
+                           <span class="px-1.5 py-0.5 font-black rounded text-[10px] border" :class="getFsaClauseMeta(vItem).badgeClass">
+                             {{ getFsaClauseMeta(vItem).severityName }}
                            </span>
                            <select 
                              v-model="vItem.zone" 
@@ -2884,8 +2918,12 @@
                       <div class="font-black text-slate-900 dark:text-white">
                         {{ rep.auditDate }} ｜ {{ rep.storeName }} ({{ rep.storeId }})
                       </div>
-                      <div class="text-[11px] text-slate-500 mt-0.5">
-                        評核員：{{ rep.auditorName }} · 值班：{{ rep.dutyManagerName || '-' }} · 共 <b class="text-rose-600">{{ (rep.violations || []).length }}</b> 項缺失
+                      <div class="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                        <span>評核員：{{ rep.auditorName }} · 值班：{{ rep.dutyManagerName || '-' }}</span>
+                        <span class="px-2 py-0.2 rounded font-mono font-black text-[10px] border"
+                              :class="getFsaScoreSummary(rep).isPass ? 'bg-emerald-100 text-emerald-900 border-emerald-300' : 'bg-rose-100 text-rose-800 border-rose-300'">
+                          扣分 {{ getFsaScoreSummary(rep).ratioStr }} ({{ getFsaScoreSummary(rep).isPass ? '通過' : '未通過' }})
+                        </span>
                       </div>
                     </div>
                     <div class="flex items-center gap-1.5">
@@ -3919,8 +3957,18 @@
 
     <!-- 🛡️ 1:1 還原官方《FY2026 食品安全衛生檢查紀錄表(含法規及集團要求) (20260514版)》A4 匯出表格 -->
     <div v-else class="w-full text-black bg-white p-1 font-sans">
-      <!-- 頂部版本號與大標題 -->
-      <div class="text-right text-[10px] font-bold leading-none mb-0.5">(20260514版)</div>
+      <!-- 頂部版本號與右上角 X/X/X 扣分總結面板 -->
+      <div class="flex justify-between items-end mb-1">
+        <div class="text-[10px] font-bold leading-none">(20260514版)</div>
+        <div class="border-2 border-black px-2.5 py-1 bg-slate-50 text-right leading-tight">
+          <div class="text-[10.5px] font-black">
+            缺失扣分總結 (關注.1 / 主要.2 / 次要.3)：<span class="font-mono text-sm font-black underline">{{ currentFsaScoreSummary.ratioStr }}</span>
+          </div>
+          <div class="text-[9px] font-bold text-slate-800">
+            通過稽核上限：0/2/5 (同條文不重複扣分) ｜ 判定：<b>{{ currentFsaScoreSummary.statusText }}</b>
+          </div>
+        </div>
+      </div>
       <div class="text-center font-black text-lg tracking-wider border-t-2 border-x-2 border-black py-1.5 bg-slate-50">
         FY2026 食品安全衛生檢查紀錄表(含法規及集團要求)
       </div>
@@ -3935,28 +3983,31 @@
           </tr>
           <tr>
             <td class="border border-black py-1 px-2 text-left">評核員姓名：{{ fsaForm.auditorName }}</td>
-            <td class="border border-black py-1 px-2 text-left" colspan="2">值班經理姓名：{{ fsaForm.dutyManagerName }}</td>
+            <td class="border border-black py-1 px-2 text-left">值班經理姓名：{{ fsaForm.dutyManagerName }}</td>
+            <td class="border border-black py-1 px-2 text-left font-mono">扣分總計(關注/主要/次要)：{{ currentFsaScoreSummary.ratioStr }}</td>
           </tr>
         </tbody>
       </table>
 
-      <!-- 上半部：缺失項目 | 缺失說明 -->
+      <!-- 上半部：缺失項目 (依嚴重程度 .1 ➔ .2 ➔ .3 排序且同條文集中顯示) | 缺失說明 -->
       <table class="w-full border-collapse border-x-2 border-b-2 border-black text-[10.5px]">
         <thead>
           <tr class="bg-slate-100 font-black text-center">
-            <th class="border border-black py-1 px-2 w-[30%] text-[11px]">缺失項目</th>
-            <th class="border border-black py-1 px-2 w-[70%] text-[11px]">缺失說明</th>
+            <th class="border border-black py-1 px-2 w-[30%] text-[11px]">缺失項目 (依嚴重度排序)</th>
+            <th class="border border-black py-1 px-2 w-[70%] text-[11px]">缺失說明 (違反細項、現場狀況與行動方案)</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(v, idx) in fsaForm.violations" :key="'pv_'+idx">
+          <tr v-for="(v, idx) in consolidatedSortedFsaViolations" :key="'pv_'+idx">
             <td class="border border-black py-1.5 px-2 text-left align-top font-bold leading-snug">
-              <div v-if="v.zone" class="text-[9.5px] font-black text-slate-700">【{{ v.zone }}】</div>
-              <div>{{ v.missingItemTitle || v.clauseCode }}</div>
+              <div class="text-[9.5px] font-black text-slate-800">
+                【{{ getFsaClauseMeta(v).severityName }}】<span v-if="v.zone">【{{ v.zone }}】</span>
+              </div>
+              <div class="mt-0.5">{{ v.missingItemTitle || v.clauseCode }}</div>
             </td>
             <td class="border border-black py-1.5 px-2 text-left align-top leading-snug whitespace-pre-line">
               <div class="font-bold">{{ v.findingDesc }}</div>
-              <div v-if="v.actionPlan" class="mt-0.5 text-[10px] text-slate-800">{{ v.actionPlan }}</div>
+              <div v-if="v.actionPlan" class="mt-1 text-[10px] text-slate-900">{{ v.actionPlan }}</div>
             </td>
           </tr>
           <!-- 自動補齊空白列以維持官方表單完整視覺高度 -->
@@ -5749,11 +5800,245 @@ ${recipesContext}
       });
     };
 
+    // ==================== 🔍 FSA 條文嚴重度解析 (.1關注 / .2主要 / .3次要)、同條文集中合併與 X/X/X (0/2/5) 去重計分引擎 ====================
+    const getFsaClauseMeta = (vItem) => {
+      const rawText = `${vItem?.clauseCode || ''} ${vItem?.missingItemTitle || ''}`.trim();
+      const m = rawText.match(/([1-4])\.([1-3])([a-zA-Z~]*)/);
+      if (!m) {
+        return {
+          canonicalCode: '',
+          sectionNum: 9,
+          severityLevel: 4,
+          severityName: '未分類',
+          badgeClass: 'bg-slate-200 text-slate-700 border-slate-300',
+          subCode: 'z',
+          officialTitle: vItem?.missingItemTitle || ''
+        };
+      }
+      const sectionNum = parseInt(m[1], 10);
+      const severityLevel = parseInt(m[2], 10); // 1: 關注(.1), 2: 主要(.2), 3: 次要(.3)
+      let subCode = (m[3] || '').toLowerCase();
+      let canonicalCode = `${sectionNum}.${severityLevel}${subCode}`;
+
+      // 對齊官方合併條文代號 3.1a~d 與 4.1a~d
+      if (sectionNum === 3 && severityLevel === 1 && ['a', 'b', 'c', 'd', 'a~d'].includes(subCode)) {
+        canonicalCode = '3.1a~d';
+        subCode = 'a~d';
+      } else if (sectionNum === 4 && severityLevel === 1 && ['a', 'b', 'c', 'd', 'a~d'].includes(subCode)) {
+        canonicalCode = '4.1a~d';
+        subCode = 'a~d';
+      }
+
+      const foundClause = fsa2026OfficialClauses.find(c => c.code.toLowerCase() === canonicalCode.toLowerCase());
+      const officialTitle = foundClause ? `${foundClause.code} ${foundClause.title}` : (vItem?.missingItemTitle || canonicalCode);
+
+      const severityMap = {
+        1: { name: '關注 (.1)', badge: 'bg-rose-600 text-white border-rose-700 shadow-sm' },
+        2: { name: '主要 (.2)', badge: 'bg-amber-400 text-black border-amber-500 shadow-sm' },
+        3: { name: '次要 (.3)', badge: 'bg-sky-600 text-white border-sky-700 shadow-sm' }
+      };
+      const sevInfo = severityMap[severityLevel] || { name: '未分類', badge: 'bg-slate-200 text-slate-700 border-slate-300' };
+
+      return {
+        canonicalCode: foundClause ? foundClause.code : canonicalCode,
+        sectionNum,
+        severityLevel,
+        severityName: sevInfo.name,
+        badgeClass: sevInfo.badge,
+        subCode,
+        officialTitle
+      };
+    };
+
+    // 🔗 將相同條文（例如多處違反 4.3g 或 1.2a）的缺失內容與行動方案集中合併於同一列，並依嚴重程度 (.1 ➔ .2 ➔ .3) 由嚴重到輕微排序
+    const consolidateAndSortViolationsArray = (rawViolations) => {
+      if (!Array.isArray(rawViolations) || rawViolations.length === 0) return [];
+
+      const groupedMap = new Map();
+      const unclassifiedList = [];
+
+      rawViolations.forEach((v) => {
+        if (!v) return;
+        const meta = getFsaClauseMeta(v);
+        const code = meta.canonicalCode;
+
+        if (!code) {
+          unclassifiedList.push({ meta, item: { ...v } });
+          return;
+        }
+
+        if (!groupedMap.has(code)) {
+          groupedMap.set(code, {
+            meta,
+            zones: [],
+            missingItemTitle: meta.officialTitle || v.missingItemTitle || code,
+            findings: [],
+            immediates: [],
+            preventives: [],
+            others: []
+          });
+        }
+
+        const group = groupedMap.get(code);
+        const zoneStr = String(v.zone || '前區 (FOH)').trim();
+        if (zoneStr && !group.zones.includes(zoneStr)) {
+          group.zones.push(zoneStr);
+        }
+
+        // 拆解並去重違反細項與現場狀況描述 (具冪等性，重複執行不會重複加上 1. 1.)
+        const rawDesc = String(v.findingDesc || '').trim();
+        rawDesc.split('\n').forEach(line => {
+          let cleanLine = line.trim().replace(/^(\d+[\.\、\)]|\(\d+\)|[①-⑩]|•|-)\s*/, '').trim();
+          if (!cleanLine || cleanLine === `📍【${zoneStr.replace(/[()]/g, '')}】`) return;
+          if (!cleanLine.includes('📍') && zoneStr) {
+            cleanLine = `📍【${zoneStr.replace(/[()]/g, '')}】${cleanLine}`;
+          }
+          if (!group.findings.includes(cleanLine)) {
+            group.findings.push(cleanLine);
+          }
+        });
+
+        // 拆解並去重改善與預防行動方案 (自動將同條文的立即改善與預防行動分別集中)
+        const rawPlan = String(v.actionPlan || '').trim();
+        let mode = 'other';
+        rawPlan.split('\n').forEach(line => {
+          let l = line.trim();
+          if (!l) return;
+          if (/^【?立即(改善|矯正)】?[:：]?/.test(l)) {
+            mode = 'imm';
+            l = l.replace(/^【?立即(改善|矯正)】?[:：]?\s*/, '').trim();
+          } else if (/^【?預防(行動方案|再發|措施)】?[:：]?/.test(l)) {
+            mode = 'prev';
+            l = l.replace(/^【?預防(行動方案|再發|措施)】?[:：]?\s*/, '').trim();
+          }
+          const cleanAct = l.replace(/^(\(\d+\)|\d+[\.\、\)]|[①-⑩]|•|-)\s*/, '').trim();
+          if (!cleanAct) return;
+
+          if (mode === 'imm') {
+            if (!group.immediates.includes(cleanAct)) group.immediates.push(cleanAct);
+          } else if (mode === 'prev') {
+            if (!group.preventives.includes(cleanAct)) group.preventives.push(cleanAct);
+          } else {
+            if (!group.others.includes(cleanAct)) group.others.push(cleanAct);
+          }
+        });
+      });
+
+      const mergedEntries = [];
+      groupedMap.forEach((group, code) => {
+        const finalZone = group.zones.length === 1
+          ? group.zones[0]
+          : (group.zones.length > 1 ? '全店共通' : '前區 (FOH)');
+
+        const findingDesc = group.findings.length <= 1
+          ? (group.findings[0] || `📍【${finalZone.replace(/[()]/g, '')}】`)
+          : group.findings.map((f, idx) => `${idx + 1}. ${f}`).join('\n');
+
+        const planSections = [];
+        if (group.immediates.length === 1) {
+          planSections.push(`【立即改善】：${group.immediates[0]}`);
+        } else if (group.immediates.length > 1) {
+          planSections.push(`【立即改善】：\n` + group.immediates.map((x, idx) => `(${idx + 1}) ${x}`).join('\n'));
+        }
+
+        if (group.preventives.length === 1) {
+          planSections.push(`【預防行動方案】：${group.preventives[0]}`);
+        } else if (group.preventives.length > 1) {
+          planSections.push(`【預防行動方案】：\n` + group.preventives.map((x, idx) => `(${idx + 1}) ${x}`).join('\n'));
+        }
+
+        if (group.others.length > 0) {
+          planSections.push(...group.others);
+        }
+
+        mergedEntries.push({
+          meta: group.meta,
+          item: {
+            zone: finalZone,
+            clauseCode: code,
+            missingItemTitle: group.missingItemTitle,
+            findingDesc,
+            actionPlan: planSections.join('\n') || '【立即改善】：\n【預防行動方案】：'
+          }
+        });
+      });
+
+      const allToSort = [...mergedEntries, ...unclassifiedList];
+      // 嚴格依照嚴重程度由嚴重到輕微排序：.1 (關注=1) ➔ .2 (主要=2) ➔ .3 (次要=3) ➔ 未分類(4)，同級內依條文編號排序
+      allToSort.sort((a, b) => {
+        if (a.meta.severityLevel !== b.meta.severityLevel) {
+          return a.meta.severityLevel - b.meta.severityLevel;
+        }
+        if (a.meta.sectionNum !== b.meta.sectionNum) {
+          return a.meta.sectionNum - b.meta.sectionNum;
+        }
+        return String(a.meta.subCode || '').localeCompare(String(b.meta.subCode || ''));
+      });
+
+      return allToSort.map(entry => entry.item);
+    };
+
+    const consolidateAndSortCurrentFsa = (showToast = false) => {
+      const beforeCount = fsaForm.value.violations.length;
+      fsaForm.value.violations = consolidateAndSortViolationsArray(fsaForm.value.violations);
+      const afterCount = fsaForm.value.violations.length;
+      if (showToast) {
+        alert(`✅ 已完成相同條文集中合併與嚴重度排序 (.1關注 ➔ .2主要 ➔ .3次要)！\n合併前：${beforeCount} 列 ➔ 合併後：${afterCount} 個獨立條文項目。`);
+      }
+    };
+
+    // 計算右上角 X/X/X 扣分統計與 0/2/5 通過判定（相同條文使用 Set 自動去重，違反多處仍只扣 1 次）
+    const getFsaScoreSummary = (repObj = null) => {
+      const target = repObj || fsaForm.value;
+      const list = Array.isArray(target?.violations) ? target.violations : [];
+      const uniqueCritical = new Set(); // .1 關注 (上限 0)
+      const uniqueMajor = new Set();    // .2 主要 (上限 2)
+      const uniqueMinor = new Set();    // .3 次要 (上限 5)
+
+      list.forEach((v) => {
+        const meta = getFsaClauseMeta(v);
+        if (!meta.canonicalCode) return;
+        if (meta.severityLevel === 1) uniqueCritical.add(meta.canonicalCode);
+        else if (meta.severityLevel === 2) uniqueMajor.add(meta.canonicalCode);
+        else if (meta.severityLevel === 3) uniqueMinor.add(meta.canonicalCode);
+      });
+
+      const c1 = uniqueCritical.size;
+      const c2 = uniqueMajor.size;
+      const c3 = uniqueMinor.size;
+      const ratioStr = `${c1}/${c2}/${c3}`;
+      const isPass = (c1 === 0) && (c2 <= 2) && (c3 <= 5);
+
+      const failReasons = [];
+      if (c1 > 0) failReasons.push(`關注(.1)扣${c1}項(須為0)`);
+      if (c2 > 2) failReasons.push(`主要(.2)扣${c2}項(上限2)`);
+      if (c3 > 5) failReasons.push(`次要(.3)扣${c3}項(上限5)`);
+
+      return {
+        c1,
+        c2,
+        c3,
+        ratioStr,
+        isPass,
+        statusText: isPass ? '✅ 通過標準 (≤0/2/5)' : `🚨 未通過 (${failReasons.join('、')})`
+      };
+    };
+
+    const currentFsaScoreSummary = computed(() => getFsaScoreSummary(fsaForm.value));
+    const consolidatedSortedFsaViolations = computed(() => consolidateAndSortViolationsArray(fsaForm.value.violations));
+
     const onSelectFsaClauseCode = (vItem, selectedCode) => {
       vItem.clauseCode = selectedCode;
       const found = fsa2026OfficialClauses.find(c => c.code === selectedCode);
       if (found) {
         vItem.missingItemTitle = `${found.code} ${found.title}`;
+      }
+      // 若選擇的條文在列表中已有重複，自動集中合併並依嚴重度排序
+      const sameCount = fsaForm.value.violations.filter(v => getFsaClauseMeta(v).canonicalCode === selectedCode).length;
+      if (sameCount > 1) {
+        consolidateAndSortCurrentFsa(false);
+      } else {
+        fsaForm.value.violations = consolidateAndSortViolationsArray(fsaForm.value.violations);
       }
     };
 
@@ -5761,7 +6046,6 @@ ${recipesContext}
     const isUploadingFsaPhotos = ref(false);
     const fsaPhotoProgressText = ref('');
 
-    // 單張照片記憶體安全壓縮（立即釋放 Canvas VRAM 與 ObjectURL，防止 iOS 選 30 張時閃退或卡死）
     const compressFsaImageSafe = (file, maxDim = 1100, quality = 0.72) => {
       return new Promise((resolve) => {
         const objUrl = URL.createObjectURL(file);
@@ -5779,7 +6063,6 @@ ${recipesContext}
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, w, h);
             const dataUrl = canvas.toDataURL('image/jpeg', quality);
-            // 立即釋放畫布與記憶體指標
             canvas.width = 0;
             canvas.height = 0;
             URL.revokeObjectURL(objUrl);
@@ -5797,7 +6080,6 @@ ${recipesContext}
       });
     };
 
-    // ✅ 已移除 .slice(0, 4) 限制，支援一次選取 20~30+ 張照片並可累加
     const handleFsaPhotosUpload = async (e) => {
       const files = Array.from(e.target.files || []);
       if (files.length === 0) return;
@@ -5810,7 +6092,6 @@ ${recipesContext}
           if (cUrl && cUrl.startsWith('data:image')) {
             fsaForm.value.photos.push(cUrl);
           }
-          // 讓出 15ms 給手機畫面更新進度文字
           await new Promise(r => setTimeout(r, 15));
         }
       } finally {
@@ -5820,7 +6101,7 @@ ${recipesContext}
       }
     };
 
-    // 🤖 支援 20~30 張照片「每 5 張自動分批 (Batch)」核對《2026 FSA 標準條文》
+    // 核心：將手機口語缺失速記與 20~30+ 張照片分批對照《2026 FSA 標準條文》，自動集中合併相同條文並依嚴重程度 (.1 ➔ .2 ➔ .3) 排序
     const analyzeFsaNotesToOfficialTable = async () => {
       const hasNotes = !!fsaForm.value.rawNotes.trim();
       const totalPhotos = fsaForm.value.photos.length;
@@ -5832,7 +6113,6 @@ ${recipesContext}
           `【${c.code} ${c.title}】細項：${c.subItems.join('；')}`
         ).join('\n');
 
-        // 將照片每 5 張分為一批（若無照片則執行 1 批純文字分析）
         const BATCH_SIZE = 5;
         const photoBatches = [];
         if (totalPhotos > 0) {
@@ -5843,7 +6123,7 @@ ${recipesContext}
           photoBatches.push([]);
         }
 
-        let totalAddedViolations = 0;
+        let rawAddedList = [];
 
         for (let bIdx = 0; bIdx < photoBatches.length; bIdx++) {
           const currentBatchPhotos = photoBatches[bIdx];
@@ -5859,7 +6139,7 @@ ${recipesContext}
 
           const notesSection = includeTextNotes
             ? fsaForm.value.rawNotes
-            : (currentBatchPhotos.length > 0 ? `（請仔細針對本批第 ${bIdx * BATCH_SIZE + 1} 至 ${bIdx * BATCH_SIZE + currentBatchPhotos.length} 張現場照片，逐張辨識所有不符合之食安缺失，每張照片的缺失都必須列出，不可遺漏）` : '');
+            : (currentBatchPhotos.length > 0 ? `（請仔細針對本批第 ${bIdx * BATCH_SIZE + 1} 至 ${bIdx * BATCH_SIZE + currentBatchPhotos.length} 張現場照片，逐張辨識所有不符合之食安缺失）` : '');
 
           const promptText = `你是一位資深的台灣星巴克 FSA (食品安全評核) 專員。
 請根據評核員在門市現場記錄的「口語缺失速記」與「附加照片」，嚴格對照以下官方《2026 食品安全評核 (Food Safety Assessment) 標準條文》，將每一項不符合事項轉換為《FY2026 食品安全衛生檢查紀錄表 (20260514版)》的正式表格內容：
@@ -5883,13 +6163,14 @@ ${clausesPromptList}
 - local_ty: 桃園市桃食安心QR CODE
 - local_kh: 高雄市產品責任險QR CODE
 
-【前區 (FOH) 與後區 (BOH) 智慧判定規則】：
+【前區 (FOH) 與後區 (BOH) 智慧判定與相同條文集中規則】：
 1. 若速記中有標註【前區 FOH】、【後區 BOH】、【糕點展示櫃/RTD】或【客席/洗手間】，請優先依該區塊標記判定每項缺失的發生區域 (zone)。
 2. 若未標註區域，請依星巴克門市設備位置自動推論：
    - 吧台設備（濃縮機、蒸奶棒、蒸奶壺、BPR沖洗器、冰沙機、前區儲冰槽、工作台小冰箱、調理吧台）➔ 判定為 "前區 (FOH)"。
    - 內場設備（三水槽、高溫洗碗機、製冰機盛水盤/儲冰槽、四門大冰箱、拖把槽、乾貨貨架、待退貨區、水塔、軟水器）➔ 判定為 "後區 (BOH)"。
    - 糕點櫃、RTD&E自取櫃 ➔ 判定為 "展示櫃/RTD"。
-3. 請為每一項缺失選出最精確的條文編號 (clauseCode) 與「缺失項目名稱 (missingItemTitle，如『1.2a 應設置洗手槽、提供清潔用品並正確使用』)」，並在 findingDesc 開頭加上區域標記與對應之【官方細項原文】，接著於 actionPlan 制定具體的「【立即改善】」與「【預防行動方案】」。
+3. 請為每一項缺失選出最精確的條文編號 (clauseCode) 與「缺失項目名稱 (missingItemTitle，如『4.3g 其他設備保持乾淨』)」，並在 findingDesc 開頭加上區域標記與對應之【官方細項原文】，接著於 actionPlan 制定具體的「【立即改善】」與「【預防行動方案】」。
+4. 若有多項缺失屬於同一個條文編號（例如多個設備髒汙皆屬 4.3g），系統會將同條文的內容與行動方案集中合併，並依照 .1(關注) ➔ .2(主要) ➔ .3(次要) 由嚴重到輕微排序。
 
 請只輸出純 JSON 格式（不要加 markdown 符號）：
 {
@@ -5899,7 +6180,7 @@ ${clausesPromptList}
       "clauseCode": "4.2o",
       "missingItemTitle": "4.2o 抹布應正確存放",
       "findingDesc": "📍【前區 FOH】【使用中的抹布遺留在檯面上 / 抹布計時器未啟動】現場於前區吧台檯面發現遺留使用中抹布，且抹布計時器未啟動。",
-      "actionPlan": "【立即改善】：當場將抹布收回泡入標準濃度(150-400ppm)季銨鹽消毒水桶中，並立即啟動計時器。\\n【預防行動方案】：值班經理於每班交接與轉班時檢核吧台抹布存放與計時器運作，並對當班夥伴進行隨手歸位宣導。"
+      "actionPlan": "【立即改善】：當場將抹布收回泡入標準濃度(150-400ppm)季銨鹽消毒水桶中，並立即啟動計時器。\n【預防行動方案】：值班經理於每班交接與轉班時檢核吧台抹布存放與計時器運作，並對當班夥伴進行隨手歸位宣導。"
     }
   ],
   "failedStatutoryKeys": []
@@ -5916,8 +6197,7 @@ ${clausesPromptList}
           const parsed = JSON.parse(match ? match[0] : rawRes);
 
           if (parsed && Array.isArray(parsed.violations)) {
-            fsaForm.value.violations = [...fsaForm.value.violations, ...parsed.violations];
-            totalAddedViolations += parsed.violations.length;
+            rawAddedList = [...rawAddedList, ...parsed.violations];
           }
           if (parsed && Array.isArray(parsed.failedStatutoryKeys)) {
             fsaForm.value.statutoryChecklist.forEach(chk => {
@@ -5928,9 +6208,16 @@ ${clausesPromptList}
           }
         }
 
+        // 自動將相同條文集中合併，並依嚴重程度 (.1關注 ➔ .2主要 ➔ .3次要) 排序！
+        fsaForm.value.violations = consolidateAndSortViolationsArray([
+          ...fsaForm.value.violations,
+          ...rawAddedList
+        ]);
+
         fsaForm.value.rawNotes = '';
         fsaForm.value.photos = [];
-        alert(`🎉 AI 核對完成！共分析 ${totalPhotos} 張照片，新增 ${totalAddedViolations} 項缺失並填入下方檢查紀錄表！`);
+        const scoreInfo = getFsaScoreSummary(fsaForm.value);
+        alert(`🎉 AI 核對與同條文集中合併完成！\n📊 目前扣分總結 (關注/主要/次要)：${scoreInfo.ratioStr}\n${scoreInfo.statusText}`);
       } catch (err) {
         alert('AI 條文核對失敗：' + err.message);
       } finally {
@@ -5940,8 +6227,11 @@ ${clausesPromptList}
     };
 
     const saveCurrentFsaReportToCloud = async () => {
+      // 儲存前自動集中合併同條文並依嚴重程度排序
+      fsaForm.value.violations = consolidateAndSortViolationsArray(fsaForm.value.violations);
       const f = fsaForm.value;
       const repId = f.id || ('fsa_rep_' + Date.now());
+      const scoreInfo = getFsaScoreSummary(f);
       const payload = {
         id: repId,
         storeId: f.storeId || '011218',
@@ -5950,13 +6240,14 @@ ${clausesPromptList}
         auditorName: f.auditorName || currentPartner.value?.name || 'FSA專員',
         dutyManagerName: f.dutyManagerName || '',
         city: f.city || '新北市',
+        scoreSummary: scoreInfo.ratioStr,
         violations: JSON.parse(JSON.stringify(f.violations || [])),
         statutoryChecklist: JSON.parse(JSON.stringify(f.statutoryChecklist || [])),
         timestamp: Date.now()
       };
       if (db) await db.ref('sbux/fsa_reports/' + repId).set(payload);
       fsaForm.value.id = repId;
-      alert('💾 已將本份《FY2026 食品安全衛生檢查紀錄表》儲存至雲端！');
+      alert(`💾 已將本份《FY2026 食品安全衛生檢查紀錄表》儲存至雲端！\n扣分統計：${scoreInfo.ratioStr} (${scoreInfo.statusText})`);
     };
 
     const loadSavedFsaReport = (rep, shouldScroll = true) => {
@@ -5970,7 +6261,7 @@ ${clausesPromptList}
         city: rep.city || '新北市',
         rawNotes: '',
         photos: [],
-        violations: JSON.parse(JSON.stringify(rep.violations || [])),
+        violations: consolidateAndSortViolationsArray(JSON.parse(JSON.stringify(rep.violations || []))),
         statutoryChecklist: Array.isArray(rep.statutoryChecklist) && rep.statutoryChecklist.length > 0
           ? JSON.parse(JSON.stringify(rep.statutoryChecklist))
           : createDefaultStatutoryChecklist(rep.city || '新北市')
@@ -5986,43 +6277,50 @@ ${clausesPromptList}
       }
     };
 
-    // 🖨️ 修復：一按即印 1:1 官方《FY2026 食品安全衛生檢查紀錄表》，不執行 smooth scroll、不以 500ms 計時器重置為班表！
+    // 🖨️ 以 1:1 官方《FY2026 食品安全衛生檢查紀錄表 (20260514版)》格式匯出 PDF 或 A4 列印
     const triggerPrintFsaOfficialTable = async (repObj = null) => {
       if (repObj && repObj !== fsaForm.value && repObj.storeId) {
         loadSavedFsaReport(repObj, false);
+      } else {
+        fsaForm.value.violations = consolidateAndSortViolationsArray(fsaForm.value.violations);
       }
       printTargetMode.value = 'fsa';
       await nextTick();
-      // 強制同步計算排版 (Synchronous Reflow)，確保 iOS Safari 第一下點擊就 100% 印出 FSA 表格
       void document.body.offsetHeight;
       window.print();
     };
+
     // 📢 一鍵將本次 FSA 評核結果公布至首頁「門市公告欄」提醒全體夥伴
     const publishFsaToStoreBulletin = async (repObj = null) => {
-      const f = (repObj && repObj.storeId) ? repObj : fsaForm.value;
-      if (!f.violations || f.violations.length === 0) {
-        if (!confirm('目前表單中無缺失項目，確定仍要發布「全數符合」公告至首頁嗎？')) return;
+      const rawTarget = (repObj && repObj.storeId) ? repObj : fsaForm.value;
+      const sortedViolations = consolidateAndSortViolationsArray(rawTarget.violations || []);
+      const scoreInfo = getFsaScoreSummary({ ...rawTarget, violations: sortedViolations });
+
+      if (sortedViolations.length === 0) {
+        if (!confirm('目前表單中無缺失項目，確定仍要發布「全數符合 (0/0/0)」公告至首頁嗎？')) return;
       }
       const id = 'bul_fsa_' + Date.now();
-      const title = `🛡️ 【FSA 食安評核結果公告】${f.auditDate || ''} (評核員：${f.auditorName || 'FSA專員'})`;
+      const title = `🛡️ 【FSA 食安評核結果】${rawTarget.auditDate || ''} ｜ 扣分總結：${scoreInfo.ratioStr} (${scoreInfo.isPass ? '通過' : '未通過'})`;
       const contentLines = [
-        `門市：${f.storeName || '永和永安'} (${f.storeId || '011218'}) ｜ 當班值班：${f.dutyManagerName || '-'}`
+        `門市：${rawTarget.storeName || '永和永安'} (${rawTarget.storeId || '011218'}) ｜ 評核員：${rawTarget.auditorName || '-'} ｜ 當班值班：${rawTarget.dutyManagerName || '-'}`,
+        `📊 扣分統計 (關注.1 / 主要.2 / 次要.3)：${scoreInfo.ratioStr} (通過標準上限 0/2/5) ➔ ${scoreInfo.statusText}`
       ];
 
-      if (f.violations && f.violations.length > 0) {
-        contentLines.push(`⚠️ 本次評核共發現 ${f.violations.length} 項需立即注意與改善之項目：`);
-        f.violations.forEach((v, i) => {
-          contentLines.push(`\n${i + 1}. 【${v.missingItemTitle || v.clauseCode}】`);
-          contentLines.push(`▸ 缺失說明：${v.findingDesc}`);
+      if (sortedViolations.length > 0) {
+        contentLines.push(`⚠️ 本次評核依嚴重度排序共計 ${sortedViolations.length} 個條文項目需改善：`);
+        sortedViolations.forEach((v, i) => {
+          const meta = getFsaClauseMeta(v);
+          contentLines.push(`\n${i + 1}. 【${meta.severityName}】【${v.missingItemTitle || v.clauseCode}】`);
+          contentLines.push(`▸ 缺失說明：\n${v.findingDesc}`);
           if (v.actionPlan) {
             contentLines.push(`▸ 行動方案：\n${v.actionPlan}`);
           }
         });
       } else {
-        contentLines.push(`🎉 本次門市食安評核各項標準均符合規範，感謝夥伴共同維護門市食品安全！`);
+        contentLines.push(`🎉 本次門市食安評核各項標準均符合規範 (0/0/0)，感謝夥伴共同維護門市食品安全！`);
       }
 
-      const failedStat = (f.statutoryChecklist || []).filter(c => c.status === '不符合');
+      const failedStat = (rawTarget.statutoryChecklist || []).filter(c => c.status === '不符合');
       if (failedStat.length > 0) {
         contentLines.push(`\n🚨 法規及集團必檢不符合項目：${failedStat.map(c => c.category).join('、')}`);
       }
@@ -6035,26 +6333,30 @@ ${clausesPromptList}
           dateStr: `${new Date().getMonth() + 1}/${new Date().getDate()}`,
           timestamp: Date.now()
         });
-        alert('📢 已成功發布至首頁「📌 門市公告欄」！全店夥伴登入首頁即可看到本次評核缺失與行動方案。');
+        alert('📢 已依嚴重度排序並集中相同條文，成功發布至首頁「📌 門市公告欄」！');
       }
     };
 
     const copyOfficialFsaTableText = (repObj) => {
       const f = repObj || fsaForm.value;
+      const sortedViolations = consolidateAndSortViolationsArray(f.violations || []);
+      const scoreInfo = getFsaScoreSummary({ ...f, violations: sortedViolations });
       const lines = [
         `【FY2026 食品安全衛生檢查紀錄表 (含法規及集團要求) 20260514版】`,
+        `📊 缺失扣分總結 (關注.1 / 主要.2 / 次要.3)：${scoreInfo.ratioStr} (通過上限 0/2/5 ｜ ${scoreInfo.statusText})`,
         `門市店號：${f.storeId || '-'} ｜ 門市名稱：${f.storeName || '-'} ｜ 檢查日期：${f.auditDate || '-'}`,
         `評核員姓名：${f.auditorName || '-'} ｜ 值班經理姓名：${f.dutyManagerName || '-'}`,
         `================================================`,
-        `一、【FSA 缺失項目與行動方案】`
+        `一、【FSA 缺失項目與行動方案 (依嚴重程度 .1關注 ➔ .2主要 ➔ .3次要 排序，同條文集中顯示)】`
       ];
 
-      if (!f.violations || f.violations.length === 0) {
-        lines.push(`（本次評核無 FSA 條文缺失項目）`);
+      if (sortedViolations.length === 0) {
+        lines.push(`（本次評核無 FSA 條文缺失項目，扣分總結 0/0/0）`);
       } else {
-        f.violations.forEach((v, i) => {
-          lines.push(`${i + 1}. 缺失項目：${v.missingItemTitle || v.clauseCode}`);
-          lines.push(`   缺失說明：${v.findingDesc}`);
+        sortedViolations.forEach((v, i) => {
+          const meta = getFsaClauseMeta(v);
+          lines.push(`${i + 1}. 【${meta.severityName}】缺失項目：${v.missingItemTitle || v.clauseCode} (${v.zone || '全店'})`);
+          lines.push(`   缺失說明：\n   ${String(v.findingDesc || '').replace(/\n/g, '\n   ')}`);
           lines.push(`   行動方案：\n   ${String(v.actionPlan || '').replace(/\n/g, '\n   ')}`);
           lines.push(`------------------------------------------------`);
         });
@@ -6070,7 +6372,7 @@ ${clausesPromptList}
       const fullText = lines.join('\n');
       if (navigator.clipboard) {
         navigator.clipboard.writeText(fullText).then(() => {
-          alert('📋 已將完整《FY2026 食品安全衛生檢查紀錄表》複製到剪貼簿！');
+          alert(`📋 已將完整《FY2026 食品安全衛生檢查紀錄表》複製到剪貼簿！\n右上角扣分總結：${scoreInfo.ratioStr}`);
         });
       }
     };
@@ -8792,25 +9094,21 @@ ${beansContext}
       stepText: '正在同步雲端最新畫假與班表...'
     });
 
-    // 當進入 FSA 子頁籤時，自動預先將列印目標設為 'fsa'；進入排班頁籤時預設為 'blank'
- watch([currentTab, otherSubTab], ([tab, subTab]) => {
-   if (tab === 'other' && subTab === 'fsa') {
-     printTargetMode.value = 'fsa';
-   } else if (tab === 'roster' && printTargetMode.value === 'fsa') {
-     printTargetMode.value = 'blank';
-   }
- }, { immediate: true });
+    watch([currentTab, otherSubTab], ([tab, subTab]) => {
+      if (tab === 'other' && subTab === 'fsa') {
+        printTargetMode.value = 'fsa';
+      } else if (tab === 'roster' && printTargetMode.value === 'fsa') {
+        printTargetMode.value = 'blank';
+      }
+    }, { immediate: true });
 
- // 🖨️ 修復：零延遲一按即印排班表（不因網路等待而弄丟 iOS 手勢憑證）
- const triggerPrintSchedule = async (mode) => {
-   printTargetMode.value = mode;
-   await nextTick();
-   // 強制瀏覽器同步完成 A4 表格排版，確保第一次點擊立即彈出列印預覽
-   void document.body.offsetHeight;
-   window.print();
-   // 背景非阻塞同步最新畫休紀錄，不阻擋列印視窗彈出
-   forceSyncRosterDataNow(false);
- };
+    const triggerPrintSchedule = async (mode) => {
+      printTargetMode.value = mode;
+      await nextTick();
+      void document.body.offsetHeight;
+      window.print();
+      forceSyncRosterDataNow(false);
+    };
 
     // ==================== 畫假、禁休與行事曆 ====================
     const blackoutDatesList = computed(() => {
@@ -9815,7 +10113,8 @@ ${beansContext}
       partnerBadges, unlockedBadgeCount,
       fsa2026OfficialClauses, showFsaClauseLibrary, fsaClauseSearch, filteredFsaClauses,
       fsaForm, isAnalyzingFsa, applyCityRegulationDefaults, cycleStatutoryStatus, resetFsaCurrentForm,
-      isUploadingFsaPhotos, fsaPhotoProgressText,
+      isUploadingFsaPhotos, fsaPhotoProgressText, getFsaClauseMeta, consolidateAndSortCurrentFsa, getFsaScoreSummary, currentFsaScoreSummary, consolidatedSortedFsaViolations,
+      isUploadingFsaPhotos, fsaPhotoProgressText, getFsaClauseMeta, consolidateAndSortCurrentFsa, getFsaScoreSummary, currentFsaScoreSummary, consolidatedSortedFsaViolations,
       insertFsaZoneTag, syncZoneToFindingDesc, addManualFsaViolationRow, onSelectFsaClauseCode, handleFsaPhotosUpload, analyzeFsaNotesToOfficialTable,
       fsaAuditReports, saveCurrentFsaReportToCloud, loadSavedFsaReport, deleteFsaReport, copyOfficialFsaTableText,
       triggerPrintFsaOfficialTable, publishFsaToStoreBulletin
