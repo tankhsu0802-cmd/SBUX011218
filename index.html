@@ -2696,7 +2696,7 @@
                   </div>
                 </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                <div class="grid grid-cols-3 gap-2 pt-1">
                   <button 
                     @click="analyzeFsaNotesToOfficialTable" 
                     :disabled="isAnalyzingFsa || isUploadingFsaPhotos || (!fsaForm.rawNotes.trim() && fsaForm.photos.length === 0)"
@@ -2712,13 +2712,6 @@
                     class="py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-xs transition active:scale-95">
                     ➕ 手動加一列
                   </button>
-
-                  <button 
-                    @click="consolidateAndSortCurrentFsa(true)" 
-                    type="button"
-                    class="py-2.5 bg-amber-100 hover:bg-amber-200 dark:bg-amber-950/70 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-700 rounded-xl font-black text-xs transition active:scale-95">
-                    🔗 合併同條文&排序
-                  </button>
                 </div>
               </div>
 
@@ -2730,7 +2723,7 @@
                   <div class="flex justify-between items-start flex-wrap gap-2">
                     <div>
                       <h4 class="font-black text-sm tracking-wide">FY2026 食品安全衛生檢查紀錄表 (含法規及集團要求)</h4>
-                      <span class="text-[10px] text-slate-400 font-mono">(20260514版 ｜ 依嚴重程度 .1關注 ➔ .2主要 ➔ .3次要 排序，同條文集中合併且不重複扣分)</span>
+                      <span class="text-[10px] text-slate-400 font-mono">(20260514版)</span>
                     </div>
 
                     <!-- 右上角 X/X/X 扣分總結面板 (通過政府/集團稽核上限 0/2/5) -->
@@ -2759,9 +2752,6 @@
                       @click="triggerPrintFsaOfficialTable()" 
                       class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-[11px] font-black shadow active:scale-95 transition flex items-center gap-1">
                       <span>🖨️</span> 匯出官方格式表單 (PDF/列印)
-                    </button>
-                    <button @click="consolidateAndSortCurrentFsa(true)" class="px-2.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-[11px] font-black shadow active:scale-95 transition flex items-center gap-1">
-                      <span>🔗</span> 集中同條文 & 嚴重度排序
                     </button>
                     <button @click="publishFsaToStoreBulletin(fsaForm)" class="px-2.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-black rounded-lg text-[11px] font-black shadow active:scale-95 transition flex items-center gap-1">
                       <span>📢</span> 公布至首頁公告欄
@@ -6009,11 +5999,6 @@ ${recipesContext}
       const ratioStr = `${c1}/${c2}/${c3}`;
       const isPass = (c1 === 0) && (c2 <= 2) && (c3 <= 5);
 
-      const failReasons = [];
-      if (c1 > 0) failReasons.push(`關注(.1)扣${c1}項(須為0)`);
-      if (c2 > 2) failReasons.push(`主要(.2)扣${c2}項(上限2)`);
-      if (c3 > 5) failReasons.push(`次要(.3)扣${c3}項(上限5)`);
-
       return {
         c1,
         c2,
@@ -6023,7 +6008,7 @@ ${recipesContext}
         statusText: isPass ? '✅ 通過標準 (≤0/2/5)' : `🚨 未通過 (${failReasons.join('、')})`
       };
     };
-
+    
     const currentFsaScoreSummary = computed(() => getFsaScoreSummary(fsaForm.value));
     const consolidatedSortedFsaViolations = computed(() => consolidateAndSortViolationsArray(fsaForm.value.violations));
 
@@ -10113,7 +10098,6 @@ ${beansContext}
       partnerBadges, unlockedBadgeCount,
       fsa2026OfficialClauses, showFsaClauseLibrary, fsaClauseSearch, filteredFsaClauses,
       fsaForm, isAnalyzingFsa, applyCityRegulationDefaults, cycleStatutoryStatus, resetFsaCurrentForm,
-      isUploadingFsaPhotos, fsaPhotoProgressText, getFsaClauseMeta, consolidateAndSortCurrentFsa, getFsaScoreSummary, currentFsaScoreSummary, consolidatedSortedFsaViolations,
       isUploadingFsaPhotos, fsaPhotoProgressText, getFsaClauseMeta, consolidateAndSortCurrentFsa, getFsaScoreSummary, currentFsaScoreSummary, consolidatedSortedFsaViolations,
       insertFsaZoneTag, syncZoneToFindingDesc, addManualFsaViolationRow, onSelectFsaClauseCode, handleFsaPhotosUpload, analyzeFsaNotesToOfficialTable,
       fsaAuditReports, saveCurrentFsaReportToCloud, loadSavedFsaReport, deleteFsaReport, copyOfficialFsaTableText,
