@@ -4491,7 +4491,7 @@ const app = createApp({
     const isCloudConnected = ref(false);
     const isDarkMode = ref(false);
     const printTargetMode = ref('blank');
-    const cloudGeminiKey = ref('');
+    const cloudGeminiKey = ref(localStorage.getItem('sbux_cached_cloud_gemini_key') || '');
     const cachedValidModels = ref([]);
     const isTestingApiKey = ref(false);
     const apiKeyTestResult = ref('');
@@ -6362,14 +6362,52 @@ ${clausesPromptList}
       }
     };
 
-    // ==================== Gemini AI 引擎 ====================
+    // ==================== Gemini AI 引擎 (支援全店雲端金鑰強制同步 + 2026 模型自動容錯) ====================
     const lockedWorkingModel = ref(localStorage.getItem('sbux_working_gemini_model') || '');
     const deadModels = new Set();
 
+    const fetchCloudGeminiKeyFromRest = async () => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch(`${firebaseConfig.databaseURL}/sbux/systemConfig/geminiApiKey.json?t=${Date.now()}`, {
+          cache: 'no-store',
+          signal: controller.signal
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+          const val = await res.json();
+          if (val && typeof val === 'string' && val.trim()) {
+            const cleanKey = val.trim();
+            cloudGeminiKey.value = cleanKey;
+            localStorage.setItem('sbux_cached_cloud_gemini_key', cleanKey);
+            return cleanKey;
+          }
+        }
+      } catch (e) {}
+      return '';
+    };
+
+    // 啟動時立即背景同步一次雲端 Gemini Key，確保所有夥伴裝置即時取得最新金鑰
+    fetchCloudGeminiKeyFromRest();
+
     const getEffectiveGeminiKey = () => {
       const localKey = (localStorage.getItem('sbux_custom_gemini_key') || '').trim();
-      const cKey = (cloudGeminiKey.value || '').trim();
+      const cKey = (cloudGeminiKey.value || localStorage.getItem('sbux_cached_cloud_gemini_key') || '').trim();
       return localKey || cKey || firebaseConfig.apiKey;
+    };
+
+    const ensureEffectiveGeminiKey = async (forceRefresh = false) => {
+      const localKey = (localStorage.getItem('sbux_custom_gemini_key') || '').trim();
+      if (localKey && !forceRefresh) return localKey;
+
+      const cachedCloud = (cloudGeminiKey.value || localStorage.getItem('sbux_cached_cloud_gemini_key') || '').trim();
+      if (cachedCloud && !forceRefresh) return cachedCloud;
+
+      const freshCloudKey = await fetchCloudGeminiKeyFromRest();
+      if (freshCloudKey) return freshCloudKey;
+
+      return localKey || cachedCloud || firebaseConfig.apiKey;
     };
 
     const optimizePartsForSpeed = async (parts) => {
@@ -6434,16 +6472,17 @@ ${clausesPromptList}
 
           supported.sort((a, b) => {
             const score = (n) => {
-              if (n === lockedWorkingModel.value) return 1000;
-              if (n === 'gemini-3.6-flash' || n === 'gemini-3.7-flash') return 120;
-              if (n === 'gemini-3.5-flash' || n === 'gemini-3.5-flash-lite') return 115;
-              if (n === 'gemini-3.1-flash-lite' || n === 'gemini-flash-lite-latest') return 110;
-              if (n.includes('3.') && n.includes('flash')) return 105;
-              if (n === 'gemini-3-flash-preview') return 100;
-              if (n.includes('2.0-flash')) return 60;
-              if (n === 'gemini-flash-latest') return 40;
-              if (n.includes('2.5-flash')) return 15;
-              return 30;
+              if (n === lockedWorkingModel.value && !deadModels.has(n)) return 1000;
+              if (n === 'gemini-2.5-flash') return 140;
+              if (n === 'gemini-2.5-flash-lite') return 135;
+              if (n === 'gemini-3-flash-preview') return 130;
+              if (n.includes('3.') && n.includes('flash')) return 125;
+              if (n === 'gemini-flash-latest') return 120;
+              if (n === 'gemini-flash-lite-latest') return 115;
+              if (n.includes('2.5-flash')) return 110;
+              if (n.includes('2.5-pro')) return 80;
+              if (n.includes('2.0-flash')) return 20;
+              return 40;
             };
             return score(b) - score(a);
           });
@@ -6454,11 +6493,11 @@ ${clausesPromptList}
           }
         }
       } catch (e) {}
-      return ['gemini-3.6-flash', 'gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-flash-lite-latest', 'gemini-2.0-flash'].filter(m => !deadModels.has(m));
+      return ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-3-flash-preview', 'gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-2.0-flash'].filter(m => !deadModels.has(m));
     };
 
-    const callGeminiApi = async (parts, requireJson = false, temperature = 0.3) => {
-      const apiKey = getEffectiveGeminiKey();
+    const callGeminiApi = async (parts, requireJson = false, temperature = 0.3, hasRetriedCloudKey = false) => {
+      const apiKey = await ensureEffectiveGeminiKey(hasRetriedCloudKey);
       const fastParts = await optimizePartsForSpeed(parts);
       let modelsToTry = await discoverAvailableModels(apiKey);
 
@@ -6467,6 +6506,8 @@ ${clausesPromptList}
       }
 
       let lastError = '';
+      let sawPermissionDenied = false;
+
       for (const m of modelsToTry) {
         if (deadModels.has(m)) continue;
         try {
@@ -6484,6 +6525,10 @@ ${clausesPromptList}
 
           if (res.status === 404) {
             deadModels.add(m);
+            if (lockedWorkingModel.value === m) {
+              lockedWorkingModel.value = '';
+              localStorage.removeItem('sbux_working_gemini_model');
+            }
             lastError = `[${m}] 404 不支援`;
             continue;
           }
@@ -6499,16 +6544,34 @@ ${clausesPromptList}
             return data.candidates[0].content.parts[0].text.trim();
           }
           if (data.error) {
-            lastError = `[${m}] ${data.error.message}`;
-            if (data.error.message.includes('API key not valid') || data.error.message.includes('has not been used in project')) {
-              throw new Error('請至「⚙️ 個人設定」貼上有效的 Gemini API Key 並儲存！');
+            const errMsg = String(data.error.message || '');
+            lastError = `[${m}] ${errMsg}`;
+            if (res.status === 403 || errMsg.includes('Permission denied') || errMsg.includes('not been used in project') || errMsg.includes('API key not valid')) {
+              sawPermissionDenied = true;
+              deadModels.add(m);
+              if (lockedWorkingModel.value === m) {
+                lockedWorkingModel.value = '';
+                localStorage.removeItem('sbux_working_gemini_model');
+              }
+              continue;
             }
           }
         } catch (err) {
-          if (err.message.includes('Gemini API Key')) throw err;
           lastError = err.message;
         }
       }
+
+      // 若遇權限異常且尚未從雲端重新拉取最新金鑰，自動重拉雲端金鑰並重試一次
+      if (sawPermissionDenied && !hasRetriedCloudKey) {
+        cachedValidModels.value = [];
+        deadModels.clear();
+        return await callGeminiApi(parts, requireJson, temperature, true);
+      }
+
+      if (sawPermissionDenied) {
+        throw new Error('AI 服務權限異常（金鑰無權限存取目前模型）。請聯絡值班/店長（徐爰坦）至「⚙️ 個人設定 ➔ Gemini API Key」重新貼上有效的 AI Studio 金鑰並點擊「💾 儲存同步」，全店夥伴即可恢復正常！');
+      }
+
       throw new Error(lastError || '模型忙碌中，請稍後再試。');
     };
 
@@ -7890,8 +7953,11 @@ ${beansContext}
 
       db.ref('sbux/systemConfig/geminiApiKey').on('value', snap => {
         if (snap.val()) {
-          cloudGeminiKey.value = snap.val();
+          const cleanKey = String(snap.val()).trim();
+          cloudGeminiKey.value = cleanKey;
+          localStorage.setItem('sbux_cached_cloud_gemini_key', cleanKey);
           cachedValidModels.value = [];
+          deadModels.clear();
         }
       });
 
