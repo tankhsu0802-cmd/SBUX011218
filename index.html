@@ -31,6 +31,8 @@
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
   <style>
     [v-cloak] { display: none !important; }
@@ -225,7 +227,7 @@
       }
       @page {
         size: A4 portrait;
-        margin: 0.35cm 0.3cm !important;
+        margin: 1cm 1cm !important;
       }
     }
   </style>
@@ -2148,7 +2150,7 @@
               <!-- 歷屆集錦 -->
               <div class="mt-6 space-y-2 pt-4 border-t border-slate-200 dark:border-slate-700">
                 <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                  <span>📁</span> 歷屆拉花歷史集錦 ({{ latteArtArchives.length }})
+                  <span>📁</span> 歷屆拉花歷史集錦 ({{ latteArtArchives.length }} / 僅保留近 6 週)
                 </h4>
 
                 <div v-for="arch in latteArtArchives" :key="arch.folderName || arch.key" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
@@ -3146,27 +3148,65 @@
 
   <!-- ==================== 彈出視窗群 (Modals) ==================== -->
 
-  <!-- 🖨️ 列印匯出進度與預計完成時間 Modal -->
+  <!-- 🖨️ PDF / 列印四階段進度載入動畫 Modal -->
   <transition name="modal">
-    <div v-if="printProgressModal.show" class="no-print fixed inset-0 bg-black/70 z-[100001] flex items-center justify-center p-4 backdrop-blur-sm">
-      <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-xs p-6 shadow-2xl text-center space-y-4 border border-emerald-500/40">
-        <div class="text-4xl animate-bounce">🖨️</div>
-        <div class="space-y-1">
+    <div v-if="printProgressModal.show" class="no-print fixed inset-0 bg-slate-950/65 z-[100002] flex items-center justify-center p-4 backdrop-blur-md">
+      <div class="bg-white/90 dark:bg-slate-800/95 backdrop-blur-xl rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4 border border-emerald-500/40">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-500 text-white flex items-center justify-center text-2xl shadow-lg animate-bounce">
+          {{ printProgressModal.icon || '📄' }}
+        </div>
+        <div>
           <h3 class="text-sm font-black text-slate-900 dark:text-white">
-            正在匯出{{ printTargetMode === 'blank' ? '空白排班表' : '預排班表' }}...
+            {{ printProgressModal.title || '正在生成 PDF 報表' }}
           </h3>
-          <p class="text-xs text-emerald-700 dark:text-emerald-400 font-bold">
+          <p class="text-xs text-emerald-700 dark:text-emerald-400 font-bold mt-1">
             {{ printProgressModal.stepText }}
           </p>
         </div>
 
-        <div class="w-full h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-          <div class="h-full bg-gradient-to-r from-emerald-600 to-teal-400 transition-all duration-150"
-               :style="{ width: printProgressModal.percent + '%' }"></div>
+        <div class="space-y-1.5">
+          <div class="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-emerald-600 to-teal-400 rounded-full transition-all duration-300"
+                 :style="{ width: printProgressModal.percent + '%' }"></div>
+          </div>
+          <div class="flex justify-between items-center text-[11px] font-mono font-extrabold">
+            <span class="text-emerald-700 dark:text-emerald-400">{{ printProgressModal.percent }}%</span>
+            <span class="text-slate-400 truncate max-w-[180px]">{{ printProgressModal.docName }}</span>
+          </div>
         </div>
 
-        <div class="text-[11px] font-mono font-bold text-slate-500 dark:text-slate-300 bg-slate-100 dark:bg-slate-900/60 py-1.5 px-3 rounded-xl">
-          ⏱️ 預計還需 <span class="text-emerald-700 dark:text-emerald-400 font-black">{{ printProgressModal.remainSec }}</span> 秒完成
+        <div class="text-left space-y-1.5 pt-1 text-xs bg-slate-50/80 dark:bg-slate-900/50 p-3 rounded-2xl border border-slate-200/70 dark:border-slate-700">
+          <div v-for="(st, i) in printProgressModal.steps" :key="i" class="flex items-center gap-2">
+            <span v-if="printProgressModal.stepIndex > i" class="text-emerald-500 font-black">✓</span>
+            <span v-else-if="printProgressModal.stepIndex === i" class="text-emerald-600 dark:text-emerald-400 animate-spin inline-block font-black">◌</span>
+            <span v-else class="text-slate-400">○</span>
+            <span :class="printProgressModal.stepIndex >= i ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-400'">{{ st }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </transition>
+
+  <!-- ⏳ 頁面按需載入進度動畫 Modal (點進相簿 / 拉花 / 配方卡 / FSA 時顯示即時載入進度) -->
+  <transition name="modal">
+    <div v-if="pageLoadingModal.show" class="no-print fixed inset-0 bg-slate-950/55 z-[100001] flex items-center justify-center p-4 backdrop-blur-sm">
+      <div class="bg-white/90 dark:bg-slate-800/95 backdrop-blur-xl rounded-3xl w-full max-w-xs p-5 shadow-2xl text-center space-y-3.5 border border-emerald-500/35">
+        <div class="w-12 h-12 mx-auto rounded-2xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 flex items-center justify-center text-2xl shadow-inner animate-pulse">
+          {{ pageLoadingModal.icon || '☁️' }}
+        </div>
+        <div>
+          <h3 class="text-sm font-black text-slate-900 dark:text-white">{{ pageLoadingModal.title }}</h3>
+          <p class="text-[11px] text-emerald-700 dark:text-emerald-400 font-bold mt-1">{{ pageLoadingModal.stageText }}</p>
+        </div>
+        <div class="space-y-1">
+          <div class="w-full h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-emerald-600 to-teal-400 rounded-full transition-all duration-300"
+                 :style="{ width: pageLoadingModal.percent + '%' }"></div>
+          </div>
+          <div class="flex justify-between text-[10px] font-mono font-bold text-slate-400">
+            <span class="text-emerald-700 dark:text-emerald-400">{{ pageLoadingModal.percent }}%</span>
+            <span>省流量按需載入中</span>
+          </div>
         </div>
       </div>
     </div>
@@ -4617,6 +4657,41 @@ const app = createApp({
 
     const isSyncingRoster = ref(false);
     const lastVacSyncTimeStr = ref('已就緒');
+
+    // ⏳ 頁面按需載入進度動畫狀態
+    const pageLoadingModal = ref({
+      show: false,
+      icon: '☁️',
+      title: '正在載入雲端資料',
+      stageText: '連線中...',
+      percent: 0
+    });
+    let pageLoadSafetyTimer = null;
+
+    const startPageLoading = (title, icon = '☁️', stageText = '正在連線雲端資料庫...') => {
+      if (pageLoadSafetyTimer) clearTimeout(pageLoadSafetyTimer);
+      pageLoadingModal.value = { show: true, icon, title, stageText, percent: 25 };
+      // 安全保護：最多 8 秒自動關閉，絕不卡死畫面
+      pageLoadSafetyTimer = setTimeout(() => {
+        pageLoadingModal.value.show = false;
+      }, 8000);
+    };
+
+    const updatePageLoading = (percent, stageText) => {
+      if (!pageLoadingModal.value.show) return;
+      pageLoadingModal.value.percent = percent;
+      if (stageText) pageLoadingModal.value.stageText = stageText;
+    };
+
+    const finishPageLoading = (doneText = '載入完成！') => {
+      if (pageLoadSafetyTimer) clearTimeout(pageLoadSafetyTimer);
+      if (!pageLoadingModal.value.show) return;
+      pageLoadingModal.value.percent = 100;
+      pageLoadingModal.value.stageText = doneText;
+      setTimeout(() => {
+        pageLoadingModal.value.show = false;
+      }, 260);
+    };
     const SNAPSHOT_STORAGE_KEY = 'sbux_instant_snapshot_v2';
 
     const updateSyncTimestampDisplay = () => {
@@ -4886,89 +4961,45 @@ const app = createApp({
       } catch (e) {}
     };
 
-    // 排班與畫假雙通道強制同步引擎 (REST 無快取 + Firebase SDK 雙重確認)
+    // 排班與畫假極致省流量同步引擎 (僅同步畫假/禁休/班表核心輕量節點，徹底杜絕重複下載其他 11 個節點)
+    let lastForceSyncAt = 0;
     const forceSyncRosterDataNow = async (showToast = false) => {
+      // 非手動點擊時，10 秒內不重複發送請求，防止瞬間重複消耗流量
+      if (!showToast && (Date.now() - lastForceSyncAt) < 10000) return;
+      lastForceSyncAt = Date.now();
       isSyncingRoster.value = true;
       try {
-        const ts = Date.now();
-        const baseUrl = firebaseConfig.databaseURL;
-        const [staffRes, vacRes, blackRes, rosterRes, invRes, rulesRes, matRes, taskRes, bulRes, swapRes, tasteRes] = await Promise.all([
-          fetch(`${baseUrl}/sbux/staff.json?t=${ts}`, { cache: 'no-store' }).catch(() => null),
-          fetch(`${baseUrl}/sbux/vacations.json?t=${ts}`, { cache: 'no-store' }).catch(() => null),
-          fetch(`${baseUrl}/sbux/blackout_dates.json?t=${ts}`, { cache: 'no-store' }).catch(() => null),
-          fetch(`${baseUrl}/sbux/scheduled_roster.json?t=${ts}`, { cache: 'no-store' }).catch(() => null),
-          fetch(`${baseUrl}/sbux/inventory.json?t=${ts}`, { cache: 'no-store' }).catch(() => null),
-          fetch(`${baseUrl}/sbux/rules.json?t=${ts}`, { cache: 'no-store' }).catch(() => null),
-          fetch(`${baseUrl}/sbux/materials.json?t=${ts}`, { cache: 'no-store' }).catch(() => null),
-          fetch(`${baseUrl}/sbux/shift_tasks.json?t=${ts}`, { cache: 'no-store' }).catch(() => null),
-          fetch(`${baseUrl}/sbux/bulletins.json?t=${ts}`, { cache: 'no-store' }).catch(() => null),
-          fetch(`${baseUrl}/sbux/shift_swaps.json?t=${ts}`, { cache: 'no-store' }).catch(() => null),
-          fetch(`${baseUrl}/sbux/tasting_notes.json?t=${ts}`, { cache: 'no-store' }).catch(() => null)
-        ]);
-
-        if (staffRes && staffRes.ok) {
-          const sData = await staffRes.json();
-          if (sData) applyRawStaffData(sData);
-        }
-
-        let restVacData = null;
-        if (vacRes && vacRes.ok) {
-          restVacData = await vacRes.json();
-        }
-        let sdkVacData = null;
         if (db) {
-          try {
-            const snap = await db.ref('sbux/vacations').once('value');
-            sdkVacData = snap.val();
-          } catch (e) {}
-        }
-        if (restVacData !== null || sdkVacData !== null) {
-          vacationList.value = mergeAndSanitizeVacations(restVacData, sdkVacData);
-        }
-
-        if (blackRes && blackRes.ok) {
-          const bData = await blackRes.json();
-          blackoutDates.value = bData || {};
-        }
-        if (rosterRes && rosterRes.ok) {
-          const rData = await rosterRes.json();
-          scheduledRoster.value = rData || {};
-        }
-        if (invRes && invRes.ok) {
-          const iData = await invRes.json();
-          inventory.value = iData ? Object.values(iData) : [];
-        }
-        if (rulesRes && rulesRes.ok) {
-          const rlData = await rulesRes.json();
-          rules.value = rlData ? Object.values(rlData) : [];
-        }
-        if (matRes && matRes.ok) {
-          const mData = await matRes.json();
-          if (mData) {
-            materials.value = Object.keys(mData).map(key => ({ _key: key, id: key, ...(typeof mData[key] === 'object' ? mData[key] : {}) }));
+          // 僅抓取排班與畫假核心輕量節點（純文字僅約數 KB），不重複下載物料/品評/公告等已有長連線的資料
+          const tasks = [
+            db.ref('sbux/vacations').once('value'),
+            db.ref('sbux/blackout_dates').once('value')
+          ];
+          if (showToast) {
+            tasks.push(db.ref('sbux/scheduled_roster').once('value'));
+            tasks.push(db.ref('sbux/staff').once('value'));
           }
-        }
-        if (taskRes && taskRes.ok) {
-          const tkData = await taskRes.json();
-          shiftTasksList.value = tkData ? Object.values(tkData).sort((a, b) => (a.done === b.done ? b.timestamp - a.timestamp : (a.done ? 1 : -1))) : [];
-        }
-        if (bulRes && bulRes.ok) {
-          const blData = await bulRes.json();
-          bulletinList.value = blData ? Object.values(blData).sort((a,b) => b.timestamp - a.timestamp) : [];
-        }
-        if (swapRes && swapRes.ok) {
-          const swData = await swapRes.json();
-          shiftSwapsList.value = swData ? Object.values(swData).sort((a,b) => b.timestamp - a.timestamp) : [];
-        }
-        if (tasteRes && tasteRes.ok) {
-          const tsData = await tasteRes.json();
-          tastingNotesList.value = tsData ? Object.keys(tsData).map(k => ({ id: k, _key: k, ...tsData[k] })).sort((a,b) => b.timestamp - a.timestamp) : [];
+          const snaps = await Promise.all(tasks);
+          const vacVal = snaps[0] ? snaps[0].val() : null;
+          const blackVal = snaps[1] ? snaps[1].val() : null;
+          if (vacVal !== null) {
+            vacationList.value = mergeAndSanitizeVacations(vacVal, null);
+          }
+          if (blackVal !== null) {
+            blackoutDates.value = blackVal || {};
+          }
+          if (showToast && snaps[2] && snaps[2].val() !== null) {
+            scheduledRoster.value = snaps[2].val() || {};
+          }
+          if (showToast && snaps[3] && snaps[3].val()) {
+            applyRawStaffData(snaps[3].val());
+          }
         }
 
         updateSyncTimestampDisplay();
         saveInstantSnapshot();
         if (showToast) {
-          alert(`✅ 已完成雲端強制同步！\n目前共有 ${vacationList.value.length} 筆最新畫假紀錄。`);
+          alert(`✅ 已完成雲端最新畫假同步！\n目前共有 ${vacationList.value.length} 筆最新畫假紀錄。`);
         }
       } catch (e) {
         console.warn('同步略過：', e);
@@ -4977,23 +5008,33 @@ const app = createApp({
       }
     };
 
-    forceSyncRosterDataNow(false);
-
+    // 真正按需載入 (True Lazy Load)：只在夥伴真的點進該子頁籤時才下載圖片或大型紀錄
     watch(currentTab, (newTab) => {
-      if (newTab === 'roster') {
-        forceSyncRosterDataNow(false);
-      } else if (newTab === 'other') {
-        loadLatteArtPhotosLazy();
+      if (newTab === 'other') {
+        if (otherSubTab.value === 'latteArt' || otherSubTab.value === 'passport') {
+          loadLatteArtPhotosLazy();
+        } else if (otherSubTab.value === 'recipe') {
+          loadCustomRecipesLazy();
+        } else if (otherSubTab.value === 'fsa') {
+          loadFsaReportsLazy();
+        }
       } else if (newTab === 'about') {
         loadStorePhotosLazy();
       }
     });
 
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        forceSyncRosterDataNow(false);
+    watch(otherSubTab, (newSub) => {
+      if (currentTab.value !== 'other') return;
+      if (newSub === 'latteArt' || newSub === 'passport') {
+        loadLatteArtPhotosLazy();
+      } else if (newSub === 'recipe') {
+        loadCustomRecipesLazy();
+      } else if (newSub === 'fsa') {
+        loadFsaReportsLazy();
       }
     });
+
+    // Firebase SDK 長連線在切回前景時會自動斷線重連並僅推送差異，無需重抓整包 REST
 
     // ==================== 忠實呈現台灣星巴克官網咖啡豆資料 (自動區分耶誕綜合、耶誕濃縮與耶誕黃金) ====================
     const sanitizeBeanRoastData = (bean) => {
@@ -5285,8 +5326,14 @@ const app = createApp({
       }
     });
 
-    if (db) {
+    let isCustomRecipesLoaded = false;
+    const loadCustomRecipesLazy = () => {
+      if (!db || isCustomRecipesLoaded) return;
+      isCustomRecipesLoaded = true;
+      let firstLoad = true;
+      startPageLoading('正在載入官方飲品配方卡庫', '🥤', '正在向雲端取得門市配方卡...');
       db.ref('sbux/custom_recipes').on('value', snap => {
+        if (firstLoad) updatePageLoading(75, '正在整理配方步驟表格...');
         const val = snap.val();
         if (val) {
           customRecipesList.value = Object.keys(val).map(k => ({
@@ -5296,8 +5343,12 @@ const app = createApp({
         } else {
           customRecipesList.value = [];
         }
+        if (firstLoad) {
+          firstLoad = false;
+          finishPageLoading(`已載入 ${customRecipesList.value.length} 款官方配方卡！`);
+        }
       });
-    }
+    };
 
     const hasStepSizeNumbers = (st, hasShort = false) => {
       if (!st) return false;
@@ -5728,12 +5779,22 @@ ${recipesContext}
       }
     });
 
-    if (db) {
+    let isFsaReportsLoaded = false;
+    const loadFsaReportsLazy = () => {
+      if (!db || isFsaReportsLoaded) return;
+      isFsaReportsLoaded = true;
+      let firstLoad = true;
+      startPageLoading('正在載入 FSA 食安評核紀錄', '🛡️', '正在取得歷史檢查紀錄表...');
       db.ref('sbux/fsa_reports').on('value', snap => {
+        if (firstLoad) updatePageLoading(75, '正在整理評核表單資料...');
         const val = snap.val();
         fsaAuditReports.value = val ? Object.values(val).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)) : [];
+        if (firstLoad) {
+          firstLoad = false;
+          finishPageLoading(`已載入 ${fsaAuditReports.value.length} 份歷史評核表！`);
+        }
       });
-    }
+    };
 
     const filteredFsaClauses = computed(() => {
       const q = fsaClauseSearch.value.trim().toLowerCase();
@@ -6262,17 +6323,34 @@ ${clausesPromptList}
       }
     };
 
-    // 🖨️ 以 1:1 官方《FY2026 食品安全衛生檢查紀錄表 (20260514版)》格式匯出 PDF 或 A4 列印
+    // 🖨️ 以 1:1 官方《FY2026 食品安全衛生檢查紀錄表 (20260514版)》格式直接生成跨平台高畫質 PDF (檔名：評核日期四碼+FSA.pdf)
     const triggerPrintFsaOfficialTable = async (repObj = null) => {
-      if (repObj && repObj !== fsaForm.value && repObj.storeId) {
-        loadSavedFsaReport(repObj, false);
-      } else {
-        fsaForm.value.violations = consolidateAndSortViolationsArray(fsaForm.value.violations);
-      }
       printTargetMode.value = 'fsa';
-      await nextTick();
-      void document.body.offsetHeight;
-      window.print();
+      const rawDate = (repObj && repObj.auditDate) || fsaForm.value.auditDate || formatDateLocal(new Date());
+      const mmdd = formatDateToMMDD(rawDate);
+      const fileName = `${mmdd}FSA.pdf`;
+
+      await runPdfExportAnimation({
+        icon: '🛡️',
+        title: '正在匯出 FY2026 FSA 官方檢查表 PDF',
+        docName: fileName,
+        steps: [
+          '1. 彙整表頭資訊與現場缺失項目',
+          '2. 依嚴重度 (.1/.2/.3) 排序並計算 0/2/5 扣分',
+          '3. 智慧分頁排版 A4 安全邊距官方檢查表',
+          '4. 打包生成高解析 PDF 檔案並開始下載'
+        ],
+        onBeforePrint: async () => {
+          if (repObj && repObj !== fsaForm.value && repObj.storeId) {
+            loadSavedFsaReport(repObj, false);
+          } else {
+            fsaForm.value.violations = consolidateAndSortViolationsArray(fsaForm.value.violations);
+          }
+        },
+        onGeneratePdf: async () => {
+          await generateFsaOfficialPdfFile(fileName);
+        }
+      });
     };
 
     // 📢 一鍵將本次 FSA 評核結果公布至首頁「門市公告欄」提醒全體夥伴
@@ -7416,6 +7494,17 @@ ${beansContext}
           const pid = oldPost.id || oldPost._key;
           if (pid) await db.ref('sbux/latte_posts/' + pid).remove();
         }
+
+        // 歸檔新的一週後，同步檢查並確保雲端只保留最新 6 週集錦
+        const freshSnap = await db.ref('sbux/latteArtArchives').once('value');
+        const freshVal = freshSnap.val();
+        if (freshVal) {
+          const freshList = Object.keys(freshVal).map(k => ({
+            key: k,
+            archivedAt: (freshVal[k] && freshVal[k].archivedAt) || ''
+          })).sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
+          await pruneOldLatteArchives(freshList);
+        }
       } catch (e) {
         console.error('歸檔錯誤：', e);
       } finally {
@@ -7815,19 +7904,47 @@ ${beansContext}
       });
     };
 
+    // 🧹 自動清理超過 6 週的舊拉花集錦（確保長期運作絕不爆流量與容量）
+    const MAX_LATTE_ARCHIVE_WEEKS = 6;
+    const pruneOldLatteArchives = async (sortedArchives) => {
+      if (!Array.isArray(sortedArchives) || sortedArchives.length <= MAX_LATTE_ARCHIVE_WEEKS) {
+        return sortedArchives || [];
+      }
+      const kept = sortedArchives.slice(0, MAX_LATTE_ARCHIVE_WEEKS);
+      const expired = sortedArchives.slice(MAX_LATTE_ARCHIVE_WEEKS);
+      if (db && expired.length > 0) {
+        for (const oldArch of expired) {
+          if (oldArch && oldArch.key) {
+            try {
+              await db.ref('sbux/latteArtArchives/' + oldArch.key).remove();
+            } catch (e) {}
+          }
+        }
+      }
+      return kept;
+    };
+
     let isStorePhotosLoaded = false;
     const loadStorePhotosLazy = () => {
       if (!db || isStorePhotosLoaded) return;
       isStorePhotosLoaded = true;
+      let firstLoad = true;
+      startPageLoading('正在載入門市雲端相簿', '📷', '正在連線雲端相簿...');
       db.ref('sbux/store_photos').on('value', async (snap) => {
+        if (firstLoad) updatePageLoading(70, '正在整理相簿分類與縮圖...');
         const val = snap.val();
         const arr = val ? Object.values(val).sort((a,b) => b.timestamp - a.timestamp) : [];
         storePhotos.value = arr;
         savePhotosToIdb('storePhotos', arr);
 
+        if (firstLoad) {
+          firstLoad = false;
+          finishPageLoading(`已載入 ${arr.length} 張門市照片！`);
+        }
+
         for (const p of arr) {
-          if (p && p.id && p.url && p.url.length > 450000) {
-            const slimmed = await slimBase64Image(p.url, 1200, 0.82);
+          if (p && p.id && p.url && p.url.length > 180000) {
+            const slimmed = await slimBase64Image(p.url, 800, 0.72);
             if (slimmed && slimmed.length < p.url.length) {
               db.ref('sbux/store_photos/' + p.id + '/url').set(slimmed);
             }
@@ -7840,6 +7957,17 @@ ${beansContext}
     const loadLatteArtPhotosLazy = () => {
       if (!db || isLatteArtLoaded) return;
       isLatteArtLoaded = true;
+      let postsReady = false;
+      let archivesReady = false;
+      const checkBothReady = () => {
+        if (postsReady && archivesReady) {
+          finishPageLoading(`已載入本週作品與近 ${latteArtArchives.value.length} 週集錦！`);
+        } else if (postsReady || archivesReady) {
+          updatePageLoading(72, postsReady ? '正在載入近 6 週拉花歷史集錦...' : '正在載入本週拉花作品...');
+        }
+      };
+
+      startPageLoading('正在載入拉花擂台與近 6 週集錦', '🎨', '正在下載本週參賽作品...');
 
       db.ref('sbux/latte_posts').on('value', async (snap) => {
         const val = snap.val();
@@ -7849,10 +7977,15 @@ ${beansContext}
         saveInstantSnapshot();
         checkAndAutoArchiveLatteArt();
 
+        if (!postsReady) {
+          postsReady = true;
+          checkBothReady();
+        }
+
         for (const post of arr) {
           const pid = post.id || post._key;
-          if (pid && post.photoUrl && post.photoUrl.length > 350000) {
-            const slimmed = await slimBase64Image(post.photoUrl, 960, 0.80);
+          if (pid && post.photoUrl && post.photoUrl.length > 160000) {
+            const slimmed = await slimBase64Image(post.photoUrl, 720, 0.72);
             if (slimmed && slimmed.length < post.photoUrl.length) {
               db.ref('sbux/latte_posts/' + pid + '/photoUrl').set(slimmed);
             }
@@ -7860,7 +7993,8 @@ ${beansContext}
         }
       });
 
-      db.ref('sbux/latteArtArchives').on('value', async (snapshot) => {
+      // 歷屆拉花集錦改採單次讀取 .once('value') + 自動只保留最近 6 週
+      db.ref('sbux/latteArtArchives').once('value').then(async (snapshot) => {
         const val = snapshot.val();
         if (val) {
           const parsedArchives = Object.keys(val).map(key => {
@@ -7883,19 +8017,27 @@ ${beansContext}
             };
           }).sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
 
-          latteArtArchives.value = parsedArchives;
-          savePhotosToIdb('latteArtArchives', parsedArchives);
+          // 超過 6 週自動淘汰最舊期數
+          const keptArchives = await pruneOldLatteArchives(parsedArchives);
+
+          latteArtArchives.value = keptArchives;
+          savePhotosToIdb('latteArtArchives', keptArchives);
           repairArchivedPartnerNamesIfNeeded();
           checkAndAutoArchiveLatteArt();
           saveInstantSnapshot();
 
-          for (const arch of parsedArchives) {
+          if (!archivesReady) {
+            archivesReady = true;
+            checkBothReady();
+          }
+
+          for (const arch of keptArchives) {
             if (!arch.key || !Array.isArray(arch.works)) continue;
             let modified = false;
             const slimWorks = [];
             for (const w of arch.works) {
-              if (w && w.photoUrl && w.photoUrl.length > 350000) {
-                const sUrl = await slimBase64Image(w.photoUrl, 800, 0.78);
+              if (w && w.photoUrl && w.photoUrl.length > 160000) {
+                const sUrl = await slimBase64Image(w.photoUrl, 720, 0.72);
                 if (sUrl && sUrl.length < w.photoUrl.length) {
                   slimWorks.push({ ...w, photoUrl: sUrl });
                   modified = true;
@@ -7910,6 +8052,10 @@ ${beansContext}
           }
         } else {
           latteArtArchives.value = [];
+          if (!archivesReady) {
+            archivesReady = true;
+            checkBothReady();
+          }
         }
       });
     };
@@ -7947,7 +8093,7 @@ ${beansContext}
 
       db.ref('sbux/lastRosterSyncAt').on('value', snap => {
         if (snap.val()) {
-          forceSyncRosterDataNow(false);
+          updateSyncTimestampDisplay();
         }
       });
 
@@ -8030,10 +8176,7 @@ ${beansContext}
         weeklyQuizRecords.value = snap.val() || {};
       });
 
-      setTimeout(() => {
-        loadLatteArtPhotosLazy();
-        loadStorePhotosLazy();
-      }, 300);
+      // 已移除開啟網頁 300ms 自動預載所有相簿與拉花照的耗流量機制，改為點進「拉花擂台 / 護照 / 關於相簿」時才按需下載，大幅節省 95%+ 流量
     }
 
     // ==================== 班次交接與換班媒合 ====================
@@ -8370,7 +8513,7 @@ ${beansContext}
       if (!file) return;
       const reader = new FileReader();
       reader.onload = async (evt) => {
-        latteForm.value.photoUrl = await slimBase64Image(evt.target.result, 960, 0.82);
+        latteForm.value.photoUrl = await slimBase64Image(evt.target.result, 720, 0.72);
       };
       reader.readAsDataURL(file);
     };
@@ -9140,10 +9283,509 @@ ${beansContext}
 
     const printProgressModal = ref({
       show: false,
-      percent: 15,
-      remainSec: '0.8',
-      stepText: '正在同步雲端最新畫假與班表...'
+      icon: '📄',
+      title: '正在生成 PDF 報表',
+      docName: '',
+      percent: 0,
+      stepIndex: 0,
+      stepText: '準備中...',
+      steps: []
     });
+
+    // ==================== 🖨️ 跨平台高畫質 A4 PDF 直接匯出引擎 (安全邊距防裁切 + 智慧不切行分頁 + 精準檔名) ====================
+    const escapePdfHtml = (str) => {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    };
+
+    const formatDateToMMDD = (dateStr) => {
+      const clean = String(dateStr || '').replace(/[^\d]/g, '');
+      if (clean.length >= 8) return clean.slice(4, 8);
+      if (clean.length === 4) return clean;
+      const now = new Date();
+      return String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
+    };
+
+    const createOffscreenPdfCanvas = async (el) => {
+      return await window.html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        windowWidth: 900
+      });
+    };
+
+    // 1. 生成「空白班表」或「預排班表」單頁 A4 直式 PDF (四周保留 10mm 安全邊距，框線與文字絕不裁切)
+    const generateSchedulePdfFile = async (mode, fileName) => {
+      if (!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF) {
+        const prevTitle = document.title;
+        document.title = fileName.replace(/\.pdf$/i, '');
+        window.print();
+        setTimeout(() => { document.title = prevTitle; }, 1000);
+        return;
+      }
+
+      const dates = targetRangeDates.value || [];
+      const staffArr = sortedValidStaffList.value || [];
+      const isBlank = mode === 'blank';
+      const titleText = isBlank ? '門市週排班表' : '門市人員班表';
+      const periodText = `${scheduleStartDate.value ? scheduleStartDate.value.replace(/-/g, '/') : ''} - ${scheduleEndDate.value ? scheduleEndDate.value.replace(/-/g, '/') : ''}`;
+
+      // 依據人數動態計算每列最舒適且不溢出的固定高度，確保 16~20 人皆平整呈現於單頁 A4 內
+      const rowHeightPx = staffArr.length <= 16 ? 54 : (staffArr.length <= 20 ? 44 : 38);
+
+      const dateHeadersHtml = dates.map(d => `
+        <th style="width:9.8%;border:1px solid #000;background:#f1f5f9;padding:4px 2px;text-align:center;vertical-align:middle;">
+          <div style="font-size:11px;font-weight:900;line-height:1.2;color:#000;">${escapePdfHtml(d.displayDate)}</div>
+          <div style="font-size:9.5px;font-weight:700;line-height:1.2;color:#334155;">(${escapePdfHtml(d.weekday)})</div>
+        </th>
+      `).join('');
+
+      const rowsHtml = staffArr.map(staff => {
+        const empId = escapePdfHtml(staff?.empId || '');
+        const sName = escapePdfHtml(staff?.name || '');
+        const sNick = escapePdfHtml(staff?.nickname || '');
+        const sRole = escapePdfHtml(staff?.role || '');
+
+        const dayCellsHtml = dates.map(d => {
+          let cellInner = '';
+          if (staff.role === '天使夥伴' || staff.nickname === 'David') {
+            if (isDavidWorkDay(d.dateStr)) {
+              cellInner = `<div style="font-size:9.5px;font-weight:900;color:#0f172a;font-family:monospace;">08:30-17:30</div>`;
+            } else {
+              cellInner = `<div style="font-size:9.5px;color:#94a3b8;font-weight:600;">不配</div>`;
+            }
+          } else if (getVacationDataForStaff(staff, d.dateStr)) {
+            const vac = getVacationDataForStaff(staff, d.dateStr);
+            cellInner = `
+              <div style="font-size:14px;font-weight:900;color:#000;line-height:1;">✕</div>
+              <div style="font-size:8.5px;font-weight:900;color:#0f172a;margin-top:2px;line-height:1.15;">【${escapePdfHtml(vac.type)}】</div>
+            `;
+          } else if (!isBlank) {
+            const shiftText = getScheduledShiftText(staff, d.dateStr);
+            if (shiftText) {
+              const parts = getScheduledShiftParts(staff, d.dateStr);
+              const sixthBadge = isConsecutiveSixthDay(staff, d.dateStr)
+                ? `<div style="font-size:8px;font-weight:900;color:#92400e;background:#fef3c7;padding:1px 3px;border-radius:3px;display:inline-block;margin-bottom:2px;">休上班</div>`
+                : '';
+              const overtimeStyle = isOvertimeShift(staff, d.dateStr) ? 'text-decoration:underline;' : '';
+              if (parts && parts.name) {
+                cellInner = `
+                  ${sixthBadge}
+                  <div style="font-size:8.5px;font-weight:700;color:#1e293b;line-height:1.2;">${escapePdfHtml(parts.name)}</div>
+                  <div style="font-size:9px;font-weight:900;color:#000;font-family:monospace;line-height:1.2;${overtimeStyle}">${escapePdfHtml(parts.time)}</div>
+                `;
+              } else {
+                cellInner = `${sixthBadge}<div style="font-size:9px;font-weight:900;color:#000;line-height:1.2;">${escapePdfHtml(shiftText)}</div>`;
+              }
+            } else {
+              cellInner = `<div style="font-size:10px;color:#cbd5e1;">-</div>`;
+            }
+          } else {
+            const avail = getAvailabilityText(staff, d.dateStr);
+            if (avail) {
+              cellInner = `<div style="font-size:8.5px;font-weight:700;color:#475569;font-family:monospace;line-height:1.2;word-break:break-word;">${escapePdfHtml(avail)}</div>`;
+            }
+          }
+          return `<td style="border:1px solid #000;padding:2px;text-align:center;vertical-align:middle;height:${rowHeightPx}px;">${cellInner}</td>`;
+        }).join('');
+
+        const hoursCell = !isBlank
+          ? `${escapePdfHtml(calculateWeeklyStaffHours(staff))}h`
+          : `<span style="color:#cbd5e1;">-</span>`;
+
+        return `
+          <tr>
+            <td style="border:1px solid #000;padding:2px;text-align:center;vertical-align:middle;font-family:monospace;font-size:9.5px;font-weight:900;color:#000;height:${rowHeightPx}px;">${empId}</td>
+            <td style="border:1px solid #000;padding:2px 3px;text-align:center;vertical-align:middle;height:${rowHeightPx}px;">
+              <div style="font-size:10.5px;font-weight:900;color:#000;line-height:1.2;">${sName} (${sNick})</div>
+              <div style="font-size:8.5px;font-weight:700;color:#475569;line-height:1.2;margin-top:1px;">${sRole}</div>
+            </td>
+            ${dayCellsHtml}
+            <td style="border:1px solid #000;padding:2px;text-align:center;vertical-align:middle;background:#f8fafc;font-family:monospace;font-size:10.5px;font-weight:900;color:#000;height:${rowHeightPx}px;">${hoursCell}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const wrapper = document.createElement('div');
+      wrapper.style.position = 'fixed';
+      wrapper.style.left = '-99999px';
+      wrapper.style.top = '0';
+      wrapper.style.width = '794px';
+      wrapper.style.padding = '16px';
+      wrapper.style.background = '#ffffff';
+      wrapper.style.color = '#000000';
+      wrapper.style.boxSizing = 'border-box';
+      wrapper.style.fontFamily = '-apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif';
+
+      wrapper.innerHTML = `
+        <div style="border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-end;">
+          <div style="font-size:11px;font-weight:700;line-height:1.45;color:#000;">
+            <div>門市：永和永安 (011218)</div>
+            <div>期間：${escapePdfHtml(periodText)}</div>
+          </div>
+          <div style="text-align:center;font-size:22px;font-weight:900;letter-spacing:4px;color:#000;">
+            ${escapePdfHtml(titleText)}
+          </div>
+          <div style="font-size:11px;font-weight:700;line-height:1.45;text-align:right;color:#000;">
+            <div>列印：${escapePdfHtml(printTodayStr.value)}</div>
+            <div>單位：小時</div>
+          </div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;table-layout:fixed;border:2px solid #000;">
+          <thead>
+            <tr>
+              <th style="width:9%;border:1px solid #000;background:#f1f5f9;padding:5px 2px;font-size:10px;font-weight:900;text-align:center;">員工編號</th>
+              <th style="width:14.2%;border:1px solid #000;background:#f1f5f9;padding:5px 2px;font-size:10px;font-weight:900;text-align:center;">員工姓名</th>
+              ${dateHeadersHtml}
+              <th style="width:8.2%;border:1px solid #000;background:#f1f5f9;padding:5px 2px;font-size:10px;font-weight:900;text-align:center;">本週工時</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+      `;
+
+      document.body.appendChild(wrapper);
+      try {
+        const canvas = await createOffscreenPdfCanvas(wrapper);
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pageW = pdf.internal.pageSize.getWidth();  // 210mm
+        const pageH = pdf.internal.pageSize.getHeight(); // 297mm
+        const margin = 10; // 四周固定 10mm 安全邊距，徹底防止左右或底部框線被裁切
+        const maxW = pageW - margin * 2; // 190mm
+        const maxH = pageH - margin * 2; // 277mm
+
+        let drawW = maxW;
+        let drawH = (canvas.height * drawW) / canvas.width;
+        if (drawH > maxH) {
+          drawH = maxH;
+          drawW = (canvas.width * drawH) / canvas.height;
+        }
+        const offsetX = (pageW - drawW) / 2;
+        const offsetY = margin;
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.94);
+        pdf.addImage(imgData, 'JPEG', offsetX, offsetY, drawW, drawH);
+        pdf.save(fileName);
+      } finally {
+        document.body.removeChild(wrapper);
+      }
+    };
+
+    // 2. 生成「FY2026 食品安全衛生檢查紀錄表」智慧不切行跨頁 A4 PDF (四周 10mm 安全邊距 + 每頁獨立完整框線與表頭)
+    const generateFsaOfficialPdfFile = async (fileName) => {
+      if (!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF) {
+        const prevTitle = document.title;
+        document.title = fileName.replace(/\.pdf$/i, '');
+        window.print();
+        setTimeout(() => { document.title = prevTitle; }, 1000);
+        return;
+      }
+
+      const f = fsaForm.value;
+      const violations = consolidatedSortedFsaViolations.value || [];
+      const statutory = f.statutoryChecklist || [];
+      const score = currentFsaScoreSummary.value;
+
+      const PAGE_WIDTH_PX = 794;
+      const INNER_PAD_PX = 12;
+      const CONTENT_W_PX = PAGE_WIDTH_PX - INNER_PAD_PX * 2;
+      // 對應 A4 (190mm x 272mm 可用高度) 的安全像素上限，預留頁尾頁碼空間
+      const MAX_PAGE_HEIGHT_PX = 1060;
+
+      const headerBlockHtml = `
+        <div style="margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:4px;">
+            <div style="font-size:11px;font-weight:700;color:#000;">(20260514版)</div>
+            <div style="border:2px solid #000;padding:4px 10px;background:#f8fafc;text-align:right;line-height:1.35;">
+              <div style="font-size:11.5px;font-weight:900;color:#000;">
+                缺失扣分總結 (關注.1 / 主要.2 / 次要.3)：<span style="font-family:monospace;font-size:14px;text-decoration:underline;">${escapePdfHtml(score.ratioStr)}</span>
+              </div>
+              <div style="font-size:10px;font-weight:700;color:#1e293b;">
+                通過稽核上限：0/2/5 (同條文不重複扣分) ｜ 判定：<b>${escapePdfHtml(score.statusText)}</b>
+              </div>
+            </div>
+          </div>
+          <div style="text-align:center;font-size:18px;font-weight:900;letter-spacing:1px;border-top:2px solid #000;border-left:2px solid #000;border-right:2px solid #000;padding:7px 4px;background:#f1f5f9;color:#000;">
+            FY2026 食品安全衛生檢查紀錄表(含法規及集團要求)
+          </div>
+          <table style="width:100%;border-collapse:collapse;table-layout:fixed;border:2px solid #000;font-size:11.5px;font-weight:700;color:#000;">
+            <tbody>
+              <tr>
+                <td style="border:1px solid #000;padding:5px 8px;width:33%;">門市店號：${escapePdfHtml(f.storeId || '')}</td>
+                <td style="border:1px solid #000;padding:5px 8px;width:34%;">門市名稱：${escapePdfHtml(f.storeName || '')}</td>
+                <td style="border:1px solid #000;padding:5px 8px;width:33%;">檢查日期：${escapePdfHtml(f.auditDate || '')}</td>
+              </tr>
+              <tr>
+                <td style="border:1px solid #000;padding:5px 8px;">評核員姓名：${escapePdfHtml(f.auditorName || '')}</td>
+                <td style="border:1px solid #000;padding:5px 8px;">值班經理姓名：${escapePdfHtml(f.dutyManagerName || '')}</td>
+                <td style="border:1px solid #000;padding:5px 8px;font-family:monospace;">扣分總計(關注/主要/次要)：${escapePdfHtml(score.ratioStr)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      const violTheadHtml = `
+        <thead>
+          <tr style="background:#f1f5f9;">
+            <th style="border:1px solid #000;padding:6px 8px;width:30%;font-size:11.5px;font-weight:900;text-align:center;color:#000;">缺失項目 (依嚴重度排序)</th>
+            <th style="border:1px solid #000;padding:6px 8px;width:70%;font-size:11.5px;font-weight:900;text-align:center;color:#000;">缺失說明 (違反細項、現場狀況與行動方案)</th>
+          </tr>
+        </thead>
+      `;
+
+      const statTheadHtml = `
+        <thead>
+          <tr style="background:#f1f5f9;">
+            <th style="border:1px solid #000;padding:6px 6px;width:18%;font-size:11.5px;font-weight:900;text-align:center;color:#000;">項目</th>
+            <th style="border:1px solid #000;padding:6px 8px;width:64%;font-size:11.5px;font-weight:900;text-align:center;color:#000;">內容</th>
+            <th style="border:1px solid #000;padding:6px 6px;width:18%;font-size:11.5px;font-weight:900;text-align:center;color:#000;">符合/不符合</th>
+          </tr>
+        </thead>
+      `;
+
+      const violRowHtmlList = violations.map(v => {
+        const meta = getFsaClauseMeta(v);
+        const zoneTag = v.zone ? `【${escapePdfHtml(v.zone)}】` : '';
+        const titleStr = escapePdfHtml(v.missingItemTitle || v.clauseCode || '');
+        const descStr = escapePdfHtml(v.findingDesc || '').replace(/\n/g, '<br>');
+        const planStr = v.actionPlan ? `<div style="margin-top:5px;font-size:10.5px;color:#0f172a;font-weight:400;">${escapePdfHtml(v.actionPlan).replace(/\n/g, '<br>')}</div>` : '';
+        return `
+          <tr>
+            <td style="border:1px solid #000;padding:6px 8px;vertical-align:top;text-align:left;word-break:break-word;line-height:1.4;color:#000;">
+              <div style="font-size:10px;font-weight:900;color:#1e293b;">【${escapePdfHtml(meta.severityName)}】${zoneTag}</div>
+              <div style="font-size:11px;font-weight:800;margin-top:2px;">${titleStr}</div>
+            </td>
+            <td style="border:1px solid #000;padding:6px 8px;vertical-align:top;text-align:left;word-break:break-word;line-height:1.45;color:#000;">
+              <div style="font-size:11px;font-weight:700;">${descStr}</div>
+              ${planStr}
+            </td>
+          </tr>
+        `;
+      });
+
+      // 若缺失項目很少，補齊空白列維持官方表單視覺完整度
+      const blankCount = Math.max(0, 4 - violRowHtmlList.length);
+      for (let b = 0; b < blankCount; b++) {
+        violRowHtmlList.push(`<tr style="height:30px;"><td style="border:1px solid #000;">&nbsp;</td><td style="border:1px solid #000;">&nbsp;</td></tr>`);
+      }
+
+      const statRowHtmlList = statutory.map(chk => `
+        <tr>
+          <td style="border:1px solid #000;padding:5px 6px;text-align:center;vertical-align:middle;font-size:11px;font-weight:800;color:#000;word-break:break-word;">${escapePdfHtml(chk.category)}</td>
+          <td style="border:1px solid #000;padding:5px 8px;text-align:left;vertical-align:middle;font-size:10.5px;line-height:1.4;color:#000;word-break:break-word;">${escapePdfHtml(chk.content).replace(/\n/g, '<br>')}</td>
+          <td style="border:1px solid #000;padding:5px 6px;text-align:center;vertical-align:middle;font-size:11px;font-weight:900;color:${chk.status === '不符合' ? '#dc2626' : '#000'};">${escapePdfHtml(chk.status)}</td>
+        </tr>
+      `);
+
+      // 建立離屏量測容器，精確量測每一列高度並依安全高度智慧分頁（絕不切斷任何一列文字或邊框）
+      const measureBox = document.createElement('div');
+      measureBox.style.position = 'fixed';
+      measureBox.style.left = '-99999px';
+      measureBox.style.top = '0';
+      measureBox.style.width = `${CONTENT_W_PX}px`;
+      measureBox.style.background = '#ffffff';
+      measureBox.style.fontFamily = '-apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif';
+      document.body.appendChild(measureBox);
+
+      const measureBlock = (htmlStr) => {
+        measureBox.innerHTML = htmlStr;
+        return measureBox.offsetHeight || 40;
+      };
+
+      const measureTableRow = (theadHtml, rowHtml) => {
+        measureBox.innerHTML = `<table style="width:100%;border-collapse:collapse;table-layout:fixed;border:2px solid #000;">${theadHtml}<tbody>${rowHtml}</tbody></table>`;
+        const tr = measureBox.querySelector('tbody tr');
+        return tr ? tr.getBoundingClientRect().height : 40;
+      };
+
+      const measureTableHead = (theadHtml) => {
+        measureBox.innerHTML = `<table style="width:100%;border-collapse:collapse;table-layout:fixed;border:2px solid #000;">${theadHtml}</table>`;
+        return measureBox.offsetHeight || 34;
+      };
+
+      const headerH = measureBlock(headerBlockHtml);
+      const violHeadH = measureTableHead(violTheadHtml);
+      const statHeadH = measureTableHead(statTheadHtml);
+
+      const violHeights = violRowHtmlList.map(r => measureTableRow(violTheadHtml, r));
+      const statHeights = statRowHtmlList.map(r => measureTableRow(statTheadHtml, r));
+      document.body.removeChild(measureBox);
+
+      // 依量測結果分配每一頁的區塊清單
+      const pagesData = [];
+      let currPage = { hasHeader: true, violRows: [], statRows: [] };
+      let currH = headerH;
+
+      const pushNewPage = () => {
+        pagesData.push(currPage);
+        currPage = { hasHeader: false, violRows: [], statRows: [] };
+        currH = 0;
+      };
+
+      // 放入缺失項目列
+      violRowHtmlList.forEach((rowHtml, idx) => {
+        const rh = violHeights[idx];
+        const needHead = currPage.violRows.length === 0 ? violHeadH : 0;
+        if (currH + needHead + rh > MAX_PAGE_HEIGHT_PX && (currPage.violRows.length > 0 || currPage.hasHeader)) {
+          if (currPage.violRows.length > 0) {
+            pushNewPage();
+          }
+        }
+        if (currPage.violRows.length === 0) currH += violHeadH;
+        currPage.violRows.push(rowHtml);
+        currH += rh;
+      });
+
+      // 放入法規及集團必檢項目列
+      if (statRowHtmlList.length > 0) {
+        const gapH = currPage.violRows.length > 0 ? 12 : 0;
+        const firstStatH = statHeights[0] || 40;
+        if (currH + gapH + statHeadH + firstStatH > MAX_PAGE_HEIGHT_PX && (currPage.violRows.length > 0 || currPage.statRows.length > 0)) {
+          pushNewPage();
+        } else {
+          currH += gapH;
+        }
+
+        statRowHtmlList.forEach((rowHtml, idx) => {
+          const rh = statHeights[idx];
+          const needHead = currPage.statRows.length === 0 ? statHeadH : 0;
+          if (currH + needHead + rh > MAX_PAGE_HEIGHT_PX && currPage.statRows.length > 0) {
+            pushNewPage();
+          }
+          if (currPage.statRows.length === 0) currH += statHeadH;
+          currPage.statRows.push(rowHtml);
+          currH += rh;
+        });
+      }
+
+      if (currPage.hasHeader || currPage.violRows.length > 0 || currPage.statRows.length > 0) {
+        pagesData.push(currPage);
+      }
+
+      // 逐頁渲染成高解析 Canvas 並寫入 jsPDF (每頁固定 10mm 安全邊距)
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageW = pdf.internal.pageSize.getWidth();  // 210mm
+      const pageH = pdf.internal.pageSize.getHeight(); // 297mm
+      const margin = 10;
+      const maxW = pageW - margin * 2; // 190mm
+      const maxH = pageH - margin * 2; // 277mm
+
+      const renderStage = document.createElement('div');
+      renderStage.style.position = 'fixed';
+      renderStage.style.left = '-99999px';
+      renderStage.style.top = '0';
+      renderStage.style.width = `${PAGE_WIDTH_PX}px`;
+      renderStage.style.padding = `${INNER_PAD_PX}px`;
+      renderStage.style.background = '#ffffff';
+      renderStage.style.color = '#000000';
+      renderStage.style.boxSizing = 'border-box';
+      renderStage.style.fontFamily = '-apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif';
+      document.body.appendChild(renderStage);
+
+      try {
+        for (let pIdx = 0; pIdx < pagesData.length; pIdx++) {
+          const p = pagesData[pIdx];
+          let pageHtml = '';
+          if (p.hasHeader) {
+            pageHtml += headerBlockHtml;
+          }
+          if (p.violRows.length > 0) {
+            pageHtml += `
+              <table style="width:100%;border-collapse:collapse;table-layout:fixed;border:2px solid #000;margin-bottom:${p.statRows.length > 0 ? '10px' : '0'};">
+                ${violTheadHtml}
+                <tbody>${p.violRows.join('')}</tbody>
+              </table>
+            `;
+          }
+          if (p.statRows.length > 0) {
+            pageHtml += `
+              <table style="width:100%;border-collapse:collapse;table-layout:fixed;border:2px solid #000;">
+                ${statTheadHtml}
+                <tbody>${p.statRows.join('')}</tbody>
+              </table>
+            `;
+          }
+          pageHtml += `
+            <div style="margin-top:8px;text-align:right;font-size:10px;font-weight:700;color:#475569;">
+              FY2026 食品安全衛生檢查紀錄表 ｜ 第 ${pIdx + 1} 頁 / 共 ${pagesData.length} 頁
+            </div>
+          `;
+
+          renderStage.innerHTML = pageHtml;
+          const canvas = await createOffscreenPdfCanvas(renderStage);
+
+          if (pIdx > 0) pdf.addPage();
+          let drawW = maxW;
+          let drawH = (canvas.height * drawW) / canvas.width;
+          if (drawH > maxH) {
+            drawH = maxH;
+            drawW = (canvas.width * drawH) / canvas.height;
+          }
+          const offsetX = (pageW - drawW) / 2;
+          const imgData = canvas.toDataURL('image/jpeg', 0.94);
+          pdf.addImage(imgData, 'JPEG', offsetX, margin, drawW, drawH);
+        }
+        pdf.save(fileName);
+      } finally {
+        document.body.removeChild(renderStage);
+      }
+    };
+
+    const runPdfExportAnimation = async ({ icon, title, docName, steps, onBeforePrint, onGeneratePdf }) => {
+      const wait = (ms) => new Promise(r => setTimeout(r, ms));
+      printProgressModal.value = {
+        show: true,
+        icon: icon || '📄',
+        title,
+        docName,
+        percent: 18,
+        stepIndex: 0,
+        stepText: steps[0] || '正在彙整最新資料...',
+        steps
+      };
+      await wait(220);
+
+      printProgressModal.value.stepIndex = 1;
+      printProgressModal.value.percent = 45;
+      printProgressModal.value.stepText = steps[1] || '正在計算欄位與排序...';
+      if (typeof onBeforePrint === 'function') {
+        await onBeforePrint();
+      }
+      await wait(200);
+
+      printProgressModal.value.stepIndex = 2;
+      printProgressModal.value.percent = 75;
+      printProgressModal.value.stepText = steps[2] || '正在排版 A4 安全邊距官方版面...';
+      await nextTick();
+      await wait(160);
+
+      try {
+        if (typeof onGeneratePdf === 'function') {
+          await onGeneratePdf();
+        } else {
+          window.print();
+        }
+        printProgressModal.value.stepIndex = 3;
+        printProgressModal.value.percent = 100;
+        printProgressModal.value.stepText = `匯出完成！已開始下載 ${docName}`;
+        await wait(520);
+      } catch (err) {
+        alert('❌ PDF 匯出失敗：' + (err && err.message ? err.message : err));
+      } finally {
+        printProgressModal.value.show = false;
+      }
+    };
 
     watch([currentTab, otherSubTab], ([tab, subTab]) => {
       if (tab === 'other' && subTab === 'fsa') {
@@ -9155,10 +9797,34 @@ ${beansContext}
 
     const triggerPrintSchedule = async (mode) => {
       printTargetMode.value = mode;
-      await nextTick();
-      void document.body.offsetHeight;
-      window.print();
-      forceSyncRosterDataNow(false);
+      const isBlank = mode === 'blank';
+      const modeLabel = isBlank ? '空白週排班表' : 'AI 預排週班表';
+      const startMMDD = formatDateToMMDD(scheduleStartDate.value);
+      const endMMDD = formatDateToMMDD(scheduleEndDate.value);
+      // 嚴格遵守指定檔名規則：
+      // 空白班表 -> 永和永安空白班表.pdf
+      // 預排班表 -> 預排班表MMDD-MMDD.pdf
+      const fileName = isBlank
+        ? '永和永安空白班表.pdf'
+        : `預排班表${startMMDD}-${endMMDD}.pdf`;
+
+      await runPdfExportAnimation({
+        icon: '🗓️',
+        title: `正在匯出${modeLabel} PDF`,
+        docName: fileName,
+        steps: [
+          '1. 彙整全店 16 位夥伴最新畫假與禁休',
+          '2. 核算各夥伴本週排班與總工時',
+          '3. 排版 A4 直式安全邊距官方表格',
+          '4. 打包生成高解析 PDF 檔案並開始下載'
+        ],
+        onBeforePrint: async () => {
+          await forceSyncRosterDataNow(false);
+        },
+        onGeneratePdf: async () => {
+          await generateSchedulePdfFile(mode, fileName);
+        }
+      });
     };
 
     // ==================== 畫假、禁休與行事曆 ====================
@@ -9278,8 +9944,6 @@ ${beansContext}
       const cleanDate = normalizeDateStr(vacationForm.value.date);
       if (!targetSid || !cleanDate) return alert('請確認夥伴與休假日期！');
 
-      await forceSyncRosterDataNow(false);
-
       if (blackoutDates.value && blackoutDates.value[cleanDate]) {
         alert(`❌ ${cleanDate} 為門市禁休日！\n原因：${blackoutDates.value[cleanDate]}`);
         return;
@@ -9303,21 +9967,26 @@ ${beansContext}
 
       // 立即更新本機陣列並同步寫入雲端，若該日已有預排班表則一併清除衝突班次
       vacationList.value = mergeAndSanitizeVacations([...vacationList.value, newVacObj], null);
-      if (db) {
-        await db.ref('sbux/vacations/' + id).set(newVacObj);
-        if (targetStaffObj) {
-          const keysToClean = [targetStaffObj.id, targetStaffObj._key, `staff_${targetStaffObj.empId}`, targetStaffObj.empId].filter(Boolean);
-          for (const k of keysToClean) {
-            if (scheduledRoster.value && scheduledRoster.value[`${k}_${cleanDate}`]) {
-              await db.ref(`sbux/scheduled_roster/${k}_${cleanDate}`).remove();
+      saveInstantSnapshot();
+      try {
+        if (db) {
+          await db.ref('sbux/vacations/' + id).set(newVacObj);
+          if (targetStaffObj) {
+            const keysToClean = [targetStaffObj.id, targetStaffObj._key, `staff_${targetStaffObj.empId}`, targetStaffObj.empId].filter(Boolean);
+            for (const k of keysToClean) {
+              if (scheduledRoster.value && scheduledRoster.value[`${k}_${cleanDate}`]) {
+                await db.ref(`sbux/scheduled_roster/${k}_${cleanDate}`).remove();
+              }
             }
           }
+          await db.ref('sbux/lastRosterSyncAt').set(Date.now());
         }
-        await db.ref('sbux/lastRosterSyncAt').set(Date.now());
+        updateSyncTimestampDisplay();
+        vacationForm.value = { staffId: '', date: '', type: '無法排班', notes: '' };
+        alert('✅ 畫假成功！已即時同步至全店所有裝置。');
+      } catch (err) {
+        alert('⚠️ 網路或雲端寫入異常，請確認網路連線後再試一次：' + err.message);
       }
-      await forceSyncRosterDataNow(false);
-      vacationForm.value = { staffId: '', date: '', type: '無法排班', notes: '' };
-      alert('✅ 畫假成功！已即時同步至全店所有裝置。');
     };
 
     const promptSecureDeleteVacation = (v) => { secureDeleteModal.value = { show: true, target: v, inputName: '' }; };
@@ -9828,7 +10497,7 @@ ${beansContext}
         reader.onload = (evt) => {
           const img = new Image();
           img.onload = () => {
-            const maxDim = 1200;
+            const maxDim = 800;
             let w = img.width, h = img.height;
             if (w > maxDim || h > maxDim) {
               if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
@@ -9839,7 +10508,7 @@ ${beansContext}
             canvas.height = h;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', 0.82));
+            resolve(canvas.toDataURL('image/jpeg', 0.72));
           };
           img.onerror = () => resolve(evt.target.result);
           img.src = evt.target.result;
@@ -10144,7 +10813,7 @@ ${beansContext}
       secureStaffDeleteModal, promptSecureDeleteStaff, confirmSecureStaffDelete,
       availModal, openAvailabilityModal, saveAvailability, getAvailabilitySummary, getAvailabilityText, timeSlots,
       allowedVacationStartStr, scheduleStartDate, scheduleEndDate, targetRangeDates, setNextWeekRange,
-      printTargetMode, printProgressModal, triggerPrintSchedule, clearScheduledRoster,
+      printTargetMode, printProgressModal, pageLoadingModal, triggerPrintSchedule, clearScheduledRoster,
       isSyncingRoster, lastVacSyncTimeStr, forceSyncRosterDataNow,
       aiRosterModal, isAiGeneratingRoster, generateAiRoster, applyAiRosterToSchedule, getScheduledShiftText, getScheduledShiftParts, isOvertimeShift, isConsecutiveSixthDay, calculateWeeklyStaffHours,
       blackoutDates, blackoutDatesList, blackoutModal, openBlackoutModal, saveBlackoutDate, deleteBlackoutDate,
