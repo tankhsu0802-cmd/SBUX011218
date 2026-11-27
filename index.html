@@ -982,19 +982,17 @@
 
                 <div class="grid grid-cols-2 gap-2 pt-1">
                   <button 
-                    @touchstart.passive="printTargetMode = 'blank'"
-                    @mousedown="printTargetMode = 'blank'"
+                    type="button"
                     @click="triggerPrintSchedule('blank')" 
                     class="py-2.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1 active:scale-95">
-                    <span>🖨️</span> 列印空白排班表
+                    <span>🖨️</span> 匯出空白班表
                   </button>
                   
                   <button 
-                    @touchstart.passive="printTargetMode = 'ai'"
-                    @mousedown="printTargetMode = 'ai'"
+                    type="button"
                     @click="triggerPrintSchedule('ai')" 
                     class="py-2.5 bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1 active:scale-95">
-                    <span>🖨️</span> 列印預排班表
+                    <span>🖨️</span> 匯出預排班表
                   </button>
                 </div>
               </div>
@@ -2749,8 +2747,7 @@
 
                   <div class="flex gap-1.5 flex-wrap pt-1">
                     <button 
-                      @touchstart.passive="printTargetMode = 'fsa'"
-                      @mousedown="printTargetMode = 'fsa'"
+                      type="button"
                       @click="triggerPrintFsaOfficialTable()" 
                       class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-[11px] font-black shadow active:scale-95 transition flex items-center gap-1">
                       <span>🖨️</span> 匯出官方格式表單 (PDF/列印)
@@ -3183,6 +3180,31 @@
             <span :class="printProgressModal.stepIndex >= i ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-400'">{{ st }}</span>
           </div>
         </div>
+
+        <!-- 📱 iOS 專屬一鍵儲存 / 分享 PDF 按鈕區（解決 iOS Safari 阻擋非同步自動下載問題） -->
+        <div v-if="printProgressModal.readyForAction" class="pt-2 space-y-2 border-t border-slate-200 dark:border-slate-700">
+          <button
+            type="button"
+            @click="shareOrDownloadReadyPdf"
+            class="w-full py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-black shadow-lg active:scale-95 transition flex items-center justify-center gap-1.5">
+            <span>📤</span> 立即儲存 / 分享 PDF（iPhone 專用）
+          </button>
+          <div class="grid grid-cols-2 gap-2">
+            <a
+              :href="printProgressModal.blobUrl"
+              :download="printProgressModal.docName"
+              target="_blank"
+              class="py-2 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1">
+              <span>👁️</span> 預覽檔案
+            </a>
+            <button
+              type="button"
+              @click="closePrintProgressModal"
+              class="py-2 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-[11px] font-bold">
+              完成關閉
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </transition>
@@ -3550,6 +3572,16 @@
             <span class="font-bold text-slate-800 dark:text-slate-200">🌓 暗黑模式</span>
             <button @click="toggleDarkMode" class="px-3 py-1 bg-emerald-800 text-white rounded-lg font-bold">
               切換
+            </button>
+          </div>
+
+          <div class="flex justify-between items-center p-2.5 bg-sky-50/70 dark:bg-sky-950/40 rounded-xl border border-sky-200 dark:border-sky-800">
+            <div>
+              <span class="font-bold text-sky-900 dark:text-sky-200 block">🔄 系統版本 v2026.11</span>
+              <span class="text-[10px] text-slate-500 dark:text-slate-400">若 iPhone 畫面未更新請點此清除快取</span>
+            </div>
+            <button type="button" @click="forceUpdateAppVersion" class="px-2.5 py-1 bg-sky-700 hover:bg-sky-600 text-white rounded-lg font-bold text-[11px] active:scale-95 transition">
+              強制更新
             </button>
           </div>
 
@@ -4658,7 +4690,7 @@ const app = createApp({
     const isSyncingRoster = ref(false);
     const lastVacSyncTimeStr = ref('已就緒');
 
-    // ⏳ 頁面按需載入進度動畫狀態
+    // ⏳ 頁面按需載入進度動畫狀態（針對 iOS Safari 加上最少顯示時間與繪製保障）
     const pageLoadingModal = ref({
       show: false,
       icon: '☁️',
@@ -4667,10 +4699,40 @@ const app = createApp({
       percent: 0
     });
     let pageLoadSafetyTimer = null;
+    let pageLoadStartedAt = 0;
+
+    const waitForNextPaint = () => new Promise(resolve => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
+
+    const isIosDevice = () => {
+      return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    };
+
+    const forceUpdateAppVersion = async () => {
+      try {
+        if ('serviceWorker' in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          for (const r of regs) {
+            await r.unregister();
+          }
+        }
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          for (const k of keys) {
+            await caches.delete(k);
+          }
+        }
+      } catch (e) {}
+      const baseUrl = window.location.href.split('?')[0];
+      window.location.replace(baseUrl + '?v=' + Date.now());
+    };
 
     const startPageLoading = (title, icon = '☁️', stageText = '正在連線雲端資料庫...') => {
       if (pageLoadSafetyTimer) clearTimeout(pageLoadSafetyTimer);
-      pageLoadingModal.value = { show: true, icon, title, stageText, percent: 25 };
+      pageLoadStartedAt = Date.now();
+      pageLoadingModal.value = { show: true, icon, title, stageText, percent: 28 };
       // 安全保護：最多 8 秒自動關閉，絕不卡死畫面
       pageLoadSafetyTimer = setTimeout(() => {
         pageLoadingModal.value.show = false;
@@ -4686,11 +4748,16 @@ const app = createApp({
     const finishPageLoading = (doneText = '載入完成！') => {
       if (pageLoadSafetyTimer) clearTimeout(pageLoadSafetyTimer);
       if (!pageLoadingModal.value.show) return;
-      pageLoadingModal.value.percent = 100;
-      pageLoadingModal.value.stageText = doneText;
+      const elapsed = Date.now() - pageLoadStartedAt;
+      const minShowMs = 420;
+      const delayBeforeComplete = Math.max(0, minShowMs - elapsed);
       setTimeout(() => {
-        pageLoadingModal.value.show = false;
-      }, 260);
+        pageLoadingModal.value.percent = 100;
+        pageLoadingModal.value.stageText = doneText;
+        setTimeout(() => {
+          pageLoadingModal.value.show = false;
+        }, 280);
+      }, delayBeforeComplete);
     };
     const SNAPSHOT_STORAGE_KEY = 'sbux_instant_snapshot_v2';
 
@@ -6348,7 +6415,7 @@ ${clausesPromptList}
           }
         },
         onGeneratePdf: async () => {
-          await generateFsaOfficialPdfFile(fileName);
+          return await generateFsaOfficialPdfFile(fileName);
         }
       });
     };
@@ -8330,7 +8397,9 @@ ${beansContext}
       syncStarbucksTaiwanBeanUrls();
       requestScreenWakeLock();
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
+        navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(reg => {
+          reg.update().catch(() => {});
+        }).catch(() => {});
       }
       updateCountdown();
       setInterval(updateCountdown, 1000);
@@ -9289,7 +9358,10 @@ ${beansContext}
       percent: 0,
       stepIndex: 0,
       stepText: '準備中...',
-      steps: []
+      steps: [],
+      readyForAction: false,
+      pdfBlob: null,
+      blobUrl: ''
     });
 
     // ==================== 🖨️ 跨平台高畫質 A4 PDF 直接匯出引擎 (安全邊距防裁切 + 智慧不切行分頁 + 精準檔名) ====================
@@ -9311,13 +9383,72 @@ ${beansContext}
     };
 
     const createOffscreenPdfCanvas = async (el) => {
+      // iOS 使用 1.6 倍解析度兼顧清晰度與記憶體效能，避免主執行緒卡頓
+      const renderScale = isIosDevice() ? 1.6 : 2;
       return await window.html2canvas(el, {
-        scale: 2,
+        scale: renderScale,
         useCORS: true,
         backgroundColor: '#ffffff',
         logging: false,
         windowWidth: 900
       });
+    };
+
+    const deliverGeneratedPdf = (pdf, fileName) => {
+      const pdfBlob = pdf.output('blob');
+      if (isIosDevice()) {
+        // iOS Safari / PWA：先產出 Blob 供原生分享選單（儲存到檔案 / LINE / 列印），點擊零延遲絕不被阻擋
+        if (printProgressModal.value.blobUrl) {
+          try { URL.revokeObjectURL(printProgressModal.value.blobUrl); } catch (e) {}
+        }
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        printProgressModal.value.pdfBlob = pdfBlob;
+        printProgressModal.value.blobUrl = blobUrl;
+        printProgressModal.value.readyForAction = true;
+        return { iosManualAction: true };
+      } else {
+        pdf.save(fileName);
+        return { iosManualAction: false };
+      }
+    };
+
+    const shareOrDownloadReadyPdf = async () => {
+      const modal = printProgressModal.value;
+      const fileName = modal.docName || '報表.pdf';
+      const pdfBlob = modal.pdfBlob;
+      if (!pdfBlob) return;
+      try {
+        const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+        if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+          await navigator.share({
+            files: [pdfFile],
+            title: fileName
+          });
+          closePrintProgressModal();
+          return;
+        }
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+      }
+      if (modal.blobUrl) {
+        const a = document.createElement('a');
+        a.href = modal.blobUrl;
+        a.download = fileName;
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    };
+
+    const closePrintProgressModal = () => {
+      if (printProgressModal.value.blobUrl) {
+        try { URL.revokeObjectURL(printProgressModal.value.blobUrl); } catch (e) {}
+      }
+      printProgressModal.value.show = false;
+      printProgressModal.value.readyForAction = false;
+      printProgressModal.value.pdfBlob = null;
+      printProgressModal.value.blobUrl = '';
     };
 
     // 1. 生成「空白班表」或「預排班表」單頁 A4 直式 PDF (四周保留 10mm 安全邊距，框線與文字絕不裁切)
@@ -9474,7 +9605,7 @@ ${beansContext}
 
         const imgData = canvas.toDataURL('image/jpeg', 0.94);
         pdf.addImage(imgData, 'JPEG', offsetX, offsetY, drawW, drawH);
-        pdf.save(fileName);
+        return deliverGeneratedPdf(pdf, fileName);
       } finally {
         document.body.removeChild(wrapper);
       }
@@ -9736,7 +9867,7 @@ ${beansContext}
           const imgData = canvas.toDataURL('image/jpeg', 0.94);
           pdf.addImage(imgData, 'JPEG', offsetX, margin, drawW, drawH);
         }
-        pdf.save(fileName);
+        return deliverGeneratedPdf(pdf, fileName);
       } finally {
         document.body.removeChild(renderStage);
       }
@@ -9752,38 +9883,55 @@ ${beansContext}
         percent: 18,
         stepIndex: 0,
         stepText: steps[0] || '正在彙整最新資料...',
-        steps
+        steps,
+        readyForAction: false,
+        pdfBlob: null,
+        blobUrl: ''
       };
-      await wait(220);
+      // 強制等待瀏覽器完成首次繪製，確保 iPhone / iPad 一定能順暢看見動畫
+      await nextTick();
+      await waitForNextPaint();
+      await wait(200);
 
       printProgressModal.value.stepIndex = 1;
       printProgressModal.value.percent = 45;
       printProgressModal.value.stepText = steps[1] || '正在計算欄位與排序...';
+      await waitForNextPaint();
       if (typeof onBeforePrint === 'function') {
         await onBeforePrint();
       }
-      await wait(200);
+      await wait(180);
 
       printProgressModal.value.stepIndex = 2;
-      printProgressModal.value.percent = 75;
+      printProgressModal.value.percent = 76;
       printProgressModal.value.stepText = steps[2] || '正在排版 A4 安全邊距官方版面...';
       await nextTick();
-      await wait(160);
+      await waitForNextPaint();
+      await wait(120);
 
+      let keepOpenForIos = false;
       try {
+        let res = null;
         if (typeof onGeneratePdf === 'function') {
-          await onGeneratePdf();
+          res = await onGeneratePdf();
         } else {
           window.print();
         }
-        printProgressModal.value.stepIndex = 3;
+        printProgressModal.value.stepIndex = 4;
         printProgressModal.value.percent = 100;
-        printProgressModal.value.stepText = `匯出完成！已開始下載 ${docName}`;
-        await wait(520);
+        if (res && res.iosManualAction) {
+          keepOpenForIos = true;
+          printProgressModal.value.stepText = `✅ ${docName} 已準備完成！請點下方按鈕儲存或分享`;
+        } else {
+          printProgressModal.value.stepText = `✅ 匯出完成！已開始下載 ${docName}`;
+          await wait(520);
+        }
       } catch (err) {
         alert('❌ PDF 匯出失敗：' + (err && err.message ? err.message : err));
       } finally {
-        printProgressModal.value.show = false;
+        if (!keepOpenForIos) {
+          printProgressModal.value.show = false;
+        }
       }
     };
 
@@ -9822,7 +9970,7 @@ ${beansContext}
           await forceSyncRosterDataNow(false);
         },
         onGeneratePdf: async () => {
-          await generateSchedulePdfFile(mode, fileName);
+          return await generateSchedulePdfFile(mode, fileName);
         }
       });
     };
@@ -10813,7 +10961,7 @@ ${beansContext}
       secureStaffDeleteModal, promptSecureDeleteStaff, confirmSecureStaffDelete,
       availModal, openAvailabilityModal, saveAvailability, getAvailabilitySummary, getAvailabilityText, timeSlots,
       allowedVacationStartStr, scheduleStartDate, scheduleEndDate, targetRangeDates, setNextWeekRange,
-      printTargetMode, printProgressModal, pageLoadingModal, triggerPrintSchedule, clearScheduledRoster,
+      printTargetMode, printProgressModal, pageLoadingModal, shareOrDownloadReadyPdf, closePrintProgressModal, forceUpdateAppVersion, triggerPrintSchedule, clearScheduledRoster,
       isSyncingRoster, lastVacSyncTimeStr, forceSyncRosterDataNow,
       aiRosterModal, isAiGeneratingRoster, generateAiRoster, applyAiRosterToSchedule, getScheduledShiftText, getScheduledShiftParts, isOvertimeShift, isConsecutiveSixthDay, calculateWeeklyStaffHours,
       blackoutDates, blackoutDatesList, blackoutModal, openBlackoutModal, saveBlackoutDate, deleteBlackoutDate,
